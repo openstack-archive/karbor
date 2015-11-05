@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = smaug
+omit = smaug/tests/*,smaug/openstack/*
+
+[report]
+ignore_errors = True
