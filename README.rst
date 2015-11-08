@@ -6,7 +6,7 @@ Application Data Protection as a Service for OpenStack
 
 .. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/Smaug.png
     :alt: Smaug
-    :width: 600
+    :width: 300
     :height: 525
     :align: center
 
@@ -51,7 +51,7 @@ Links
 
 .. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/SmaugInPieces.png
     :alt: Smaug
-    :width: 600
+    :width: 200
     :height: 525
     :align: center
 
@@ -74,4 +74,3 @@ Limitations
 * Only 1 Bank plugin per Protection Plan
 * Automatic object discovery not supported
 
- 
