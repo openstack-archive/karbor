@@ -16,6 +16,27 @@ function _create_smaug_conf_dir {
 
 }
 
+# create_smaug_accounts() - Set up common required smaug accounts
+# Tenant               User       Roles
+# ------------------------------------------------------------------
+# service              smaug      service
+function create_smaug_accounts {
+
+    if is_service_enabled smaug-api; then
+
+        create_service_user "smaug"
+
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+
+            get_or_create_service "smaug" "data-protect" "Application Data Protection Service"
+            get_or_create_endpoint "data-protect" "$REGION_NAME" \
+                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s" \
+                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s" \
+                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s"
+        fi
+    fi
+}
+
 function configure_smaug_api {
     if is_service_enabled smaug-api ; then
         echo "Configuring Smaug API"
@@ -75,6 +96,10 @@ if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
         echo export PYTHONPATH=\$PYTHONPATH:$SMAUG_DIR >> $RC_DIR/.localrc.auto
 
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
+
+        echo_summary "Creating Smaug entities for auth service"
+        create_smaug_accounts
+
         echo_summary "Initializing Smaug Service"
         SMAUG_BIN_DIR=$(get_python_exec_prefix)
         if is_service_enabled smaug-api; then
