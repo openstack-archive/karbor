@@ -30,7 +30,7 @@ function configure_smaug_api {
         echo "Configuring Smaug API Database"
         iniset $SMAUG_API_CONF database connection `database_connection_url smaug`
 
-        setup_colorized_logging $SMAUG_API_CONF DEFAULT tenant_name
+        setup_colorized_logging $SMAUG_API_CONF DEFAULT
         echo "Configuring Smaug API colorized"
         if is_service_enabled keystone; then
 
