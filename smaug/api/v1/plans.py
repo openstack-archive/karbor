@@ -19,7 +19,7 @@ from webob import exc
 
 from smaug.api.openstack import wsgi
 from smaug.i18n import _LI
-
+from smaug.operationengine import api as operationengine_api
 
 LOG = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ class PlansController(wsgi.Controller):
     """The Plans API controller for the OpenStack API."""
 
     def __init__(self):
+        self.operationengine_api = operationengine_api.API()
         super(PlansController, self).__init__()
 
     def show(self, req, id):

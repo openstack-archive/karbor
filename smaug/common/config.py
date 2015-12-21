@@ -49,12 +49,12 @@ global_opts = [
                default=60,
                help='Maximum time since last check-in for a service to be '
                     'considered up'),
-    cfg.StrOpt('scheduler_topic',
-               default='Smaug-scheduler',
-               help='The topic that scheduler nodes listen on'),
-    cfg.StrOpt('scheduler_manager',
-               default='Smaug.scheduler.manager.SchedulerManager',
-               help='Full class name for the Manager for scheduler'),
+    cfg.StrOpt('operationengine_topic',
+               default='smaug-operationengine',
+               help='The topic that OperationEngine nodes listen on'),
+    cfg.StrOpt('operationengine_manager',
+               default='smaug.operationengine.manager.OperationEngineManager',
+               help='Full class name for the Manager for OperationEngine'),
     cfg.StrOpt('host',
                default=socket.gethostname(),
                help='Name of this node.  This can be an opaque identifier. '

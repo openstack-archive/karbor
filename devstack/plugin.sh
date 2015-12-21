@@ -50,6 +50,7 @@ function configure_smaug_api {
         iniset $SMAUG_API_CONF DEFAULT use_syslog $SYSLOG
         echo "Configuring Smaug API Database"
         iniset $SMAUG_API_CONF database connection `database_connection_url smaug`
+        iniset_rpc_backend smaug $SMAUG_API_CONF
 
         setup_colorized_logging $SMAUG_API_CONF DEFAULT
         echo "Configuring Smaug API colorized"
@@ -113,12 +114,18 @@ if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
         if is_service_enabled smaug-api; then
             run_process smaug-api "$SMAUG_BIN_DIR/smaug-api --config-file $SMAUG_API_CONF"
         fi
+        if is_service_enabled smaug-operationengine; then
+           run_process smaug-operationengine "$SMAUG_BIN_DIR/smaug-operationengine --config-file $SMAUG_API_CONF"
+        fi
     fi
 
     if [[ "$1" == "unstack" ]]; then
 
         if is_service_enabled smaug-api; then
            stop_process smaug-api
+        fi
+        if is_service_enabled smaug-operationengine; then
+           stop_process smaug-operationengine
         fi
     fi
 fi

@@ -48,7 +48,7 @@ service_opts = [
     cfg.IntOpt('periodic_fuzzy_delay',
                default=60,
                help='Range, in seconds, to randomly delay when starting the'
-                    ' periodic task scheduler to reduce stampeding.'
+                    ' periodic task OperationEngine to reduce stampeding.'
                     ' (Disable by setting to 0)'),
     cfg.StrOpt('osapi_smaug_listen',
                default="0.0.0.0",
