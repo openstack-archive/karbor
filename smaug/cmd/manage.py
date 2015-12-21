@@ -114,7 +114,7 @@ class ServiceCommands(object):
 
         ctxt = context.get_admin_context()
         services = db.service_get_all(ctxt)
-        print_format = "%-16s %-36s %-16s %-10s %-5s %-10s"
+        print_format = "%-16s %-36s %-10s %-5s %-10s"
         print(print_format % (_('Binary'),
                               _('Host'),
                               _('Status'),

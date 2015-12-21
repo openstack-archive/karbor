@@ -173,3 +173,7 @@ class PasteAppNotFound(NotFound):
 
 class ServiceNotFound(NotFound):
     message = _("Service %(service_id)s could not be found.")
+
+
+class HostBinaryNotFound(NotFound):
+    message = _("Could not find binary %(binary)s on host %(host)s.")

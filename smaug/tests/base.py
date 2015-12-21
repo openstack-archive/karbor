@@ -16,11 +16,14 @@ import shutil
 import fixtures
 from oslo_config import cfg
 from oslo_log import log
+from oslo_messaging import conffixture as messaging_conffixture
+from oslo_utils import timeutils
 from oslotest import base
 
 from smaug.common import config  # noqa Need to register global_opts
 from smaug.db import migration
 from smaug.db.sqlalchemy import api as sqla_api
+from smaug import rpc
 from smaug.tests.unit import conf_fixture
 
 test_opts = [
@@ -82,8 +85,23 @@ class TestCase(base.BaseTestCase):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
 
+        rpc.add_extra_exmods("smaug.tests.unit")
+        self.addCleanup(rpc.clear_extra_exmods)
+        self.addCleanup(rpc.cleanup)
+
+        self.messaging_conf = messaging_conffixture.ConfFixture(CONF)
+        self.messaging_conf.transport_driver = 'fake'
+        self.messaging_conf.response_timeout = 15
+        self.useFixture(self.messaging_conf)
+        rpc.init(CONF)
+
         conf_fixture.set_defaults(CONF)
         CONF([], default_config_files=[])
+
+        # NOTE(vish): We need a better method for creating fixtures for tests
+        #             now that we have some required db setup for the system
+        #             to work properly.
+        self.start = timeutils.utcnow()
 
         CONF.set_default('connection', 'sqlite://', 'database')
         CONF.set_default('sqlite_synchronous', False, 'database')
