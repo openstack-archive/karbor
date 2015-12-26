@@ -55,6 +55,12 @@ global_opts = [
     cfg.StrOpt('operationengine_manager',
                default='smaug.operationengine.manager.OperationEngineManager',
                help='Full class name for the Manager for OperationEngine'),
+    cfg.StrOpt('protection_topic',
+               default='smaug-protection',
+               help='The topic that protection nodes listen on'),
+    cfg.StrOpt('protection_manager',
+               default='smaug.protection.manager.ProtectionManager',
+               help='Full class name for the Manager for Protection'),
     cfg.StrOpt('host',
                default=socket.gethostname(),
                help='Name of this node.  This can be an opaque identifier. '

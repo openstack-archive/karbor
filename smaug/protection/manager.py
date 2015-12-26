@@ -11,7 +11,7 @@
 #    under the License.
 
 """
-OperationEngine Service
+Protection Service
 """
 
 from oslo_config import cfg
@@ -19,15 +19,15 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from smaug import manager
-from smaug.protection import api as protection_api
+
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
 
-class OperationEngineManager(manager.Manager):
-    """Smaug OperationEngine Manager."""
+class ProtectionManager(manager.Manager):
+    """Smaug Protection Manager."""
 
     RPC_API_VERSION = '1.0'
 
@@ -35,9 +35,4 @@ class OperationEngineManager(manager.Manager):
 
     def __init__(self, service_name=None,
                  *args, **kwargs):
-        super(OperationEngineManager, self).__init__(*args, **kwargs)
-        self.protection_api = protection_api.API()
-
-    def create_scheduled_operation(self, context, request_spec=None):
-        LOG.debug("Received a rpc call from a api service."
-                  "request_spec:%s", request_spec)
+        super(ProtectionManager, self).__init__(*args, **kwargs)

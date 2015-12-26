@@ -117,6 +117,9 @@ if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
         if is_service_enabled smaug-operationengine; then
            run_process smaug-operationengine "$SMAUG_BIN_DIR/smaug-operationengine --config-file $SMAUG_API_CONF"
         fi
+        if is_service_enabled smaug-protection; then
+           run_process smaug-protection "$SMAUG_BIN_DIR/smaug-protection --config-file $SMAUG_API_CONF"
+        fi
     fi
 
     if [[ "$1" == "unstack" ]]; then
@@ -126,6 +129,9 @@ if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
         fi
         if is_service_enabled smaug-operationengine; then
            stop_process smaug-operationengine
+        fi
+        if is_service_enabled smaug-protection; then
+           stop_process smaug-protection
         fi
     fi
 fi

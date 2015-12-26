@@ -19,6 +19,7 @@ ENABLED_SERVICES+=,c-api,c-vol,c-sch,c-bak,horizon
 #Add the smaug services
 enable_service smaug-api
 enable_service smaug-operationengine
+enable_service smaug-protection
 
 #disable the default services you don't want to use
 disable_service n-net
