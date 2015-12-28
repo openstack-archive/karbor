@@ -16,6 +16,14 @@ Contents:
    usage
    contributing
 
+Smaug Specs
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   specs/index
+
 Indices and tables
 ==================
 
