@@ -31,9 +31,10 @@ Spec Template
 .. toctree::
     :maxdepth: 3
 
+    bank-plugin-lease
+    pluggable_protection_provider
     skeleton
     template
-    bank-plugin-lease
 
 
 Indices and tables

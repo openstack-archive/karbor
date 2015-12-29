@@ -1,0 +1,126 @@
+@startuml
+
+title Pluggable Protection Provider
+
+class ResourceType extends String {
+
+}
+
+class Resource {
+    +type: ResourceType
+    +id: UUID
+}
+
+class ResourceGraphNode {
+    resource: Resource
+    dependent_resources: []ResourceGraphNode
+}
+
+ResourceGraphNode "1" o- "0..*" ResourceGraphNode
+
+class ResourceGraphWalker {
+    +constructor(sources: []ResourceGraphNode)
+    +add_listener(listener: ResourceGraphWalkerListener)
+    +walk()
+}
+
+ResourceGraphWalker -- ResourceGraphWalkerListener
+
+interface ResourceGraphWalkerListener {
+    on_node_enter(node: ResourceGraphNode, is_first_visit: boolean)
+    on_node_exit(node: ResourceGraphNode, is_first_visit: boolean)
+}
+
+ResourceGraphNode *- Resource
+
+class ProtectableRegistry {
+    + {static} fetch_dependant_resources(resource: Resource): []Resource
+    + {static} register(resource_type: ResourceType, protectable: Protectable)
+    + {static} list_resources(resource_type: ResourceType): [] Resource
+}
+
+ProtectableRegistry --> Resource: <<creates>>
+
+ProtectableRegistry "1" *- "*" Protectable
+
+interface Protectable {
+    + possible_parent_types(resource_type: ResourceType): []ResourceType
+    + fetch_child_resources(resource: Resource): []Resource
+    + list_resources(resource_type: ResourceType): []Resource
+}
+
+Resource *- ResourceType
+
+enum Operation {
+    protect
+    start
+    suspend
+    restore
+    delete
+}
+
+class Context {
+    +plan: ProtectionPlan
+    +operation: Operation
+    +parameters: dict
+    +resource: ResourceGraphNode
+    +bank_section: BankSection
+    +is_first_visit: boolean
+    +task_builder: TaskBuilder
+}
+
+interface BankPlugin {
+
+}
+
+interface BankSection extends BankPluginInterface {
+    is_writeable(): bool
+}
+
+Context *-- TaskBuilder
+Context *-- BankSection
+
+interface Task {
+
+}
+
+note left of Task
+    Opaque object
+end note
+
+interface TaskBuilder {
+    add_task(target: function, args=collection): Task
+    link_tasks(a: Task, b: Task)
+}
+
+TaskBuilder --> Task: Creates
+
+Context -- Operation
+
+interface ProtectionPlugin {
+    ..metadata functions..
+    get_supported_resources_types(): []ResourceType
+    ..graph walk functions..
+    +on_resource_start(context: Context)
+    +on_resource_end(context: Context)
+    ..schema functions..
+    +get_options_schema(resource_type: ResourceType)
+    +get_saved_info_schema(resource_type: ResourceType)
+    +get_restore_schema(resource_type: ResourceType)
+    +get_saved_info(metadata_store: MetadataStore, resource: Resource)
+}
+
+ProtectionPlugin -- Context
+
+interface ProtectionProvider {
+}
+
+class PluggableProtectionProvider extends ProtectionProvider {
+    -plugins: [ResourceType]ProtectionPlugin
+}
+
+PluggableProtectionProvider *-- "1..*" ProtectionPlugin: Uses for functionality
+PluggableProtectionProvider -> ResourceGraphWalker: uses it to iterate over graph
+ResourceGraphWalker - ResourceGraphNode
+
+@enduml
