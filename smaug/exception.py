@@ -169,3 +169,7 @@ class InvalidContentType(Invalid):
 
 class PasteAppNotFound(NotFound):
     message = _("Could not load paste app '%(name)s' from %(path)s")
+
+
+class ServiceNotFound(NotFound):
+    message = _("Service %(service_id)s could not be found.")

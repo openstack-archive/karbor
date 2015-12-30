@@ -102,6 +102,14 @@ if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
 
         echo_summary "Initializing Smaug Service"
         SMAUG_BIN_DIR=$(get_python_exec_prefix)
+
+        if is_service_enabled $DATABASE_BACKENDS; then
+            # (re)create smaug database
+            recreate_database smaug utf8
+
+            # Migrate smaug database
+            $SMAUG_BIN_DIR/smaug-manage db sync
+        fi
         if is_service_enabled smaug-api; then
             run_process smaug-api "$SMAUG_BIN_DIR/smaug-api --config-file $SMAUG_API_CONF"
         fi

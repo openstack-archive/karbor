@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+import os
 from oslo_config import cfg
 
 
@@ -20,7 +20,11 @@ CONF.import_opt('policy_file', 'smaug.policy', group='oslo_policy')
 
 
 def set_defaults(conf):
+    conf.set_default('connection', 'sqlite://', group='database')
+    conf.set_default('sqlite_synchronous', False, group='database')
     conf.set_default('policy_file', 'smaug.tests.unit/policy.json',
                      group='oslo_policy')
     conf.set_default('policy_dirs', [], group='oslo_policy')
     conf.set_default('auth_strategy', 'noauth')
+    conf.set_default('state_path', os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', '..', '..')))

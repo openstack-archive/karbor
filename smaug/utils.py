@@ -15,6 +15,7 @@ import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import timeutils
 import six
 
 from smaug import exception
@@ -68,3 +69,12 @@ def check_string_length(value, name, min_length=0, max_length=None):
         msg = _("%(name)s has more than %(max_length)s "
                 "characters.") % {'name': name, 'max_length': max_length}
         raise exception.InvalidInput(message=msg)
+
+
+def service_is_up(service):
+    """Check whether a service is up based on last heartbeat."""
+    last_heartbeat = service['updated_at'] or service['created_at']
+
+    elapsed = (timeutils.utcnow(with_timezone=True) -
+               last_heartbeat).total_seconds()
+    return abs(elapsed) <= CONF.service_down_time

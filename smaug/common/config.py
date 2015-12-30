@@ -31,7 +31,11 @@ logging.register_options(CONF)
 core_opts = [
     cfg.StrOpt('api_paste_config',
                default="api-paste.ini",
-               help='File name for the paste.deploy config for smaug-api')
+               help='File name for the paste.deploy config for smaug-api'),
+    cfg.StrOpt('state_path',
+               default='/var/lib/smaug',
+               deprecated_name='pybasedir',
+               help="Top-level directory for maintaining smaug's state"),
 ]
 
 debug_opts = [
@@ -41,6 +45,10 @@ CONF.register_cli_opts(core_opts)
 CONF.register_cli_opts(debug_opts)
 
 global_opts = [
+    cfg.IntOpt('service_down_time',
+               default=60,
+               help='Maximum time since last check-in for a service to be '
+                    'considered up'),
     cfg.StrOpt('scheduler_topic',
                default='Smaug-scheduler',
                help='The topic that scheduler nodes listen on'),
