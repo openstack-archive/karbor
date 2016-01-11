@@ -17,13 +17,21 @@ Protection Service
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from oslo_utils import importutils
 
+from smaug.i18n import _LI
 from smaug import manager
 
+LOG = logging.getLogger(__name__)
+
+protection_manager_opts = [
+    cfg.IntOpt('update_protection_stats_interval',
+               default=3600,
+               help='update protection status interval')
+]
 
 CONF = cfg.CONF
-
-LOG = logging.getLogger(__name__)
+CONF.register_opts(protection_manager_opts)
 
 
 class ProtectionManager(manager.Manager):
@@ -36,3 +44,67 @@ class ProtectionManager(manager.Manager):
     def __init__(self, service_name=None,
                  *args, **kwargs):
         super(ProtectionManager, self).__init__(*args, **kwargs)
+        # TODO(wangliuan)  more params and use profiler.trace_cls
+        self.provider_registry = importutils.import_object(
+            'smaug.protection.provider.ProviderRegistry')
+        self.flow_engine = None
+        # TODO(wangliuan)
+
+    def init_host(self):
+        """Handle initialization if this is a standalone service"""
+        # TODO(wangliuan)
+        LOG.info(_LI("Starting protection service"))
+
+    # TODO(wangliuan) use flow_engine to implement protect function
+    def protect(self, plan):
+        """create protection for the given plan
+
+        :param plan: Define that protection plan should be done
+        """
+        # TODO(wangliuan)
+        pass
+
+    def restore(self, checkpoint, **kwargs):
+        # TODO(wangliuan)
+        pass
+
+    def delete(self, plan):
+        # TODO(wangliuan)
+        pass
+
+    def start(self, plan):
+        # TODO(wangliuan)
+        pass
+
+    def suspend(self, plan):
+        # TODO(wangliuan)
+        pass
+
+    def _update_protection_stats(self, plan):
+        """Update protection stats
+
+        use the loopingcall to update protection status(
+        interval=CONF.update_protection_stats_interval)
+        """
+        # TODO(wangliuan)
+        pass
+
+    def list_checkpoints(self, list_options):
+        # TODO(wangliuan)
+        pass
+
+    def show_checkpoint(self, checkpoint_id):
+        # TODO(wangliuan)
+        pass
+
+    def delete_checkpoint(self, checkpoint_id):
+        # TODO(wangliuan)
+        pass
+
+    def list_providers(self, list_option):
+        # TODO(wangliuan)
+        pass
+
+    def show_provider(self, provider_id):
+        # TODO(wangliuan)
+        pass
