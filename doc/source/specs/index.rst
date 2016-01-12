@@ -25,6 +25,12 @@ Smaug Specs
 This section contains detailed specification documents for
 different features inside Smaug.
 
+Contents:
+
+.. toctree::
+    :maxdepth: 3
+
+    api-service
 
 Spec Template
 --------------

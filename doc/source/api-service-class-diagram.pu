@@ -1,0 +1,57 @@
+@startuml
+
+title API Service Class Diagram
+
+class wsgi.Controller{
+
+}
+
+
+class ProvidersController extends wsgi.Controller{
+  +index(self, req):[]Provider
+  +show(self, req, provider_id:String):Provider
+}
+
+class CheckpointsController extends wsgi.Controller{
+  +index(self, req, provider_id:String):[]Checkpoint
+  +create(self, req, body:JSON, provider_id:String):Checkpoint
+  +show(self, req, provider_id:String, checkpoint_id:String):):Checkpoint
+  +delete(self, req, provider_id:String, checkpoint_id:String):):void
+}
+
+class ProtectablesController extends wsgi.Controller{
+  +index(self, req):[]Protectable
+  +show(self, req, protectable_type:String):[]Protectable
+  +index_instances(self, req, protectable_type:String):[]Resource
+}
+
+class PlansController extends wsgi.Controller{
+  +create(self, req, body:JSON):Plan
+  +index(self, req):[]Plan
+  +show(self, req, id:String):Plan
+  +update(self, req, id:String):Plan
+  +delete(self, req, id:String):void
+}
+
+class ScheduledOperationsController extends wsgi.Controller{
+  +create(self, req, body:JSON):ScheduledOperation
+  +index(self, req):[]ScheduledOperation
+  +show(self, req, id:String):ScheduledOperation
+  +delete(self, req, id:String):void
+}
+
+
+class RestorationsController extends wsgi.Controller{
+  +create(self, req, body:JSON):Restoration
+  +index(self, req):[]Restoration
+  +show(self, req, id:String):Restoration
+}
+
+class TriggersController extends wsgi.Controller{
+  +create(self, req, body:JSON):Trigger
+  +index(self, req):[]Trigger
+  +show(self, req, id:String):Trigger
+  +delete(self, req, id:String):void
+}
+
+@enduml
