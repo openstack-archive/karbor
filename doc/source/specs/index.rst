@@ -33,6 +33,7 @@ Spec Template
 
     skeleton
     template
+    bank-plugin-lease
 
 
 Indices and tables
