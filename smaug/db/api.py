@@ -118,3 +118,7 @@ def service_update(context, service_id, values):
 
     """
     return IMPL.service_update(context, service_id, values)
+
+
+def get_by_id(context, model, id, *args, **kwargs):
+    return IMPL.get_by_id(context, model, id, *args, **kwargs)

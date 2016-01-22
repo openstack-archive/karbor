@@ -23,6 +23,7 @@ from oslo_log import log as logging
 
 from smaug import i18n
 i18n.enable_lazy()
+from smaug import objects
 
 # Need to register global_opts
 from smaug.common import config  # noqa
@@ -34,6 +35,7 @@ CONF = cfg.CONF
 
 
 def main():
+    objects.register_all()
     CONF(sys.argv[1:], project='smaug',
          version=version.version_string())
     logging.setup(CONF, "smaug")

@@ -14,6 +14,7 @@
 
 
 import functools
+import re
 import sys
 import threading
 import time
@@ -39,6 +40,7 @@ options.set_defaults(CONF, connection='sqlite:///$state_path/smaug.sqlite')
 
 _LOCK = threading.Lock()
 _FACADE = None
+_GET_METHODS = {}
 
 
 def _create_facade_lazily():
@@ -306,3 +308,21 @@ def service_update(context, service_id, values):
             service_ref['updated_at'] = literal_column('updated_at')
         service_ref.update(values)
         return service_ref
+
+
+def _get_get_method(model):
+    # General conversion
+    # Convert camel cased model name to snake format
+    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', model.__name__)
+    # Get method must be snake formatted model name concatenated with _get
+    method_name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower() + '_get'
+    return globals().get(method_name)
+
+
+@require_context
+def get_by_id(context, model, id, *args, **kwargs):
+    # Add get method to cache dictionary if it's not already there
+    if not _GET_METHODS.get(model):
+        _GET_METHODS[model] = _get_get_method(model)
+
+    return _GET_METHODS[model](context, id, *args, **kwargs)

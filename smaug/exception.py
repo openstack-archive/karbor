@@ -22,6 +22,7 @@ import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_versionedobjects import exception as obj_exc
 import six
 import webob.exc
 from webob.util import status_generic_reasons
@@ -177,3 +178,7 @@ class ServiceNotFound(NotFound):
 
 class HostBinaryNotFound(NotFound):
     message = _("Could not find binary %(binary)s on host %(host)s.")
+
+
+OrphanedObjectError = obj_exc.OrphanedObjectError
+ObjectActionError = obj_exc.ObjectActionError
