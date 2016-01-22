@@ -77,6 +77,8 @@ class Service(service.Service):
                  service_name=None, *args, **kwargs):
         super(Service, self).__init__()
 
+        rpc.init(CONF)
+
         self.host = host
         self.binary = binary
         self.topic = topic
