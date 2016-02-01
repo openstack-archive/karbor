@@ -10,8 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import Boolean, Column, DateTime
-from sqlalchemy import Integer, MetaData, String, Table
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey
+from sqlalchemy import Integer, MetaData, String, Table, Text
 
 
 def define_tables(meta):
@@ -35,7 +35,86 @@ def define_tables(meta):
         mysql_engine='InnoDB'
     )
 
-    return [services]
+    plans = Table(
+        'plans', meta,
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('name', String(length=255)),
+        Column('provider_id', String(length=36)),
+        Column('project_id', String(length=255)),
+        Column('status', String(length=64)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        mysql_engine='InnoDB'
+    )
+
+    resources = Table(
+        'resources', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('plan_id', String(length=36), ForeignKey('plans.id'),
+               nullable=False),
+        Column('resource_id', String(length=36)),
+        Column('resource_type', String(length=64)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        mysql_engine='InnoDB'
+    )
+
+    restores = Table(
+        'restores', meta,
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('project_id', String(length=255)),
+        Column('provider_id', String(length=36)),
+        Column('checkpoint_id', String(length=36)),
+        Column('restore_target', String(length=255)),
+        Column('parameters', String(length=255)),
+        Column('status', String(length=64)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        mysql_engine='InnoDB'
+    )
+
+    triggers = Table(
+        'triggers', meta,
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('name', String(length=255)),
+        Column('project_id', String(length=255)),
+        Column('type', String(length=64)),
+        Column('properties', Text),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        mysql_engine='InnoDB'
+    )
+
+    scheduled_operations = Table(
+        'scheduled_operations', meta,
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('name', String(length=255)),
+        Column('operation_type', String(length=64)),
+        Column('project_id', String(length=255)),
+        Column('trigger_id', String(length=36)),
+        Column('operation_definition', Text),
+        Column('status', String(length=64)),
+        Column('service_id', String(length=36)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        mysql_engine='InnoDB'
+    )
+    return [services,
+            plans,
+            resources,
+            restores,
+            triggers,
+            scheduled_operations]
 
 
 def upgrade(migrate_engine):
