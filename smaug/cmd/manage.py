@@ -35,6 +35,7 @@ from smaug import db
 from smaug.db import migration as db_migration
 from smaug.db.sqlalchemy import api as db_api
 from smaug.i18n import _
+from smaug import objects
 from smaug import utils
 from smaug import version
 
@@ -205,6 +206,7 @@ def fetch_func_args(func):
 
 def main():
     """Parse options and call the appropriate class/method."""
+    objects.register_all()
     CONF.register_cli_opt(category_opt)
     script_name = sys.argv[0]
     if len(sys.argv) < 2:

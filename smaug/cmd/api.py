@@ -25,7 +25,7 @@ from oslo_log import log as logging
 from smaug.common import config  # noqa
 from smaug import i18n
 i18n.enable_lazy()
-
+from smaug import objects
 from smaug import rpc
 from smaug import service
 from smaug import version
@@ -35,7 +35,7 @@ CONF = cfg.CONF
 
 
 def main():
-
+    objects.register_all()
     CONF(sys.argv[1:], project='smaug',
          version=version.version_string())
     logging.setup(CONF, "smaug")

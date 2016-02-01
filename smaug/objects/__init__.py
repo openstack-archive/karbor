@@ -10,9 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import eventlet
 
-from smaug import objects
-
-eventlet.monkey_patch()
-objects.register_all()
+def register_all():
+    # You must make sure your object gets imported in this
+    # function in order for it to be registered by services that may
+    # need to receive it via RPC.
+    __import__('smaug.objects.service')
