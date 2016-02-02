@@ -12,7 +12,6 @@
 
 """Implementation of SQLAlchemy backend."""
 
-
 import functools
 import re
 import sys
@@ -20,6 +19,7 @@ import threading
 import time
 
 from oslo_config import cfg
+from oslo_db import api as oslo_db_api
 from oslo_db import exception as db_exc
 from oslo_db import options
 from oslo_db.sqlalchemy import session as db_session
@@ -326,3 +326,50 @@ def get_by_id(context, model, id, *args, **kwargs):
         _GET_METHODS[model] = _get_get_method(model)
 
     return _GET_METHODS[model](context, id, *args, **kwargs)
+
+
+###################
+
+
+def scheduled_operation_log_get(context, log_id):
+    return _scheduled_operation_log_get(context, log_id)
+
+
+def _scheduled_operation_log_get(context, log_id, session=None):
+    result = model_query(context, models.ScheduledOperationLog,
+                         session=session).filter_by(id=log_id).first()
+
+    if not result:
+        raise exception.ScheduledOperationLogNotFound(log_id=log_id)
+
+    return result
+
+
+def scheduled_operation_log_create(context, values):
+    log_ref = models.ScheduledOperationLog()
+    log_ref.update(values)
+    log_ref.save(get_session())
+    return log_ref
+
+
+@oslo_db_api.wrap_db_retry(max_retries=5, retry_on_deadlock=True)
+def scheduled_operation_log_update(context, log_id, values):
+    """Update the ScheduledOperationLog record with the most recent data."""
+
+    session = get_session()
+    with session.begin():
+        log_ref = _scheduled_operation_log_get(context, log_id,
+                                               session=session)
+        log_ref.update(values)
+        log_ref.save(session)
+    return log_ref
+
+
+def scheduled_operation_log_delete(context, log_id):
+    """Delete a ScheduledOperationLog record."""
+
+    session = get_session()
+    with session.begin():
+        log_ref = _scheduled_operation_log_get(context, log_id,
+                                               session=session)
+        log_ref.delete(session=session)

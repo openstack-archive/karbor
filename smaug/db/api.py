@@ -122,3 +122,62 @@ def service_update(context, service_id, values):
 
 def get_by_id(context, model, id, *args, **kwargs):
     return IMPL.get_by_id(context, model, id, *args, **kwargs)
+
+
+###################
+
+
+def scheduled_operation_log_get(context, log_id):
+    """Get a scheduled operation log by its id.
+
+    :param context: The security context
+    :param log_id: Log_id of the scheduled operation log
+
+    :returns: Dictionary-like object containing properties of the scheduled
+     operation log
+
+    Raises ScheduledOperationLogNotFound if scheduled operation log with
+     the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_log_get(context, log_id)
+
+
+def scheduled_operation_log_create(context, values):
+    """Create a scheduled operation log from the values dictionary.
+
+    :param context: The security context
+    :param values: Dictionary containing scheduled operation log properties
+
+    :returns: Dictionary-like object containing the properties of the created
+              scheduled operation log
+    """
+    return IMPL.scheduled_operation_log_create(context, values)
+
+
+def scheduled_operation_log_update(context, log_id, values):
+    """Set the given properties on a scheduled operation log and update it.
+
+    :param context: The security context
+    :param log_id: Log_id of the scheduled operation log
+    :param values: Dictionary containing scheduled operation log properties
+                   to be updated
+
+    :returns: Dictionary-like object containing the properties of the updated
+              scheduled operation log
+
+    Raises ScheduledOperationLogNotFound if scheduled operation log with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_log_update(context, log_id, values)
+
+
+def scheduled_operation_log_delete(context, log_id):
+    """Delete a scheduled operation log from the database.
+
+    :param context: The security context
+    :param log_id: Log_id of the scheduled operation log
+
+    Raises ScheduledOperationLogNotFound if scheduled operation log with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_log_delete(context, log_id)

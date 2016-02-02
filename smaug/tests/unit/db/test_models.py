@@ -89,3 +89,58 @@ class ServicesDbTestCase(base.TestCase):
                                                            'topictest5')
         self.assertEqual(service_ref['host'], 'hosttest5')
         self.assertEqual(service_get_ref['host'], 'hosttest5')
+
+
+class ScheduledOperationLogTestCase(base.TestCase):
+    """Test cases for scheduled_operation_logs table."""
+
+    def setUp(self):
+        super(ScheduledOperationLogTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def _create_scheduled_operation_log(self):
+        values = {
+            'operation_id': '0354ca9ddcd046b693340d78759fd274',
+            'state': 'in_progress',
+        }
+        return db.scheduled_operation_log_create(self.ctxt, values)
+
+    def test_scheduled_operation_log_create(self):
+        log_ref = self._create_scheduled_operation_log()
+        self.assertEqual('in_progress', log_ref['state'])
+
+    def test_scheduled_operation_log_delete(self):
+        log_ref = self._create_scheduled_operation_log()
+        db.scheduled_operation_log_delete(self.ctxt, log_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_delete,
+                          self.ctxt, log_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_get,
+                          self.ctxt, log_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_delete,
+                          self.ctxt, 100)
+
+    def test_scheduled_operation_log_update(self):
+        log_ref = self._create_scheduled_operation_log()
+        log_id = log_ref['id']
+        log_ref = db.scheduled_operation_log_update(self.ctxt,
+                                                    log_id,
+                                                    {"state": "success"})
+        self.assertEqual('success', log_ref['state'])
+
+        log_ref = db.scheduled_operation_log_get(self.ctxt, log_id)
+        self.assertEqual('success', log_ref['state'])
+
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_update,
+                          self.ctxt, 100, {"state": "success"})
+
+    def test_scheduled_operation_log_get(self):
+        log_ref = self._create_scheduled_operation_log()
+        log_ref = db.scheduled_operation_log_get(self.ctxt, log_ref['id'])
+        self.assertEqual('in_progress', log_ref['state'])
