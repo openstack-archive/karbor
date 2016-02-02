@@ -37,34 +37,38 @@ def define_tables(meta):
 
     plans = Table(
         'plans', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
         Column('id', String(36), primary_key=True, nullable=False),
         Column('name', String(length=255)),
         Column('provider_id', String(length=36)),
         Column('project_id', String(length=255)),
         Column('status', String(length=64)),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
         mysql_engine='InnoDB'
     )
 
     resources = Table(
         'resources', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
         Column('id', Integer, primary_key=True, nullable=False),
         Column('plan_id', String(length=36), ForeignKey('plans.id'),
                nullable=False),
         Column('resource_id', String(length=36)),
         Column('resource_type', String(length=64)),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
         mysql_engine='InnoDB'
     )
 
     restores = Table(
         'restores', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
         Column('id', String(36), primary_key=True, nullable=False),
         Column('project_id', String(length=255)),
         Column('provider_id', String(length=36)),
@@ -72,10 +76,6 @@ def define_tables(meta):
         Column('restore_target', String(length=255)),
         Column('parameters', String(length=255)),
         Column('status', String(length=64)),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
         mysql_engine='InnoDB'
     )
 
@@ -95,18 +95,16 @@ def define_tables(meta):
 
     scheduled_operations = Table(
         'scheduled_operations', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
         Column('id', String(36), primary_key=True, nullable=False),
         Column('name', String(length=255)),
         Column('operation_type', String(length=64)),
         Column('project_id', String(length=255)),
         Column('trigger_id', String(length=36)),
         Column('operation_definition', Text),
-        Column('status', String(length=64)),
-        Column('service_id', String(length=36)),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
         mysql_engine='InnoDB'
     )
 
