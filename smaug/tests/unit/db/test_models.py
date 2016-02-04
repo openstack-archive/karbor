@@ -268,7 +268,7 @@ class PlanDbTestCase(base.TestCase):
     fake_plan = {
         'name': 'My 3 tier application',
         'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
-        'status': 'started',
+        'status': 'suspended',
         'project_id': '39bb894794b741e982bd26144d2949f6',
         'resources': [],
     }
@@ -276,7 +276,7 @@ class PlanDbTestCase(base.TestCase):
     fake_plan_with_resources = {
         'name': 'My 3 tier application',
         'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
-        'status': 'started',
+        'status': 'suspended',
         'project_id': '39bb894794b741e982bd26144d2949f6',
         'resources': [{
             "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
@@ -311,7 +311,7 @@ class PlanDbTestCase(base.TestCase):
     def test_plan_create(self):
         plan = db.plan_create(self.ctxt, self.fake_plan)
         self.assertTrue(uuidutils.is_uuid_like(plan['id']))
-        self.assertEqual('started', plan.status)
+        self.assertEqual('suspended', plan.status)
 
     def test_plan_get(self):
         plan = db.plan_create(self.ctxt,
@@ -329,9 +329,9 @@ class PlanDbTestCase(base.TestCase):
     def test_plan_update(self):
         plan = db.plan_create(self.ctxt, self.fake_plan)
         db.plan_update(self.ctxt, plan['id'],
-                       {'status': 'suspending'})
+                       {'status': 'started'})
         plan = db.plan_get(self.ctxt, plan['id'])
-        self.assertEqual('suspending', plan['status'])
+        self.assertEqual('started', plan['status'])
 
     def test_plan_update_nonexistent(self):
         self.assertRaises(exception.PlanNotFound, db.plan_update,
