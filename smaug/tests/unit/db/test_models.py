@@ -13,6 +13,8 @@
 """Tests for Models Database."""
 
 from oslo_config import cfg
+from oslo_utils import uuidutils
+import six
 
 from smaug import context
 from smaug import db
@@ -257,3 +259,90 @@ class ScheduledOperationLogTestCase(base.TestCase):
         log_ref = self._create_scheduled_operation_log()
         log_ref = db.scheduled_operation_log_get(self.ctxt, log_ref['id'])
         self.assertEqual('in_progress', log_ref['state'])
+
+
+class PlanDbTestCase(base.TestCase):
+
+    """Unit tests for smaug.db.api.plan_*."""
+
+    fake_plan = {
+        'name': 'My 3 tier application',
+        'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
+        'status': 'started',
+        'project_id': '39bb894794b741e982bd26144d2949f6',
+        'resources': [],
+    }
+
+    fake_plan_with_resources = {
+        'name': 'My 3 tier application',
+        'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
+        'status': 'started',
+        'project_id': '39bb894794b741e982bd26144d2949f6',
+        'resources': [{
+            "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
+            "type": "OS::Nova::Server"}],
+    }
+
+    def _dict_from_object(self, obj, ignored_keys):
+        if ignored_keys is None:
+            ignored_keys = []
+        if isinstance(obj, dict):
+            items = obj.items()
+        else:
+            items = obj.iteritems()
+        return {k: v for k, v in items
+                if k not in ignored_keys}
+
+    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
+        obj1 = self._dict_from_object(obj1, ignored_keys)
+        obj2 = self._dict_from_object(obj2, ignored_keys)
+
+        self.assertEqual(
+            len(obj1), len(obj2),
+            "Keys mismatch: %s" % six.text_type(
+                set(obj1.keys()) ^ set(obj2.keys())))
+        for key, value in obj1.items():
+            self.assertEqual(value, obj2[key])
+
+    def setUp(self):
+        super(PlanDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def test_plan_create(self):
+        plan = db.plan_create(self.ctxt, self.fake_plan)
+        self.assertTrue(uuidutils.is_uuid_like(plan['id']))
+        self.assertEqual('started', plan.status)
+
+    def test_plan_get(self):
+        plan = db.plan_create(self.ctxt,
+                              self.fake_plan)
+        self._assertEqualObjects(plan, db.plan_get(self.ctxt,
+                                                   plan['id']),
+                                 ignored_keys='resources')
+
+    def test_plan_destroy(self):
+        plan = db.plan_create(self.ctxt, self.fake_plan)
+        db.plan_destroy(self.ctxt, plan['id'])
+        self.assertRaises(exception.PlanNotFound, db.plan_get,
+                          self.ctxt, plan['id'])
+
+    def test_plan_update(self):
+        plan = db.plan_create(self.ctxt, self.fake_plan)
+        db.plan_update(self.ctxt, plan['id'],
+                       {'status': 'suspending'})
+        plan = db.plan_get(self.ctxt, plan['id'])
+        self.assertEqual('suspending', plan['status'])
+
+    def test_plan_update_nonexistent(self):
+        self.assertRaises(exception.PlanNotFound, db.plan_update,
+                          self.ctxt, 42, {})
+
+    def test_plan_resources_update(self):
+        resources2 = [{
+            "id": "61e51e85-4f31-441f-9a5d-6e93e3194444",
+            "type": "OS::Cinder::Volume"}]
+
+        plan = db.plan_create(self.ctxt, self.fake_plan)
+        db_meta = db.plan_resources_update(self.ctxt, plan["id"], resources2)
+
+        self.assertEqual("OS::Cinder::Volume", db_meta[0]["resource_type"])

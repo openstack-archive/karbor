@@ -17,6 +17,7 @@ import re
 import sys
 import threading
 import time
+import uuid
 
 from oslo_config import cfg
 from oslo_db import api as oslo_db_api
@@ -25,6 +26,7 @@ from oslo_db import options
 from oslo_db.sqlalchemy import session as db_session
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.sql import func
 
@@ -145,6 +147,19 @@ def require_context(f):
         if not is_admin_context(args[0]) and not is_user_context(args[0]):
             raise exception.NotAuthorized()
         return f(*args, **kwargs)
+    return wrapper
+
+
+def require_plan_exists(f):
+    """Decorator to require the specified plan to exist.
+
+    Requires the wrapped function to use context and plan_id as
+    their first two arguments.
+    """
+    @functools.wraps(f)
+    def wrapper(context, plan_id, *args, **kwargs):
+        plan_get(context, plan_id)
+        return f(context, plan_id, *args, **kwargs)
     return wrapper
 
 
@@ -467,3 +482,150 @@ def scheduled_operation_log_delete(context, log_id):
         log_ref = _scheduled_operation_log_get(context, log_id,
                                                session=session)
         log_ref.delete(session=session)
+
+
+def _resource_refs(resource_list, meta_class):
+    resource_refs = []
+    if resource_list:
+        for resource in resource_list:
+            resource_ref = meta_class()
+            resource_ref['resource_id'] = resource['id']
+            resource_ref['resource_type'] = resource['type']
+            resource_refs.append(resource_ref)
+    return resource_refs
+
+
+@require_context
+def _plan_get_query(context, session=None, project_only=False,
+                    joined_load=True):
+    """Get the query to retrieve the plan.
+
+    :param context: the context used to run the method _plan_get_query
+    :param session: the session to use
+    :param project_only: the boolean used to decide whether to query the
+                         plan in the current project or all projects
+    :param joined_load: the boolean used to decide whether the query loads
+                        the other models, which join the plan model in
+                        the database.
+    :returns: updated query or None
+    """
+    query = model_query(context, models.Plan, session=session,
+                        project_only=project_only)
+    if joined_load:
+        query = query.options(joinedload('resources'))
+    return query
+
+
+def _plan_resources_get_query(context, plan_id, model, session=None):
+    return model_query(context, model, session=session, read_deleted="no").\
+        filter_by(plan_id=plan_id)
+
+
+@require_context
+def _resource_create(context, values):
+    resource_ref = models.Resource()
+    resource_ref.update(values)
+    session = get_session()
+    with session.begin():
+        resource_ref.save(session)
+        return resource_ref
+
+
+@require_context
+def _plan_resources_update(context, plan_id, resources, session=None):
+    session = session or get_session()
+    now = timeutils.utcnow()
+    with session.begin():
+        model_query(context, models.Resource, session=session).\
+            filter_by(plan_id=plan_id).\
+            update({'deleted': True,
+                    'deleted_at': now,
+                    'updated_at': literal_column('updated_at')})
+    resources_list = []
+    for resource in resources:
+        resource['plan_id'] = plan_id
+        resource['resource_id'] = resource.pop('id')
+        resource['resource_type'] = resource.pop('type')
+        resource_ref = _resource_create(context, resource)
+        resources_list.append(resource_ref)
+
+    return resources_list
+
+
+@require_context
+def _plan_get(context, plan_id, session=None, joined_load=True):
+    result = _plan_get_query(context, session=session, project_only=True,
+                             joined_load=joined_load)
+    result = result.filter_by(id=plan_id).first()
+
+    if not result:
+        raise exception.PlanNotFound(plan_id=plan_id)
+
+    return result
+
+
+@require_context
+def plan_create(context, values):
+    values['resources'] = _resource_refs(values.get('resources'),
+                                         models.Resource)
+
+    plan_ref = models.Plan()
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+    plan_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(plan_ref)
+
+    return _plan_get(context, values['id'], session=session)
+
+
+@require_context
+def plan_get(context, plan_id):
+    return _plan_get(context, plan_id)
+
+
+@require_admin_context
+@_retry_on_deadlock
+def plan_destroy(context, plan_id):
+    session = get_session()
+    now = timeutils.utcnow()
+    with session.begin():
+        model_query(context, models.Plan, session=session).\
+            filter_by(id=plan_id).\
+            update({'deleted': True,
+                    'deleted_at': now,
+                    'updated_at': literal_column('updated_at')})
+        model_query(context, models.Resource, session=session).\
+            filter_by(plan_id=plan_id).\
+            update({'deleted': True,
+                    'deleted_at': now,
+                    'updated_at': literal_column('updated_at')})
+
+
+@require_context
+@require_plan_exists
+def plan_update(context, plan_id, values):
+    session = get_session()
+    with session.begin():
+        resources = values.get('resources')
+        if resources is not None:
+            _plan_resources_update(context,
+                                   plan_id,
+                                   values.pop('resources'),
+                                   session=session)
+
+        plan_ref = _plan_get(context, plan_id, session=session)
+        plan_ref.update(values)
+
+        return plan_ref
+
+
+@require_context
+@require_plan_exists
+@_retry_on_deadlock
+def plan_resources_update(context, plan_id, resources):
+    return _plan_resources_update(context,
+                                  plan_id,
+                                  resources)

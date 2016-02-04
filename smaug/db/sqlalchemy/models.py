@@ -16,9 +16,10 @@ SQLAlchemy models for smaug data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
-from sqlalchemy import Column, Integer, String, Text, schema
+from sqlalchemy import Column, Integer, String, Text, schema, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import DateTime, Boolean, Index, ForeignKey
+from sqlalchemy import DateTime, Boolean, Index
+from sqlalchemy.orm import relationship
 
 CONF = cfg.CONF
 BASE = declarative_base()
@@ -116,6 +117,32 @@ class ScheduledOperationLog(BASE, SmaugBase):
     extend_info = Column(Text)
 
 
+class Plan(BASE, SmaugBase):
+    """Represents a Plan."""
+
+    __tablename__ = 'plans'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    provider_id = Column(String(36))
+    project_id = Column(String(255))
+    status = Column(String(64))
+
+
+class Resource(BASE, SmaugBase):
+    """Represents a resource in a plan."""
+
+    __tablename__ = 'resources'
+    id = Column(Integer, primary_key=True)
+    resource_id = Column(String(36))
+    resource_type = Column(String(64))
+    plan_id = Column(String(36), ForeignKey('plans.id'), nullable=False)
+    plan = relationship(Plan, backref="resources",
+                        foreign_keys=plan_id,
+                        primaryjoin='and_('
+                        'Resource.plan_id == Plan.id,'
+                        'Resource.deleted == False)')
+
+
 def register_models():
     """Register Models and create metadata.
 
@@ -124,7 +151,9 @@ def register_models():
     connection is lost and needs to be reestablished.
     """
     from sqlalchemy import create_engine
-    models = (Service,)
+    models = (Service,
+              Plan,
+              Resource)
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)

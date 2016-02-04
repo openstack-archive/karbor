@@ -16,3 +16,4 @@ def register_all():
     # function in order for it to be registered by services that may
     # need to receive it via RPC.
     __import__('smaug.objects.service')
+    __import__('smaug.objects.plan')
