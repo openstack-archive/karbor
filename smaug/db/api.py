@@ -127,6 +127,60 @@ def get_by_id(context, model, id, *args, **kwargs):
 ###################
 
 
+def trigger_get(context, id):
+    """Get a trigger by its id.
+
+    :param context: The security context
+    :param id: ID of the trigger
+
+    :returns: Dictionary-like object containing properties of the trigger
+
+    Raises TriggerNotFound if trigger with the given ID doesn't exist.
+    """
+    return IMPL.trigger_get(context, id)
+
+
+def trigger_create(context, values):
+    """Create a trigger from the values dictionary.
+
+    :param context: The security context
+    :param values: Dictionary containing trigger properties
+
+    :returns: Dictionary-like object containing the properties of the created
+              trigger
+    """
+    return IMPL.trigger_create(context, values)
+
+
+def trigger_update(context, id, values):
+    """Set the given properties on a trigger and update it.
+
+    :param context: The security context
+    :param id: ID of the trigger
+    :param values: Dictionary containing trigger properties to be updated
+
+    :returns: Dictionary-like object containing the properties of the updated
+              trigger
+
+    Raises TriggerNotFound if trigger with the given ID doesn't exist.
+    """
+    return IMPL.trigger_update(context, id, values)
+
+
+def trigger_delete(context, id):
+    """Delete a trigger from the database.
+
+    :param context: The security context
+    :param id: ID of the trigger
+
+    Raises TriggerNotFound if trigger with the given ID doesn't exist.
+    """
+    return IMPL.trigger_delete(context, id)
+
+
+###################
+
+
 def scheduled_operation_state_get(context, operation_id):
     """Get a scheduled operation state by its id.
 

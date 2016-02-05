@@ -81,15 +81,15 @@ def define_tables(meta):
 
     triggers = Table(
         'triggers', meta,
-        Column('id', String(36), primary_key=True, nullable=False),
-        Column('name', String(length=255)),
-        Column('project_id', String(length=255)),
-        Column('type', String(length=64)),
-        Column('properties', Text),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
+        Column('deleted', Boolean, nullable=False),
+        Column('id', String(length=36), primary_key=True, nullable=False),
+        Column('name', String(length=255), nullable=False),
+        Column('project_id', String(length=255), nullable=False),
+        Column('type', String(length=64), nullable=False),
+        Column('properties', Text, nullable=False),
         mysql_engine='InnoDB'
     )
 
@@ -116,7 +116,7 @@ def define_tables(meta):
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         Column('deleted_at', DateTime),
-        Column('deleted', Boolean),
+        Column('deleted', Boolean, nullable=False),
         Column('id', Integer, primary_key=True, nullable=False,
                autoincrement=True),
         Column('operation_id', String(length=36),

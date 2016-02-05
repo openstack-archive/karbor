@@ -61,6 +61,18 @@ class Service(BASE, SmaugBase):
     rpc_available_version = Column(String(36))
 
 
+class Trigger(BASE, SmaugBase):
+    """Represents a trigger."""
+
+    __tablename__ = 'triggers'
+
+    id = Column(String(36), primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    project_id = Column(String(255), nullable=False)
+    type = Column(String(64), nullable=False)
+    properties = Column(Text, nullable=False)
+
+
 class ScheduledOperationState(BASE, SmaugBase):
     """Represents a scheduled operation state."""
 
