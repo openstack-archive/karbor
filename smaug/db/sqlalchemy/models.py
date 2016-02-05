@@ -16,10 +16,10 @@ SQLAlchemy models for smaug data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
-from sqlalchemy import Column, Integer, String, Text, schema, ForeignKey
+from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import DateTime, Boolean, Index
-from sqlalchemy.orm import relationship
+from sqlalchemy import DateTime, Boolean, ForeignKey
+from sqlalchemy import orm
 
 CONF = cfg.CONF
 BASE = declarative_base()
@@ -74,22 +74,39 @@ class Trigger(BASE, SmaugBase):
     properties = Column(Text, nullable=False)
 
 
+class ScheduledOperation(BASE, SmaugBase):
+    """Represents a scheduled operation."""
+
+    __tablename__ = 'scheduled_operations'
+
+    id = Column(String(36), primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    operation_type = Column(String(64), nullable=False)
+    project_id = Column(String(255), nullable=False)
+    trigger_id = Column(String(36), ForeignKey('triggers.id'),
+                        index=True, nullable=False)
+    operation_definition = Column(Text, nullable=False)
+
+    trigger = orm.relationship(
+        Trigger,
+        foreign_keys=trigger_id,
+        primaryjoin='and_('
+                    'ScheduledOperation.trigger_id == Trigger.id,'
+                    'ScheduledOperation.deleted == 0,'
+                    'Trigger.deleted == 0)')
+
+
 class ScheduledOperationState(BASE, SmaugBase):
     """Represents a scheduled operation state."""
 
     __tablename__ = 'scheduled_operation_states'
-    __table_args__ = (
-        Index('operation_id_idx', 'operation_id', unique=True),
-        schema.UniqueConstraint('operation_id', name='uniq_operation_id'),
-    )
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    # TODO(chenzeng):add foreign key after scheduled_operations is defined.
-    # operation_id = Column(String(36),
-    #                       ForeignKey('scheduled_operations.id',
-    #                                  ondelete='CASCADE'),
-    #                       nullable=False)
-    operation_id = Column(String(36), nullable=False)
+    operation_id = Column(String(36),
+                          ForeignKey('scheduled_operations.id',
+                                     ondelete='CASCADE'),
+                          index=True, unique=True,
+                          nullable=False)
     service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
     state = Column(String(32), nullable=False)
 
@@ -98,17 +115,12 @@ class ScheduledOperationLog(BASE, SmaugBase):
     """Represents a scheduled operation log."""
 
     __tablename__ = 'scheduled_operation_logs'
-    __table_args__ = (
-        Index('operation_id_idx', 'operation_id'),
-    )
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    # TODO(chenzeng):add foreign key after scheduled_operations is defined.
-    # operation_id = Column(String(36),
-    #                       ForeignKey('scheduled_operations.id',
-    #                                  ondelete='CASCADE'),
-    #                       nullable=False)
-    operation_id = Column(String(36), nullable=False)
+    operation_id = Column(String(36),
+                          ForeignKey('scheduled_operations.id',
+                                     ondelete='CASCADE'),
+                          index=True, nullable=False)
     expect_start_time = Column(DateTime)
     triggered_time = Column(DateTime)
     actual_start_time = Column(DateTime)
@@ -136,11 +148,11 @@ class Resource(BASE, SmaugBase):
     resource_id = Column(String(36))
     resource_type = Column(String(64))
     plan_id = Column(String(36), ForeignKey('plans.id'), nullable=False)
-    plan = relationship(Plan, backref="resources",
-                        foreign_keys=plan_id,
-                        primaryjoin='and_('
-                        'Resource.plan_id == Plan.id,'
-                        'Resource.deleted == False)')
+    plan = orm.relationship(Plan, backref="resources",
+                            foreign_keys=plan_id,
+                            primaryjoin='and_('
+                            'Resource.plan_id == Plan.id,'
+                            'Resource.deleted == False)')
 
 
 def register_models():
@@ -153,7 +165,12 @@ def register_models():
     from sqlalchemy import create_engine
     models = (Service,
               Plan,
-              Resource)
+              Resource,
+              Trigger,
+              ScheduledOperation,
+              ScheduledOperationState,
+              ScheduledOperationLog)
+
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)

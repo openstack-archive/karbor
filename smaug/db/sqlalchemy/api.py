@@ -392,6 +392,59 @@ def trigger_delete(context, id):
 ###################
 
 
+def scheduled_operation_get(context, id, columns_to_join=[]):
+    return _scheduled_operation_get(context, id,
+                                    columns_to_join=columns_to_join)
+
+
+def _scheduled_operation_get(context, id, columns_to_join=[], session=None):
+    query = model_query(context, models.ScheduledOperation,
+                        session=session).filter_by(id=id)
+
+    if columns_to_join and 'trigger' in columns_to_join:
+        query = query.options(joinedload('trigger'))
+
+    result = query.first()
+    if not result:
+        raise exception.ScheduledOperationNotFound(id=id)
+
+    return result
+
+
+def scheduled_operation_create(context, values):
+    operation_ref = models.ScheduledOperation()
+    operation_ref.update(values)
+    operation_ref.save(get_session())
+    return operation_ref
+
+
+@oslo_db_api.wrap_db_retry(max_retries=5, retry_on_deadlock=True)
+def scheduled_operation_update(context, id, values):
+    """Update the ScheduledOperation record with the most recent data."""
+
+    session = get_session()
+    with session.begin():
+        operation_ref = _scheduled_operation_get(context, id,
+                                                 session=session)
+        operation_ref.update(values)
+        operation_ref.save(session)
+    return operation_ref
+
+
+def scheduled_operation_delete(context, id):
+    """Delete a ScheduledOperation record."""
+
+    session = get_session()
+    with session.begin():
+        operation_ref = _scheduled_operation_get(context, id,
+                                                 session=session)
+        session.delete(operation_ref)
+        session.flush()
+
+
+###################
+
+
 def scheduled_operation_state_get(context, operation_id):
     return _scheduled_operation_state_get(context, operation_id)
 
@@ -400,7 +453,6 @@ def _scheduled_operation_state_get(context, operation_id, session=None):
     result = model_query(context, models.ScheduledOperationState,
                          session=session).filter_by(operation_id=operation_id)
     result = result.first()
-
     if not result:
         raise exception.ScheduledOperationStateNotFound(op_id=operation_id)
 

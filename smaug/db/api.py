@@ -181,6 +181,66 @@ def trigger_delete(context, id):
 ###################
 
 
+def scheduled_operation_get(context, id, columns_to_join=[]):
+    """Get a scheduled operation by its id.
+
+    :param context: The security context
+    :param id: ID of the scheduled operation
+    :columns_to_join: columns which will be joined
+
+    :returns: Dictionary-like object containing properties of the scheduled
+     operation
+
+    Raises ScheduledOperationNotFound if scheduled operation with
+     the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_get(context, id, columns_to_join)
+
+
+def scheduled_operation_create(context, values):
+    """Create a scheduled operation from the values dictionary.
+
+    :param context: The security context
+    :param values: Dictionary containing scheduled operation properties
+
+    :returns: Dictionary-like object containing the properties of the created
+              scheduled operation
+    """
+    return IMPL.scheduled_operation_create(context, values)
+
+
+def scheduled_operation_update(context, id, values):
+    """Set the given properties on a scheduled operation and update it.
+
+    :param context: The security context
+    :param id: ID of the scheduled operation
+    :param values: Dictionary containing scheduled operation properties
+                   to be updated
+
+    :returns: Dictionary-like object containing the properties of the updated
+              scheduled operation
+
+    Raises ScheduledOperationNotFound if scheduled operation with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_update(context, id, values)
+
+
+def scheduled_operation_delete(context, id):
+    """Delete a scheduled operation from the database.
+
+    :param context: The security context
+    :param id: ID of the scheduled operation
+
+    Raises ScheduledOperationNotFound if scheduled operation with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_delete(context, id)
+
+
+###################
+
+
 def scheduled_operation_state_get(context, operation_id):
     """Get a scheduled operation state by its id.
 

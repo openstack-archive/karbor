@@ -184,6 +184,10 @@ class TriggerNotFound(NotFound):
     message = _("Trigger %(id)s could not be found.")
 
 
+class ScheduledOperationNotFound(NotFound):
+    message = _("Scheduled Operation %(id)s could not be found.")
+
+
 class ScheduledOperationStateNotFound(NotFound):
     message = _("Scheduled Operation State %(op_id)s could not be found.")
 

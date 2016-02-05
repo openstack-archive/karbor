@@ -149,6 +149,86 @@ class TriggerTestCase(base.TestCase):
         self.assertEqual('time', trigger_ref['type'])
 
 
+class ScheduledOperationTestCase(base.TestCase):
+    """Test cases for scheduled_operations table."""
+
+    def setUp(self):
+        super(ScheduledOperationTestCase, self).setUp()
+        self.ctxt = context.RequestContext(user_id='user_id',
+                                           project_id='project_id')
+
+    def _create_scheduled_operation(self):
+        values = {
+            'id': '0354ca9ddcd046b693340d78759fd274',
+            'name': 'protect vm',
+            'operation_type': 'protect',
+            'project_id': self.ctxt.tenant,
+            'trigger_id': '0354ca9ddcd046b693340d78759fd275',
+            'operation_definition': '{}'
+        }
+        return db.scheduled_operation_create(self.ctxt, values)
+
+    def test_scheduled_operation_create(self):
+        operation_ref = self._create_scheduled_operation()
+        self.assertEqual('protect', operation_ref['operation_type'])
+
+    def test_scheduled_operation_delete(self):
+        operation_ref = self._create_scheduled_operation()
+        db.scheduled_operation_delete(self.ctxt, operation_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationNotFound,
+                          db.scheduled_operation_delete,
+                          self.ctxt, operation_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationNotFound,
+                          db.scheduled_operation_get,
+                          self.ctxt, operation_ref['id'])
+
+        self.assertRaises(exception.ScheduledOperationNotFound,
+                          db.scheduled_operation_delete, self.ctxt, '100')
+
+    def test_scheduled_operation_update(self):
+        operation_ref = self._create_scheduled_operation()
+        id = operation_ref['id']
+        operation_ref = db.scheduled_operation_update(self.ctxt,
+                                                      id,
+                                                      {"name": "abc"})
+        self.assertEqual('abc', operation_ref['name'])
+
+        operation_ref = db.scheduled_operation_get(self.ctxt, id)
+        self.assertEqual('abc', operation_ref['name'])
+
+        self.assertRaises(exception.ScheduledOperationNotFound,
+                          db.scheduled_operation_update,
+                          self.ctxt, '100', {"name": "abc"})
+
+    def test_scheduled_operation_get(self):
+        operation_ref = self._create_scheduled_operation()
+        operation_ref = db.scheduled_operation_get(self.ctxt,
+                                                   operation_ref['id'])
+        self.assertEqual('protect', operation_ref['operation_type'])
+
+    def test_scheduled_operation_get_join_trigger(self):
+        def _create_trigger():
+            values = {
+                'id': "0354ca9ddcd046b693340d78759fd275",
+                'name': 'first trigger',
+                'project_id': self.ctxt.tenant,
+                'type': 'time',
+                'properties': '{}',
+            }
+            return db.trigger_create(self.ctxt, values)
+
+        trigger_ref = _create_trigger()
+        operation_ref = self._create_scheduled_operation()
+        operation_ref = db.scheduled_operation_get(
+            self.ctxt,
+            operation_ref['id'],
+            ['trigger'])
+        self.assertEqual('protect', operation_ref['operation_type'])
+        self.assertEqual(trigger_ref['type'], operation_ref.trigger['type'])
+
+
 class ScheduledOperationStateTestCase(base.TestCase):
     """Test cases for scheduled_operation_states table."""
 
