@@ -9,7 +9,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import abc
 
+import six
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -29,41 +31,45 @@ class ProtectionData(object):
         # TODO(wangliuan)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class ProtectionPlugin(object):
-    def __init__(self):
-        super(ProtectionPlugin, self).__init__()
-        self.protectable_type = None
-        self.schema = None
-        # TODO(wangliuan)
 
+    @abc.abstractmethod
     def get_supported_resources_types(self):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def get_options_schema(self, resource_type):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def get_saved_info_schema(self, resource_type):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def get_restore_schema(self, resource_type):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def get_saved_info(self, metadata_store, resource):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def get_protection_stats(self, protection_id):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def on_resource_start(self, context):
         # TODO(wangliuan)
         pass
 
+    @abc.abstractmethod
     def on_resource_end(self, context):
         # TODO(wangliuan)
         pass
