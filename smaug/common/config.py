@@ -59,7 +59,7 @@ global_opts = [
                default='smaug-protection',
                help='The topic that protection nodes listen on'),
     cfg.StrOpt('protection_manager',
-               default='smaug.protection.manager.ProtectionManager',
+               default='smaug.services.protection.manager.ProtectionManager',
                help='Full class name for the Manager for Protection'),
     cfg.StrOpt('host',
                default=socket.gethostname(),

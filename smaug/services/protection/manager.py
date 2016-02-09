@@ -46,7 +46,7 @@ class ProtectionManager(manager.Manager):
         super(ProtectionManager, self).__init__(*args, **kwargs)
         # TODO(wangliuan)  more params and use profiler.trace_cls
         self.provider_registry = importutils.import_object(
-            'smaug.protection.provider.ProviderRegistry')
+            'smaug.services.protection.provider.ProviderRegistry')
         self.flow_engine = None
         # TODO(wangliuan)
 

@@ -19,7 +19,7 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from smaug import manager
-from smaug.protection import api as protection_api
+from smaug.services.protection import api as protection_api
 
 CONF = cfg.CONF
 

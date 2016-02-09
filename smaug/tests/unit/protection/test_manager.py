@@ -11,7 +11,7 @@
 #    under the License.
 
 
-from smaug.protection import manager
+from smaug.services.protection import manager
 from smaug.tests import base
 from smaug.tests.unit.protection import fakes
 
