@@ -213,6 +213,18 @@ class ListProtectableResourceFailed(SmaugException):
                 "%(reason)s")
 
 
+class InvalidOperationObject(Invalid):
+    message = _("The operation %(operation_id)s is invalid")
+
+
+class ClassNotFound(NotFound):
+    message = _("Class %(class_name)s could not be found: %(exception)s")
+
+
+class InvalidOperationDefinition(Invalid):
+    message = _("Invalid operation definition, reason:%(reason)s")
+
+
 OrphanedObjectError = obj_exc.OrphanedObjectError
 ObjectActionError = obj_exc.ObjectActionError
 
