@@ -9,11 +9,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import abc
 from collections import namedtuple
 
 from oslo_log import log as logging
 
+import six
+
 from smaug.i18n import _
+
 
 _GraphBuilderContext = namedtuple("_GraphBuilderContext", (
     "source_set",
@@ -82,3 +86,44 @@ def build_graph(start_nodes, get_child_nodes_func):
     assert(len(context.encountered_set) == 0)
 
     return [item for item in result if item.value in context.source_set]
+
+
+@six.add_metaclass(abc.ABCMeta)
+class GraphWalkerListener(object):
+    """Interface for listening to GraphWaler events
+
+    Classes that want to be able to use the graph walker to iterate over
+    a graph should implement this interface.
+    """
+    @abc.abstractmethod
+    def on_node_enter(self, node, already_visited):
+        pass
+
+    @abc.abstractmethod
+    def on_node_exit(self, node):
+        pass
+
+
+class GraphWalker(object):
+    def __init__(self):
+        self._listeners = []
+
+    def register_listener(self, graph_walker_listener):
+        self._listeners.append(graph_walker_listener)
+
+    def unregister_listener(self, graph_walker_listener):
+        self._listeners.remove(graph_walker_listener)
+
+    def walk_graph(self, source_nodes):
+        self._walk_graph(source_nodes, set())
+
+    def _walk_graph(self, source_nodes, visited_nodes):
+        for node in source_nodes:
+            for listener in self._listeners:
+                listener.on_node_enter(node, node in visited_nodes)
+                visited_nodes.add(node)
+
+            self._walk_graph(node.child_nodes, visited_nodes)
+
+            for listener in self._listeners:
+                listener.on_node_exit(node)
