@@ -233,3 +233,31 @@ class ProviderNotFound(NotFound):
 class CheckpointNotFound(NotFound):
     message = _("Checkpoint %(checkpoint_id)s could"
                 " not be found.")
+
+
+class BankCreateObjectFailed(SmaugException):
+    message = _("Create Object in Bank Failed: %(reason)s")
+
+
+class BankUpdateObjectFailed(SmaugException):
+    message = _("Update Object %(key)s in Bank Failed: %(reason)s")
+
+
+class BankDeleteObjectFailed(SmaugException):
+    message = _("Delete Object %(key)s in Bank Failed: %(reason)s")
+
+
+class BankGetObjectFailed(SmaugException):
+    message = _("Get Object %(key)s in Bank Failed: %(reason)s")
+
+
+class BankListObjectsFailed(SmaugException):
+    message = _("Get Object in Bank Failed: %(reason)s")
+
+
+class AcquireLeaseFailed(SmaugException):
+    message = _("Acquire Lease in Failed: %(reason)s")
+
+
+class CreateContainerFailed(SmaugException):
+    message = _("Create Container in Bank Failed: %(reason)s")

@@ -28,12 +28,12 @@ LOG = logging.getLogger(__name__)
 @six.add_metaclass(abc.ABCMeta)
 class LeasePlugin(object):
     @abc.abstractmethod
-    def acquire_lease(self, owner_id):
+    def acquire_lease(self):
         # TODO(wangliuan)
         pass
 
     @abc.abstractmethod
-    def renew_lease(self, owner_id):
+    def renew_lease(self):
         # TODO(wangliuan)
         pass
 
