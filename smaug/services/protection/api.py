@@ -17,7 +17,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from smaug.db import base
-from smaug.protection import rpcapi as protection_rpcapi
+from smaug.services.protection import rpcapi as protection_rpcapi
 
 
 CONF = cfg.CONF
