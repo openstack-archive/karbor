@@ -17,3 +17,4 @@ def register_all():
     # need to receive it via RPC.
     __import__('smaug.objects.service')
     __import__('smaug.objects.plan')
+    __import__('smaug.objects.scheduled_operation')
