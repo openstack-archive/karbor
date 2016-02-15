@@ -146,6 +146,10 @@ class Invalid(SmaugException):
     code = 400
 
 
+class InvalidParameterValue(Invalid):
+    message = _("%(err)s")
+
+
 class InvalidInput(Invalid):
     message = _("Invalid input received: %(reason)s")
 

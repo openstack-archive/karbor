@@ -28,10 +28,3 @@ class PlansRouterTestCase(base.TestCase):
         req.content_type = 'application/json'
         response = req.get_response(self.app)
         self.assertEqual(200, response.status_int)
-
-    def test_plans_detail(self):
-        req = fakes.HTTPRequest.blank('/fakeproject/plans/detail')
-        req.method = 'GET'
-        req.content_type = 'application/json'
-        response = req.get_response(self.app)
-        self.assertEqual(200, response.status_int)

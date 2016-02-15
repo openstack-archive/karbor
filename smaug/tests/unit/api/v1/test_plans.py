@@ -25,7 +25,7 @@ CONF = cfg.CONF
 
 DEFAULT_NAME = 'My 3 tier application'
 DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
-DEFAULT_STATUS = 'started'
+DEFAULT_STATUS = 'suspended'
 DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
 DEFAULT_RESOURCES = [{'id': 'key1',
                       "type": "value1"}]
@@ -92,15 +92,17 @@ class PlanApiTest(base.TestCase):
         plan = self._plan_in_request_body()
         body = {"planxx": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.assertRaises(exc.HTTPBadRequest, self.controller.update,
-                          req, "1", body)
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.update,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
 
     def test_plan_update_InvalidId(self):
         plan = self._plan_in_request_body()
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.assertRaises(exc.HTTPNotFound, self.controller.update,
-                          req, "1", body)
+        self.assertRaises(
+            exc.HTTPNotFound, self.controller.update,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
 
     def test_plan_update_InvalidResources(self):
         plan = self._plan_in_request_body(name=DEFAULT_NAME,
@@ -110,15 +112,55 @@ class PlanApiTest(base.TestCase):
                                           resources=[{'key1': 'value1'}])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.assertRaises(exception.InvalidInput, self.controller.update,
-                          req, "1", body)
+        self.assertRaises(
+            exception.InvalidInput, self.controller.update,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
+
+    @mock.patch(
+        'smaug.api.v1.plans.PlansController._get_all')
+    def test_plan_list_detail(self, moak_get_all):
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.controller.index(req)
+        self.assertTrue(moak_get_all.called)
+
+    @mock.patch(
+        'smaug.api.v1.plans.PlansController._plan_get')
+    def test_plan_show(self, moak_plan_get):
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.controller.\
+            show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
+        self.assertTrue(moak_plan_get.called)
+
+    def test_plan_show_Invalid(self):
+        req = fakes.HTTPRequest.blank('/v1/plans/1')
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.show,
+            req, "1")
+
+    @mock.patch(
+        'smaug.api.v1.plans.PlansController._plan_get')
+    def test_plan_delete(self, moak_plan_get):
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.controller.\
+            show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
+        self.assertTrue(moak_plan_get.called)
+
+    def test_plan_delete_Invalid(self):
+        req = fakes.HTTPRequest.blank('/v1/plans/1')
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.show,
+            req, "1")
 
     @mock.patch(
         'smaug.api.v1.plans.check_policy')
     @mock.patch(
         'smaug.api.v1.plans.PlansController._plan_get')
     def test_plan_update_InvalidStatus(self, mock_plan_get, mock_check_policy):
-        plan = self._plan_in_request_body()
+        plan = self._plan_in_request_body(name=DEFAULT_NAME,
+                                          provider_id=DEFAULT_PROVIDER_ID,
+                                          status="started",
+                                          project_id=DEFAULT_PROJECT_ID,
+                                          resources=DEFAULT_RESOURCES)
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         mock_plan_get.return_value = plan

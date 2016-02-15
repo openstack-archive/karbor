@@ -8,5 +8,6 @@
     "plan:create": "rule:admin_or_owner",
     "plan:update": "rule:admin_or_owner",
     "plan:delete": "rule:admin_or_owner",
-    "plan:get": "rule:admin_or_owner"
+    "plan:get": "rule:admin_or_owner",
+    "plan:get_all": "rule:admin_or_owner"
 }

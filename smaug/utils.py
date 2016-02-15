@@ -11,11 +11,14 @@
 #    under the License.
 
 """Utilities and helper functions."""
+import ast
 import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import strutils
 from oslo_utils import timeutils
+
 import six
 
 from smaug import exception
@@ -78,3 +81,43 @@ def service_is_up(service):
     elapsed = (timeutils.utcnow(with_timezone=True) -
                last_heartbeat).total_seconds()
     return abs(elapsed) <= CONF.service_down_time
+
+
+def remove_invalid_filter_options(context, filters,
+                                  allowed_search_options):
+    """Remove search options that are not valid for non-admin API/context."""
+
+    if context.is_admin:
+        # Allow all options
+        return
+    # Otherwise, strip out all unknown options
+    unknown_options = [opt for opt in filters
+                       if opt not in allowed_search_options]
+    bad_options = ", ".join(unknown_options)
+    LOG.debug("Removing options '%s' from query.", bad_options)
+    for opt in unknown_options:
+        del filters[opt]
+
+
+def check_filters(filters):
+    for k, v in six.iteritems(filters):
+        try:
+            filters[k] = ast.literal_eval(v)
+        except (ValueError, SyntaxError):
+            LOG.debug('Could not evaluate value %s, assuming string', v)
+
+
+def is_valid_boolstr(val):
+    """Check if the provided string is a valid bool string or not."""
+    val = str(val).lower()
+    return val in ('true', 'false', 'yes', 'no', 'y', 'n', '1', '0')
+
+
+def get_bool_param(param_string, params):
+    param = params.get(param_string, False)
+    if not is_valid_boolstr(param):
+        msg = _('Value %(param)s for %(param_string)s is not a '
+                'boolean.') % {'param': param, 'param_string': param_string}
+        raise exception.InvalidParameterValue(err=msg)
+
+    return strutils.bool_from_string(param, strict=True)

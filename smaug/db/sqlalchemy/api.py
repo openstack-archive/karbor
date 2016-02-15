@@ -24,9 +24,12 @@ from oslo_db import api as oslo_db_api
 from oslo_db import exception as db_exc
 from oslo_db import options
 from oslo_db.sqlalchemy import session as db_session
+from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.sql import func
 
@@ -683,3 +686,265 @@ def plan_resources_update(context, plan_id, resources):
     return _plan_resources_update(context,
                                   plan_id,
                                   resources)
+
+
+@require_admin_context
+def plan_get_all(context, marker, limit, sort_keys=None, sort_dirs=None,
+                 filters=None, offset=None):
+    """Retrieves all plans.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching plans
+    """
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters, offset)
+        # No plans would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@require_context
+def plan_get_all_by_project(context, project_id, marker, limit,
+                            sort_keys=None, sort_dirs=None, filters=None,
+                            offset=None):
+    """Retrieves all plans in a project.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param project_id: project for all plans being retrieved
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching plans
+    """
+    session = get_session()
+    with session.begin():
+        authorize_project_context(context, project_id)
+        # Add in the project filter without modifying the given filters
+        filters = filters.copy() if filters else {}
+        filters['project_id'] = project_id
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters, offset)
+        # No plans would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+def _process_plan_filters(query, filters):
+    """Common filter processing for Plan queries.
+
+    Filter values that are in lists, tuples, or sets cause an 'IN' operator
+    to be used, while exact matching ('==' operator) is used for other values.
+
+    A 'metadata' filter key must correspond to a dictionary value of metadata
+    key-value pairs.
+
+    :param query: Model query to use
+    :param filters: dictionary of filters
+    :returns: updated query or None
+    """
+    filters = filters.copy()
+
+    # Apply exact match filters for everything else, ensure that the
+    # filter value exists on the model
+    for key in filters.keys():
+        # metadata is unique, must be a dict
+        if key == 'resources':
+            if not isinstance(filters[key], dict):
+                LOG.debug("'metadata' filter value is not valid.")
+                return None
+            continue
+        try:
+            column_attr = getattr(models.Plan, key)
+            # Do not allow relationship properties since those require
+            # schema specific knowledge
+            prop = getattr(column_attr, 'property')
+            if isinstance(prop, RelationshipProperty):
+                LOG.debug(("'%s' filter key is not valid, "
+                           "it maps to a relationship."), key)
+                return None
+        except AttributeError:
+            LOG.debug("'%s' filter key is not valid.", key)
+            return None
+
+    # Holds the simple exact matches
+    filter_dict = {}
+
+    # Iterate over all filters, special case the filter if necessary
+    for key, value in filters.items():
+        if key == 'resources':
+            col_attr = getattr(models.Plan, 'continue')
+            for k, v in value.items():
+                query = query.filter(or_(col_attr.any(key=k, value=v)))
+        elif isinstance(value, (list, tuple, set, frozenset)):
+            # Looking for values in a list; apply to query directly
+            column_attr = getattr(models.Plan, key)
+            query = query.filter(column_attr.in_(value))
+        else:
+            # OK, simple exact match; save for later
+            filter_dict[key] = value
+
+    # Apply simple exact matches
+    if filter_dict:
+        query = query.filter_by(**filter_dict)
+    return query
+
+
+###############################
+
+
+PAGINATION_HELPERS = {
+    models.Plan: (_plan_get_query, _process_plan_filters, _plan_get)
+}
+
+
+###############################
+
+def _generate_paginate_query(context, session, marker, limit, sort_keys,
+                             sort_dirs, filters, offset=None,
+                             paginate_type=models.Plan):
+    """Generate the query to include the filters and the paginate options.
+
+    Returns a query with sorting / pagination criteria added or None
+    if the given filters will not yield any results.
+
+    :param context: context to query under
+    :param session: the session to use
+    :param marker: the last item of the previous page; we returns the next
+                    results after this value.
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :param offset: number of items to skip
+    :param paginate_type: type of pagination to generate
+    :returns: updated query or None
+    """
+    get_query, process_filters, get = PAGINATION_HELPERS[paginate_type]
+
+    sort_keys, sort_dirs = process_sort_params(sort_keys,
+                                               sort_dirs,
+                                               default_dir='desc')
+    query = get_query(context, session=session)
+
+    if filters:
+        query = process_filters(query, filters)
+        if query is None:
+            return None
+
+    marker_object = None
+    if marker is not None:
+        marker_object = get(context, marker, session)
+
+    return sqlalchemyutils.paginate_query(query, paginate_type, limit,
+                                          sort_keys,
+                                          marker=marker_object,
+                                          sort_dirs=sort_dirs)
+
+
+def process_sort_params(sort_keys, sort_dirs, default_keys=None,
+                        default_dir='asc'):
+    """Process the sort parameters to include default keys.
+
+    Creates a list of sort keys and a list of sort directions. Adds the default
+    keys to the end of the list if they are not already included.
+
+    When adding the default keys to the sort keys list, the associated
+    direction is:
+    1) The first element in the 'sort_dirs' list (if specified), else
+    2) 'default_dir' value (Note that 'asc' is the default value since this is
+    the default in sqlalchemy.utils.paginate_query)
+
+    :param sort_keys: List of sort keys to include in the processed list
+    :param sort_dirs: List of sort directions to include in the processed list
+    :param default_keys: List of sort keys that need to be included in the
+                         processed list, they are added at the end of the list
+                         if not already specified.
+    :param default_dir: Sort direction associated with each of the default
+                        keys that are not supplied, used when they are added
+                        to the processed list
+    :returns: list of sort keys, list of sort directions
+    :raise exception.InvalidInput: If more sort directions than sort keys
+                                   are specified or if an invalid sort
+                                   direction is specified
+    """
+    if default_keys is None:
+        default_keys = ['created_at', 'id']
+
+    # Determine direction to use for when adding default keys
+    if sort_dirs and len(sort_dirs):
+        default_dir_value = sort_dirs[0]
+    else:
+        default_dir_value = default_dir
+
+    # Create list of keys (do not modify the input list)
+    if sort_keys:
+        result_keys = list(sort_keys)
+    else:
+        result_keys = []
+
+    # If a list of directions is not provided, use the default sort direction
+    # for all provided keys.
+    if sort_dirs:
+        result_dirs = []
+        # Verify sort direction
+        for sort_dir in sort_dirs:
+            if sort_dir not in ('asc', 'desc'):
+                msg = _("Unknown sort direction, must be 'desc' or 'asc'.")
+                raise exception.InvalidInput(reason=msg)
+            result_dirs.append(sort_dir)
+    else:
+        result_dirs = [default_dir_value for _sort_key in result_keys]
+
+    # Ensure that the key and direction length match
+    while len(result_dirs) < len(result_keys):
+        result_dirs.append(default_dir_value)
+    # Unless more direction are specified, which is an error
+    if len(result_dirs) > len(result_keys):
+        msg = _("Sort direction array size exceeds sort key array size.")
+        raise exception.InvalidInput(reason=msg)
+
+    # Ensure defaults are included
+    for key in default_keys:
+        if key not in result_keys:
+            result_keys.append(key)
+            result_dirs.append(default_dir_value)
+
+    return result_keys, result_dirs

@@ -26,7 +26,7 @@ class APIRouter(wsgi_common.Router):
         scheduled_operation_resources = scheduled_operations.create_resource()
         mapper.resource("plan", "plans",
                         controller=plans_resources,
-                        collection={'detail': 'GET'},
+                        collection={},
                         member={'action': 'POST'})
         mapper.resource("scheduled_operation", "scheduled_operations",
                         controller=scheduled_operation_resources,

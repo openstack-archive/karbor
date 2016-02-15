@@ -12,18 +12,34 @@
 
 """The plans api."""
 
+from oslo_config import cfg
 from oslo_log import log as logging
-import webob
+from oslo_utils import uuidutils
+
 from webob import exc
 
 import smaug
+from smaug.api import common
 from smaug.api.openstack import wsgi
 from smaug import exception
 from smaug.i18n import _, _LI
+
 from smaug import objects
 from smaug.objects import base as objects_base
 from smaug.operationengine import api as operationengine_api
 import smaug.policy
+from smaug import utils
+
+import six
+
+query_plan_filters_opt = cfg.ListOpt('query_plan_filters',
+                                     default=['name', 'status'],
+                                     help="Plan filter options which "
+                                          "non-admin user could use to "
+                                          "query plans. Default values "
+                                          "are: ['name', 'status']")
+CONF = cfg.CONF
+CONF.register_opt(query_plan_filters_opt)
 
 LOG = logging.getLogger(__name__)
 
@@ -45,7 +61,7 @@ def check_policy(context, action, target_obj=None):
     smaug.policy.enforce(context, _action, target)
 
 
-class PlanViewBuilder(object):
+class PlanViewBuilder(common.ViewBuilder):
     """Model a server API response as a python dictionary."""
 
     _collection_name = "plans"
@@ -67,6 +83,36 @@ class PlanViewBuilder(object):
         }
         return plan_ref
 
+    def detail_list(self, request, plans, plan_count=None):
+        """Detailed view of a list of plans."""
+        return self._list_view(self.detail, request, plans,
+                               plan_count,
+                               self._collection_name)
+
+    def _list_view(self, func, request, plans, plan_count,
+                   coll_name=_collection_name):
+        """Provide a view for a list of plans.
+
+        :param func: Function used to format the plan data
+        :param request: API request
+        :param plans: List of plans in dictionary format
+        :param plan_count: Length of the original list of plans
+        :param coll_name: Name of collection, used to generate the next link
+                          for a pagination query
+        :returns: Plan data in dictionary format
+        """
+        plans_list = [func(request, plan)['plan'] for plan in plans]
+        plans_links = self._get_collection_links(request,
+                                                 plans,
+                                                 coll_name,
+                                                 plan_count)
+        plans_dict = {}
+        plans_dict['plans'] = plans_list
+        if plans_links:
+            plans_dict['plans_links'] = plans_links
+
+        return plans_dict
+
 
 class PlansController(wsgi.Controller):
     """The Plans API controller for the OpenStack API."""
@@ -80,9 +126,21 @@ class PlansController(wsgi.Controller):
     def show(self, req, id):
         """Return data about the given plan."""
         context = req.environ['smaug.context']
+
         LOG.info(_LI("Show plan with id: %s"), id, context=context)
-        # TODO(chenying)
-        return {'Smaug': "Plans show test."}
+
+        if not uuidutils.is_uuid_like(id):
+            msg = _("Invalid plan id provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        try:
+            plan = self._plan_get(context, id)
+        except exception.PlanNotFound as error:
+            raise exc.HTTPNotFound(explanation=error.msg)
+
+        LOG.info(_LI("Show plan request issued successfully."),
+                 resource={'id': plan.id})
+        return self._view_builder.detail(req, plan)
 
     def delete(self, req, id):
         """Delete a plan."""
@@ -90,22 +148,86 @@ class PlansController(wsgi.Controller):
 
         LOG.info(_LI("Delete plan with id: %s"), id, context=context)
 
-        # TODO(chenying)
-        return webob.Response(status_int=202)
+        try:
+            plan = self._plan_get(context, id)
+        except exception.PlanNotFound as error:
+            raise exc.HTTPNotFound(explanation=error.msg)
+
+        check_policy(context, 'delete', plan)
+        plan.destroy()
+        LOG.info(_LI("Delete plan request issued successfully."),
+                 resource={'id': plan.id})
 
     def index(self, req):
-        """Returns a summary list of plans."""
+        """Returns a list of plans, transformed through view builder."""
+        context = req.environ['smaug.context']
 
-        # TODO(chenying)
+        LOG.info(_LI("Show plan list"), context=context)
 
-        return {'plan': "Plans index test."}
+        params = req.params.copy()
+        marker, limit, offset = common.get_pagination_params(params)
+        sort_keys, sort_dirs = common.get_sort_params(params)
+        filters = params
 
-    def detail(self, req):
-        """Returns a detailed list of plans."""
+        utils.remove_invalid_filter_options(context,
+                                            filters,
+                                            self._get_plan_filter_options())
 
-        # TODO(chenying)
+        utils.check_filters(filters)
+        plans = self._get_all(context, marker, limit,
+                              sort_keys=sort_keys,
+                              sort_dirs=sort_dirs,
+                              filters=filters,
+                              offset=offset)
 
-        return {'plan': "Plans detail test."}
+        retval_plans = self._view_builder.detail_list(req, plans)
+
+        LOG.info(_LI("Show plan list request issued successfully."))
+
+        return retval_plans
+
+    def _get_all(self, context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+        check_policy(context, 'get_all')
+
+        if filters is None:
+            filters = {}
+
+        all_tenants = utils.get_bool_param('all_tenants', filters)
+
+        try:
+            if limit is not None:
+                limit = int(limit)
+                if limit < 0:
+                    msg = _('limit param must be positive')
+                    raise exception.InvalidInput(reason=msg)
+        except ValueError:
+            msg = _('limit param must be an integer')
+            raise exception.InvalidInput(reason=msg)
+
+        if filters:
+            LOG.debug("Searching by: %s.", six.text_type(filters))
+
+        if context.is_admin and all_tenants:
+            # Need to remove all_tenants to pass the filtering below.
+            del filters['all_tenants']
+            plans = objects.PlanList.get_all(context, marker, limit,
+                                             sort_keys=sort_keys,
+                                             sort_dirs=sort_dirs,
+                                             filters=filters,
+                                             offset=offset)
+        else:
+            plans = objects.PlanList.get_all_by_project(
+                context, context.project_id, marker, limit,
+                sort_keys=sort_keys, sort_dirs=sort_dirs, filters=filters,
+                offset=offset)
+
+        LOG.info(_LI("Get all plans completed successfully."))
+        return plans
+
+    def _get_plan_filter_options(self):
+        """Return plan search options allowed by non-admin."""
+        return CONF.query_plan_filters
 
     def create(self, req, body):
         """Creates a new plan."""
@@ -153,6 +275,10 @@ class PlansController(wsgi.Controller):
             msg = _("Missing required element '%s' in request body") % 'plan'
             raise exc.HTTPBadRequest(explanation=msg)
 
+        if not uuidutils.is_uuid_like(id):
+            msg = _("Invalid plan id provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
         plan = body['plan']
         update_dict = {}
 
@@ -186,6 +312,10 @@ class PlansController(wsgi.Controller):
         return retval
 
     def _plan_get(self, context, plan_id):
+        if not uuidutils.is_uuid_like(plan_id):
+            msg = _("Invalid plan id provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
         plan = objects.Plan.get_by_id(context, plan_id)
         try:
             check_policy(context, 'get', plan)

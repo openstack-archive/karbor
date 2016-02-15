@@ -152,3 +152,15 @@ class PlanList(base.ObjectListBase, base.SmaugObject):
         expected_attrs = ['resources']
         return base.obj_make_list(context, cls(context), objects.Plan,
                                   plans, expected_attrs=expected_attrs)
+
+    @base.remotable_classmethod
+    def get_all_by_project(cls, context, project_id, marker, limit,
+                           sort_keys=None, sort_dirs=None, filters=None,
+                           offset=None):
+        plans = db.plan_get_all_by_project(context, project_id, marker,
+                                           limit, sort_keys=sort_keys,
+                                           sort_dirs=sort_dirs,
+                                           filters=filters, offset=offset)
+        expected_attrs = ['resources']
+        return base.obj_make_list(context, cls(context), objects.Plan,
+                                  plans, expected_attrs=expected_attrs)
