@@ -23,37 +23,7 @@ LOG = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
-class BankPlugin(object):
-    @abc.abstractmethod
-    def create_object(self, key, value):
-        return
-
-    @abc.abstractmethod
-    def update_object(self, key, options, value):
-        return
-
-    @abc.abstractmethod
-    def get_object(self, key):
-        return
-
-    @abc.abstractmethod
-    def list_objects(self, options):
-        return
-
-    @abc.abstractmethod
-    def delete_object(self, key):
-        return
-
-    @abc.abstractmethod
-    def chroot(self, context):
-        # TODO(wangliuan)
-        pass
-
-    @abc.abstractmethod
-    def show_object(self, key):
-        # TODO(wangliuan)
-        pass
-
+class LeasePlugin(object):
     @abc.abstractmethod
     def acquire_lease(self, owner_id):
         # TODO(wangliuan)
@@ -68,3 +38,26 @@ class BankPlugin(object):
     def check_lease_validity(self):
         # TODO(wangliuan)
         pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BankPlugin(object):
+    @abc.abstractmethod
+    def create_object(self, key, value):
+        return
+
+    @abc.abstractmethod
+    def update_object(self, key, value):
+        return
+
+    @abc.abstractmethod
+    def get_object(self, key):
+        return
+
+    @abc.abstractmethod
+    def list_objects(self, options):
+        return
+
+    @abc.abstractmethod
+    def delete_object(self, key):
+        return
