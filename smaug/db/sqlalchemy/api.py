@@ -533,7 +533,8 @@ def scheduled_operation_log_delete(context, log_id):
     with session.begin():
         log_ref = _scheduled_operation_log_get(context, log_id,
                                                session=session)
-        log_ref.delete(session=session)
+        session.delete(log_ref)
+        session.flush()
 
 
 def _resource_refs(resource_list, meta_class):

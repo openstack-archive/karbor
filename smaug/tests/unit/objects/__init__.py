@@ -11,6 +11,7 @@
 #    under the License.
 
 from oslo_utils import timeutils
+from oslo_versionedobjects import fields
 
 from smaug import context
 from smaug.objects import base as obj_base
@@ -33,8 +34,8 @@ class BaseObjectsTestCase(base.TestCase):
             if not hasattr(obj, field):
                 continue
 
-            if field in ('modified_at', 'created_at',
-                         'updated_at', 'deleted_at') and db[field]:
+            if (isinstance(obj.fields[field], fields.DateTimeField) and
+               db[field]):
                 test.assertEqual(db[field],
                                  timeutils.normalize_time(obj[field]))
             elif isinstance(obj[field], obj_base.ObjectListBase):
