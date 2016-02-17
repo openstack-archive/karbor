@@ -30,3 +30,7 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                        'OS::Cinder::Volume',
                        'OS::Glance::Image',
                        )
+
+CHECKPOINT_STATUS_ERROR = 'error'
+CHECKPOINT_STATUS_PROTECTING = 'protecting'
+CHECKPOINT_STATUS_AVAILABLE = 'available'
