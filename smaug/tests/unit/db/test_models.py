@@ -91,6 +91,62 @@ class ServicesDbTestCase(base.TestCase):
         self.assertEqual(service_get_ref['host'], 'hosttest5')
 
 
+class TriggerTestCase(base.TestCase):
+    """Test cases for triggers table."""
+
+    def setUp(self):
+        super(TriggerTestCase, self).setUp()
+        self.ctxt = context.RequestContext(user_id='user_id',
+                                           project_id='project_id')
+
+    def _create_trigger(self):
+        values = {
+            'id': "0354ca9ddcd046b693340d78759fd274",
+            'name': 'first trigger',
+            'project_id': self.ctxt.tenant,
+            'type': 'time',
+            'properties': '{}',
+        }
+        return db.trigger_create(self.ctxt, values)
+
+    def test_trigger_create(self):
+        trigger_ref = self._create_trigger()
+        self.assertEqual('time', trigger_ref['type'])
+
+    def test_trigger_delete(self):
+        trigger_ref = self._create_trigger()
+        db.trigger_delete(self.ctxt, trigger_ref['id'])
+
+        self.assertRaises(exception.TriggerNotFound,
+                          db.trigger_delete,
+                          self.ctxt, trigger_ref['id'])
+
+        self.assertRaises(exception.TriggerNotFound,
+                          db.trigger_get,
+                          self.ctxt, trigger_ref['id'])
+
+        self.assertRaises(exception.TriggerNotFound,
+                          db.trigger_delete, self.ctxt, '100')
+
+    def test_trigger_update(self):
+        trigger_ref = self._create_trigger()
+        id = trigger_ref['id']
+        trigger_ref = db.trigger_update(self.ctxt, id, {'type': 'event'})
+        self.assertEqual('event', trigger_ref['type'])
+
+        trigger_ref = db.trigger_get(self.ctxt, id)
+        self.assertEqual('event', trigger_ref['type'])
+
+        self.assertRaises(exception.TriggerNotFound,
+                          db.trigger_update,
+                          self.ctxt, '100', {"type": "event"})
+
+    def test_trigger_get(self):
+        trigger_ref = self._create_trigger()
+        trigger_ref = db.trigger_get(self.ctxt, trigger_ref['id'])
+        self.assertEqual('time', trigger_ref['type'])
+
+
 class ScheduledOperationStateTestCase(base.TestCase):
     """Test cases for scheduled_operation_states table."""
 

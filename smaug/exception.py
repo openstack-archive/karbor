@@ -180,6 +180,10 @@ class HostBinaryNotFound(NotFound):
     message = _("Could not find binary %(binary)s on host %(host)s.")
 
 
+class TriggerNotFound(NotFound):
+    message = _("Trigger %(id)s could not be found.")
+
+
 class ScheduledOperationStateNotFound(NotFound):
     message = _("Scheduled Operation State %(op_id)s could not be found.")
 

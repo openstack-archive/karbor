@@ -331,6 +331,52 @@ def get_by_id(context, model, id, *args, **kwargs):
 ###################
 
 
+def trigger_get(context, id):
+    return _trigger_get(context, id)
+
+
+def _trigger_get(context, id, session=None):
+    result = model_query(context, models.Trigger,
+                         session=session).filter_by(id=id)
+    result = result.first()
+
+    if not result:
+        raise exception.TriggerNotFound(id=id)
+
+    return result
+
+
+def trigger_create(context, values):
+    trigger_ref = models.Trigger()
+    trigger_ref.update(values)
+    trigger_ref.save(get_session())
+    return trigger_ref
+
+
+@oslo_db_api.wrap_db_retry(max_retries=5, retry_on_deadlock=True)
+def trigger_update(context, id, values):
+    """Update the Trigger record with the most recent data."""
+
+    session = get_session()
+    with session.begin():
+        trigger_ref = _trigger_get(context, id, session=session)
+        trigger_ref.update(values)
+        trigger_ref.save(session)
+    return trigger_ref
+
+
+def trigger_delete(context, id):
+    """Delete a Trigger record."""
+
+    session = get_session()
+    with session.begin():
+        trigger_ref = _trigger_get(context, id, session=session)
+        trigger_ref.delete(session=session)
+
+
+###################
+
+
 def scheduled_operation_state_get(context, operation_id):
     return _scheduled_operation_state_get(context, operation_id)
 
