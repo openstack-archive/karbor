@@ -22,15 +22,6 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-class ProtectionData(object):
-    def __init__(self):
-        super(ProtectionData, self).__init__()
-        self.protection_id = None
-        self.protection_target = None
-        self.status = None
-        # TODO(wangliuan)
-
-
 @six.add_metaclass(abc.ABCMeta)
 class ProtectionPlugin(object):
 
