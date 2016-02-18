@@ -180,5 +180,9 @@ class HostBinaryNotFound(NotFound):
     message = _("Could not find binary %(binary)s on host %(host)s.")
 
 
+class ScheduledOperationLogNotFound(NotFound):
+    message = _("Scheduled Operation Log %(log_id)s could not be found.")
+
+
 OrphanedObjectError = obj_exc.OrphanedObjectError
 ObjectActionError = obj_exc.ObjectActionError

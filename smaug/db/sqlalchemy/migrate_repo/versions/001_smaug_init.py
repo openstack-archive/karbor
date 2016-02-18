@@ -109,12 +109,35 @@ def define_tables(meta):
         Column('deleted', Boolean),
         mysql_engine='InnoDB'
     )
+
+    scheduled_operation_logs = Table(
+        'scheduled_operation_logs',
+        meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', Integer, primary_key=True, nullable=False,
+               autoincrement=True),
+        Column('operation_id', String(length=36),
+               ForeignKey('scheduled_operations.id', ondelete='CASCADE'),
+               nullable=False),
+        Column('expect_start_time', DateTime),
+        Column('triggered_time', DateTime),
+        Column('actual_start_time', DateTime),
+        Column('end_time', DateTime),
+        Column('state', String(length=32), nullable=False),
+        Column('extend_info', Text),
+        mysql_engine='InnoDB'
+    )
+
     return [services,
             plans,
             resources,
             restores,
             triggers,
-            scheduled_operations]
+            scheduled_operations,
+            scheduled_operation_logs]
 
 
 def upgrade(migrate_engine):
