@@ -22,7 +22,6 @@ class ProtectablePlugin(object):
 
     def __init__(self, context=None):
         self._context = context
-        self._client_instance = None
 
     def instance(self, context):
         return self.__class__(context)

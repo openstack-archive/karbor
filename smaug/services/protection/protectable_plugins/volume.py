@@ -32,7 +32,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     @property
     def _client(self):
-        if not self._client_instance:
+        if not hasattr(self, '_client_instance'):
             self._client_instance = ClientFactory.create_client(
                 "cinder",
                 self._context)
