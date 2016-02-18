@@ -1,0 +1,56 @@
+@startuml
+
+title create scheduled operation
+hide footbox
+
+actor User
+participant API_Service as AS
+participant MQ
+participant OperationEngine as OE
+participant Engine.Trigger as engine
+participant DB
+
+User -> AS:create scheduled operation
+activate AS
+
+AS --> MQ:create scheduled operation
+activate MQ
+
+MQ -> OE:create scheduled operation
+activate OE
+
+OE -> DB:create operation and set status to init
+activate DB
+
+DB --> OE:finish
+deactivate DB
+
+OE -> DB:get trigger info
+activate DB
+
+DB --> OE:trigger info
+deactivate DB
+
+OE -> engine:register operation
+activate engine
+
+engine --> OE:finish
+deactivate engine
+
+OE -> DB:update operation's status to registered
+activate DB
+
+DB --> OE:finish
+deactivate DB
+
+OE -> MQ:finish
+deactivate OE
+
+MQ -> AS:finish
+deactivate MQ
+
+AS --> User:finish
+deactivate AS
+
+@enduml
+

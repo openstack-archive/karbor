@@ -1,0 +1,43 @@
+@startuml
+
+title delete scheduled operation
+hide footbox
+
+actor User
+participant API_Service as AS
+participant OperationEngine as OE
+participant Engine.Trigger as engine
+participant DB
+
+User -> AS:delete scheduled operation
+activate AS
+
+AS -> OE:delete scheduled operation
+activate OE
+
+OE -> DB:update operation's status to deleted
+activate DB
+
+DB --> OE:finish
+deactivate DB
+
+OE -> engine:unregister operation
+activate engine
+
+engine --> OE:finish
+deactivate engine
+
+OE -> DB:delete operation
+activate DB
+
+DB --> OE:finish
+deactivate DB
+
+OE -> AS:finish
+deactivate OE
+
+AS --> User:finish
+deactivate AS
+
+@enduml
+

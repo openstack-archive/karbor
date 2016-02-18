@@ -1,0 +1,79 @@
+@startuml
+
+title OperationEngine class diagram
+
+class OperationEngineManager
+abstract class BaseTrigger
+abstract class Executor
+class OperationManager
+class ScheduledOperation
+class TimeTrigger
+class EventTrigger
+interface Operation
+class OperationExeInfo
+class Trigger
+class ProtectOperation
+class DeleteCheckpointOperation
+
+OperationEngineManager *-- BaseTrigger
+OperationEngineManager *-- Executor
+OperationEngineManager *-- OperationManager
+BaseTrigger -- ScheduledOperation
+BaseTrigger "1" o-- "1" Executor
+Executor -- ScheduledOperation
+Executor -- OperationManager
+Executor -- OperationExeInfo
+OperationManager *-- Operation
+BaseTrigger <|-- TimeTrigger
+BaseTrigger <|-- EventTrigger
+ScheduledOperation -- Trigger
+Operation <|-- ProtectOperation
+Operation <|-- DeleteCheckpointOperation
+
+abstract class BaseTrigger {
+_executor: Executor
+
+register_operation(op_id, op_name, **kwargs)
+unregister_operation(op_id, op_name)
+}
+
+abstract class Executor {
+submit_op(op_id, info)
+}
+
+class ScheduledOperation {
+id: uuid
+name: string
+operation_type:string
+trigger_id:uuid
+operation_definition:dict
+}
+note left: class of DB table scheduled_operations
+
+class Trigger {
+id:uuid
+type:string
+properties:dict
+}
+note left: class of DB table triggers
+
+class OperationManager {
+operation_obj_map:dict
+
+check_operation_definition(op_type, operation_definition)
+execute_operation(op_type, operation_definition, operation_exe_info)
+}
+
+interface Operation {
+check_operation_definition(operation_definition)
+execute(operation_definition, operation_exe_info)
+}
+
+class OperationExeInfo {
+id:uuid
+extend_info:string
+}
+note "class of DB table operation_exe_infos" as N1
+OperationExeInfo -- N1
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+
+[*] --> init: create
+
+init --> registered: register to triggers
+
+registered --> triggered: trigger and submit to executor
+
+triggered --> running: executor runs it
+
+running --> registered: finish
+
+init --> deleted: delete
+registered --> deleted: delete
+triggered --> deleted: delete
+running --> deleted: delete
+
+deleted --> [*]
+
+@enduml
