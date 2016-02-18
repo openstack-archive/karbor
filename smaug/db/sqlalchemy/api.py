@@ -331,6 +331,54 @@ def get_by_id(context, model, id, *args, **kwargs):
 ###################
 
 
+def scheduled_operation_state_get(context, operation_id):
+    return _scheduled_operation_state_get(context, operation_id)
+
+
+def _scheduled_operation_state_get(context, operation_id, session=None):
+    result = model_query(context, models.ScheduledOperationState,
+                         session=session).filter_by(operation_id=operation_id)
+    result = result.first()
+
+    if not result:
+        raise exception.ScheduledOperationStateNotFound(op_id=operation_id)
+
+    return result
+
+
+def scheduled_operation_state_create(context, values):
+    state_ref = models.ScheduledOperationState()
+    state_ref.update(values)
+    state_ref.save(get_session())
+    return state_ref
+
+
+@oslo_db_api.wrap_db_retry(max_retries=5, retry_on_deadlock=True)
+def scheduled_operation_state_update(context, operation_id, values):
+    """Update the ScheduledOperationState record with the most recent data."""
+
+    session = get_session()
+    with session.begin():
+        state_ref = _scheduled_operation_state_get(context, operation_id,
+                                                   session=session)
+        state_ref.update(values)
+        state_ref.save(session)
+    return state_ref
+
+
+def scheduled_operation_state_delete(context, operation_id):
+    """Delete a ScheduledOperationState record."""
+
+    session = get_session()
+    with session.begin():
+        state_ref = _scheduled_operation_state_get(context, operation_id,
+                                                   session=session)
+        state_ref.delete(session=session)
+
+
+###################
+
+
 def scheduled_operation_log_get(context, log_id):
     return _scheduled_operation_log_get(context, log_id)
 

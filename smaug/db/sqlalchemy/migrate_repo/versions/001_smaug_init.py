@@ -110,6 +110,24 @@ def define_tables(meta):
         mysql_engine='InnoDB'
     )
 
+    scheduled_operation_states = Table(
+        'scheduled_operation_states',
+        meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', Integer, primary_key=True, nullable=False,
+               autoincrement=True),
+        Column('operation_id', String(length=36),
+               ForeignKey('scheduled_operations.id', ondelete='CASCADE'),
+               nullable=False),
+        Column('service_id', Integer, ForeignKey('services.id'),
+               nullable=False),
+        Column('state', String(length=32), nullable=False),
+        mysql_engine='InnoDB'
+    )
+
     scheduled_operation_logs = Table(
         'scheduled_operation_logs',
         meta,
@@ -137,6 +155,7 @@ def define_tables(meta):
             restores,
             triggers,
             scheduled_operations,
+            scheduled_operation_states,
             scheduled_operation_logs]
 
 
@@ -152,11 +171,11 @@ def upgrade(migrate_engine):
         table.create()
 
     if migrate_engine.name == "mysql":
-        tables = ["migrate_version",
-                  "services"]
+        table_names = [t.description for t in tables]
+        table_names.append("migrate_version")
 
         migrate_engine.execute("SET foreign_key_checks = 0")
-        for table in tables:
+        for table in table_names:
             migrate_engine.execute(
                 "ALTER TABLE %s CONVERT TO CHARACTER SET utf8" % table)
         migrate_engine.execute("SET foreign_key_checks = 1")

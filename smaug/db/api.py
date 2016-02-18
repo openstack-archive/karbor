@@ -127,6 +127,65 @@ def get_by_id(context, model, id, *args, **kwargs):
 ###################
 
 
+def scheduled_operation_state_get(context, operation_id):
+    """Get a scheduled operation state by its id.
+
+    :param context: The security context
+    :param operation_id: Operation_id of the scheduled operation state
+
+    :returns: Dictionary-like object containing properties of the scheduled
+     operation state
+
+    Raises ScheduledOperationStateNotFound if scheduled operation state with
+     the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_state_get(context, operation_id)
+
+
+def scheduled_operation_state_create(context, values):
+    """Create a scheduled operation state from the values dictionary.
+
+    :param context: The security context
+    :param values: Dictionary containing scheduled operation state properties
+
+    :returns: Dictionary-like object containing the properties of the created
+              scheduled operation state
+    """
+    return IMPL.scheduled_operation_state_create(context, values)
+
+
+def scheduled_operation_state_update(context, operation_id, values):
+    """Set the given properties on a scheduled operation state and update it.
+
+    :param context: The security context
+    :param operation_id: Operation_id of the scheduled operation state
+    :param values: Dictionary containing scheduled operation state properties
+                   to be updated
+
+    :returns: Dictionary-like object containing the properties of the updated
+              scheduled operation state
+
+    Raises ScheduledOperationStateNotFound if scheduled operation state with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_state_update(context, operation_id, values)
+
+
+def scheduled_operation_state_delete(context, operation_id):
+    """Delete a scheduled operation state from the database.
+
+    :param context: The security context
+    :param operation_id: Operation_id of the scheduled operation state
+
+    Raises ScheduledOperationStateNotFound if scheduled operation state with
+    the given ID doesn't exist.
+    """
+    return IMPL.scheduled_operation_state_delete(context, operation_id)
+
+
+###################
+
+
 def scheduled_operation_log_get(context, log_id):
     """Get a scheduled operation log by its id.
 

@@ -180,6 +180,10 @@ class HostBinaryNotFound(NotFound):
     message = _("Could not find binary %(binary)s on host %(host)s.")
 
 
+class ScheduledOperationStateNotFound(NotFound):
+    message = _("Scheduled Operation State %(op_id)s could not be found.")
+
+
 class ScheduledOperationLogNotFound(NotFound):
     message = _("Scheduled Operation Log %(log_id)s could not be found.")
 

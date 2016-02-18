@@ -16,9 +16,9 @@ SQLAlchemy models for smaug data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, schema
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import DateTime, Boolean, Index
+from sqlalchemy import DateTime, Boolean, Index, ForeignKey
 
 CONF = cfg.CONF
 BASE = declarative_base()
@@ -59,6 +59,26 @@ class Service(BASE, SmaugBase):
     modified_at = Column(DateTime)
     rpc_current_version = Column(String(36))
     rpc_available_version = Column(String(36))
+
+
+class ScheduledOperationState(BASE, SmaugBase):
+    """Represents a scheduled operation state."""
+
+    __tablename__ = 'scheduled_operation_states'
+    __table_args__ = (
+        Index('operation_id_idx', 'operation_id', unique=True),
+        schema.UniqueConstraint('operation_id', name='uniq_operation_id'),
+    )
+
+    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    # TODO(chenzeng):add foreign key after scheduled_operations is defined.
+    # operation_id = Column(String(36),
+    #                       ForeignKey('scheduled_operations.id',
+    #                                  ondelete='CASCADE'),
+    #                       nullable=False)
+    operation_id = Column(String(36), nullable=False)
+    service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
+    state = Column(String(32), nullable=False)
 
 
 class ScheduledOperationLog(BASE, SmaugBase):

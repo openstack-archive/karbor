@@ -91,6 +91,63 @@ class ServicesDbTestCase(base.TestCase):
         self.assertEqual(service_get_ref['host'], 'hosttest5')
 
 
+class ScheduledOperationStateTestCase(base.TestCase):
+    """Test cases for scheduled_operation_states table."""
+
+    def setUp(self):
+        super(ScheduledOperationStateTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def _create_scheduled_operation_state(self):
+        values = {
+            'operation_id': '0354ca9ddcd046b693340d78759fd274',
+            'service_id': 1,
+            'state': 'init',
+        }
+        return db.scheduled_operation_state_create(self.ctxt, values)
+
+    def test_scheduled_operation_state_create(self):
+        state_ref = self._create_scheduled_operation_state()
+        self.assertEqual('init', state_ref['state'])
+
+    def test_scheduled_operation_state_delete(self):
+        state_ref = self._create_scheduled_operation_state()
+        db.scheduled_operation_state_delete(self.ctxt,
+                                            state_ref['operation_id'])
+
+        self.assertRaises(exception.ScheduledOperationStateNotFound,
+                          db.scheduled_operation_state_delete,
+                          self.ctxt, state_ref['operation_id'])
+
+        self.assertRaises(exception.ScheduledOperationStateNotFound,
+                          db.scheduled_operation_state_get,
+                          self.ctxt, state_ref['operation_id'])
+
+        self.assertRaises(exception.ScheduledOperationStateNotFound,
+                          db.scheduled_operation_state_delete, self.ctxt, 100)
+
+    def test_scheduled_operation_state_update(self):
+        state_ref = self._create_scheduled_operation_state()
+        operation_id = state_ref['operation_id']
+        state_ref = db.scheduled_operation_state_update(self.ctxt,
+                                                        operation_id,
+                                                        {"state": "success"})
+        self.assertEqual('success', state_ref['state'])
+
+        state_ref = db.scheduled_operation_state_get(self.ctxt, operation_id)
+        self.assertEqual('success', state_ref['state'])
+
+        self.assertRaises(exception.ScheduledOperationStateNotFound,
+                          db.scheduled_operation_state_update,
+                          self.ctxt, '100', {"state": "success"})
+
+    def test_scheduled_operation_state_get(self):
+        state_ref = self._create_scheduled_operation_state()
+        state_ref = db.scheduled_operation_state_get(self.ctxt,
+                                                     state_ref['operation_id'])
+        self.assertEqual('init', state_ref['state'])
+
+
 class ScheduledOperationLogTestCase(base.TestCase):
     """Test cases for scheduled_operation_logs table."""
 
