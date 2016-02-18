@@ -17,6 +17,9 @@ OPERATION_START = 'start'
 OPERATION_DELETE = 'delete'
 OPERATION_SUSPEND = 'suspend'
 
+#  plugin type
+PLUGIN_BANK = 'bank'
+
 # supported resource types
 RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   SERVER_RESOURCE_TYPE,

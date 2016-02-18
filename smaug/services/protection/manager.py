@@ -1,4 +1,4 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
@@ -19,24 +19,30 @@ import six
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
-from oslo_utils import importutils
 
-from smaug.i18n import _LI, _LE
 from smaug import exception
+from smaug.i18n import _LI, _LE
 from smaug import manager
 from smaug.resource import Resource
 from smaug.services.protection import protectable_registry as p_reg
+from smaug.services.protection.provider import PluggableProtectionProvider
+from smaug import utils
 
 LOG = logging.getLogger(__name__)
 
 protection_manager_opts = [
     cfg.IntOpt('update_protection_stats_interval',
                default=3600,
-               help='update protection status interval')
+               help='update protection status interval'),
+    cfg.StrOpt('provider_registry',
+               default='smaug.services.protection.provider.ProviderRegistry',
+               help='the provider registry')
 ]
 
 CONF = cfg.CONF
 CONF.register_opts(protection_manager_opts)
+
+PROVIDER_NAMESPACE = 'smaug.provider'
 
 
 class ProtectionManager(manager.Manager):
@@ -49,9 +55,9 @@ class ProtectionManager(manager.Manager):
     def __init__(self, service_name=None,
                  *args, **kwargs):
         super(ProtectionManager, self).__init__(*args, **kwargs)
-        # TODO(wangliuan)  more params and use profiler.trace_cls
-        self.provider_registry = importutils.import_object(
-            'smaug.services.protection.provider.ProviderRegistry')
+        provider_reg = CONF.provider_registry
+        self.provider_registry = utils.load_plugin(PROVIDER_NAMESPACE,
+                                                   provider_reg)
         self.flow_engine = None
         # TODO(wangliuan)
 
@@ -67,7 +73,7 @@ class ProtectionManager(manager.Manager):
         :param plan: Define that protection plan should be done
         """
         LOG.info(_LI("Starting protection service:protect action"))
-        LOG.debug('restoration :%s tpye:%s', plan,
+        LOG.debug('protecting  :%s tpye:%s', plan,
                   type(plan))
 
         # TODO(wangliuan)
@@ -108,7 +114,6 @@ class ProtectionManager(manager.Manager):
 
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
                          sort_keys=None, sort_dirs=None, filters=None):
-        # TODO(wangliuan)
         LOG.info(_LI("Starting list checkpoints. "
                      "provider_id:%s"), provider_id)
 
@@ -172,64 +177,6 @@ class ProtectionManager(manager.Manager):
     def delete_checkpoint(self, checkpoint_id):
         # TODO(wangliuan)
         pass
-
-    def list_providers(self, context, marker=None, limit=None, sort_keys=None,
-                       sort_dirs=None, filters=None):
-        # TODO(wangliuan)
-        LOG.info(_LI("Starting list providers. "
-                     "filters:%s"), filters)
-
-        return_stub = [
-            {
-                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-                "name": "OS Infra Provider",
-                "description": "This provider uses OpenStack's"
-                               " own services (swift, cinder) as storage",
-                "extended_info_schema": {
-                    "OS::Nova::Cinder": {
-                        "type": "object",
-                        "properties": {
-                            "use_cbt": {
-                                "type": "boolean",
-                                "title": "Use CBT",
-                                "description":
-                                    "Use Changed Block"
-                                    " Tracking when backin up this volume"
-                            }
-                        }
-                    }
-                }
-            }
-        ]
-        return return_stub
-
-    def show_provider(self, context, provider_id):
-        # TODO(wangliuan)
-        LOG.info(_LI("Starting show provider. "
-                     "provider_id:%s"), provider_id)
-
-        return_stub = {
-            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-            "name": "OS Infra Provider",
-            "description": "This provider uses OpenStack's"
-                           "own services (swift, cinder) as storage",
-            "extended_info_schema": {
-                "OS::Nova::Cinder": {
-                    "type": "object",
-                    "properties": {
-                        "use_cbt": {
-                            "type": "boolean",
-                            "title": "Use CBT",
-                            "description": "Use Changed"
-                                           " Block Tracking"
-                                           " when backin up"
-                                           " this volume"
-                        }
-                    }
-                }
-            }
-        }
-        return return_stub
 
     def list_protectable_types(self, context):
         LOG.info(_LI("Start to list protectable types."))
@@ -305,3 +252,18 @@ class ProtectionManager(manager.Manager):
             result.append(dict(type=resource.type, id=resource.id))
 
         return result
+
+    def list_providers(self, list_option=None):
+        return self.provider_registry.list_providers(list_option)
+
+    def show_provider(self, provider_id):
+        provider = self.provider_registry.show_provider(provider_id)
+        if isinstance(provider, PluggableProtectionProvider):
+            response = {'id': provider.id,
+                        'name': provider.name,
+                        'description': provider.description,
+                        'extended_info_schema': provider.extended_info_schema,
+                        }
+            return response
+        else:
+            raise exception.ProviderNotFound(provider_id=provider_id)

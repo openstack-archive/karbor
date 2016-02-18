@@ -1,4 +1,4 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
@@ -16,13 +16,15 @@ import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import importutils
 from oslo_utils import strutils
 from oslo_utils import timeutils
 
 import six
 
 from smaug import exception
-from smaug.i18n import _
+from smaug.i18n import _, _LE
+from stevedore import driver
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -121,3 +123,19 @@ def get_bool_param(param_string, params):
         raise exception.InvalidParameterValue(err=msg)
 
     return strutils.bool_from_string(param, strict=True)
+
+
+def load_plugin(namespace, plugin_name):
+    try:
+        # Try to resolve plugin by name
+        mgr = driver.DriverManager(namespace, plugin_name)
+        plugin_class = mgr.driver
+    except RuntimeError as e1:
+        # fallback to class name
+        try:
+            plugin_class = importutils.import_class(plugin_name)
+        except ImportError as e2:
+            LOG.exception(_LE("Error loading plugin by name, %s"), e1)
+            LOG.exception(_LE("Error loading plugin by class, %s"), e2)
+            raise ImportError(_("Class not found."))
+    return plugin_class()

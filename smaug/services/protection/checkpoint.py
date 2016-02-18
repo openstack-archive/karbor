@@ -35,11 +35,10 @@ class CheckpointSerializer(object):
 
 
 class CheckpointCollection(object):
-    def __init__(self):
+    def __init__(self, bank_plugin):
         super(CheckpointCollection, self).__init__()
-        self.checkpoint_serializer = None
-        self.bank_plugin = None
-        # TODO(wangliuan)
+        self.checkpoint_serializer = CheckpointSerializer()
+        self._bank_plugin = bank_plugin
 
     def list(self, list_options):
         # TODO(wangliuan)
