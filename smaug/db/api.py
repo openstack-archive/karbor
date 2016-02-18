@@ -294,3 +294,40 @@ def scheduled_operation_log_delete(context, log_id):
     the given ID doesn't exist.
     """
     return IMPL.scheduled_operation_log_delete(context, log_id)
+
+
+def plan_get(context, plan_id):
+    """Get a plan or raise if it does not exist."""
+    return IMPL.plan_get(context, plan_id)
+
+
+def plan_create(context, values):
+    """Create a plan from the values dictionary."""
+    return IMPL.plan_create(context, values)
+
+
+def plan_update(context, plan_id, values):
+    """Set the given properties on a plan and update it.
+
+    Raises NotFound if plan does not exist.
+
+    """
+    return IMPL.plan_update(context, plan_id, values)
+
+
+def plan_resources_update(context, plan_id, resources):
+    """Update resources if it exists, otherwise create it."""
+    return IMPL.plan_resources_update(context, plan_id, resources)
+
+
+def plan_destroy(context, plan_id):
+    """Destroy the plan or raise if it does not exist."""
+    return IMPL.plan_destroy(context, plan_id)
+
+
+def plan_get_all(context, marker, limit, sort_keys=None, sort_dirs=None,
+                 filters=None, offset=None):
+    """Get all plans."""
+    return IMPL.plan_get_all(context, marker, limit, sort_keys=sort_keys,
+                             sort_dirs=sort_dirs, filters=filters,
+                             offset=offset)

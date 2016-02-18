@@ -194,3 +194,11 @@ class ScheduledOperationLogNotFound(NotFound):
 
 OrphanedObjectError = obj_exc.OrphanedObjectError
 ObjectActionError = obj_exc.ObjectActionError
+
+
+class PlanNotFound(NotFound):
+    message = _("Plan %(plan_id)s could not be found.")
+
+
+class InvalidPlan(Invalid):
+    message = _("Invalid plan: %(reason)s")
