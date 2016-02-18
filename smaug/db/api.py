@@ -402,3 +402,46 @@ def plan_get_all_by_project(context, project_id, marker, limit,
                                         sort_dirs=sort_dirs,
                                         filters=filters,
                                         offset=offset)
+
+
+def restore_get(context, restore_id):
+    """Get a restore or raise if it does not exist."""
+    return IMPL.restore_get(context, restore_id)
+
+
+def restore_create(context, values):
+    """Create a restore from the values dictionary."""
+    return IMPL.restore_create(context, values)
+
+
+def restore_update(context, restore_id, values):
+    """Set the given properties on a restore and update it.
+
+    Raises NotFound if plan does not exist.
+
+    """
+    return IMPL.restore_update(context, restore_id, values)
+
+
+def restore_destroy(context, restore_id):
+    """Destroy the restore or raise if it does not exist."""
+    return IMPL.restore_destroy(context, restore_id)
+
+
+def restore_get_all(context, marker, limit, sort_keys=None, sort_dirs=None,
+                    filters=None, offset=None):
+    """Get all restores."""
+    return IMPL.restore_get_all(context, marker, limit, sort_keys=sort_keys,
+                                sort_dirs=sort_dirs, filters=filters,
+                                offset=offset)
+
+
+def restore_get_all_by_project(context, project_id, marker, limit,
+                               sort_keys=None, sort_dirs=None, filters=None,
+                               offset=None):
+    """Get all restores belonging to a project."""
+    return IMPL.restore_get_all_by_project(context, project_id, marker, limit,
+                                           sort_keys=sort_keys,
+                                           sort_dirs=sort_dirs,
+                                           filters=filters,
+                                           offset=offset)

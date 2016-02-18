@@ -825,8 +825,172 @@ def _process_plan_filters(query, filters):
 ###############################
 
 
+@require_context
+def restore_create(context, values):
+    restore_ref = models.Restore()
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+    restore_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        restore_ref.save(session)
+        return restore_ref
+
+
+@require_context
+def restore_get(context, restore_id):
+    return _restore_get(context, restore_id)
+
+
+@require_context
+def _restore_get(context, restore_id, session=None):
+    result = model_query(
+        context,
+        models.Restore,
+        session=session).\
+        filter_by(id=restore_id).\
+        first()
+    if not result:
+        raise exception.RestoreNotFound(restore_id=restore_id)
+
+    return result
+
+
+@require_context
+def restore_update(context, restore_id, values):
+    session = get_session()
+    with session.begin():
+        restore_ref = _restore_get(context, restore_id, session=session)
+        restore_ref.update(values)
+        return restore_ref
+
+
+@require_context
+@_retry_on_deadlock
+def restore_destroy(context, restore_id):
+    session = get_session()
+    with session.begin():
+        restore_ref = _restore_get(context, restore_id, session=session)
+        restore_ref.delete(session=session)
+
+
+def is_valid_model_filters(model, filters):
+    """Return True if filter values exist on the model
+
+    :param model: a smaug model
+    :param filters: dictionary of filters
+    """
+    for key in filters.keys():
+        try:
+            getattr(model, key)
+        except AttributeError:
+            LOG.debug("'%s' filter key is not valid.", key)
+            return False
+    return True
+
+
+def _restore_get_query(context, session=None, project_only=False):
+    return model_query(context, models.Restore, session=session,
+                       project_only=project_only)
+
+
+@require_admin_context
+def restore_get_all(context, marker, limit, sort_keys=None, sort_dirs=None,
+                    filters=None, offset=None):
+    """Retrieves all restores.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching restores
+    """
+    if filters and not is_valid_model_filters(models.Restore, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.Restore)
+        # No restores would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@require_context
+def restore_get_all_by_project(context, project_id, marker, limit,
+                               sort_keys=None, sort_dirs=None, filters=None,
+                               offset=None):
+    """Retrieves all restores in a project.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param project_id: project for all plans being retrieved
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching restores
+    """
+    if filters and not is_valid_model_filters(models.Restore, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        authorize_project_context(context, project_id)
+        # Add in the project filter without modifying the given filters
+        filters = filters.copy() if filters else {}
+        filters['project_id'] = project_id
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.Restore)
+        # No plans would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+def _process_restore_filters(query, filters):
+    if filters:
+        # Ensure that filters' keys exist on the model
+        if not is_valid_model_filters(models.Restore, filters):
+            return None
+        query = query.filter_by(**filters)
+    return query
+###############################
+
+
 PAGINATION_HELPERS = {
-    models.Plan: (_plan_get_query, _process_plan_filters, _plan_get)
+    models.Plan: (_plan_get_query, _process_plan_filters, _plan_get),
+    models.Restore: (_restore_get_query, _process_restore_filters,
+                     _restore_get)
 }
 
 

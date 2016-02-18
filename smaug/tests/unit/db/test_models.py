@@ -426,3 +426,71 @@ class PlanDbTestCase(base.TestCase):
         db_meta = db.plan_resources_update(self.ctxt, plan["id"], resources2)
 
         self.assertEqual("OS::Cinder::Volume", db_meta[0]["resource_type"])
+
+
+class RestoreDbTestCase(base.TestCase):
+
+    """Unit tests for smaug.db.api.restore_*."""
+
+    fake_restore = {
+        "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
+        "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
+        "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+        "checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
+        "restore_target": "192.168.1.2:35357/v2.0",
+        "parameters": "{'username': 'admin'}",
+        "status": "SUCCESS"
+    }
+
+    def _dict_from_object(self, obj, ignored_keys):
+        if ignored_keys is None:
+            ignored_keys = []
+        if isinstance(obj, dict):
+            items = obj.items()
+        else:
+            items = obj.iteritems()
+        return {k: v for k, v in items
+                if k not in ignored_keys}
+
+    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
+        obj1 = self._dict_from_object(obj1, ignored_keys)
+        obj2 = self._dict_from_object(obj2, ignored_keys)
+
+        self.assertEqual(
+            len(obj1), len(obj2),
+            "Keys mismatch: %s" % six.text_type(
+                set(obj1.keys()) ^ set(obj2.keys())))
+        for key, value in obj1.items():
+            self.assertEqual(value, obj2[key])
+
+    def setUp(self):
+        super(RestoreDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def test_restore_create(self):
+        restore = db.restore_create(self.ctxt, self.fake_restore)
+        self.assertTrue(uuidutils.is_uuid_like(restore['id']))
+        self.assertEqual('SUCCESS', restore.status)
+
+    def test_restore_get(self):
+        restore = db.restore_create(self.ctxt,
+                                    self.fake_restore)
+        self._assertEqualObjects(restore, db.restore_get(self.ctxt,
+                                                         restore['id']))
+
+    def test_restore_destroy(self):
+        restore = db.restore_create(self.ctxt, self.fake_restore)
+        db.restore_destroy(self.ctxt, restore['id'])
+        self.assertRaises(exception.RestoreNotFound, db.restore_get,
+                          self.ctxt, restore['id'])
+
+    def test_restore_update(self):
+        restore = db.restore_create(self.ctxt, self.fake_restore)
+        db.restore_update(self.ctxt, restore['id'],
+                          {'status': 'INIT'})
+        restore = db.restore_get(self.ctxt, restore['id'])
+        self.assertEqual('INIT', restore['status'])
+
+    def test_restore_update_nonexistent(self):
+        self.assertRaises(exception.RestoreNotFound, db.restore_update,
+                          self.ctxt, 42, {})

@@ -208,5 +208,9 @@ class PlanNotFound(NotFound):
     message = _("Plan %(plan_id)s could not be found.")
 
 
+class RestoreNotFound(NotFound):
+    message = _("Restore %(restore_id)s could not be found.")
+
+
 class InvalidPlan(Invalid):
     message = _("Invalid plan: %(reason)s")

@@ -155,6 +155,19 @@ class Resource(BASE, SmaugBase):
                             'Resource.deleted == False)')
 
 
+class Restore(BASE, SmaugBase):
+    """Represents a Restore."""
+
+    __tablename__ = 'restores'
+    id = Column(String(36), primary_key=True)
+    project_id = Column(String(255))
+    provider_id = Column(String(36))
+    checkpoint_id = Column(String(36))
+    restore_target = Column(String(255))
+    parameters = Column(String(255))
+    status = Column(String(64))
+
+
 def register_models():
     """Register Models and create metadata.
 
@@ -169,8 +182,8 @@ def register_models():
               Trigger,
               ScheduledOperation,
               ScheduledOperationState,
-              ScheduledOperationLog)
-
+              ScheduledOperationLog,
+              Restore)
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
