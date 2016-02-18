@@ -10,6 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from smaug.services.protection.graph import build_graph
+
+import six
+
 
 class ProtectableRegistry(object):
     _protectable_map = {}
@@ -25,17 +29,15 @@ class ProtectableRegistry(object):
 
     @classmethod
     def register_plugin(cls, plugin):
-        # TODO(saggi)
-        pass
+        cls._protectable_map[plugin.get_resource_type()] = plugin
 
     @classmethod
     def list_resource_types(cls):
         """List all resource types supported by protectables.
 
-        :return: The list of supported resource types.
+        :return: The iterator over supported resource types.
         """
-        # TODO(saggi)
-        pass
+        return six.iterkeys(cls._protectable_map)
 
     @classmethod
     def list_resources(cls, resource_type):
@@ -44,7 +46,8 @@ class ProtectableRegistry(object):
         :param resource_type: The resource type to list instance.
         :return: The list of resource instance.
         """
-        pass
+        plugin = cls._protectable_map[resource_type]
+        return plugin.list_resources()
 
     @classmethod
     def fetch_dependent_resources(cls, resource):
@@ -53,4 +56,16 @@ class ProtectableRegistry(object):
         :param resource: The parent resource to list dependent resources.
         :return: The list of dependent resources.
         """
-        pass
+        result = []
+        for plugin in six.itervalues(cls._protectable_map):
+            if resource.type in plugin.get_parent_resource_types():
+                result.extend(plugin.fetch_child_resources(resource))
+
+        return result
+
+    @classmethod
+    def build_graph(cls, resources):
+        return build_graph(
+            start_nodes=resources,
+            get_child_nodes_func=cls.fetch_dependent_resources,
+        )
