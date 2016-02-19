@@ -24,7 +24,7 @@ class BaseExecutor(object):
 
     @abstractmethod
     def execute_operation(self, operation_id, triggered_time,
-                          expect_start_time=None, window_time=None, **kwargs):
+                          expect_start_time, window_time, **kwargs):
         """Execute an operation.
 
         :param operation_id: ID of operation

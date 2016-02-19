@@ -44,3 +44,14 @@ RESOURCE_STATUS_AVAILABLE = 'available'
 RESOURCE_STATUS_DELETING = 'deleting'
 RESOURCE_STATUS_DELETED = 'deleted'
 RESOURCE_STATUS_UNDEFINED = 'undefined'
+
+# scheduled operation state
+OPERATION_STATE_INIT = 'init'
+OPERATION_STATE_REGISTERED = 'registered'
+OPERATION_STATE_TRIGGERED = 'triggered'
+OPERATION_STATE_RUNNING = 'running'
+OPERATION_STATE_DELETED = 'deleted'
+
+# scheduled operation run type
+OPERATION_RUN_TYPE_EXECUTE = 'execute'
+OPERATION_RUN_TYPE_RESUME = 'resume'

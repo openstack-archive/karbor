@@ -109,6 +109,7 @@ class ScheduledOperationState(BASE, SmaugBase):
                           nullable=False)
     service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
     state = Column(String(32), nullable=False)
+    end_time_for_run = Column(DateTime)
 
     operation = orm.relationship(
         ScheduledOperation,

@@ -17,6 +17,7 @@ Operation classes
 from abc import ABCMeta
 import six
 
+from smaug.common import constants
 from smaug import loadables
 
 
@@ -34,11 +35,30 @@ class Operation(object):
         pass
 
     @classmethod
-    def execute(self, project_id, operation_definition):
+    def run_operation(cls, project_id, operation_definition, **kwargs):
+        param = kwargs.get('param')
+        if constants.OPERATION_RUN_TYPE_EXECUTE == param['run_type']:
+            cls._execute(project_id, operation_definition, param)
+        else:
+            cls._resume(project_id, operation_definition, param)
+
+    @classmethod
+    def _execute(self, project_id, operation_definition, param):
         """Execute operation.
 
         :param project_id: the id of tenant
         :param operation_definition: the definition of operation
+        :param param: dict, other parameters
+        """
+        pass
+
+    @classmethod
+    def _resume(self, project_id, operation_definition, param):
+        """Resume operation.
+
+        :param project_id: the id of tenant
+        :param operation_definition: the definition of operation
+        :param param: dict, other parameters
         """
         pass
 

@@ -12,6 +12,8 @@
 
 """Tests for Models Database."""
 
+from datetime import datetime
+from datetime import timedelta
 from oslo_config import cfg
 from oslo_utils import uuidutils
 import six
@@ -292,11 +294,14 @@ class ScheduledOperationLogTestCase(base.TestCase):
     def setUp(self):
         super(ScheduledOperationLogTestCase, self).setUp()
         self.ctxt = context.get_admin_context()
+        self.operation_id = '0354ca9ddcd046b693340d78759fd274'
 
-    def _create_scheduled_operation_log(self):
+    def _create_scheduled_operation_log(self, state='in_progress',
+                                        created_at=datetime.now()):
         values = {
-            'operation_id': '0354ca9ddcd046b693340d78759fd274',
-            'state': 'in_progress',
+            'operation_id': self.operation_id,
+            'state': state,
+            'created_at': created_at
         }
         return db.scheduled_operation_log_create(self.ctxt, values)
 
@@ -319,6 +324,29 @@ class ScheduledOperationLogTestCase(base.TestCase):
         self.assertRaises(exception.ScheduledOperationLogNotFound,
                           db.scheduled_operation_log_delete,
                           self.ctxt, 100)
+
+    def test_scheduled_operation_log_delete_oldest(self):
+        log_ids = []
+        states = ['success', 'in_progress', 'success', 'success']
+        for i in range(4):
+            t = datetime.now() + timedelta(hours=i)
+            log = self._create_scheduled_operation_log(
+                states[i], t)
+            log_ids.append(log['id'])
+
+        db.scheduled_operation_log_delete_oldest(
+            self.ctxt, self.operation_id, 3)
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_get,
+                          self.ctxt, log_ids[0])
+
+        db.scheduled_operation_log_delete_oldest(
+            self.ctxt, self.operation_id, 1, ['in_progress'])
+        log_ref = db.scheduled_operation_log_get(self.ctxt, log_ids[1])
+        self.assertEqual('in_progress', log_ref['state'])
+        self.assertRaises(exception.ScheduledOperationLogNotFound,
+                          db.scheduled_operation_log_get,
+                          self.ctxt, log_ids[2])
 
     def test_scheduled_operation_log_update(self):
         log_ref = self._create_scheduled_operation_log()

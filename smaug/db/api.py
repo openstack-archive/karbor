@@ -392,6 +392,24 @@ def scheduled_operation_log_delete(context, log_id):
     return IMPL.scheduled_operation_log_delete(context, log_id)
 
 
+def scheduled_operation_log_delete_oldest(context, operation_id,
+                                          retained_num, excepted_states=[]):
+    """Delete the oldest scheduled operation logs from the database.
+
+    :param context: The security context
+    :param operation_id: ID of the scheduled operation
+    :param retained_num: The number of retained logs
+    :param excepted_states: If the state of log is in excepted_states,
+                            it will not be deleted.
+    """
+    return IMPL.scheduled_operation_log_delete_oldest(context, operation_id,
+                                                      retained_num,
+                                                      excepted_states)
+
+
+###################
+
+
 def plan_get(context, plan_id):
     """Get a plan or raise if it does not exist."""
     return IMPL.plan_get(context, plan_id)
