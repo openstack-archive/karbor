@@ -26,7 +26,7 @@ class TestPlan(test_objects.BaseObjectsTestCase):
               if not k.endswith('resources')}
         test_objects.BaseObjectsTestCase._compare(test, db, obj)
 
-    @mock.patch('smaug.db.sqlalchemy.api.plan_get')
+    @mock.patch('smaug.objects.Plan.get_by_id')
     def test_get_by_id(self, plan_get):
         db_plan = fake_plan.fake_db_plan()
         plan_get.return_value = db_plan

@@ -5,6 +5,8 @@
 
     "admin_api": "is_admin:True",
 
-    "plan:create": "",
-    "plan:delete": "rule:admin_or_owner"
+    "plan:create": "rule:admin_or_owner",
+    "plan:update": "rule:admin_or_owner",
+    "plan:delete": "rule:admin_or_owner",
+    "plan:get": "rule:admin_or_owner"
 }
