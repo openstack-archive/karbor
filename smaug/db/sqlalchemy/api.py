@@ -486,7 +486,8 @@ def scheduled_operation_state_delete(context, operation_id):
     with session.begin():
         state_ref = _scheduled_operation_state_get(context, operation_id,
                                                    session=session)
-        state_ref.delete(session=session)
+        session.delete(state_ref)
+        session.flush()
 
 
 ###################
