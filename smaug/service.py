@@ -30,6 +30,7 @@ from smaug import context
 from smaug import db
 from smaug import exception
 from smaug.i18n import _, _LE, _LI, _LW
+from smaug.objects import base as objects_base
 from smaug import rpc
 from smaug import version
 from smaug.wsgi import common as wsgi_common
@@ -116,7 +117,8 @@ class Service(service.Service):
         target = messaging.Target(topic=self.topic, server=self.host)
         endpoints = [self.manager]
         endpoints.extend(self.manager.additional_endpoints)
-        self.rpcserver = rpc.get_server(target, endpoints)
+        serializer = objects_base.SmaugObjectSerializer()
+        self.rpcserver = rpc.get_server(target, endpoints, serializer)
         self.rpcserver.start()
 
         self.manager.init_host_with_rpc()

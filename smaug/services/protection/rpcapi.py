@@ -19,6 +19,7 @@ Client side of the protection manager RPC API.
 from oslo_config import cfg
 import oslo_messaging as messaging
 
+from smaug.objects import base as objects_base
 from smaug import rpc
 
 
@@ -39,4 +40,13 @@ class ProtectionAPI(object):
         super(ProtectionAPI, self).__init__()
         target = messaging.Target(topic=CONF.protection_topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap=None)
+        serializer = objects_base.SmaugObjectSerializer()
+        self.client = rpc.get_client(target, version_cap=None,
+                                     serializer=serializer)
+
+    def restore(self, ctxt, restore=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'restore',
+            restore=restore)

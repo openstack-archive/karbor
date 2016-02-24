@@ -31,3 +31,6 @@ class API(base.Base):
     def __init__(self, db_driver=None):
         self.protection_rpcapi = protection_rpcapi.ProtectionAPI()
         super(API, self).__init__(db_driver)
+
+    def restore(self, context, restore):
+        return self.protection_rpcapi.restore(context, restore)

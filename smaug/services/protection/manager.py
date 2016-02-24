@@ -64,9 +64,13 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         pass
 
-    def restore(self, checkpoint, **kwargs):
+    def restore(self, context, restore=None):
+        LOG.info(_LI("Starting restore service:restore action"))
+        LOG.debug('restore :%s tpye:%s', restore,
+                  type(restore))
+
         # TODO(wangliuan)
-        pass
+        return True
 
     def delete(self, plan):
         # TODO(wangliuan)

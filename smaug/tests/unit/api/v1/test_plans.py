@@ -142,13 +142,13 @@ class PlanApiTest(base.TestCase):
     def test_plan_delete(self, moak_plan_get):
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.controller.\
-            show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
+            delete(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
         self.assertTrue(moak_plan_get.called)
 
     def test_plan_delete_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/plans/1')
         self.assertRaises(
-            exc.HTTPBadRequest, self.controller.show,
+            exc.HTTPBadRequest, self.controller.delete,
             req, "1")
 
     @mock.patch(
