@@ -290,3 +290,7 @@ class CreateContainerFailed(SmaugException):
 
 class TriggerIsInvalid(Invalid):
     message = _("Trigger%(trigger_id)s is invalid.")
+
+
+class InvalidTaskFlowObject(Invalid):
+    message = _("The task flow is invalid: %(reason)s")
