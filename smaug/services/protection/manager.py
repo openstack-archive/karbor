@@ -112,3 +112,66 @@ class ProtectionManager(manager.Manager):
     def show_provider(self, provider_id):
         # TODO(wangliuan)
         pass
+
+    def list_protectable_types(self, context):
+        # TODO(zengyingzhe)
+        LOG.info(_LI("Starting list protectable types."))
+
+        return_stub = [
+            "OS::Keystone::Project",
+            "OS::Nova::Server",
+            "OS::Glance::Image",
+            "OS::Cinder::Volume",
+            "OS::Neutron::Topology"
+        ]
+        return return_stub
+
+    def show_protectable_type(self, context, protectable_type):
+        # TODO(zengyingzhe)
+        LOG.info(_LI("Starting show protectable "
+                     "type. tpye:%s"), protectable_type)
+        return_stub = {
+            "name": "OS::Nova::Server",
+            "dependent_types": [
+                "OS::Cinder::Volume",
+                "OS::Glance::Image"
+            ]
+        }
+
+        return return_stub
+
+    def list_protectable_instances(self, context, protectable_type,
+                                   marker=None, limit=None, sort_keys=None,
+                                   sort_dirs=None, filters=None):
+        # TODO(zengyingzhe)
+        LOG.info(_LI("Starting list protectable instances. "
+                     "tpye:%s"), protectable_type)
+
+        return_stub = [
+            {
+                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
+            },
+            {
+                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
+            }
+        ]
+        return return_stub
+
+    def list_protectable_dependents(self, context,
+                                    protectable_id,
+                                    protectable_type):
+        # TODO(zengyingzhe)
+        LOG.info(_LI("Starting list protectable dependents."
+                     "id:%s."), protectable_id)
+
+        return_stub = [
+            {
+                "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
+                "type": "OS::Cinder::Volume"
+            },
+            {
+                "id": "5fad94de-2926-486b-ae73-ff5d34775555",
+                "type": "OS::Cinder::Volume"
+            }
+        ]
+        return return_stub

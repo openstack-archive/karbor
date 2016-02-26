@@ -50,3 +50,41 @@ class ProtectionAPI(object):
             ctxt,
             'restore',
             restore=restore)
+
+    def list_protectable_types(self, ctxt):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'list_protectable_types')
+
+    def show_protectable_type(self, ctxt, protectable_type=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'show_protectable_type',
+            protectable_type=protectable_type)
+
+    def list_protectable_instances(
+            self, ctxt, protectable_type=None,
+            marker=None, limit=None, sort_keys=None,
+            sort_dirs=None, filters=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'list_protectable_instances',
+            protectable_type=protectable_type,
+            marker=marker,
+            limit=limit,
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs,
+            filters=filters)
+
+    def list_protectable_dependents(self,
+                                    ctxt, protectable_id=None,
+                                    protectable_type=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'list_protectable_dependents',
+            protectable_id=protectable_id,
+            protectable_type=protectable_type)

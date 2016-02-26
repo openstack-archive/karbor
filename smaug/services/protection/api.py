@@ -34,3 +34,26 @@ class API(base.Base):
 
     def restore(self, context, restore):
         return self.protection_rpcapi.restore(context, restore)
+
+    def list_protectable_types(self, context):
+        return self.protection_rpcapi.list_protectable_types(context)
+
+    def show_protectable_type(self, context, protectable_type):
+        return self.protection_rpcapi.\
+            show_protectable_type(context, protectable_type)
+
+    def list_protectable_instances(self, context, protectable_type,
+                                   marker, limit, sort_keys,
+                                   sort_dirs, filters, offset):
+        return self.protection_rpcapi.\
+            list_protectable_instances(context, protectable_type,
+                                       marker, limit, sort_keys,
+                                       sort_dirs, filters)
+
+    def list_protectable_dependents(self, context,
+                                    protectable_id,
+                                    protectable_type):
+        return self.protection_rpcapi.\
+            list_protectable_dependents(context,
+                                        protectable_id,
+                                        protectable_type)

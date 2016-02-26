@@ -172,6 +172,10 @@ class InvalidContentType(Invalid):
     message = _("Invalid content type %(content_type)s.")
 
 
+class InvalidProtectableInstance(Invalid):
+    message = _("Invalid protectable instance %(protectable_id)s.")
+
+
 class PasteAppNotFound(NotFound):
     message = _("Could not load paste app '%(name)s' from %(path)s")
 
@@ -214,3 +218,8 @@ class RestoreNotFound(NotFound):
 
 class InvalidPlan(Invalid):
     message = _("Invalid plan: %(reason)s")
+
+
+class ProtectableTypeNotFound(NotFound):
+    message = _("ProtectableType %(protectable_type)s could"
+                " not be found.")
