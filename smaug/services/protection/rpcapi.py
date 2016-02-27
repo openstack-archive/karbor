@@ -88,3 +88,24 @@ class ProtectionAPI(object):
             'list_protectable_dependents',
             protectable_id=protectable_id,
             protectable_type=protectable_type)
+
+    def show_provider(self,
+                      ctxt, provider_id=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'show_provider',
+            provider_id=provider_id)
+
+    def list_providers(self, ctxt, marker=None, limit=None,
+                       sort_keys=None,
+                       sort_dirs=None, filters=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'list_providers',
+            marker=marker,
+            limit=limit,
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs,
+            filters=filters)

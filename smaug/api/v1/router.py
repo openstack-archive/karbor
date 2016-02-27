@@ -13,6 +13,7 @@
 from smaug.api.openstack import ProjectMapper
 from smaug.api.v1 import plans
 from smaug.api.v1 import protectables
+from smaug.api.v1 import providers
 from smaug.api.v1 import restores
 from smaug.api.v1 import scheduled_operations
 from smaug.wsgi import common as wsgi_common
@@ -27,6 +28,7 @@ class APIRouter(wsgi_common.Router):
         plans_resources = plans.create_resource()
         restores_resources = restores.create_resource()
         protectables_resources = protectables.create_resource()
+        providers_resources = providers.create_resource()
         scheduled_operation_resources = scheduled_operations.create_resource()
         mapper.resource("plan", "plans",
                         controller=plans_resources,
@@ -46,7 +48,10 @@ class APIRouter(wsgi_common.Router):
                        controller=protectables_resources,
                        action='instances_index',
                        conditions={"method": ['GET']})
-
+        mapper.resource("provider", "providers",
+                        controller=providers_resources,
+                        collection={},
+                        member={})
         mapper.resource("scheduled_operation", "scheduled_operations",
                         controller=scheduled_operation_resources,
                         collection={'detail': 'GET'},

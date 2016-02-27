@@ -223,3 +223,8 @@ class InvalidPlan(Invalid):
 class ProtectableTypeNotFound(NotFound):
     message = _("ProtectableType %(protectable_type)s could"
                 " not be found.")
+
+
+class ProviderNotFound(NotFound):
+    message = _("Provider %(provider_id)s could"
+                " not be found.")

@@ -105,13 +105,63 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         pass
 
-    def list_providers(self, list_option):
+    def list_providers(self, context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None):
         # TODO(wangliuan)
-        pass
+        LOG.info(_LI("Starting list providers. "
+                     "filters:%s"), filters)
 
-    def show_provider(self, provider_id):
+        return_stub = [
+            {
+                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+                "name": "OS Infra Provider",
+                "description": "This provider uses OpenStack's"
+                               " own services (swift, cinder) as storage",
+                "extended_info_schema": {
+                    "OS::Nova::Cinder": {
+                        "type": "object",
+                        "properties": {
+                            "use_cbt": {
+                                "type": "boolean",
+                                "title": "Use CBT",
+                                "description":
+                                    "Use Changed Block"
+                                    " Tracking when backin up this volume"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+        return return_stub
+
+    def show_provider(self, context, provider_id):
         # TODO(wangliuan)
-        pass
+        LOG.info(_LI("Starting show provider. "
+                     "provider_id:%s"), provider_id)
+
+        return_stub = {
+            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+            "name": "OS Infra Provider",
+            "description": "This provider uses OpenStack's"
+                           "own services (swift, cinder) as storage",
+            "extended_info_schema": {
+                "OS::Nova::Cinder": {
+                    "type": "object",
+                    "properties": {
+                        "use_cbt": {
+                            "type": "boolean",
+                            "title": "Use CBT",
+                            "description": "Use Changed"
+                                           " Block Tracking"
+                                           " when backin up"
+                                           " this volume"
+                        }
+                    }
+                }
+            }
+        }
+        return return_stub
 
     def list_protectable_types(self, context):
         # TODO(zengyingzhe)

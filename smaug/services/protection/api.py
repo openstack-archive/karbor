@@ -57,3 +57,13 @@ class API(base.Base):
             list_protectable_dependents(context,
                                         protectable_id,
                                         protectable_type)
+
+    def show_provider(self, context, provider_id):
+        return self.protection_rpcapi.\
+            show_provider(context, provider_id)
+
+    def list_providers(self, context, marker, limit,
+                       sort_keys, sort_dirs, filters, offset):
+        return self.protection_rpcapi.\
+            list_providers(context, marker, limit,
+                           sort_keys, sort_dirs, filters)
