@@ -208,6 +208,11 @@ class ScheduledOperationLogNotFound(NotFound):
     message = _("Scheduled Operation Log %(log_id)s could not be found.")
 
 
+class ListProtectableResourceFailed(SmaugException):
+    message = _("List protectable resources of type %(type)s failed: "
+                "%(reason)s")
+
+
 OrphanedObjectError = obj_exc.OrphanedObjectError
 ObjectActionError = obj_exc.ObjectActionError
 

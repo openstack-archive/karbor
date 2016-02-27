@@ -20,6 +20,13 @@ class ProtectablePlugin(object):
 
     """
 
+    def __init__(self, context=None):
+        self._context = context
+        self._client_instance = None
+
+    def instance(self, context):
+        return self.__class__(context)
+
     @abc.abstractmethod
     def get_resource_type(self):
         """Return the resource type that this plugin supports.
@@ -38,17 +45,21 @@ class ProtectablePlugin(object):
 
     @abc.abstractmethod
     def list_resources(self):
-        """List resource instances of resource_type.
+        """List resource instances of type this plugin supported.
 
         :return: The list of resource instance.
         """
         pass
 
     @abc.abstractmethod
-    def fetch_child_resources(self, parent_resource):
-        """List child resources of resource_type under given parent resource.
+    def get_dependent_resources(self, parent_resource):
+        """List dependent resource instances.
 
-        :param parent_resource: The parent resource to list child resources.
-        :return: The list of child resources of resource_type.
+        The listed resource instances are of type this plugin supported,
+        and dependent by the given parent resource.
+
+        :param parent_resource: the parent resource instance.
+        :type parent_resource: one of parent resource types.
+        :return: the list of dependent resource instances.
         """
         pass

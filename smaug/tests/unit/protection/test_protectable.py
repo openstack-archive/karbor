@@ -20,9 +20,14 @@ _FAKE_TYPE = "Smaug::Test::Fake"
 
 
 class _FakeProtectablePlugin(ProtectablePlugin):
-    def __init__(self):
-        super(_FakeProtectablePlugin, self).__init__()
+    def __init__(self, cntx):
+        super(_FakeProtectablePlugin, self).__init__(cntx)
         self.graph = {}
+
+    def instance(self, cntx):
+        new = self.__class__(cntx)
+        new.graph = self.graph
+        return new
 
     def get_resource_type(self):
         return _FAKE_TYPE
@@ -33,16 +38,16 @@ class _FakeProtectablePlugin(ProtectablePlugin):
     def list_resources(self):
         return self.graph.values()
 
-    def fetch_child_resources(self, parent_resource):
+    def get_dependent_resources(self, parent_resource):
         return self.graph[parent_resource]
 
 
 class ProtectableRegistryTest(base.TestCase):
     def setUp(self):
         super(ProtectableRegistryTest, self).setUp()
-        self.__map_backup = ProtectableRegistry._protectable_map
-        ProtectableRegistry._protectable_map = {}
-        self._fake_plugin = _FakeProtectablePlugin()
+        self.__map_backup = ProtectableRegistry._plugin_map
+        ProtectableRegistry._plugin_map = {}
+        self._fake_plugin = _FakeProtectablePlugin(None)
         ProtectableRegistry.register_plugin(self._fake_plugin)
 
     def test_graph_building(self):
@@ -50,22 +55,26 @@ class ProtectableRegistryTest(base.TestCase):
         B = Resource(_FAKE_TYPE, "B")
         C = Resource(_FAKE_TYPE, "C")
         test_matrix = (
-            ({
-                A: [B],
-                B: [C],
-                C: [],
-            }, (A, C)),
-            ({
-                A: [C],
-                B: [C],
-                C: [],
-            }, (A, C)),
+            (
+                {A: [B],
+                 B: [C],
+                 C: []},
+                (A, C)
+            ),
+            (
+                {A: [C],
+                 B: [C],
+                 C: []},
+                (A, C)
+            ),
         )
 
+        registry = ProtectableRegistry(None)
         for g, resources in test_matrix:
             self._fake_plugin.graph = g
-            result_graph = ProtectableRegistry.build_graph(resources)
+            result_graph = registry.build_graph(resources)
             self.assert_graph(result_graph, g)
+            registry._protectable_map = {}
 
     def assert_graph(self, g, g_dict):
         for item in g:
@@ -75,5 +84,5 @@ class ProtectableRegistryTest(base.TestCase):
             self.assert_graph(item.child_nodes, g_dict)
 
     def tearDown(self):
-        ProtectableRegistry._protectable_map = self.__map_backup
+        ProtectableRegistry._plugin_map = self.__map_backup
         super(ProtectableRegistryTest, self).tearDown()

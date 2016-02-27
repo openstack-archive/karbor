@@ -25,7 +25,7 @@ class ClientFactory(object):
     def __init__(self):
         for module in self._list_clients():
             module = importutils.import_module(module)
-            self._factory[module.SERVICE] = module.create
+            self._factory[module.SERVICE] = module
 
     @staticmethod
     def _list_clients():
@@ -37,7 +37,7 @@ class ClientFactory(object):
         for file in os.listdir(clients_dir):
             name, ext = os.path.splitext(file)
             if name != '__init__' and ext == '.py':
-                LOG.Debug('Found client "%s"', name)
+                LOG.debug('Found client "%s"', name)
                 yield '%s.clients.%s' % (__package__, name)
 
     @staticmethod
