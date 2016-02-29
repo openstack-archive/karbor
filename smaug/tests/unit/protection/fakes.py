@@ -61,3 +61,17 @@ class FakeCheckpointManager(object):
 
     def update_protection_definition(self, checkpoint, **kwargs):
         self.fake_protection_definition = 'fake_definition'
+
+
+class FakeProtectablePlugin(object):
+    def get_resource_type(self):
+        pass
+
+    def get_parent_resource_types(self):
+        pass
+
+    def list_resources(self):
+        pass
+
+    def get_dependent_resources(self, parent_resource):
+        pass
