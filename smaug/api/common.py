@@ -74,7 +74,7 @@ def _get_limit_param(params, max_limit=None):
     except ValueError:
         msg = _('limit param must be an integer')
         raise webob.exc.HTTPBadRequest(explanation=msg)
-    if limit < 0:
+    if limit <= 0:
         msg = _('limit param must be positive')
         raise webob.exc.HTTPBadRequest(explanation=msg)
     limit = min(limit, max_limit)

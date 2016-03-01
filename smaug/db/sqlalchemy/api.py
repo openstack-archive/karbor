@@ -14,6 +14,7 @@
 
 import functools
 import re
+import six
 import sys
 import threading
 import time
@@ -393,6 +394,30 @@ def trigger_delete(context, id):
     with session.begin():
         trigger_ref = _trigger_get(context, id, session=session)
         trigger_ref.delete(session=session)
+
+
+def _trigger_list_process_filters(query, filters):
+    exact_match_filter_names = ['project_id', 'type']
+    query = _list_common_process_exact_filter(models.Trigger, query, filters,
+                                              exact_match_filter_names)
+
+    regex_match_filter_names = ['name', 'properties']
+    query = _list_common_process_regex_filter(models.Trigger, query, filters,
+                                              regex_match_filter_names)
+
+    return query
+
+
+def trigger_get_all_by_filters_sort(context, filters, limit=None, marker=None,
+                                    sort_keys=None, sort_dirs=None):
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         paginate_type=models.Trigger,
+                                         use_model=True)
+
+        return query.all() if query else []
 
 
 ###################
@@ -990,21 +1015,105 @@ def _process_restore_filters(query, filters):
             return None
         query = query.filter_by(**filters)
     return query
+
+
 ###############################
+
+
+@require_context
+def _list_common_get_query(context, model, session=None):
+    return model_query(context, model, session=session)
+
+
+def _list_common_process_exact_filter(model, query, filters, legal_keys):
+    """Applies exact match filtering to a query.
+
+    :param model: model to apply filters to
+    :param query: query to apply filters to
+    :param filters: dictionary of filters; values that are lists,
+                    tuples, sets, or frozensets cause an 'IN' test to
+                    be performed, while exact matching ('==' operator)
+                    is used for other values
+    :param legal_keys: list of keys to apply exact filtering to
+    :returns: the updated query.
+    """
+
+    filter_dict = {}
+    for key in legal_keys:
+        if key not in filters:
+            continue
+
+        value = filters.get(key)
+        if isinstance(value, (list, tuple, set, frozenset)):
+            if not value:
+                return None  # empty IN-predicate; short circuit
+            # Looking for values in a list; apply to query directly
+            column_attr = getattr(model, key)
+            query = query.filter(column_attr.in_(value))
+        else:
+            # OK, simple exact match; save for later
+            filter_dict[key] = value
+
+    # Apply simple exact matches
+    if filter_dict:
+        query = query.filter_by(**filter_dict)
+
+    return query
+
+
+def _list_common_process_regex_filter(model, query, filters, legal_keys):
+    """Applies regular expression filtering to a query.
+
+    :param model: model to apply filters to
+    :param query: query to apply filters to
+    :param filters: dictionary of filters with regex values
+    :param legal_keys: list of keys to apply regex filtering to
+    :returns: the updated query.
+    """
+
+    def _get_regexp_op_for_connection(db_connection):
+        db_string = db_connection.split(':')[0].split('+')[0]
+        regexp_op_map = {
+            'postgresql': '~',
+            'mysql': 'REGEXP',
+            'sqlite': 'REGEXP'
+        }
+        return regexp_op_map.get(db_string, 'LIKE')
+
+    db_regexp_op = _get_regexp_op_for_connection(CONF.database.connection)
+    for key in legal_keys:
+        if key not in filters:
+            continue
+
+        value = filters[key]
+        if not isinstance(value, six.string_types):
+            continue
+
+        column_attr = getattr(model, key)
+        if db_regexp_op == 'LIKE':
+            query = query.filter(column_attr.op(db_regexp_op)(
+                u'%' + value + u'%'))
+        else:
+            query = query.filter(column_attr.op(db_regexp_op)(
+                value))
+    return query
 
 
 PAGINATION_HELPERS = {
     models.Plan: (_plan_get_query, _process_plan_filters, _plan_get),
     models.Restore: (_restore_get_query, _process_restore_filters,
-                     _restore_get)
+                     _restore_get),
+    models.Trigger: (_list_common_get_query, _trigger_list_process_filters,
+                     _trigger_get),
 }
 
 
 ###############################
 
+
 def _generate_paginate_query(context, session, marker, limit, sort_keys,
                              sort_dirs, filters, offset=None,
-                             paginate_type=models.Plan):
+                             paginate_type=models.Plan, use_model=False):
     """Generate the query to include the filters and the paginate options.
 
     Returns a query with sorting / pagination criteria added or None
@@ -1032,7 +1141,10 @@ def _generate_paginate_query(context, session, marker, limit, sort_keys,
     sort_keys, sort_dirs = process_sort_params(sort_keys,
                                                sort_dirs,
                                                default_dir='desc')
-    query = get_query(context, session=session)
+    if use_model:
+        query = get_query(context, session=session, model=paginate_type)
+    else:
+        query = get_query(context, session=session)
 
     if filters:
         query = process_filters(query, filters)

@@ -16,8 +16,6 @@ from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from smaug import db
-from smaug import exception
-from smaug.i18n import _
 from smaug.objects import base
 
 CONF = cfg.CONF
@@ -69,10 +67,6 @@ class Trigger(base.SmaugPersistentObject, base.SmaugObject,
 
     @base.remotable
     def create(self):
-        if self.obj_attr_is_set('id'):
-            raise exception.ObjectActionError(action='create',
-                                              reason=_('already created'))
-
         updates = self.smaug_obj_get_changes()
         self._convert_properties_to_db_format(updates)
         db_trigger = db.trigger_create(self._context, updates)
