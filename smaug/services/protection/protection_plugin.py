@@ -33,17 +33,17 @@ class ProtectionPlugin(object):
         pass
 
     @abc.abstractmethod
-    def get_options_schema(self, resource_type):
+    def get_options_schema(self):
         # TODO(wangliuan)
         pass
 
     @abc.abstractmethod
-    def get_saved_info_schema(self, resource_type):
+    def get_saved_info_schema(self):
         # TODO(wangliuan)
         pass
 
     @abc.abstractmethod
-    def get_restore_schema(self, resource_type):
+    def get_restore_schema(self):
         # TODO(wangliuan)
         pass
 
@@ -53,7 +53,7 @@ class ProtectionPlugin(object):
         pass
 
     @abc.abstractmethod
-    def get_protection_stats(self, protection_id):
+    def get_resource_stats(self, checkpoint, resource_id):
         # TODO(wangliuan)
         pass
 

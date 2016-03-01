@@ -255,6 +255,26 @@ class ProviderNotFound(NotFound):
                 " not be found.")
 
 
+class CreateBackupFailed(SmaugException):
+    message = _("Create Backup failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
+class DeleteBackupFailed(SmaugException):
+    message = _("Delete Backup failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
+class RestoreBackupFailed(SmaugException):
+    message = _("Restore Backup failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
+class GetBackupFailed(SmaugException):
+    message = _("Get Backup failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
 class CheckpointNotFound(NotFound):
     message = _("Checkpoint %(checkpoint_id)s could"
                 " not be found.")

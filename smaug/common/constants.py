@@ -28,9 +28,17 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   ) = ('OS::Keystone::Project',
                        'OS::Nova::Server',
                        'OS::Cinder::Volume',
-                       'OS::Glance::Image',
+                       'OS::Glance::Image'
                        )
 
 CHECKPOINT_STATUS_ERROR = 'error'
 CHECKPOINT_STATUS_PROTECTING = 'protecting'
 CHECKPOINT_STATUS_AVAILABLE = 'available'
+
+# resource status
+RESOURCE_STATUS_ERROR = 'error'
+RESOURCE_STATUS_PROTECTING = 'protecting'
+RESOURCE_STATUS_AVAILABLE = 'available'
+RESOURCE_STATUS_DELETING = 'deleting'
+RESOURCE_STATUS_DELETED = 'deleted'
+RESOURCE_STATUS_UNDEFINED = 'undefined'

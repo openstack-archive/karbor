@@ -39,7 +39,7 @@ class FakeProtectionPlugin(protection_plugin.ProtectionPlugin):
     def get_saved_info(self, metadata_store, resource):
         pass
 
-    def get_protection_stats(self, protection_id):
+    def get_resource_stats(self, checkpoint, resource_id):
         pass
 
     def on_resource_start(self, context):
