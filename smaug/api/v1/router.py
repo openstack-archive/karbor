@@ -52,6 +52,28 @@ class APIRouter(wsgi_common.Router):
                         controller=providers_resources,
                         collection={},
                         member={})
+        mapper.connect("provider",
+                       "/{project_id}/providers/{provider_id}/checkpoints",
+                       controller=providers_resources,
+                       action='checkpoints_index',
+                       conditions={"method": ['GET']})
+        mapper.connect("provider",
+                       "/{project_id}/providers/{provider_id}/checkpoints",
+                       controller=providers_resources,
+                       action='checkpoints_create',
+                       conditions={"method": ['POST']})
+        mapper.connect("provider",
+                       "/{project_id}/providers/{provider_id}/checkpoints/"
+                       "{checkpoint_id}",
+                       controller=providers_resources,
+                       action='checkpoints_show',
+                       conditions={"method": ['GET']})
+        mapper.connect("provider",
+                       "/{project_id}/providers/{provider_id}/checkpoints/"
+                       "{checkpoint_id}",
+                       controller=providers_resources,
+                       action='checkpoints_delete',
+                       conditions={"method": ['DELETE']})
         mapper.resource("scheduled_operation", "scheduled_operations",
                         controller=scheduled_operation_resources,
                         collection={'detail': 'GET'},

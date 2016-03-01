@@ -51,6 +51,43 @@ class ProtectionAPI(object):
             'restore',
             restore=restore)
 
+    def protect(self, ctxt, plan=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'protect',
+            plan=plan)
+
+    def delete(self, ctxt, provider_id, checkpoint_id):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'delete',
+            provider_id=provider_id,
+            checkpoint_id=checkpoint_id)
+
+    def show_checkpoint(self, ctxt, provider_id, checkpoint_id):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'show_checkpoint',
+            provider_id=provider_id,
+            checkpoint_id=checkpoint_id)
+
+    def list_checkpoints(self, ctxt, provider_id, marker=None,
+                         limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'list_checkpoints',
+            provider_id=provider_id,
+            marker=marker,
+            limit=limit,
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs,
+            filters=filters)
+
     def list_protectable_types(self, ctxt):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(

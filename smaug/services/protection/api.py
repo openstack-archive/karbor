@@ -35,6 +35,23 @@ class API(base.Base):
     def restore(self, context, restore):
         return self.protection_rpcapi.restore(context, restore)
 
+    def protect(self, context, plan):
+        return self.protection_rpcapi.protect(context, plan)
+
+    def delete(self, context, provider_id, checkpoint_id):
+        return self.protection_rpcapi.\
+            delete(context, provider_id, checkpoint_id)
+
+    def show_checkpoint(self, context, provider_id, checkpoint_id):
+        return self.protection_rpcapi.\
+            show_checkpoint(context, provider_id, checkpoint_id)
+
+    def list_checkpoints(self, context, provider_id, marker, limit,
+                         sort_keys, sort_dirs, filters, offset):
+        return self.protection_rpcapi.\
+            list_checkpoints(context, provider_id, marker, limit,
+                             sort_keys, sort_dirs, filters)
+
     def list_protectable_types(self, context):
         return self.protection_rpcapi.list_protectable_types(context)
 

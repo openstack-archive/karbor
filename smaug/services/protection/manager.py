@@ -56,13 +56,17 @@ class ProtectionManager(manager.Manager):
         LOG.info(_LI("Starting protection service"))
 
     # TODO(wangliuan) use flow_engine to implement protect function
-    def protect(self, plan):
+    def protect(self, context, plan):
         """create protection for the given plan
 
         :param plan: Define that protection plan should be done
         """
+        LOG.info(_LI("Starting protection service:protect action"))
+        LOG.debug('restoration :%s tpye:%s', plan,
+                  type(plan))
+
         # TODO(wangliuan)
-        pass
+        return True
 
     def restore(self, context, restore=None):
         LOG.info(_LI("Starting restore service:restore action"))
@@ -72,9 +76,13 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         return True
 
-    def delete(self, plan):
+    def delete(self, context, provider_id, checkpoint_id):
         # TODO(wangliuan)
-        pass
+        LOG.info(_LI("Starting protection service:delete action"))
+        LOG.debug('provider_id :%s checkpoint_id:%s', provider_id,
+                  checkpoint_id)
+
+        return True
 
     def start(self, plan):
         # TODO(wangliuan)
@@ -93,13 +101,68 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         pass
 
-    def list_checkpoints(self, list_options):
+    def list_checkpoints(self, context, provider_id, marker=None, limit=None,
+                         sort_keys=None, sort_dirs=None, filters=None):
         # TODO(wangliuan)
-        pass
+        LOG.info(_LI("Starting list checkpoints. "
+                     "provider_id:%s"), provider_id)
 
-    def show_checkpoint(self, checkpoint_id):
+        return_stub = [
+            {
+                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+                "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+                "status": "comitted",
+                "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
+                "protection_plan": {
+                    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                    "name": "My 3 tier application",
+                    "resources": [
+                        {
+                            "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
+                            "type": "OS::Nova::Server"
+                        },
+                        {
+                            "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
+                            "type": "OS::Cinder::Volume"
+                        },
+                        {
+                            "id": "62e51e85-4f31-441f-9a5d-6e93e3196628",
+                            "type": "OS::Cinder::Volume"
+                        }
+                    ],
+                }
+            }
+        ]
+        return return_stub
+
+    def show_checkpoint(self, context, provider_id, checkpoint_id):
         # TODO(wangliuan)
-        pass
+        LOG.info(_LI("Starting show checkpoints. "
+                     "provider_id:%s"), provider_id)
+        LOG.info(_LI("checkpoint_id:%s"), checkpoint_id)
+
+        return_stub = {
+            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+            "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+            "status": "committed",
+            "protection_plan": {
+                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "name": "My 3 tier application",
+                "resources": [
+                    {
+                        "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
+                        "type": "OS::Nova::Server",
+                        "extended_info": {
+                            "name": "VM1",
+                            "backup status": "done",
+                            "available_memory": 512
+                        }
+                    }
+                ]
+            },
+            "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+        }
+        return return_stub
 
     def delete_checkpoint(self, checkpoint_id):
         # TODO(wangliuan)

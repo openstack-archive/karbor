@@ -49,3 +49,87 @@ class ProvidersApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank('/v1/providers')
         self.assertRaises(exc.HTTPBadRequest, self.controller.show,
                           req, "1")
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'show_checkpoint')
+    def test_checkpoint_show(self, moak_show_checkpoint):
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        moak_show_checkpoint.return_value = {
+            "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
+            "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
+        }
+        self.controller.\
+            checkpoints_show(req, '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                             '2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.assertTrue(moak_show_checkpoint.called)
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'show_checkpoint')
+    def test_checkpoint_show_Invalid(self, moak_show_checkpoint):
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        moak_show_checkpoint.return_value = {
+            "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
+            "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
+        }
+        self.assertRaises(exc.HTTPBadRequest, self.controller.checkpoints_show,
+                          req, '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          '1')
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'list_checkpoints')
+    def test_checkpoint_index(self, moak_list_checkpoints):
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        moak_list_checkpoints.return_value = [
+            {
+                "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
+                "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
+            }
+        ]
+        self.controller.checkpoints_index(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.assertTrue(moak_list_checkpoints.called)
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'delete')
+    def test_checkpoints_delete(self, moak_delete):
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        self.controller.checkpoints_delete(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c', {})
+        self.assertTrue(moak_delete.called)
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'protect')
+    @mock.patch(
+        'smaug.objects.plan.Plan.get_by_id')
+    def test_checkpoints_create(self, mock_plan_create,
+                                mock_protect):
+        checkpoint = {
+            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
+        }
+        body = {"checkpoint": checkpoint}
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        mock_plan_create.return_value = {
+            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
+        }
+        self.controller.checkpoints_create(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body)
+        self.assertTrue(mock_plan_create.called)
+        self.assertTrue(mock_protect.called)

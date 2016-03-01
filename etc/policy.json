@@ -20,5 +20,9 @@
     "protectable:get_all": "rule:admin_or_owner",
 
     "provider:get": "rule:admin_or_owner",
-    "provider:get_all": "rule:admin_or_owner"
+    "provider:get_all": "rule:admin_or_owner",
+    "provider:checkpoint_get": "rule:admin_or_owner",
+    "provider:checkpoint_get_all": "rule:admin_or_owner",
+    "provider:checkpoint_create": "rule:admin_or_owner",
+    "provider:checkpoint_delete": "rule:admin_or_owner"
 }
