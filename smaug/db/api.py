@@ -250,6 +250,18 @@ def scheduled_operation_delete(context, id):
     return IMPL.scheduled_operation_delete(context, id)
 
 
+def scheduled_operation_get_all_by_filters_sort(
+        context, filters, limit=None,
+        marker=None, sort_keys=None, sort_dirs=None):
+    """Get all operations that match all filters sorted by multiple keys.
+
+    sort_keys and sort_dirs must be a list of strings.
+    """
+    return IMPL.scheduled_operation_get_all_by_filters_sort(
+        context, filters, limit=limit, marker=marker,
+        sort_keys=sort_keys, sort_dirs=sort_dirs)
+
+
 ###################
 
 

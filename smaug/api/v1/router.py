@@ -83,6 +83,6 @@ class APIRouter(wsgi_common.Router):
                         member={'action': 'POST'})
         mapper.resource("scheduled_operation", "scheduled_operations",
                         controller=scheduled_operation_resources,
-                        collection={'detail': 'GET'},
+                        collection={},
                         member={'action': 'POST'})
         super(APIRouter, self).__init__(mapper)

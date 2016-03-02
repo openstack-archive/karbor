@@ -16,6 +16,7 @@ from smaug.api.v1 import triggers as trigger_api
 from smaug import context
 from smaug import exception
 from smaug.i18n import _
+from smaug import objects
 from smaug.tests import base
 from smaug.tests.unit.api import fakes
 
@@ -89,6 +90,16 @@ class TriggerApiTest(base.TestCase):
         trigger = self.controller.create(self.req, body)
         self.assertEqual(name, trigger['trigger_info']['name'])
 
+    def test_delete_trigger_binded_with_operation(self):
+        trigger = self._create_one_trigger()
+        trigger_id = trigger['trigger_info']['id']
+        self._create_scheduled_operation(trigger_id)
+
+        self.assertRaises(exc.HTTPMethodNotAllowed,
+                          self.controller.delete,
+                          self.req,
+                          trigger_id)
+
     def test_delete_trigger(self):
         trigger = self._create_one_trigger()
         self.controller.delete(self.req, trigger['trigger_info']['id'])
@@ -146,3 +157,17 @@ class TriggerApiTest(base.TestCase):
 
     def _get_create_trigger_request_body(self, param={}):
         return {"trigger_info": param}
+
+    def _create_scheduled_operation(self, trigger_id):
+        operation_info = {
+            "name": "123",
+            "operation_type": "protect",
+            "project_id": "123",
+            "trigger_id": trigger_id,
+            "operation_definition": {
+                "plan_id": ""
+            },
+        }
+        operation = objects.ScheduledOperation(self.ctxt, **operation_info)
+        operation.create()
+        return operation

@@ -132,12 +132,22 @@ class TriggersController(wsgi.Controller):
         check_policy(context, 'delete', trigger)
 
         try:
+            operations = objects.ScheduledOperationList.get_by_filters(
+                context, {"trigger_id": id}, limit=1)
+        except Exception as ex:
+            self._raise_unknown_exception(ex)
+
+        if operations:
+            msg = _("There are more than one scheduled operations binded "
+                    "with this trigger, please delete them first")
+            raise exc.HTTPMethodNotAllowed(explanation=msg)
+
+        try:
             self.operationengine_api.delete_trigger(context, id)
         except exception.TriggerNotFound as ex:
             pass
-        except exception.DeleteTriggerNotAllowed as ex:
-            raise exc.HTTPBadRequest(explanation=ex.msg)
-        except Exception as ex:
+        except (exception.DeleteTriggerNotAllowed,
+                Exception) as ex:
             self._raise_unknown_exception(ex)
 
         trigger.destroy()
