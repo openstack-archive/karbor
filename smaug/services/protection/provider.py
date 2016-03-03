@@ -14,8 +14,15 @@ import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from smaug.common import constants
 from smaug.i18n import _LE
-from smaug.services.protection import checkpoint
+from smaug.resource import Resource
+from smaug.services.protection.checkpoint import CheckpointCollection
+from smaug.services.protection.graph import GraphWalker
+from smaug.services.protection.protectable_registry import ProtectableRegistry
+from smaug.services.protection.resource_graph import ResourceGraphContext
+from smaug.services.protection.resource_graph \
+    import ResourceGraphWalkerListener
 from smaug import utils
 
 provider_opts = [
@@ -73,7 +80,7 @@ class PluggableProtectionProvider(object):
                 self._load_plugin(plugin_name)
 
         if self._bank_plugin:
-            self.checkpoint_collection = checkpoint.CheckpointCollection(
+            self.checkpoint_collection = CheckpointCollection(
                 self._bank_plugin)
         else:
             LOG.error(_LE('Bank plugin not exist, check your configuration'))
@@ -136,26 +143,69 @@ class PluggableProtectionProvider(object):
         return self.checkpoint_collection
 
     def build_task_flow(self, ctx):
-        """build task flow
+        cntxt = ctx["context"]
+        workflow_engine = ctx["workflow_engine"]
+        operation = ctx["operation_type"]
 
-        :param ctx: dict
-        {'context': the request context,
-           'plan': the backup plan,
-           'task_builder': a workflow_engine object,
-           'operation_type': the operation type
-        }
-        :return: dict,depending on operation type
-        for protect operation:
-        {'status_getters': [{'resource_id':the resource id,
-                          'get_resource_status':function address
-                          }]
-         'task_flow':graph flow
-        }
+        resource_context = None
+        resource_graph = None
 
-        """
+        if operation == constants.OPERATION_PROTECT:
+            plan = ctx["plan"]
+            task_flow = workflow_engine.build_flow(flow_name=plan.get('id'))
+            resources = plan.get('resources')
+            parameters = plan.get('parameters')
+            graph_resources = []
+            for resource in resources:
+                graph_resources.append(Resource(type=resource['type'],
+                                                id=resource['id'],
+                                                name=resource['name']))
+            # TODO(luobin): pass registry in ctx
+            registry = ProtectableRegistry()
+            registry.load_plugins()
+            resource_graph = registry.build_graph(cntxt, graph_resources)
+            resource_context = ResourceGraphContext(
+                cntxt=cntxt,
+                operation=operation,
+                workflow_engine=workflow_engine,
+                task_flow=task_flow,
+                plugin_map=self._plugin_map,
+                parameters=parameters
+            )
+        if operation == constants.OPERATION_RESTORE:
+            restore = ctx['restore']
+            task_flow = workflow_engine.build_flow(
+                flow_name=restore.get('id'))
+            checkpoint = ctx["checkpoint"]
+            resource_graph = checkpoint.resource_graph
+            parameters = restore.get('parameters')
+            heat_template = ctx["heat_template"]
+            resource_context = ResourceGraphContext(
+                cntxt=cntxt,
+                checkpoint=checkpoint,
+                operation=operation,
+                workflow_engine=workflow_engine,
+                task_flow=task_flow,
+                plugin_map=self._plugin_map,
+                parameters=parameters,
+                heat_template=heat_template
+            )
 
-        # TODO(wangliuan)
-        pass
+        # TODO(luobin): for other type operations
+
+        walker_listener = ResourceGraphWalkerListener(resource_context)
+        graph_walker = GraphWalker()
+        graph_walker.register_listener(walker_listener)
+        graph_walker.walk_graph(resource_graph)
+
+        if operation == constants.OPERATION_PROTECT:
+            return {"task_flow": walker_listener.context.task_flow,
+                    "status_getters": walker_listener.context.status_getters,
+                    "resource_graph": resource_graph}
+        if operation == constants.OPERATION_RESTORE:
+            return {"task_flow": walker_listener.context.task_flow}
+
+        # TODO(luobin): for other type operations
 
 
 class ProviderRegistry(object):

@@ -19,17 +19,23 @@ from oslo_log import log as logging
 
 from smaug.i18n import _LE
 from smaug.resource import Resource
+from smaug.services.protection.bank_plugin import Bank
+from smaug.services.protection.bank_plugin import BankPlugin
+from smaug.services.protection.bank_plugin import BankSection
 from smaug.services.protection.graph import build_graph
 
 from taskflow import engines
 from taskflow.patterns import graph_flow
 from taskflow.patterns import linear_flow
 
+LOG = logging.getLogger(__name__)
+
 A = Resource(id='A', type='fake', name='fake')
 B = Resource(id='B', type='fake', name='fake')
 C = Resource(id='C', type='fake', name='fake')
 D = Resource(id='D', type='fake', name='fake')
 E = Resource(id='E', type='fake', name='fake')
+
 
 resource_map = {
     A: [C],
@@ -38,6 +44,7 @@ resource_map = {
     D: [],
     E: [],
 }
+
 resource_graph = build_graph([A, B, C, D], resource_map.__getitem__)
 
 
@@ -47,12 +54,49 @@ def fake_protection_plan():
                        'name': 'fake_protection_plan',
                        'comments': '',
                        'revision': 0,
-                       'resources': [],
+                       'resources': [
+                           {"id": "A", "type": "fake", "name": "fake"},
+                           {"id": "B", "type": "fake", "name": "fake"},
+                           {"id": "C", "type": "fake", "name": "fake"},
+                           {"id": "D", "type": "fake", "name": "fake"}],
                        'protection_provider': None,
                        'parameters': {},
                        'provider_id': 'fake_id'
                        }
     return protection_plan
+
+plan_resources = [A, B, C, D]
+
+
+class FakeBankPlugin(BankPlugin):
+    def __init__(self, config=None):
+        super(FakeBankPlugin, self).__init__(config=config)
+        self._objects = {}
+
+    def create_object(self, key, value):
+        self._objects[key] = value
+
+    def update_object(self, key, value):
+        self._objects[key] = value
+
+    def get_object(self, key):
+        value = self._objects.get(key, None)
+        if value is None:
+            raise Exception
+        return value
+
+    def list_objects(self, prefix=None, limit=None, marker=None):
+        objects_name = []
+        if prefix is not None:
+            for key, value in self._objects.items():
+                if key.find(prefix) == 0:
+                    objects_name.append(key.lstrip(prefix))
+        else:
+            objects_name = self._objects.keys()
+        return objects_name
+
+    def delete_object(self, key):
+        self._objects.pop(key)
 
 
 def fake_restore():
@@ -83,7 +127,35 @@ class FakeProtectablePlugin(object):
         pass
 
 
-LOG = logging.getLogger(__name__)
+class FakeProtectionPlugin(object):
+    def __init__(self, expected_event_stream):
+        self._expected_event_stream = expected_event_stream
+
+    def on_resource_start(self, context):
+        resource = context.node.value
+        workflow_engine = context.workflow_engine
+        task_flow = context.task_flow
+        if self._expected_event_stream.pop(0) != (
+                "on_resource_start",
+                resource.id,
+                context.is_first_visited):
+            raise Exception
+        if context.is_first_visited and workflow_engine:
+            task = workflow_engine.create_task("fake_task")
+            workflow_engine.add_tasks(task_flow, task)
+
+    def on_resource_end(self, context):
+        resource = context.node.value
+        if self._expected_event_stream.pop(0) != (
+                "on_resource_end",
+                resource.id):
+            raise Exception
+
+    def get_resource_stats(self):
+        pass
+
+    def get_supported_resources_types(self):
+        return ["fake"]
 
 
 class FakeCheckpoint(object):
@@ -97,6 +169,10 @@ class FakeCheckpoint(object):
 
     def commit(self):
         pass
+
+    def get_resource_bank_section(self, resource_id):
+        bank = Bank(FakeBankPlugin())
+        return BankSection(bank, resource_id)
 
 
 class FakeCheckpointCollection(object):
