@@ -68,34 +68,19 @@ class SmaugExceptionTestCase(base.TestCase):
         exc2 = exception.SmaugException(exc1)
         self.assertEqual(msg, exc2.msg)
 
-    def test_exception_kwargs_to_string(self):
-        msg = 'test message'
-        exc1 = Exception(msg)
-        exc2 = exception.SmaugException(kwarg1=exc1)
-        self.assertEqual(msg, exc2.kwargs['kwarg1'])
-
     def test_message_in_format_string(self):
         class FakeSmaugException(exception.SmaugException):
             message = 'FakeSmaugException: %(message)s'
 
         exc = FakeSmaugException(message='message')
-        self.assertEqual('FakeSmaugException: message', six.text_type(exc))
+        self.assertEqual('message', six.text_type(exc))
 
     def test_message_and_kwarg_in_format_string(self):
         class FakeSmaugException(exception.SmaugException):
-            message = 'Error %(code)d: %(message)s'
+            message = 'Error %(code)d: %(msg)s'
 
-        exc = FakeSmaugException(message='message', code=404)
+        exc = FakeSmaugException(code=404, msg='message')
         self.assertEqual('Error 404: message', six.text_type(exc))
-
-    def test_message_is_exception_in_format_string(self):
-        class FakeSmaugException(exception.SmaugException):
-            message = 'Exception: %(message)s'
-
-        msg = 'test message'
-        exc1 = Exception(msg)
-        exc2 = FakeSmaugException(message=exc1)
-        self.assertEqual('Exception: test message', six.text_type(exc2))
 
 
 class SmaugConvertedExceptionTestCase(base.TestCase):

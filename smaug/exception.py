@@ -83,8 +83,19 @@ class SmaugException(Exception):
     safe = False
 
     def __init__(self, message=None, **kwargs):
+        """Initiate the instance of SmaugException
+
+        There are two ways to initiate the instance.
+        1. Specify the value of 'message' and leave the 'kwargs' None.
+        2. Leave 'message' None, and specify the keyword arguments matched
+           with the format of SmaugException.message. Especially, can't
+           use the 'message' as the key in the 'kwargs', otherwise, the
+           first argument('message') will be set.
+
+        Note: This class doesn't support to create instance of SmaugException
+            with another instance.
+        """
         self.kwargs = kwargs
-        self.kwargs['message'] = message
 
         if 'code' not in self.kwargs:
             try:
@@ -92,11 +103,7 @@ class SmaugException(Exception):
             except AttributeError:
                 pass
 
-        for k, v in self.kwargs.items():
-            if isinstance(v, Exception):
-                self.kwargs[k] = six.text_type(v)
-
-        if self._should_format():
+        if not message:
             try:
                 message = self.message % kwargs
 
@@ -120,9 +127,6 @@ class SmaugException(Exception):
         # overshadowed by the class' message attribute
         self.msg = message
         super(SmaugException, self).__init__(message)
-
-    def _should_format(self):
-        return self.kwargs['message'] is None or '%(message)' in self.message
 
     def __unicode__(self):
         return six.text_type(self.msg)
