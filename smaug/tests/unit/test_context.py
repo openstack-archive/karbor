@@ -77,7 +77,7 @@ class ContextTestCase(base.TestCase):
         object_catalog = [{u'name': u'swift', u'type': u'object-store'}]
         ctxt = context.RequestContext('111', '222',
                                       service_catalog=service_catalog)
-        self.assertEqual(4, len(ctxt.service_catalog))
+        self.assertEqual(5, len(ctxt.service_catalog))
         return_compute = [v for v in ctxt.service_catalog if
                           v['type'] == u'compute']
         return_object = [v for v in ctxt.service_catalog if
