@@ -10,12 +10,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
 
 import abc
 import six
+
+from smaug.i18n import _
 
 CONF = cfg.CONF
 
@@ -55,9 +58,126 @@ class BankPlugin(object):
         return
 
     @abc.abstractmethod
-    def list_objects(self, options):
+    def list_objects(self, prefix=None, limit=None, marker=None):
         return
 
     @abc.abstractmethod
     def delete_object(self, key):
         return
+
+
+class Bank(object):
+    def __init__(self, plugin):
+        self._plugin = plugin
+
+    def _normalize_key(self, key):
+        """Normalizes the key
+
+        To prevent small errors regarding path joining we define that
+        banks use path normalization similar to file systems.
+
+        This means that all paths are relative to '/' and that
+        '/path//dir' == '/path/dir'
+        """
+        key = os.path.normpath(key)
+        if not key.startswith("/"):
+            key = "/" + key
+
+        return key
+
+    def create_object(self, key, value):
+        return self._plugin.create_object(self._normalize_key(key), value)
+
+    def update_object(self, key, value):
+        return self._plugin.update_object(self._normalize_key(key), value)
+
+    def get_object(self, key):
+        return self._plugin.get_object(self._normalize_key(key))
+
+    def list_objects(self, prefix=None, limit=None, marker=None):
+        if not prefix:
+            prefix = "/"
+
+        return self._plugin.list_objects(
+            prefix=self._normalize_key(prefix) + "/",
+            limit=limit,
+            marker=marker,
+        )
+
+    def delete_object(self, key):
+        return self._plugin.delete_object(self._normalize_key(key))
+
+
+class BankSection(object):
+    """Bank Section compartmentalizes a section of a bank.
+
+    Bank section is used when an object wants to pass a section of
+    a bank to another entity and make sure it is only capable of
+    accessing part of it.
+    """
+    def __init__(self, bank, prefix, is_writable=True):
+        self._bank = bank
+        self._prefix = os.path.normpath(prefix or "/")
+        if not self._prefix.startswith("/"):
+            prefix = "/" + prefix
+
+        self._is_writable = is_writable
+
+    @property
+    def is_writable(self):
+        return self._is_writable
+
+    def _prepend_prefix(self, key):
+        if not key:
+            raise RuntimeError(_("No key specified"))
+
+        if not key.startswith("/"):
+            key = "/" + key
+
+        return "%s%s" % (self._prefix, key)
+
+    def _validate_writable(self):
+        if not self.is_writable:
+            raise RuntimeError(_("Bank section is read only"))
+
+    def create_object(self, key, value):
+        self._validate_writable()
+        return self._bank.create_object(
+            self._prepend_prefix(key),
+            value,
+        )
+
+    def update_object(self, key, value):
+        self._validate_writable()
+        return self._bank.update_object(
+            self._prepend_prefix(key),
+            value,
+        )
+
+    def get_object(self, key):
+        return self._bank.get_object(
+            self._prepend_prefix(key),
+        )
+
+    def list_objects(self, prefix=None, limit=None, marker=None):
+        if not prefix:
+            prefix = self._prefix
+        else:
+            prefix = self._prepend_prefix(prefix)
+
+        if marker is not None:
+            marker = self._prepend_prefix(marker)
+
+        return (key[len(self._prefix):]
+                for key in self._bank.list_objects(
+                    prefix,
+                    limit,
+                    marker,
+                    )
+                )
+
+    def delete_object(self, key):
+        self._validate_writable()
+        return self._bank.delete_object(
+            self._prepend_prefix(key),
+        )
