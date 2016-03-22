@@ -21,7 +21,9 @@ OPERATION_SUSPEND = 'suspend'
 RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   SERVER_RESOURCE_TYPE,
                   VOLUME_RESOURCE_TYPE,
+                  IMAGE_RESOURCE_TYPE,
                   ) = ('OS::Keystone::Project',
                        'OS::Nova::Server',
                        'OS::Cinder::Volume',
+                       'OS::Glance::Image',
                        )
