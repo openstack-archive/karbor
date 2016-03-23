@@ -14,13 +14,18 @@
 Protection Service
 """
 
+import six
+
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_utils import importutils
 
-from smaug.i18n import _LI
+from smaug.i18n import _LI, _LE
+from smaug import exception
 from smaug import manager
+from smaug.resource import Resource
+from smaug.services.protection import protectable_registry as p_reg
 
 LOG = logging.getLogger(__name__)
 
@@ -227,64 +232,76 @@ class ProtectionManager(manager.Manager):
         return return_stub
 
     def list_protectable_types(self, context):
-        # TODO(zengyingzhe)
-        LOG.info(_LI("Starting list protectable types."))
-
-        return_stub = [
-            "OS::Keystone::Project",
-            "OS::Nova::Server",
-            "OS::Glance::Image",
-            "OS::Cinder::Volume",
-            "OS::Neutron::Topology"
-        ]
-        return return_stub
+        LOG.info(_LI("Start to list protectable types."))
+        return p_reg.ProtectableRegistry.list_resource_types()
 
     def show_protectable_type(self, context, protectable_type):
-        # TODO(zengyingzhe)
-        LOG.info(_LI("Starting show protectable "
-                     "type. tpye:%s"), protectable_type)
-        return_stub = {
-            "name": "OS::Nova::Server",
-            "dependent_types": [
-                "OS::Cinder::Volume",
-                "OS::Glance::Image"
-            ]
+        LOG.info(_LI("Start to show protectable type %s"),
+                 protectable_type)
+
+        plugin = p_reg.ProtectableRegistry.get_protectable_resource_plugin(
+            protectable_type)
+        if not plugin:
+            raise exception.ProtectableTypeNotFound(
+                protectable_type=protectable_type)
+
+        dependents = []
+        for t in p_reg.ProtectableRegistry.list_resource_types():
+            if t == protectable_type:
+                continue
+
+            p = p_reg.ProtectableRegistry.get_protectable_resource_plugin(t)
+            if p and protectable_type in p.get_parent_resource_types():
+                dependents.append(t)
+
+        return {
+            'name': plugin.get_resource_type(),
+            "dependent_types": dependents
         }
 
-        return return_stub
+    def list_protectable_instances(self, context, protectable_type):
+        LOG.info(_LI("Start to list protectable instances of type: %s"),
+                 protectable_type)
 
-    def list_protectable_instances(self, context, protectable_type,
-                                   marker=None, limit=None, sort_keys=None,
-                                   sort_dirs=None, filters=None):
-        # TODO(zengyingzhe)
-        LOG.info(_LI("Starting list protectable instances. "
-                     "tpye:%s"), protectable_type)
+        registry = p_reg.ProtectableRegistry.create_instance(context)
 
-        return_stub = [
-            {
-                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
-            },
-            {
-                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
-            }
-        ]
-        return return_stub
+        try:
+            resource_instances = registry.list_resources(protectable_type)
+        except exception.ListProtectableResourceFailed as err:
+            LOG.error(_LE("List resources of type %(type)s failed: %(err)s"),
+                      {'type': protectable_type,
+                       'err': six.text_type(err)})
+            raise
+
+        result = []
+        for resource in resource_instances:
+            result.append(dict(id=resource.id))
+
+        return result
 
     def list_protectable_dependents(self, context,
                                     protectable_id,
                                     protectable_type):
-        # TODO(zengyingzhe)
-        LOG.info(_LI("Starting list protectable dependents."
-                     "id:%s."), protectable_id)
+        LOG.info(_LI("Start to list dependents of resource "
+                     "(type:%(type)s, id:%(id)s)"),
+                 {'type': protectable_type,
+                  'id': protectable_id})
 
-        return_stub = [
-            {
-                "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
-                "type": "OS::Cinder::Volume"
-            },
-            {
-                "id": "5fad94de-2926-486b-ae73-ff5d34775555",
-                "type": "OS::Cinder::Volume"
-            }
-        ]
-        return return_stub
+        registry = p_reg.ProtectableRegistry.create_instance(context)
+        parent_resource = Resource(type=protectable_type, id=protectable_id)
+
+        try:
+            dependent_resources = registry.fetch_dependent_resources(
+                parent_resource)
+        except exception.ListProtectableResourceFailed as err:
+            LOG.error(_LE("List dependent resources of (%(res)s) "
+                          "failed: %(err)s"),
+                      {'res': parent_resource,
+                       'err': six.text_type(err)})
+            raise
+
+        result = []
+        for resource in dependent_resources:
+            result.append(dict(type=resource.type, id=resource.id))
+
+        return result
