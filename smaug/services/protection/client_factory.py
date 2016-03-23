@@ -20,12 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 class ClientFactory(object):
-    _factory = {}
-
-    def __init__(self):
-        for module in self._list_clients():
-            module = importutils.import_module(module)
-            self._factory[module.SERVICE] = module
+    _factory = None
 
     @staticmethod
     def _list_clients():
@@ -40,8 +35,12 @@ class ClientFactory(object):
                 LOG.debug('Found client "%s"', name)
                 yield '%s.clients.%s' % (__package__, name)
 
-    @staticmethod
-    def create_client(service, context):
-        return ClientFactory._factory[service].create(context)
+    @classmethod
+    def create_client(cls, service, context):
+        if not cls._factory:
+            cls._factory = {}
+            for module in cls._list_clients():
+                module = importutils.import_module(module)
+                cls._factory[module.SERVICE] = module
 
-CLIENT_FACTORY = ClientFactory()
+        return cls._factory[service].create(context)
