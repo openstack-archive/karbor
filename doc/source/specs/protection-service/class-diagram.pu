@@ -1,0 +1,173 @@
+@startuml
+
+title ProtectionService Class Diagram
+
+class RpcServer {
+  -endpoints: []Manager_Class
+  -target: messaging.Target
+}
+
+class ProtectionManager {
+  +<<rpc call>>execute_operation(backup_plan:BackupPlan, action:Action)
+  +<<rpc call>>list_providers(list_options:{}): []Providers
+  +<<rpc call>>show_provider(provider_id:String}:Provider
+  +<<rpc call>>list_checkpoints(list_options:{}): []Checkpoint
+  +<<rpc call>>show_checkpoint(provider_id:String, checkpoint_id:String): Checkpoint
+  +<<rpc call>>delete_checkpoint(provider_id:String, checkpoint_id:String):void
+  -protect_operation(backup_plan:BackupPlan):void
+  -restore_operation(backup_plan:BackupPlan):void
+  -workFlowEngine:WorkFlowEngine
+}
+
+RpcServer*-right->ProtectionManager:has many as endpoints
+
+class WorkFlowEngine {
+  +build_task_flow(backup_plan:BackupPlan, provider:ProtectionProvider):flow:taskflow.flow.Flow
+  +execute(executor_type:String, flow:taskflow.flow.Flow):void
+}
+
+ProtectionManager*->WorkFlowEngine:has one
+
+class taskflow.engines.action_engine.engine.ParallelActionEngine {
+ ...
+}
+
+WorkFlowEngine*-up->taskflow.engines.action_engine.engine.ParallelActionEngine:load one
+
+class taskflow.patterns.graph_flow.Flow {
+  ...
+}
+
+WorkFlowEngine -right-> taskflow.patterns.graph_flow.Flow:generate one per operation execution
+
+class taskflow.task.Task {
+  ...
+}
+
+taskflow.patterns.graph_flow.Flow->taskflow.task.Task:composed by many
+
+class CreateCheckpointTask extends taskflow.task.Task {
+  -backup_plan:BackupPlan
+  -checkpoint_collection:CheckpoinCollection
+  +execute(): void
+  +revert(): void
+}
+
+class SyncCheckpointStatusTask extends taskflow.task.Task{
+  -checkpoint:Checkpoint
+  -checkpoint_collection:CheckpoinCollection
+  +execute(): void
+  +revert():void
+}
+
+interface CheckpointCollectionInterface {
+  +list(list_options:dict): []Checkpoints
+  +show(checkpoint_id:String): Checkpoint
+  +delete(checkpoint_id:String):void
+  +create(plan:ProtectionPlan): Checkpoint
+  +update(checkpoint:Checkpoint, kwargs:{}): void
+}
+
+class CheckpointCollection implements CheckpointCollectionInterface{
+  -bank_plugin:BankPluginInterface
+  +init(bank_plugin:BankPlugin):void
+  ..checkpoint functions..
+  ...
+  }
+
+CheckpointCollection*-down->BankPlugin:has one
+
+class ProviderRegistry{
+  +list_providers(list_options:{}):[]ProtectionProvider
+  +show_provider(provider_id:String):ProtectionProvider
+  -load_providers(cfg_file:String):void
+}
+
+ProtectionManager*-down->ProviderRegistry:has a
+
+interface ProtectionProvider {
+  +build_task_flow(backup_plan:BackupPlan, action:Action):taskflow.patterns.graph_flow.Flow
+}
+
+ProviderRegistry "1"*-down->"many" ProtectionProvider:manage
+
+ProtectionProvider-right->taskflow.patterns.graph_flow.Flow:generates
+
+taskflow.patterns.graph_flow.Flow->taskflow.patterns.graph_flow.Flow:composed by
+
+class PluggableProtectionProvider implements ProtectionProvider{
+  +get_protection_plugin(protectable_type:ProtectableType):ProtectionPluginInterface
+  +get_bank_plugin():BankPlugin
+  +get_checkpoint_collection():CheckpointCollection
+  +build_task_flow(backup_plan:BackupPlan): taskflow.patterns.graph_flow.Flow
+  -load_plugin(cfg_file:String):void
+  -bank_plugin:BankPluginInterface
+  -plugins:{ProtectableType:ProtectionPluginInterface}
+  -checkpoint_collection:CheckpointCollection
+}
+
+interface ProtectionPluginInterface {
+  ..getter functions..
+  +get_supported_resources_types(): []ResourceType
+  ..protect action functions..
+  +get_protection_status(protection_id:String):Enum
+  ..graph walk functions..
+  +on_resource_start(context: Context)
+  +on_resource_end(context: Context)
+  ..schema functions..
+  +get_options_schema(resource_type: ResourceType)
+  +get_saved_info_schema(resource_type: ResourceType)
+  +get_restore_schema(resource_type: ResourceType)
+  +get_saved_info(resource: Resource)
+}
+
+class ProtectionPlugin implements ProtectionPluginInterface {
+  -protectable_type:String
+  -schema:[]String
+  ..getter functions..
+  ...
+  ..protect action functions..
+  ...
+  ..graph walk functions..
+  ...
+  ..schema functions..
+  ...
+}
+
+PluggableProtectionProvider "1" *-left->"many" ProtectionPlugin:aggregates
+
+Interface BankPluginInterface {
+  +chroot(context:dict):void
+  +create_object(key:String, value:Object):void
+  +update_object(key:String, options:dict, value:Object):void
+  +show_object(key:String):dict
+  +get_object(key:String):dict
+  +delete_object(key:String):void
+  +list_objects(options:dict):void
+  +acquire_lease(): void
+  +renew_lease(): void
+  +check_lease_validity():bool
+}
+
+class BankPlugin implements BankPluginInterface {
+  -stroage_url:URL
+  -context:dict
+  -owner_id:String
+  -expired_time:Long
+  -renew_time:Long
+  ..object functions..
+  ...
+  ..lease functions..
+  ...
+}
+
+PluggableProtectionProvider "1" *-down->"1" CheckpointCollection:has a
+
+class ProtectionData {
+  +protection_id:String
+  +protection_target:RestoreTarget
+  +status:Enum
+}
+
+ProtectionPlugin -up->ProtectionData: create one
+@enduml

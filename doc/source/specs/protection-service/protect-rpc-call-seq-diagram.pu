@@ -1,0 +1,24 @@
+@startuml
+
+title create_checkpoint - API RPC call Sequence Diagram
+
+Smaug_API_Service ->> ProtectionManager :create_checkpoint(backup_plan, protect)
+ProtectionManager -> WorkflowEngine:built task flow
+ProtectionManager -> WorkflowEngine: execute task flow
+WorkflowEngine -> CreateCheckpointTask:execute()
+CreateCheckpointTask -> Checkpoints : create_checkpoint()
+Checkpoints -\ BankPlugin : check_lease_validity(owner_id)
+Checkpoints -\ BankPlugin : put(checkpoint_key, value)
+Checkpoints -\ BankPlugin : build indexes, put(index_key, value)
+WorkflowEngine -> ResourceProtectTask:execute()
+ResourceProtectTask -\ ProtectionPlugin : protect(protectable)
+ResourceProtectTask -> Checkpoints : create_protection_definition (checkpoint, protectable)
+Checkpoints -\ BankPlugin : put(protection_definition_key, value)
+WorkflowEngine -> SyncCheckpointStatusTask :execute()
+SyncCheckpointStatusTask -\ProtectionPlugin : get_protection_status(protectable)
+ProtectionPlugin --\ SyncCheckpointStatusTask : Return protection status
+SyncCheckpointStatusTask -> Checkpoints : update_protection_definition (checkpoint, protectable, {'status':finished})
+Checkpoints -\ BankPlugin : put(protection_definition_key, value)
+SyncCheckpointStatusTask ->Checkpoints : update_checkpoint(checkpoint, {'status':finished})
+Checkpoints -\ BankPlugin : put(checkpoint_key, updated_value)
+@enduml
