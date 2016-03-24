@@ -52,7 +52,7 @@ class OperationEngineManager(manager.Manager):
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput,
-                                   exception.InvalidOperationObject)
+                                   exception.TriggerIsInvalid)
     def create_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Create scheduled operation.")
 
@@ -75,8 +75,7 @@ class OperationEngineManager(manager.Manager):
             raise
 
     @messaging.expected_exceptions(exception.ScheduledOperationStateNotFound,
-                                   exception.TriggerNotFound,
-                                   exception.InvalidInput)
+                                   exception.TriggerNotFound)
     def delete_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Delete scheduled operation.")
 
@@ -98,6 +97,7 @@ class OperationEngineManager(manager.Manager):
     def delete_trigger(self, context, trigger_id):
         self._trigger_manager.remove_trigger(trigger_id)
 
-    @messaging.expected_exceptions(exception.TriggerNotFound)
+    @messaging.expected_exceptions(exception.TriggerNotFound,
+                                   exception.InvalidInput)
     def update_trigger(self, context, trigger):
         self._trigger_manager.update_trigger(trigger.id, trigger.properties)
