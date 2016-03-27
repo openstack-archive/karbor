@@ -639,6 +639,96 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /{project_id}/operation_logs/:
+    get:
+      summary: Operation log entry point.
+      description: |
+        Get the information about operation instances in smaug.
+        Whenever an operation is run a log instance is created.
+        The user never creates operation logs.
+        This should not include the 'entires' property for the operation log.
+      parameters:
+        - $ref: '#/parameters/projectParam'
+        - $ref: '#/parameters/nameFilterParam'
+        - $ref: '#/parameters/sortParam'
+        - $ref: '#/parameters/limitParam'
+        - $ref: '#/parameters/markerParam'
+      tags:
+        - Project API
+        - Scheduled Operation
+      responses:
+        '200':
+          description: An array of operation logs (without the entries)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OperationLog'
+          examples:
+            application/json: [
+              {
+                "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
+                "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
+                "started_at": "2015-08-27T09:50:58-05:00",
+                "state": "running"
+              },
+              {
+                "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
+                "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
+                "started_at": "2015-08-27T09:50:58-05:00",
+                "ended_at": "2015-08-27T10:50:58-05:00",
+                "state": "finished"
+              },
+              {
+                "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
+                "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
+                "started_at": "2015-08-27T09:50:58-05:00",
+                "ended_at": "2015-08-27T10:50:58-05:00",
+                "state": "failed",
+                "error": "Could not access bank"
+              },
+            ]
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /{project_id}/operation_logs/{operation_log_id}:
+    get:
+      summary: Operation log.
+      description: |
+        Get the information about a specific run of an operation
+      parameters:
+        - $ref: '#/parameters/projectParam'
+        - $ref: '#/parameters/operation_log_idParam'
+      tags:
+        - Project API
+        - Scheduled Operation
+      responses:
+        '200':
+          description: An array of operation logs (with the entries)
+          schema:
+              $ref: '#/definitions/OperationLog'
+          examples:
+            application/json: |
+              {
+                "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
+                "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
+                "started_at": "2015-08-27T09:50:58-05:00",
+                "state": "running"
+                "entries": [
+                  {
+                    "timestamp": "2015-08-27T09:50:58-05:00",
+                    "message": "Operation started"
+                  },
+                  {
+                    "timestamp": "2015-08-27T09:50:51-05:00",
+                    "message": "Doing things"
+                  }
+                ]
+              },
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /{project_id}/restore:
     get:
       summary: Restores
@@ -1105,6 +1195,45 @@ definitions:
         type: string
       description:
         type: string
+  OperationLog:
+    type: object
+    properties:
+      id:
+        type: string
+        format: UUID
+        description: |
+          Unique identifier representing a specific operation log.
+      scheduled_operation_id:
+        type: string
+        format: UUID
+        description: |
+          ID of the scheduled operation that defines this log.
+      started_at:
+        type: string
+        description: When was this operation run started in ISO 8601 format.
+      ended_at:
+        type: string
+        description: When was this operation run ended in ISO 8601 format.
+      status:
+        type: string
+        description: Status of the operation could be running, finished, failed.
+      error:
+        type: string
+        description: If the status is 'failed' this will contain the reason for the failure.
+      entries:
+        type: array
+        description: Complete log of the entires for the operation.
+        items:
+          $ref: '#/definitions/OperationLogEntry'
+  OperationLogEntry:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        description: When was this log line emitted in ISO 8601 format.
+      message:
+        type: string
+        description: Message containing information about an event.
   Trigger:
     type: object
     discriminator: type
@@ -1271,6 +1400,13 @@ parameters:
     required: true
     in: path
     description: id of the scheduled operation.
+  operation_log_idParam:
+    name: operation_log_id
+    type: string
+    format: uuid
+    required: true
+    in: path
+    description: id of the operation log.
   protectable_typeParam:
     name: protectable_type
     type: string
