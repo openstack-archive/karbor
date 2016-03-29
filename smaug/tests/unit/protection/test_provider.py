@@ -1,5 +1,5 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
+# not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
@@ -27,15 +27,15 @@ provider_opt = [
                help='the provider id')
 ]
 CONF = cfg.CONF
-CONF.register_opt(cfg.ListOpt('enabled_providers',
-                              default=['provider1', 'provider2']))
-CONF.register_opts(provider_opt, group='provider1')
-CONF.register_opts(provider_opt, group='provider2')
 
 
 class ProviderRegistryTest(base.TestCase):
     def setUp(self):
         super(ProviderRegistryTest, self).setUp()
+        CONF.set_override('enabled_providers',
+                          ['provider1', 'provider2'])
+        CONF.register_opts(provider_opt, group='provider1')
+        CONF.register_opts(provider_opt, group='provider2')
         CONF.set_override('plugin', ['SERVER', 'VOLUME'],
                           group='provider1')
         CONF.set_override('plugin', ['SERVER'],
@@ -76,3 +76,10 @@ class ProviderRegistryTest(base.TestCase):
         provider_list = pr.list_providers()
         for provider_node in provider_list:
             self.assertTrue(pr.show_provider(provider_node['id']))
+
+    def tearDown(self):
+        CONF.register_opts(provider_opt, group='provider1')
+        CONF.register_opts(provider_opt, group='provider2')
+        CONF.set_override('enabled_providers',
+                          None)
+        super(ProviderRegistryTest, self).tearDown()

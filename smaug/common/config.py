@@ -80,6 +80,11 @@ global_opts = [
     cfg.IntOpt('lease_validity_window',
                default=100,
                help='validity_window for bank lease, in seconds'),
+    cfg.ListOpt('enabled_providers',
+                default=None,
+                help='A list of provider names to use. These provider names '
+                     'should be backed by a unique [CONFIG] group '
+                     'with its options'),
 ]
 
 CONF.register_opts(global_opts)
