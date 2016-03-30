@@ -31,10 +31,11 @@ class Checkpoint(object):
     VERSION = "0.9"
     SUPPORTED_VERSIONS = ["0.9"]
 
-    def __init__(self, bank_section, checkpoint_id):
+    def __init__(self, bank_section, bank_lease, checkpoint_id):
         self._id = checkpoint_id
         self._index_file_path = _checkpoint_id_to_index_file(checkpoint_id)
         self._bank_section = bank_section
+        self._bank_lease = bank_lease
         self.reload_meta_data()
 
     @property
@@ -49,6 +50,11 @@ class Checkpoint(object):
     def status(self):
         # TODO(saggi): check for valid values and transitions
         return self._md_cache["status"]
+
+    @property
+    def owner_id(self):
+        # TODO(yinwei): check for valid values and transitions
+        return self._md_cache["owner_id"]
 
     @status.setter
     def status(self, value):
@@ -75,11 +81,12 @@ class Checkpoint(object):
         return str(uuid())
 
     @classmethod
-    def get_by_section(cls, bank_section, checkpoint_id):
-        return Checkpoint(bank_section, checkpoint_id)
+    def get_by_section(cls, bank_section, bank_lease, checkpoint_id):
+        return Checkpoint(bank_section, bank_lease, checkpoint_id)
 
     @classmethod
-    def create_in_section(cls, bank_section, checkpoint_id=None):
+    def create_in_section(cls, bank_section, bank_lease, owner_id,
+                          checkpoint_id=None):
         checkpoint_id = checkpoint_id or cls._generate_id()
         bank_section.create_object(
             key=_checkpoint_id_to_index_file(checkpoint_id),
@@ -87,15 +94,28 @@ class Checkpoint(object):
                 "version": cls.VERSION,
                 "id": checkpoint_id,
                 "status": "protecting",
+                "owner_id": owner_id,
             }
         )
-        return Checkpoint(bank_section, checkpoint_id)
+        return Checkpoint(bank_section,
+                          bank_lease,
+                          checkpoint_id)
 
     def commit(self):
-        self._bank_section.create_object(
-            key=self._index_file_path,
-            value=self._md_cache,
-        )
+        if self._bank_lease is not None:
+            if self._bank_lease.check_lease_validity():
+                self._bank_section.create_object(
+                    key=self._index_file_path,
+                    value=self._md_cache,
+                )
+            else:
+                raise RuntimeError("Could not commit: lease isn't valid "
+                                   "for enough commit time")
+        else:
+            self._bank_section.create_object(
+                key=self._index_file_path,
+                value=self._md_cache,
+            )
 
     def purge(self):
         """Purge the index file of the checkpoint.
@@ -112,12 +132,17 @@ class Checkpoint(object):
         else:
             raise RuntimeError("Could not delete: Checkpoint is not empty")
 
+    def get_resource_bank_section(self, resource_id):
+        prefix = "/resource-data/%s/%s/" % (self._id, resource_id)
+        return BankSection(self._bank_section.bank, prefix)
+
 
 class CheckpointCollection(object):
 
-    def __init__(self, bank):
+    def __init__(self, bank, bank_lease=None):
         super(CheckpointCollection, self).__init__()
         self._bank = bank
+        self._bank_lease = bank_lease
         self._checkpoints_section = BankSection(bank, "/checkpoints")
 
     def list_ids(self, limit=None, marker=None):
@@ -133,9 +158,12 @@ class CheckpointCollection(object):
     def get(self, checkpoint_id):
         # TODO(saggi): handle multiple instances of the same checkpoint
         return Checkpoint.get_by_section(self._checkpoints_section,
+                                         self._bank_lease,
                                          checkpoint_id)
 
     def create(self, plan):
         # TODO(saggi): Serialize plan to checkpoint. Will be done in
         # future patches.
-        return Checkpoint.create_in_section(self._checkpoints_section)
+        return Checkpoint.create_in_section(self._checkpoints_section,
+                                            self._bank_lease,
+                                            self._bank.get_owner_id())

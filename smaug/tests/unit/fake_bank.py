@@ -38,3 +38,6 @@ class FakeBankPlugin(bank_plugin.BankPlugin):
 
     def delete_object(self, key):
         return
+
+    def get_owner_id(self):
+        return

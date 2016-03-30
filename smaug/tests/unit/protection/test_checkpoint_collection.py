@@ -10,17 +10,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from smaug.tests import base
+import mock
 
 from smaug.services.protection.bank_plugin import Bank
-from smaug.tests.unit.protection.test_bank import _InMemoryBankPlugin
-
 from smaug.services.protection.checkpoint import CheckpointCollection
+from smaug.tests import base
+from smaug.tests.unit.protection.test_bank import _InMemoryBankPlugin
+from smaug.tests.unit.protection.test_bank import _InMemoryLeasePlugin
 
 
 class CheckpointCollectionTest(base.TestCase):
     def _create_test_collection(self):
-        return CheckpointCollection(Bank(_InMemoryBankPlugin()))
+        return CheckpointCollection(Bank(_InMemoryBankPlugin()),
+                                    _InMemoryLeasePlugin())
 
     def test_create_checkpoint(self):
         collection = self._create_test_collection()
@@ -43,3 +45,15 @@ class CheckpointCollectionTest(base.TestCase):
         checkpoint = collection.get(result.pop())
         checkpoint.purge()
         self.assertEqual(set(collection.list_ids()), result)
+
+    def test_write_checkpoint_with_invalid_lease(self):
+        collection = self._create_test_collection()
+        checkpoint = collection.create(None)
+        collection._bank_lease.check_lease_validity = mock.MagicMock()
+        collection._bank_lease.check_lease_validity.return_value = False
+        checkpoint.status = "finished"
+        self.assertRaises(RuntimeError, checkpoint.commit)
+        self.assertNotEqual(
+            checkpoint.status,
+            collection.get(checkpoint_id=checkpoint.id).status,
+        )

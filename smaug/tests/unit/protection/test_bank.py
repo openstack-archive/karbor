@@ -11,30 +11,31 @@
 #    under the License.
 
 from collections import OrderedDict
-
+from copy import deepcopy
 import six
+from uuid import uuid4 as uuid
 
 from smaug import exception
-from smaug.tests import base
-
 from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import BankSection
+from smaug.services.protection.bank_plugin import LeasePlugin
+from smaug.tests import base
 
 
 class _InMemoryBankPlugin(BankPlugin):
-    def __init__(self):
+    def __init__(self, config=None):
+        super(_InMemoryBankPlugin, self).__init__(config)
         self._data = OrderedDict()
 
     def create_object(self, key, value):
-        if self._data.setdefault(key, value) != value:
-            raise KeyError("Object with this key already exists")
+        self._data[key] = value
 
     def update_object(self, key, value):
         self._data[key] = value
 
     def get_object(self, key):
-        return self._data[key]
+        return deepcopy(self._data[key])
 
     def list_objects(self, prefix=None, limit=None, marker=None):
         marker_found = marker is None
@@ -43,17 +44,30 @@ class _InMemoryBankPlugin(BankPlugin):
                 if marker_found:
                     if prefix is None or key.startswith(prefix):
                         if limit is not None:
-                            limit = limit - 1
+                            limit -= 1
                             if limit < 0:
                                 return
-
                         yield key
-
             else:
                 marker_found = True
 
     def delete_object(self, key):
         del self._data[key]
+
+    def get_owner_id(self):
+        return str(uuid())
+
+
+class _InMemoryLeasePlugin(LeasePlugin):
+
+    def acquire_lease(self):
+        pass
+
+    def renew_lease(self):
+        pass
+
+    def check_lease_validity(self):
+        return True
 
 
 class BankSectionTest(base.TestCase):

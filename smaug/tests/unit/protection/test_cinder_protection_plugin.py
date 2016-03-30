@@ -44,6 +44,8 @@ class FakeBankPlugin(BankPlugin):
     def delete_object(self, key):
         return
 
+    def get_owner_id(self):
+        return
 
 fake_bank = Bank(FakeBankPlugin())
 fake_bank_section = BankSection(bank=fake_bank, prefix="fake")

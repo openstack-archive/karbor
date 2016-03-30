@@ -67,6 +67,10 @@ class BankPlugin(object):
     def delete_object(self, key):
         return
 
+    @abc.abstractmethod
+    def get_owner_id(self):
+        return
+
 
 class Bank(object):
     def __init__(self, plugin):
@@ -111,6 +115,9 @@ class Bank(object):
 
     def get_sub_section(self, prefix, is_writable=True):
         return BankSection(self, prefix, is_writable)
+
+    def get_owner_id(self):
+        return self._plugin.get_owner_id()
 
 
 class BankSection(object):
@@ -205,3 +212,7 @@ class BankSection(object):
         return self._bank.delete_object(
             self._prepend_prefix(key),
         )
+
+    @property
+    def bank(self):
+        return self._bank

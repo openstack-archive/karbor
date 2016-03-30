@@ -21,7 +21,7 @@ from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import BankSection
 from smaug.services.protection.client_factory import ClientFactory
-from smaug.services.protection.protection_plugins.\
+from smaug.services.protection.protection_plugins. \
     image.image_protection_plugin import GlanceProtectionPlugin
 from smaug.services.protection.protection_plugins.image \
     import image_plugin_schemas
@@ -42,6 +42,9 @@ class FakeBankPlugin(BankPlugin):
         return
 
     def delete_object(self, key):
+        return
+
+    def get_owner_id(self):
         return
 
 
