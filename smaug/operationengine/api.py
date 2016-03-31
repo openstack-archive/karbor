@@ -33,6 +33,19 @@ class API(base.Base):
             OperationEngineAPI()
         super(API, self).__init__(db_driver)
 
-    def create_scheduled_operation(self, context, request_spec):
-        self.operationengine_rpcapi.create_scheduled_operation(context,
-                                                               request_spec)
+    def create_scheduled_operation(self, context, operation_id, trigger_id):
+        self.operationengine_rpcapi.create_scheduled_operation(
+            context, operation_id, trigger_id)
+
+    def delete_scheduled_operation(self, context, operation_id, trigger_id):
+        self.operationengine_rpcapi.delete_scheduled_operation(
+            context, operation_id, trigger_id)
+
+    def create_trigger(self, context, trigger):
+        self.operationengine_rpcapi.create_trigger(context, trigger)
+
+    def delete_trigger(self, context, trigger_id):
+        self.operationengine_rpcapi.delete_trigger(context, trigger_id)
+
+    def update_trigger(self, context, trigger):
+        self.operationengine_rpcapi.update_trigger(context, trigger)

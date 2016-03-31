@@ -74,13 +74,20 @@ class Manager(base.Base, PeriodicTasks):
         """Tasks to be run at a periodic interval."""
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)
 
-    def init_host(self):
+    def init_host(self, **kwargs):
         """Handle initialization if this is a standalone service.
 
         A hook point for services to execute tasks before the services are made
         available (i.e. showing up on RPC and starting to accept RPC calls) to
         other components.  Child classes should override this method.
 
+        """
+        pass
+
+    def cleanup_host(self):
+        """Hook to do cleanup work when the service shuts down.
+
+        Child classes should override this method.
         """
         pass
 

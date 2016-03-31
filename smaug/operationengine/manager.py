@@ -18,8 +18,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from smaug import exception
 from smaug import manager
-from smaug.services.protection import api as protection_api
+from smaug import objects
+from smaug.operationengine.engine import trigger_manager
+from smaug.operationengine import scheduled_operation_state
+
 
 CONF = cfg.CONF
 
@@ -36,8 +40,64 @@ class OperationEngineManager(manager.Manager):
     def __init__(self, service_name=None,
                  *args, **kwargs):
         super(OperationEngineManager, self).__init__(*args, **kwargs)
-        self.protection_api = protection_api.API()
+        self._service_id = None
+        self._trigger_manager = None
 
-    def create_scheduled_operation(self, context, request_spec=None):
-        LOG.debug("Received a rpc call from a api service."
-                  "request_spec:%s", request_spec)
+    def init_host(self, **kwargs):
+        self._trigger_manager = trigger_manager.TriggerManager()
+        self._service_id = kwargs.get("service_id")
+
+    def cleanup_host(self):
+        self._trigger_manager.shutdown()
+
+    @messaging.expected_exceptions(exception.TriggerNotFound,
+                                   exception.InvalidInput,
+                                   exception.InvalidOperationObject)
+    def create_scheduled_operation(self, context, operation_id, trigger_id):
+        LOG.debug("Create scheduled operation.")
+
+        # register operation
+        self._trigger_manager.register_operation(trigger_id, operation_id)
+
+        # create ScheduledOperationState record
+        state_info = {
+            "operation_id": operation_id,
+            "service_id": self._service_id,
+            "state": scheduled_operation_state.REGISTERED
+        }
+        operation_state = objects.ScheduledOperationState(
+            context, **state_info)
+        try:
+            operation_state.create()
+        except Exception:
+            self._trigger_manager.unregister_operation(
+                trigger_id, operation_id)
+            raise
+
+    @messaging.expected_exceptions(exception.ScheduledOperationStateNotFound,
+                                   exception.TriggerNotFound,
+                                   exception.InvalidInput)
+    def delete_scheduled_operation(self, context, operation_id, trigger_id):
+        LOG.debug("Delete scheduled operation.")
+
+        operation_state = objects.ScheduledOperationState.\
+            get_by_operation_id(context, operation_id)
+        if scheduled_operation_state.DELETED != operation_state.state:
+            operation_state.state = scheduled_operation_state.DELETED
+            operation_state.save()
+
+        self._trigger_manager.unregister_operation(trigger_id, operation_id)
+
+    @messaging.expected_exceptions(exception.InvalidInput)
+    def create_trigger(self, context, trigger):
+        self._trigger_manager.add_trigger(trigger.id, trigger.type,
+                                          trigger.properties)
+
+    @messaging.expected_exceptions(exception.TriggerNotFound,
+                                   exception.DeleteTriggerNotAllowed)
+    def delete_trigger(self, context, trigger_id):
+        self._trigger_manager.remove_trigger(trigger_id)
+
+    @messaging.expected_exceptions(exception.TriggerNotFound)
+    def update_trigger(self, context, trigger):
+        self._trigger_manager.update_trigger(trigger.id, trigger.properties)

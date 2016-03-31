@@ -11,6 +11,7 @@
 #    under the License.
 
 import mock
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 
 from smaug import objects
@@ -39,32 +40,48 @@ class TestScheduledOperation(test_objects.BaseObjectsTestCase):
 
     @mock.patch('smaug.db.scheduled_operation_get')
     def test_get_by_id(self, operation_get):
-        db_op = Fake_Operation
+        db_op = Fake_Operation.copy()
         operation_get.return_value = db_op
 
         op = self.Operation_Class.get_by_id(self.context, Operation_ID)
+        db_op['operation_definition'] = jsonutils.loads(
+            db_op['operation_definition'])
         self._compare(self, db_op, op)
         operation_get.assert_called_once_with(self.context, Operation_ID, [])
 
     @mock.patch('smaug.db.scheduled_operation_get')
     def test_get_join_trigger(self, operation_get):
         db_op = Fake_Operation.copy()
-        db_op['trigger'] = {'type': 'time'}
+        db_op['trigger'] = {
+            'created_at': NOW,
+            'deleted_at': None,
+            'updated_at': NOW,
+            'deleted': False,
+            'id': '123',
+            'name': 'daily',
+            'project_id': '123',
+            'type': 'time',
+            'properties': '{}'
+        }
         operation_get.return_value = db_op
 
         op = self.Operation_Class.get_by_id(self.context,
                                             Operation_ID, ['trigger'])
-        self._compare(self, db_op, op)
+        db_op['operation_definition'] = jsonutils.loads(
+            db_op['operation_definition'])
+        self.assertEqual(db_op['trigger']['type'], op.trigger.type)
         operation_get.assert_called_once_with(self.context,
                                               Operation_ID, ['trigger'])
 
     @mock.patch('smaug.db.scheduled_operation_create')
     def test_create(self, operation_create):
-        db_op = Fake_Operation
+        db_op = Fake_Operation.copy()
         operation_create.return_value = db_op
 
         op = self.Operation_Class(context=self.context)
         op.create()
+        db_op['operation_definition'] = jsonutils.loads(
+            db_op['operation_definition'])
         self._compare(self, db_op, op)
         operation_create.assert_called_once_with(self.context, {})
 

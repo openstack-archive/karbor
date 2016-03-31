@@ -217,6 +217,10 @@ class InvalidOperationObject(Invalid):
     message = _("The operation %(operation_id)s is invalid")
 
 
+class DeleteTriggerNotAllowed(NotAuthorized):
+    message = _("Can not delete trigger %(trigger_id)s")
+
+
 class ClassNotFound(NotFound):
     message = _("Class %(class_name)s could not be found: %(exception)s")
 
