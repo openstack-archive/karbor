@@ -108,7 +108,7 @@ class ProvidersApiTest(base.TestCase):
         self.controller.checkpoints_delete(
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
-            '2220f8b1-975d-4621-a872-fa9afb43cb6c', {})
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c')
         self.assertTrue(moak_delete.called)
 
     @mock.patch(

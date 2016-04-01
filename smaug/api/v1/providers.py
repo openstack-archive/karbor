@@ -441,7 +441,7 @@ class ProvidersController(wsgi.Controller):
         LOG.info(_LI("Checkpoint info retrieved successfully."))
         return checkpoint
 
-    def checkpoints_delete(self, req, provider_id, checkpoint_id, body):
+    def checkpoints_delete(self, req, provider_id, checkpoint_id):
         """Delete a checkpoint."""
         context = req.environ['smaug.context']
 
