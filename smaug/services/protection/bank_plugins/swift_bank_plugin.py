@@ -10,6 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+import time
+import uuid
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -19,8 +23,6 @@ from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import LeasePlugin
 from swiftclient import client as swift
 from swiftclient import ClientException
-import time
-import uuid
 
 swift_client_opts = [
     cfg.StrOpt('bank_swift_url',
@@ -132,11 +134,17 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                 cacert=self.swift_ca_cert_file)
         return connection
 
+    def get_owner_id(self):
+        return self.owner_id
+
     def create_object(self, key, value):
         try:
+            if not isinstance(value, str):
+                value = json.dumps(value)
             self._put_object(container=self.bank_object_container,
                              obj=key,
-                             contents=value)
+                             contents=value,
+                             headers={'x-object-meta-serialized': True})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("create object failed, err: %s."), err)
             raise exception.BankCreateObjectFailed(reasone=err,
@@ -144,9 +152,12 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
 
     def update_object(self, key, value):
         try:
+            if not isinstance(value, str):
+                value = json.dumps(value)
             self._put_object(container=self.bank_object_container,
                              obj=key,
-                             contents=value)
+                             contents=value,
+                             headers={'x-object-meta-serialized': True})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("update object failed, err: %s."), err)
             raise exception.BankUpdateObjectFailed(reasone=err,
@@ -182,7 +193,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             raise exception.BankListObjectsFailed(reasone=err)
         for obj in body:
             if obj.get("name"):
-                object_names.append(obj.get("name"))
+                object_names.append(obj.get("name").lstrip(prefix))
         return object_names
 
     def acquire_lease(self):
@@ -234,6 +245,8 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         try:
             (_resp, body) = self.connection.get_object(container=container,
                                                        obj=obj)
+            if _resp.get("x-object-meta-serialized") == "True":
+                body = json.loads(body)
             return body
         except ClientException as err:
             raise SwiftConnectionFailed(reason=err)

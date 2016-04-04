@@ -68,7 +68,7 @@ class FakeSwiftConnection(object):
         if os.path.exists(container_dir) is True:
             if os.path.exists(obj_file) is True:
                 with open(obj_file, "r") as f:
-                    return None, f.read()
+                    return {}, f.read()
             else:
                 raise ClientException("error_obj")
         else:
