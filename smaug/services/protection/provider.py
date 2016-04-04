@@ -10,22 +10,28 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from smaug.common import constants
 from smaug.i18n import _LE
 from smaug.services.protection import checkpoint
 from smaug import utils
 
-provider_opt = [
+provider_opts = [
     cfg.MultiStrOpt('plugin',
                     default='',
                     help='plugins to use for protection'),
+    cfg.StrOpt('bank',
+               default='',
+               help='bank plugin to use for storage'),
     cfg.StrOpt('description',
                default='',
                help='the description of provider'),
-    cfg.StrOpt('provider_id',
+    cfg.StrOpt('name',
+               default='',
+               help='the name of provider'),
+    cfg.StrOpt('id',
                default='',
                help='the provider id')
 ]
@@ -35,13 +41,20 @@ LOG = logging.getLogger(__name__)
 
 PROTECTION_NAMESPACE = 'smaug.protections'
 
+CONF.register_opt(cfg.StrOpt('provider_config_dir',
+                             default='providers.d',
+                             help='Configuration directory for providers.'
+                             ' Absolute path, or relative to smaug '
+                             ' configuration directory.'))
+
 
 class PluggableProtectionProvider(object):
-    def __init__(self, provider_id,  provider_name, description,  plugins):
+    def __init__(self, provider_config):
         super(PluggableProtectionProvider, self).__init__()
-        self._id = provider_id
-        self._name = provider_name
-        self._description = description
+        self._config = provider_config
+        self._id = self._config.provider.id
+        self._name = self._config.provider.name
+        self._description = self._config.provider.description
         self._extended_info_schema = {'options_schema': {},
                                       'restore_schema': {},
                                       'saved_info_schema': {}}
@@ -49,12 +62,21 @@ class PluggableProtectionProvider(object):
         self._bank_plugin = None
         self._plugin_map = {}
 
-        self._load_plugins(plugins=plugins)
+        if hasattr(self._config.provider, 'bank') \
+           and not self._config.provider.bank:
+            raise ImportError("Empty bank")
+        self._load_bank(self._config.provider.bank)
+        if hasattr(self._config.provider, 'plugin'):
+            for plugin_name in self._config.provider.plugin:
+                if not plugin_name:
+                    raise ImportError("Empty protection plugin")
+                self._load_plugin(plugin_name)
+
         if self._bank_plugin:
             self.checkpoint_collection = checkpoint.CheckpointCollection(
                 self._bank_plugin)
         else:
-            LOG.error(_LE('Bank plugin not exist,check your configuration'))
+            LOG.error(_LE('Bank plugin not exist, check your configuration'))
 
     @property
     def id(self):
@@ -72,27 +94,43 @@ class PluggableProtectionProvider(object):
     def extended_info_schema(self):
         return self._extended_info_schema
 
-    def _load_plugins(self, plugins):
-        for plugin_name in plugins:
-            try:
-                plugin = utils.load_plugin(PROTECTION_NAMESPACE, plugin_name)
-            except Exception:
-                LOG.exception(_LE("Load protection plugin: %s failed."),
-                              plugin_name)
-                raise
-            else:
-                self._plugin_map[plugin_name] = plugin
-                if constants.PLUGIN_BANK in plugin_name.lower():
-                    self._bank_plugin = plugin
+    @property
+    def bank(self):
+        return self._bank_plugin
+
+    @property
+    def plugins(self):
+        return self._plugin_map
+
+    def _load_bank(self, bank_name):
+        try:
+            plugin = utils.load_plugin(PROTECTION_NAMESPACE, bank_name,
+                                       self._config)
+        except Exception:
+            LOG.error(_LE("Load bank plugin: '%s' failed."), bank_name)
+            raise
+        else:
+            self._bank_plugin = plugin
+
+    def _load_plugin(self, plugin_name):
+        try:
+            plugin = utils.load_plugin(PROTECTION_NAMESPACE, plugin_name,
+                                       self._config)
+        except Exception:
+            LOG.error(_LE("Load protection plugin: '%s' failed."), plugin_name)
+            raise
+        else:
+            self._plugin_map[plugin_name] = plugin
+            for resource in plugin.get_supported_resources_types():
                 if hasattr(plugin, 'get_options_schema'):
-                    self._extended_info_schema['options_schema'][plugin_name] \
-                        = plugin.get_options_schema()
+                    self._extended_info_schema['options_schema'][resource] \
+                        = plugin.get_options_schema(resource)
                 if hasattr(plugin, 'get_restore_schema'):
-                    self._extended_info_schema['restore_schema'][plugin_name] \
-                        = plugin.get_restore_schema()
+                    self._extended_info_schema['restore_schema'][resource] \
+                        = plugin.get_restore_schema(resource)
                 if hasattr(plugin, 'get_saved_info_schema'):
-                    self._extended_info_schema['saved_info_schema'][plugin_name] \
-                        = plugin.get_saved_info_schema()
+                    self._extended_info_schema['saved_info_schema'][resource] \
+                        = plugin.get_saved_info_schema(resource)
 
     def get_checkpoint_collection(self):
         return self.checkpoint_collection
@@ -109,51 +147,29 @@ class ProviderRegistry(object):
         self._load_providers()
 
     def _load_providers(self):
-        """load provider
+        """load provider"""
+        config_dir = utils.find_config(CONF.provider_config_dir)
 
-        smaug.conf example:
-        [default]
-        enabled_providers=provider1,provider2
-        [provider1]
-        provider_id='' configured by admin
-        plugin=BANK  define in setup.cfg
-        plugin=VolumeProtectionPlugin define in setup.cfg
-        description='the description of provider1'
-        [provider2]
-        provider_id='' configured by admin
-        plugin=BANK  define in setup.cfg
-        plugin=VolumeProtectionPlugin define in setup.cfg
-        plugin=ServerProtectionPlugin define in setup.cfg
-        description='the description of provider2'
-        """
-        if CONF.enabled_providers:
-            for provider_name in CONF.enabled_providers:
-                CONF.register_opts(provider_opt, group=provider_name)
-                plugins = getattr(CONF, provider_name).plugin
-                description = getattr(CONF, provider_name).description
-                provider_id = getattr(CONF, provider_name).provider_id
-                if not all([plugins, provider_id]):
-                    LOG.error(_LE("Invalid provider:%s,check provider"
-                                  " configuration"),
-                              provider_name)
-                    continue
-                try:
-                    provider = PluggableProtectionProvider(provider_id,
-                                                           provider_name,
-                                                           description,
-                                                           plugins)
-                except Exception:
-                    LOG.exception(_LE("Load provider: %s failed."),
-                                  provider_name)
-                else:
-                    self.providers[provider_id] = provider
+        for config_file in os.listdir(config_dir):
+            if not config_file.endswith('.conf'):
+                continue
+            config_path = os.path.abspath(os.path.join(config_dir,
+                                                       config_file))
+            provider_config = cfg.ConfigOpts()
+            provider_config(args=['--config-file=' + config_path])
+            provider_config.register_opts(provider_opts, 'provider')
+            try:
+                provider = PluggableProtectionProvider(provider_config)
+            except Exception:
+                LOG.error(_LE("Load provider: %s failed."),
+                          provider_config.provider.name)
+            else:
+                self.providers[provider.id] = provider
 
-    def list_providers(self, list_option=None):
-        if not list_option:
-            return [dict(id=provider.id, name=provider.name,
-                         description=provider.description)
-                    for provider in self.providers.values()]
-        # It seems that we don't need list_option
+    def list_providers(self):
+        return [dict(id=provider.id, name=provider.name,
+                     description=provider.description)
+                for provider in self.providers.values()]
 
     def show_provider(self, provider_id):
         return self.providers.get(provider_id, None)

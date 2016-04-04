@@ -12,6 +12,7 @@
 
 import os
 
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
 from smaug.i18n import _LE
@@ -36,11 +37,11 @@ class ClientFactory(object):
                 yield '%s.clients.%s' % (__package__, name)
 
     @classmethod
-    def create_client(cls, service, context):
+    def create_client(cls, service, context, conf=cfg.CONF):
         if not cls._factory:
             cls._factory = {}
             for module in cls._list_clients():
                 module = importutils.import_module(module)
                 cls._factory[module.SERVICE] = module
 
-        return cls._factory[service].create(context)
+        return cls._factory[service].create(context, conf)

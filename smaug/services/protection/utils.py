@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 from smaug import exception
 from smaug.i18n import _
 
@@ -39,9 +38,9 @@ def _parse_service_endpoint(endpoint_url, context, append_project=False):
         else endpoint_url
 
 
-def get_url(service, context, append_project=False):
+def get_url(service, context, conf, append_project=False):
     '''Return the url of given service endpoint.'''
-    client_conf = getattr(cfg.CONF, service + '_client')
+    client_conf = getattr(conf, service + '_client')
 
     endpoint = getattr(client_conf, service + '_endpoint')
     if endpoint is not None:

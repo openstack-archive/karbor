@@ -40,9 +40,9 @@ class GlanceClientTest(base.TestCase):
         cfg.CONF.set_default('glance_endpoint',
                              'http://127.0.0.1:9292',
                              'glance_client')
-        gc = glance.create(self._context)
+        gc = glance.create(self._context, cfg.CONF)
         self.assertEqual('http://127.0.0.1:9292', gc.http_client.endpoint)
 
     def test_create_client_by_catalog(self):
-        gc = glance.create(self._context)
+        gc = glance.create(self._context, cfg.CONF)
         self.assertEqual('http://127.0.0.1:9292', gc.http_client.endpoint)

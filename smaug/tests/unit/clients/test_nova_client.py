@@ -35,13 +35,13 @@ class NovaClientTest(base.TestCase):
         cfg.CONF.set_default('nova_endpoint',
                              'http://127.0.0.1:8774/v2.1',
                              'nova_client')
-        client = nova.create(self._context)
+        client = nova.create(self._context, cfg.CONF)
         self.assertEqual('compute', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
                          client.client.management_url)
 
     def test_create_client_by_catalog(self):
-        client = nova.create(self._context)
+        client = nova.create(self._context, cfg.CONF)
         self.assertEqual('compute', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
                          client.client.management_url)

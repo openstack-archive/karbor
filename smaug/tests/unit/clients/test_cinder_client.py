@@ -35,13 +35,13 @@ class CinderClientTest(base.TestCase):
         cfg.CONF.set_default('cinder_endpoint',
                              'http://127.0.0.1:8776/v2',
                              'cinder_client')
-        client = cinder.create(self._context)
+        client = cinder.create(self._context, cfg.CONF)
         self.assertEqual('volumev2', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8776/v2/abcd',
                          client.client.management_url)
 
     def test_create_client_by_catalog(self):
-        client = cinder.create(self._context)
+        client = cinder.create(self._context, cfg.CONF)
         self.assertEqual('volumev2', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8776/v2/abcd',
                          client.client.management_url)

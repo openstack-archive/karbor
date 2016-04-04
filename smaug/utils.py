@@ -125,7 +125,7 @@ def get_bool_param(param_string, params):
     return strutils.bool_from_string(param, strict=True)
 
 
-def load_plugin(namespace, plugin_name):
+def load_plugin(namespace, plugin_name, *args, **kwargs):
     try:
         # Try to resolve plugin by name
         mgr = driver.DriverManager(namespace, plugin_name)
@@ -138,4 +138,4 @@ def load_plugin(namespace, plugin_name):
             LOG.exception(_LE("Error loading plugin by name, %s"), e1)
             LOG.exception(_LE("Error loading plugin by class, %s"), e2)
             raise ImportError(_("Class not found."))
-    return plugin_class()
+    return plugin_class(*args, **kwargs)

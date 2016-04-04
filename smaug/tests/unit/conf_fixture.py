@@ -28,3 +28,5 @@ def set_defaults(conf):
     conf.set_default('auth_strategy', 'noauth')
     conf.set_default('state_path', os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+    conf.set_default('provider_config_dir',
+                     os.path.join(os.path.dirname(__file__), 'fake_providers'))

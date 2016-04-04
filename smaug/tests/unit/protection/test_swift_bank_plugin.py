@@ -41,7 +41,7 @@ class SwiftBankPluginTest(base.TestCase):
             import_str=import_str)
         swift.Connection = mock.MagicMock()
         swift.Connection.return_value = self.fake_connection
-        self.swift_bank_plugin = swift_bank_plugin_cls(None,
+        self.swift_bank_plugin = swift_bank_plugin_cls(CONF, None,
                                                        self.object_container)
 
     def test_acquire_lease(self):

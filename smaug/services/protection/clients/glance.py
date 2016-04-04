@@ -35,9 +35,10 @@ cfg.CONF.register_opts(glance_client_opts, group=SERVICE + '_client')
 GLANCECLIENT_VERSION = '2'
 
 
-def create(context):
+def create(context, conf):
+    conf.register_opts(glance_client_opts, group=SERVICE + '_client')
     try:
-        url = utils.get_url(SERVICE, context)
+        url = utils.get_url(SERVICE, context, conf)
     except Exception:
         LOG.error(_LE("Get glance service endpoint url failed"))
         raise

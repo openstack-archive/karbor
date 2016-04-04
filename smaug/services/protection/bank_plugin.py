@@ -45,6 +45,9 @@ class LeasePlugin(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class BankPlugin(object):
+    def __init__(self, config=None):
+        self._config = config
+
     @abc.abstractmethod
     def create_object(self, key, value):
         return

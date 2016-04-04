@@ -35,9 +35,10 @@ cfg.CONF.register_opts(cinder_client_opts, group=SERVICE + '_client')
 CINDERCLIENT_VERSION = '2'
 
 
-def create(context):
+def create(context, conf):
+    conf.register_opts(cinder_client_opts, group=SERVICE + '_client')
     try:
-        url = utils.get_url(SERVICE, context, append_project=True)
+        url = utils.get_url(SERVICE, context, conf, append_project=True)
     except Exception:
         LOG.error(_LE("Get cinder service endpoint url failed."))
         raise

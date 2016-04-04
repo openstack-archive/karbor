@@ -33,9 +33,10 @@ neutron_client_opts = [
 cfg.CONF.register_opts(neutron_client_opts, group=SERVICE + '_client')
 
 
-def create(context):
+def create(context, conf):
+    conf.register_opts(neutron_client_opts, group=SERVICE + '_client')
     try:
-        url = utils.get_url(SERVICE, context)
+        url = utils.get_url(SERVICE, context, conf)
     except Exception:
         LOG.error(_LE("Get neutron service endpoint url failed"))
         raise

@@ -60,8 +60,6 @@ swift_client_opts = [
                      'making SSL connection to Swift.'),
 ]
 
-CONF = cfg.CONF
-CONF.register_opts(swift_client_opts, "swift_client")
 LOG = logging.getLogger(__name__)
 
 
@@ -70,19 +68,24 @@ class SwiftConnectionFailed(exception.SmaugException):
 
 
 class SwiftBankPlugin(BankPlugin, LeasePlugin):
-    def __init__(self, context, object_container):
-        super(BankPlugin, self).__init__()
+    def __init__(self, config, context, object_container):
+        super(SwiftBankPlugin, self).__init__(config)
         self.context = context
-        self.swift_retry_attempts = CONF.swift_client.bank_swift_retry_attempts
-        self.swift_retry_backoff = CONF.swift_client.bank_swift_retry_backoff
-        self.swift_auth_insecure = CONF.swift_client.bank_swift_auth_insecure
-        self.swift_ca_cert_file = CONF.swift_client.bank_swift_ca_cert_file
-        self.lease_expire_window = CONF.lease_expire_window
-        self.lease_renew_window = CONF.lease_renew_window
+        self._config.register_opts(swift_client_opts, "swift_client")
+        self.swift_retry_attempts = \
+            self._config.swift_client.bank_swift_retry_attempts
+        self.swift_retry_backoff = \
+            self._config.swift_client.bank_swift_retry_backoff
+        self.swift_auth_insecure = \
+            self._config.swift_client.bank_swift_auth_insecure
+        self.swift_ca_cert_file = \
+            self._config.swift_client.bank_swift_ca_cert_file
+        self.lease_expire_window = self._config.lease_expire_window
+        self.lease_renew_window = self._config.lease_renew_window
         # TODO(luobin):
         # init lease_validity_window
         # according to lease_renew_window if not configured
-        self.lease_validity_window = CONF.lease_validity_window
+        self.lease_validity_window = self._config.lease_validity_window
 
         # TODO(luobin): create a uuid of this bank_plugin
         self.owner_id = str(uuid.uuid4())
@@ -113,20 +116,20 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                initial_delay=self.lease_renew_window)
 
     def _setup_connection(self):
-        if CONF.swift_client.bank_swift_auth == "single_user":
+        if self._config.swift_client.bank_swift_auth == "single_user":
             connection = swift.Connection(
-                authurl=CONF.swift_client.bank_swift_auth_url,
-                auth_version=CONF.swift_client.bank_swift_auth_version,
-                tenant_name=CONF.swift_client.bank_swift_tenant_name,
-                user=CONF.swift_client.bank_swift_user,
-                key=CONF.swift_client.bank_swift_key,
+                authurl=self._config.swift_client.bank_swift_auth_url,
+                auth_version=self._config.swift_client.bank_swift_auth_version,
+                tenant_name=self._config.swift_client.bank_swift_tenant_name,
+                user=self._config.swift_client.bank_swift_user,
+                key=self._config.swift_client.bank_swift_key,
                 retries=self.swift_retry_attempts,
                 starting_backoff=self.swift_retry_backoff,
                 insecure=self.swift_auth_insecure,
                 cacert=self.swift_ca_cert_file)
         else:
             connection = swift.Connection(
-                preauthurl=CONF.swift_client.bank_swift_url,
+                preauthurl=self._config.swift_client.bank_swift_url,
                 preauthtoken=self.context.auth_token,
                 retries=self.swift_retry_attempts,
                 starting_backoff=self.swift_retry_backoff,

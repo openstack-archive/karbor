@@ -40,9 +40,9 @@ class NeutronClientTest(base.TestCase):
         cfg.CONF.set_default('neutron_endpoint',
                              'http://127.0.0.1:9696',
                              'neutron_client')
-        nc = neutron.create(self._context)
+        nc = neutron.create(self._context, cfg.CONF)
         self.assertEqual('http://127.0.0.1:9696', nc.httpclient.endpoint_url)
 
     def test_create_client_by_catalog(self):
-        nc = neutron.create(self._context)
+        nc = neutron.create(self._context, cfg.CONF)
         self.assertEqual('http://127.0.0.1:9696', nc.httpclient.endpoint_url)
