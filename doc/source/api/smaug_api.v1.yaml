@@ -506,6 +506,7 @@ paths:
               {
                 "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
                 "type": "OS::Nova::Server",
+                "name": "My VM",
                 "dependent_resources": [
                   {
                     "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
@@ -1057,6 +1058,9 @@ definitions:
         $ref: '#/definitions/ProtectableType'
         readOnly: true
       id:
+        readOnly: true
+        type: string
+      name:
         readOnly: true
         type: string
   ProtectionPlan:
