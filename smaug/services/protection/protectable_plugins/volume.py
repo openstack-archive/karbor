@@ -60,6 +60,19 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=vol.id, name=vol.name)
                     for vol in volumes]
 
+    def show_resource(self, resource_id):
+        try:
+            volume = self._client.volumes.get(resource_id)
+        except Exception as e:
+            LOG.exception(_LE("Show a summary volume "
+                              "from cinder failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+        else:
+            return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                     id=volume.id, name=volume.name)
+
     def get_dependent_resources(self, parent_resource):
         def _is_attached_to(vol):
             if parent_resource.type == constants.SERVER_RESOURCE_TYPE:

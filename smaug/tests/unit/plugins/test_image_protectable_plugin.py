@@ -91,6 +91,15 @@ class ImageProtectablePluginTest(base.TestCase):
                                             id='456', name='name456')
                           ])
 
+    def test_show_resource(self):
+        image_info = namedtuple('image_info', field_names=['id', 'name'])
+        plugin = ImageProtectablePlugin(self._context)
+        plugin._glance_client.images.get = \
+            mock.MagicMock(return_value=image_info(id='123', name='name123'))
+        self.assertEqual(plugin.show_resource('123'),
+                         resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
+                                           id='123', name='name123'))
+
     def test_get_server_dependent_resources(self):
         vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,

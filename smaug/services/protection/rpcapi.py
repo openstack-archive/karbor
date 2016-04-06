@@ -126,6 +126,16 @@ class ProtectionAPI(object):
             protectable_id=protectable_id,
             protectable_type=protectable_type)
 
+    def show_protectable_instance(self,
+                                  ctxt, protectable_type=None,
+                                  protectable_id=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'show_protectable_instance',
+            protectable_type=protectable_type,
+            protectable_id=protectable_id)
+
     def show_provider(self,
                       ctxt, provider_id=None):
         cctxt = self.client.prepare(version='1.0')

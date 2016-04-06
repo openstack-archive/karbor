@@ -59,6 +59,19 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       name=server.name)
                     for server in servers]
 
+    def show_resource(self, resource_id):
+        try:
+            server = self._client.servers.get(resource_id)
+        except Exception as e:
+            LOG.exception(_LE("Show a server from nova failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+        else:
+            return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                     id=server.id,
+                                     name=server.name)
+
     def get_dependent_resources(self, parent_resource):
         # Utilize list_resource here, cause its function is
         # listing resources of given project

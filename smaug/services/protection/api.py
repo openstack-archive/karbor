@@ -75,6 +75,14 @@ class API(base.Base):
                                         protectable_id,
                                         protectable_type)
 
+    def show_protectable_instance(self, context,
+                                  protectable_type,
+                                  protectable_id):
+        return self.protection_rpcapi.\
+            show_protectable_instance(context,
+                                      protectable_type,
+                                      protectable_id)
+
     def show_provider(self, context, provider_id):
         return self.protection_rpcapi.\
             show_provider(context, provider_id)

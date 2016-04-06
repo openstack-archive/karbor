@@ -79,6 +79,16 @@ class ProtectableRegistry(object):
         protectable = self._get_protectable(context, resource_type)
         return protectable.list_resources()
 
+    def show_resource(self, context, resource_type, resource_id):
+        """List resource instances of given type.
+
+        :param resource_type: The resource type of instance.
+        :param resource_id: The resource id of instance.
+        :return: The show of resource instance.
+        """
+        protectable = self._get_protectable(context, resource_type)
+        return protectable.show_resource(resource_id)
+
     def fetch_dependent_resources(self, context, resource):
         """List dependent resources under given parent resource.
 

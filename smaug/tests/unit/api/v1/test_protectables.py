@@ -62,11 +62,31 @@ class ProtectablesApiTest(base.TestCase):
         'list_protectable_instances')
     @mock.patch(
         'smaug.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_instances_show(self, moak_get_all,
-                                         list_protectable_instances_type):
+    def test_protectables_instances_index(self, moak_get_all,
+                                          moak_list_protectable_instances):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         moak_get_all.return_value = ["OS::Keystone::Project"]
         self.controller.\
             instances_index(req, 'OS::Keystone::Project')
         self.assertTrue(moak_get_all.called)
-        self.assertTrue(list_protectable_instances_type.called)
+        self.assertTrue(moak_list_protectable_instances.called)
+
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'list_protectable_dependents')
+    @mock.patch(
+        'smaug.services.protection.api.API.'
+        'show_protectable_instance')
+    @mock.patch(
+        'smaug.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_show(self, moak_get_all,
+                                         moak_show_protectable_instance,
+                                         moak_list_protectable_dependents):
+        req = fakes.HTTPRequest.blank('/v1/protectables')
+        moak_get_all.return_value = ["OS::Keystone::Project"]
+        self.controller.\
+            instances_show(req, 'OS::Keystone::Project',
+                           'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+        self.assertTrue(moak_get_all.called)
+        self.assertTrue(moak_show_protectable_instance.called)
+        self.assertTrue(moak_list_protectable_dependents.called)

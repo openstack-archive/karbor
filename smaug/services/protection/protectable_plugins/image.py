@@ -89,6 +89,18 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                     for image in images
                     if image.owner == parent_resource.id]
 
+    def show_resource(self, resource_id):
+        try:
+            image = self._glance_client.images.get(resource_id)
+        except Exception as e:
+            LOG.exception(_LE("Show a image from glance failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+        else:
+            return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                     id=image.id, name=image.name)
+
     def get_dependent_resources(self, parent_resource):
         if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
             return self._get_dependent_resources_by_server(parent_resource)

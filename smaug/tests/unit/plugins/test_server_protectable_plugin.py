@@ -71,6 +71,16 @@ class ServerProtectablePluginTest(base.TestCase):
                           Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.list_resources())
 
+    def test_show_resource(self):
+        plugin = ServerProtectablePlugin(self._context)
+        plugin._client.servers.get = mock.MagicMock()
+
+        server_info = collections.namedtuple('server_info', ['id', 'name'])
+        plugin._client.servers.get.return_value = server_info(id='123',
+                                                              name='name123')
+        self.assertEqual(Resource('OS::Nova::Server', '123', 'name123'),
+                         plugin.show_resource('123'))
+
     def test_get_dependent_resources(self):
         plugin = ServerProtectablePlugin(self._context)
         plugin._client.servers.list = mock.MagicMock()

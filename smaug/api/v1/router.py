@@ -51,6 +51,12 @@ class APIRouter(wsgi_common.Router):
                        controller=protectables_resources,
                        action='instances_index',
                        conditions={"method": ['GET']})
+        mapper.connect("protectable",
+                       "/{project_id}/protectables/"
+                       "{protectable_type}/instances/{protectable_id}",
+                       controller=protectables_resources,
+                       action='instances_show',
+                       conditions={"method": ['GET']})
         mapper.resource("provider", "providers",
                         controller=providers_resources,
                         collection={},

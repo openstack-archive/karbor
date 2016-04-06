@@ -75,6 +75,16 @@ class VolumeProtectablePluginTest(base.TestCase):
                           Resource('OS::Cinder::Volume', '456', 'name456')],
                          plugin.list_resources())
 
+    def test_show_resource(self):
+        plugin = VolumeProtectablePlugin(self._context)
+        plugin._client.volumes.get = mock.MagicMock()
+
+        vol_info = namedtuple('vol_info', ['id', 'name'])
+        plugin._client.volumes.get.return_value = vol_info(id='123',
+                                                           name='name123')
+        self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123'),
+                         plugin.show_resource("123"))
+
     def test_get_server_dependent_resources(self):
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()

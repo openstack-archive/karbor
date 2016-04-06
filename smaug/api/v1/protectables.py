@@ -249,6 +249,35 @@ class ProtectablesController(wsgi.Controller):
         """Return instance search options allowed by non-admin."""
         return CONF.query_instance_filters
 
+    def instances_show(self, req, protectable_type, protectable_id):
+        """Return a instance about the given protectable_type and id."""
+
+        context = req.environ['smaug.context']
+        LOG.info(_LI("Show the instance of a given protectable"
+                     " type: %s"), protectable_type)
+
+        protectable_types = self._get_all(context)
+
+        if protectable_type not in protectable_types:
+            msg = _("Invalid protectable type provided.")
+            raise exception.InvalidInput(reason=msg)
+
+        instance = self.protection_api.\
+            show_protectable_instance(context, protectable_type,
+                                      protectable_id)
+        if instance is None:
+            raise exception.InvalidProtectableInstance(
+                protectable_id=instance.get('id'))
+
+        dependents = self.protection_api.\
+            list_protectable_dependents(context, protectable_id,
+                                        protectable_type,
+                                        instance.get('name'))
+        instance["dependent_resources"] = dependents
+
+        retval_instance = self._view_builder.detail(req, instance)
+        return retval_instance
+
 
 def create_resource():
     return wsgi.Resource(ProtectablesController())

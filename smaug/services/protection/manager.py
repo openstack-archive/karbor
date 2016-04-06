@@ -227,6 +227,26 @@ class ProtectionManager(manager.Manager):
 
         return result
 
+    def show_protectable_instance(self, context, protectable_type,
+                                  protectable_id):
+        LOG.info(_LI("Start to show protectable instance of type: %s"),
+                 protectable_type)
+
+        try:
+            resource_instance = \
+                self.protectable_registry.show_resource(context,
+                                                        protectable_type,
+                                                        protectable_id)
+        except exception.ListProtectableResourceFailed as err:
+            LOG.error(_LE("Show resources of type %(type)s id %(id)s "
+                          "failed: %(err)s"),
+                      {'type': protectable_type,
+                       'id': protectable_id,
+                       'err': six.text_type(err)})
+            raise
+
+        return dict(id=resource_instance.id, name=resource_instance.name)
+
     def list_protectable_dependents(self, context,
                                     protectable_id,
                                     protectable_type):
