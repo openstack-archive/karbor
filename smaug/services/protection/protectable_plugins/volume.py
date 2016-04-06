@@ -43,7 +43,8 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return self._SUPPORT_RESOURCE_TYPE
 
     def get_parent_resource_types(self):
-        return (constants.SERVER_RESOURCE_TYPE, )
+        return (constants.SERVER_RESOURCE_TYPE,
+                constants.PROJECT_RESOURCE_TYPE)
 
     def list_resources(self):
         try:
@@ -61,8 +62,12 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     def get_dependent_resources(self, parent_resource):
         def _is_attached_to(vol):
-            return any([s.get('server_id') == parent_resource.id
-                        for s in vol.attachments])
+            if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
+                return any([s.get('server_id') == parent_resource.id
+                            for s in vol.attachments])
+            if parent_resource.type == constants.PROJECT_RESOURCE_TYPE:
+                return getattr(vol, 'os-vol-tenant-attr:tenant_id') == \
+                    parent_resource.id
 
         try:
             volumes = self._client.volumes.list(detailed=True)

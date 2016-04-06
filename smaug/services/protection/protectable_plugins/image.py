@@ -45,7 +45,8 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return self._SUPPORT_RESOURCE_TYPE
 
     def get_parent_resource_types(self):
-        return (constants.SERVER_RESOURCE_TYPE,)
+        return (constants.SERVER_RESOURCE_TYPE,
+                constants.PROJECT_RESOURCE_TYPE,)
 
     def list_resources(self):
         try:
@@ -60,16 +61,37 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=image.id)
                     for image in images]
 
+    def _get_dependent_resources_by_server(self, parent_resource):
+        try:
+            server = self._nova_client.servers.get(parent_resource.id)
+        except Exception as e:
+            LOG.exception(_LE("List all server from nova failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+        else:
+            return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                      id=server.image['id'])]
+
+    def _get_dependent_resources_by_project(self, parent_resource):
+        try:
+            images = self._glance_client.images.list()
+        except Exception as e:
+            LOG.exception(_LE("List all images from glance failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+        else:
+            return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                      id=image.id)
+                    for image in images
+                    if image.owner == parent_resource.id]
+
     def get_dependent_resources(self, parent_resource):
         if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
-            try:
-                server = self._nova_client.servers.get(parent_resource.id)
-            except Exception as e:
-                LOG.exception(_LE("List all server from nova failed."))
-                raise exception.ListProtectableResourceFailed(
-                    type=self._SUPPORT_RESOURCE_TYPE,
-                    reason=six.text_type(e))
-            else:
-                return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                          id=server.image['id'])]
+            return self._get_dependent_resources_by_server(parent_resource)
+
+        if parent_resource.type == constants.PROJECT_RESOURCE_TYPE:
+            return self._get_dependent_resources_by_project(parent_resource)
+
         return []

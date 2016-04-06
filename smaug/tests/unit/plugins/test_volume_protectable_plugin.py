@@ -10,16 +10,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import collections
+from collections import namedtuple
 import mock
 
 from oslo_config import cfg
+from smaug.common import constants
 from smaug.context import RequestContext
 from smaug.resource import Resource
 from smaug.services.protection.protectable_plugins.volume \
     import VolumeProtectablePlugin
 
 from smaug.tests import base
+
+project_info = namedtuple('project_info', field_names=['id', 'type'])
+vol_info = namedtuple('vol_info', ['id', 'attachments'])
 
 
 class VolumeProtectablePluginTest(base.TestCase):
@@ -56,29 +60,45 @@ class VolumeProtectablePluginTest(base.TestCase):
 
     def test_get_parent_resource_types(self):
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertEqual(("OS::Nova::Server", ),
-                         plugin.get_parent_resource_types())
+        self.assertItemsEqual(("OS::Nova::Server", "OS::Keystone::Project"),
+                              plugin.get_parent_resource_types())
 
     def test_list_resources(self):
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()
 
-        vol_info = collections.namedtuple('vol_info', ['id'])
-        plugin._client.volumes.list.return_value = [vol_info('123'),
-                                                    vol_info('456')]
+        plugin._client.volumes.list.return_value = [vol_info('123', []),
+                                                    vol_info('456', [])]
         self.assertEqual([Resource('OS::Cinder::Volume', '123'),
                           Resource('OS::Cinder::Volume', '456')],
                          plugin.list_resources())
 
-    def test_get_dependent_resources(self):
+    def test_get_server_dependent_resources(self):
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()
 
-        vol_info = collections.namedtuple('vol_info', ['id', 'attachments'])
         attached = [{'server_id': 'abcdef'}]
-        plugin._client.volumes.list.return_value = [vol_info('123', attached),
-                                                    vol_info('456', [])]
+        plugin._client.volumes.list.return_value = [
+            vol_info('123', attached),
+            vol_info('456', []),
+        ]
         self.assertEqual([Resource('OS::Cinder::Volume', '123')],
                          plugin.get_dependent_resources(Resource(
                              "OS::Nova::Server", 'abcdef'
                          )))
+
+    def test_get_project_dependent_resources(self):
+        project = project_info('abcd', constants.PROJECT_RESOURCE_TYPE)
+        plugin = VolumeProtectablePlugin(self._context)
+        plugin._client.volumes.list = mock.MagicMock()
+
+        volumes = [
+            mock.Mock(name='Volume', id='123'),
+            mock.Mock(name='Volume', id='456'),
+        ]
+        setattr(volumes[0], 'os-vol-tenant-attr:tenant_id', 'abcd')
+        setattr(volumes[1], 'os-vol-tenant-attr:tenant_id', 'efgh')
+
+        plugin._client.volumes.list.return_value = volumes
+        self.assertEqual(plugin.get_dependent_resources(project),
+                         [Resource('OS::Cinder::Volume', '123')])

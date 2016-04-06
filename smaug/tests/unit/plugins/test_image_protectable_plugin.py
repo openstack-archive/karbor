@@ -23,6 +23,10 @@ from smaug.tests import base
 
 CONF = cfg.CONF
 
+image_info = namedtuple('image_info', field_names=['id', 'owner'])
+server_info = namedtuple('server_info', field_names=['id', 'type', 'image'])
+project_info = namedtuple('project_info', field_names=['id', 'type'])
+
 
 class ImageProtectablePluginTest(base.TestCase):
     def setUp(self):
@@ -68,15 +72,15 @@ class ImageProtectablePluginTest(base.TestCase):
 
     def test_get_parent_resource_type(self):
         plugin = ImageProtectablePlugin(self._context)
-        self.assertEqual(plugin.get_parent_resource_types(),
-                         (constants.SERVER_RESOURCE_TYPE, ))
+        self.assertItemsEqual(plugin.get_parent_resource_types(),
+                              (constants.SERVER_RESOURCE_TYPE,
+                               constants.PROJECT_RESOURCE_TYPE))
 
     def test_list_resources(self):
-        image_info = namedtuple('image_info', field_names=['id'])
         plugin = ImageProtectablePlugin(self._context)
         plugin._glance_client.images.list = mock.MagicMock(return_value=[
-            image_info('123'),
-            image_info('456'),
+            image_info('123', 'abcd'),
+            image_info('456', 'efgh'),
         ])
         self.assertEqual(plugin.list_resources(),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
@@ -85,14 +89,23 @@ class ImageProtectablePluginTest(base.TestCase):
                                             id='456')
                           ])
 
-    def test_get_dependent_resources(self):
-        server_info = namedtuple('server_info',
-                                 field_names=['id', 'type', 'image'])
-        vm = server_info(id='789',
+    def test_get_server_dependent_resources(self):
+        vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,
                          image=dict(id='123'))
         plugin = ImageProtectablePlugin(self._context)
         plugin._nova_client.servers.get = mock.MagicMock(return_value=vm)
         self.assertEqual(plugin.get_dependent_resources(vm),
+                         [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
+                                            id='123')])
+
+    def test_get_project_dependent_resources(self):
+        project = project_info(id='abcd', type=constants.PROJECT_RESOURCE_TYPE)
+        plugin = ImageProtectablePlugin(self._context)
+        plugin._glance_client.images.list = mock.MagicMock(return_value=[
+            image_info('123', 'abcd'),
+            image_info('456', 'efgh'),
+        ])
+        self.assertEqual(plugin.get_dependent_resources(project),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='123')])
