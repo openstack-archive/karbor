@@ -74,6 +74,7 @@ class ProtectableViewBuilder(common.ViewBuilder):
             'instance': {
                 'id': instance.get('id'),
                 'type': instance.get('type'),
+                'name': instance.get('name'),
                 'dependent_resources': instance.get('dependent_resources'),
             }
         }

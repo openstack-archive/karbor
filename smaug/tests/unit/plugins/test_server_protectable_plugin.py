@@ -63,20 +63,22 @@ class ServerProtectablePluginTest(base.TestCase):
         plugin = ServerProtectablePlugin(self._context)
         plugin._client.servers.list = mock.MagicMock()
 
-        server_info = collections.namedtuple('server_info', ['id'])
-        plugin._client.servers.list.return_value = [server_info('123'),
-                                                    server_info('456')]
-        self.assertEqual([Resource('OS::Nova::Server', '123'),
-                          Resource('OS::Nova::Server', '456')],
+        server_info = collections.namedtuple('server_info', ['id', 'name'])
+        plugin._client.servers.list.return_value = [
+            server_info(id='123', name='name123'),
+            server_info(id='456', name='name456')]
+        self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
+                          Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.list_resources())
 
     def test_get_dependent_resources(self):
         plugin = ServerProtectablePlugin(self._context)
         plugin._client.servers.list = mock.MagicMock()
 
-        server_info = collections.namedtuple('server_info', ['id'])
-        plugin._client.servers.list.return_value = [server_info('123'),
-                                                    server_info('456')]
-        self.assertEqual([Resource('OS::Nova::Server', '123'),
-                          Resource('OS::Nova::Server', '456')],
+        server_info = collections.namedtuple('server_info', ['id', 'name'])
+        plugin._client.servers.list.return_value = [
+            server_info(id='123', name='name123'),
+            server_info(id='456', name='name456')]
+        self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
+                          Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.get_dependent_resources(None))

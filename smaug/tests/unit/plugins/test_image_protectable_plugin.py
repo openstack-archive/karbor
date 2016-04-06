@@ -23,9 +23,11 @@ from smaug.tests import base
 
 CONF = cfg.CONF
 
-image_info = namedtuple('image_info', field_names=['id', 'owner'])
-server_info = namedtuple('server_info', field_names=['id', 'type', 'image'])
-project_info = namedtuple('project_info', field_names=['id', 'type'])
+
+image_info = namedtuple('image_info', field_names=['id', 'owner', 'name'])
+server_info = namedtuple('server_info', field_names=['id', 'type', 'name',
+                                                     'image'])
+project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
 
 
 class ImageProtectablePluginTest(base.TestCase):
@@ -79,33 +81,36 @@ class ImageProtectablePluginTest(base.TestCase):
     def test_list_resources(self):
         plugin = ImageProtectablePlugin(self._context)
         plugin._glance_client.images.list = mock.MagicMock(return_value=[
-            image_info('123', 'abcd'),
-            image_info('456', 'efgh'),
+            image_info(id='123', name='name123', owner='abcd'),
+            image_info(id='456', name='name456', owner='efgh'),
         ])
         self.assertEqual(plugin.list_resources(),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
-                                            id='123'),
+                                            id='123', name='name123'),
                           resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
-                                            id='456')
+                                            id='456', name='name456')
                           ])
 
     def test_get_server_dependent_resources(self):
         vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,
-                         image=dict(id='123'))
+                         name='nameserver1',
+                         image=dict(id='123', name='name123'))
         plugin = ImageProtectablePlugin(self._context)
         plugin._nova_client.servers.get = mock.MagicMock(return_value=vm)
         self.assertEqual(plugin.get_dependent_resources(vm),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
-                                            id='123')])
+                                            id='123', name='name123')])
 
     def test_get_project_dependent_resources(self):
-        project = project_info(id='abcd', type=constants.PROJECT_RESOURCE_TYPE)
+        project = project_info(id='abcd', type=constants.PROJECT_RESOURCE_TYPE,
+                               name='nameabcd')
         plugin = ImageProtectablePlugin(self._context)
         plugin._glance_client.images.list = mock.MagicMock(return_value=[
-            image_info('123', 'abcd'),
-            image_info('456', 'efgh'),
+            image_info('123', 'abcd', 'nameabcd'),
+            image_info('456', 'efgh', 'nameefgh'),
         ])
         self.assertEqual(plugin.get_dependent_resources(project),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
+                                            name='nameabcd',
                                             id='123')])

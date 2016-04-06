@@ -12,4 +12,4 @@
 
 from collections import namedtuple
 
-Resource = namedtuple("Resource", ('type', 'id'))
+Resource = namedtuple("Resource", ('type', 'id', 'name'))

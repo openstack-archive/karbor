@@ -223,7 +223,7 @@ class ProtectionManager(manager.Manager):
 
         result = []
         for resource in resource_instances:
-            result.append(dict(id=resource.id))
+            result.append(dict(id=resource.id, name=resource.name))
 
         return result
 
@@ -235,7 +235,8 @@ class ProtectionManager(manager.Manager):
                  {'type': protectable_type,
                   'id': protectable_id})
 
-        parent_resource = Resource(type=protectable_type, id=protectable_id)
+        parent_resource = Resource(type=protectable_type, id=protectable_id,
+                                   name="")
 
         try:
             dependent_resources = \
@@ -250,7 +251,8 @@ class ProtectionManager(manager.Manager):
 
         result = []
         for resource in dependent_resources:
-            result.append(dict(type=resource.type, id=resource.id))
+            result.append(dict(type=resource.type, id=resource.id,
+                               name=resource.name))
 
         return result
 

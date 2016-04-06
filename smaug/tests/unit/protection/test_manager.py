@@ -61,27 +61,32 @@ class ProtectionServiceTest(base.TestCase):
                        'list_resources')
     def test_list_protectable_instances(self, mocker):
         mocker.return_value = [Resource(type='OS::Nova::Server',
-                                        id='123456'),
+                                        id='123456',
+                                        name='name123'),
                                Resource(type='OS::Nova::Server',
-                                        id='654321')]
+                                        id='654321',
+                                        name='name654')]
         fake_cntx = mock.MagicMock()
 
         result = self.pro_manager.list_protectable_instances(
             fake_cntx, 'OS::Nova::Server')
-        self.assertEqual([{'id': '123456'},
-                          {'id': '654321'}], result)
+        self.assertEqual([{'id': '123456', 'name': 'name123'},
+                          {'id': '654321', 'name': 'name654'}],
+                         result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
                        'fetch_dependent_resources')
     def test_list_protectable_dependents(self, mocker):
         mocker.return_value = [Resource(type='OS::Cinder::Volume',
-                                        id='123456'),
+                                        id='123456', name='name123'),
                                Resource(type='OS::Cinder::Volume',
-                                        id='654321')]
+                                        id='654321', name='name654')]
         fake_cntx = mock.MagicMock()
 
         result = self.pro_manager.list_protectable_dependents(
             fake_cntx, 'fake_id', 'OS::Nova::Server')
-        self.assertEqual([{'type': 'OS::Cinder::Volume', 'id': '123456'},
-                          {'type': 'OS::Cinder::Volume', 'id': '654321'}],
+        self.assertEqual([{'type': 'OS::Cinder::Volume', 'id': '123456',
+                           'name': 'name123'},
+                          {'type': 'OS::Cinder::Volume', 'id': '654321',
+                           'name': 'name654'}],
                          result)

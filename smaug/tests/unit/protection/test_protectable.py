@@ -50,9 +50,9 @@ class ProtectableRegistryTest(base.TestCase):
         self.protectable_registry.register_plugin(self._fake_plugin)
 
     def test_graph_building(self):
-        A = Resource(_FAKE_TYPE, "A")
-        B = Resource(_FAKE_TYPE, "B")
-        C = Resource(_FAKE_TYPE, "C")
+        A = Resource(_FAKE_TYPE, "A", 'nameA')
+        B = Resource(_FAKE_TYPE, "B", 'nameB')
+        C = Resource(_FAKE_TYPE, "C", 'nameC')
         test_matrix = (
             (
                 {A: [B],

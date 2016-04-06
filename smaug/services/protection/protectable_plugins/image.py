@@ -58,7 +58,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=image.id)
+                                      id=image.id, name=image.name)
                     for image in images]
 
     def _get_dependent_resources_by_server(self, parent_resource):
@@ -71,7 +71,8 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=server.image['id'])]
+                                      id=server.image['id'],
+                                      name=server.image['name'])]
 
     def _get_dependent_resources_by_project(self, parent_resource):
         try:
@@ -83,7 +84,8 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=image.id)
+                                      id=image.id,
+                                      name=image.name)
                     for image in images
                     if image.owner == parent_resource.id]
 

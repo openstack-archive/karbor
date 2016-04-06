@@ -55,7 +55,8 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=server.id)
+                                      id=server.id,
+                                      name=server.name)
                     for server in servers]
 
     def get_dependent_resources(self, parent_resource):

@@ -22,8 +22,8 @@ from smaug.services.protection.protectable_plugins.volume \
 
 from smaug.tests import base
 
-project_info = namedtuple('project_info', field_names=['id', 'type'])
-vol_info = namedtuple('vol_info', ['id', 'attachments'])
+project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
+vol_info = namedtuple('vol_info', ['id', 'attachments', 'name'])
 
 
 class VolumeProtectablePluginTest(base.TestCase):
@@ -67,28 +67,31 @@ class VolumeProtectablePluginTest(base.TestCase):
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()
 
-        plugin._client.volumes.list.return_value = [vol_info('123', []),
-                                                    vol_info('456', [])]
-        self.assertEqual([Resource('OS::Cinder::Volume', '123'),
-                          Resource('OS::Cinder::Volume', '456')],
+        plugin._client.volumes.list.return_value = [vol_info('123', [],
+                                                             'name123'),
+                                                    vol_info('456', [],
+                                                             'name456')]
+        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123'),
+                          Resource('OS::Cinder::Volume', '456', 'name456')],
                          plugin.list_resources())
 
     def test_get_server_dependent_resources(self):
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()
 
-        attached = [{'server_id': 'abcdef'}]
+        attached = [{'server_id': 'abcdef', 'name': 'name'}]
         plugin._client.volumes.list.return_value = [
-            vol_info('123', attached),
-            vol_info('456', []),
+            vol_info('123', attached, 'name123'),
+            vol_info('456', [], 'name456'),
         ]
-        self.assertEqual([Resource('OS::Cinder::Volume', '123')],
+        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123')],
                          plugin.get_dependent_resources(Resource(
-                             "OS::Nova::Server", 'abcdef'
+                             "OS::Nova::Server", 'abcdef', 'name'
                          )))
 
     def test_get_project_dependent_resources(self):
-        project = project_info('abcd', constants.PROJECT_RESOURCE_TYPE)
+        project = project_info('abcd', constants.PROJECT_RESOURCE_TYPE,
+                               'nameabcd')
         plugin = VolumeProtectablePlugin(self._context)
         plugin._client.volumes.list = mock.MagicMock()
 
@@ -98,7 +101,9 @@ class VolumeProtectablePluginTest(base.TestCase):
         ]
         setattr(volumes[0], 'os-vol-tenant-attr:tenant_id', 'abcd')
         setattr(volumes[1], 'os-vol-tenant-attr:tenant_id', 'efgh')
+        setattr(volumes[0], 'name', 'name123')
+        setattr(volumes[1], 'name', 'name456')
 
         plugin._client.volumes.list.return_value = volumes
         self.assertEqual(plugin.get_dependent_resources(project),
-                         [Resource('OS::Cinder::Volume', '123')])
+                         [Resource('OS::Cinder::Volume', '123', 'name123')])

@@ -57,7 +57,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=vol.id)
+                                      id=vol.id, name=vol.name)
                     for vol in volumes]
 
     def get_dependent_resources(self, parent_resource):
@@ -79,5 +79,5 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=vol.id)
+                                      id=vol.id, name=vol.name)
                     for vol in volumes if _is_attached_to(vol)]
