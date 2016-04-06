@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import math
 import mock
 import os
 from oslo_config import cfg
@@ -46,21 +47,21 @@ class SwiftBankPluginTest(base.TestCase):
 
     def test_acquire_lease(self):
         self.swift_bank_plugin.acquire_lease()
-        expire_time = long(time.time()) + self.conf.lease_expire_window
+        expire_time = math.floor(time.time()) + self.conf.lease_expire_window
         self.assertEqual(self.swift_bank_plugin.lease_expire_time, expire_time)
 
     def test_renew_lease(self):
         self.swift_bank_plugin.acquire_lease()
-        expire_time = long(time.time()) + self.conf.lease_expire_window
+        expire_time = math.floor(time.time()) + self.conf.lease_expire_window
         self.assertEqual(self.swift_bank_plugin.lease_expire_time, expire_time)
         time.sleep(5)
         self.swift_bank_plugin.acquire_lease()
-        expire_time = long(time.time()) + self.conf.lease_expire_window
+        expire_time = math.floor(time.time()) + self.conf.lease_expire_window
         self.assertEqual(self.swift_bank_plugin.lease_expire_time, expire_time)
 
     def test_check_lease_validity(self):
         self.swift_bank_plugin.acquire_lease()
-        expire_time = long(time.time()) + self.conf.lease_expire_window
+        expire_time = math.floor(time.time()) + self.conf.lease_expire_window
         self.assertEqual(self.swift_bank_plugin.lease_expire_time, expire_time)
         is_valid = self.swift_bank_plugin.check_lease_validity()
         self.assertEqual(is_valid, True)

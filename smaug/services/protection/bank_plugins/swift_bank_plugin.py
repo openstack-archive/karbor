@@ -11,6 +11,7 @@
 #    under the License.
 
 import json
+import math
 import time
 import uuid
 
@@ -209,7 +210,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                              obj=obj,
                              contents=contents,
                              headers=headers)
-            self.lease_expire_time = long(
+            self.lease_expire_time = math.floor(
                 time.time()) + self.lease_expire_window
         except SwiftConnectionFailed as err:
             LOG.error(_LE("acquire lease failed, err:%s."), err)
@@ -223,13 +224,13 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self._post_object(container=container,
                               obj=obj,
                               headers=headers)
-            self.lease_expire_time = long(
+            self.lease_expire_time = math.floor(
                 time.time()) + self.lease_expire_window
         except SwiftConnectionFailed as err:
             LOG.error(_LE("acquire lease failed, err:%s."), err)
 
     def check_lease_validity(self):
-        if (self.lease_expire_time - long(time.time()) >=
+        if (self.lease_expire_time - math.floor(time.time()) >=
                 self.lease_validity_window):
             return True
         else:

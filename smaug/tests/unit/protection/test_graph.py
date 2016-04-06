@@ -156,6 +156,6 @@ class GraphWalkerTest(base.TestCase):
             listener = _TestGraphWalkerListener(expected_calls, self)
             walker = graph.GraphWalker()
             walker.register_listener(listener)
-            keys = g.keys()
+            keys = list(g.keys())
             keys.sort()
             walker.walk_graph(graph.build_graph(keys, g.__getitem__))
