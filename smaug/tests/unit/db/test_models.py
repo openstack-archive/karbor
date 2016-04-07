@@ -351,6 +351,7 @@ class PlanDbTestCase(base.TestCase):
         'status': 'suspended',
         'project_id': '39bb894794b741e982bd26144d2949f6',
         'resources': [],
+        'parameters': '{OS::Nova::Server: {consistency: os}}'
     }
 
     fake_plan_with_resources = {
@@ -360,7 +361,9 @@ class PlanDbTestCase(base.TestCase):
         'project_id': '39bb894794b741e982bd26144d2949f6',
         'resources': [{
             "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
-            "type": "OS::Nova::Server"}],
+            "type": "OS::Nova::Server",
+            "name": "vm1"}],
+        'parameters': '{OS::Nova::Server: {consistency: os}}'
     }
 
     def _dict_from_object(self, obj, ignored_keys):
@@ -420,12 +423,14 @@ class PlanDbTestCase(base.TestCase):
     def test_plan_resources_update(self):
         resources2 = [{
             "id": "61e51e85-4f31-441f-9a5d-6e93e3194444",
-            "type": "OS::Cinder::Volume"}]
+            "type": "OS::Cinder::Volume",
+            "name": "vm2"}]
 
         plan = db.plan_create(self.ctxt, self.fake_plan)
         db_meta = db.plan_resources_update(self.ctxt, plan["id"], resources2)
 
         self.assertEqual("OS::Cinder::Volume", db_meta[0]["resource_type"])
+        self.assertEqual("vm2", db_meta[0]["resource_name"])
 
 
 class RestoreDbTestCase(base.TestCase):

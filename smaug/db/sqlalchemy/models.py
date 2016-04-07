@@ -138,6 +138,7 @@ class Plan(BASE, SmaugBase):
     provider_id = Column(String(36))
     project_id = Column(String(255))
     status = Column(String(64))
+    parameters = Column(Text)
 
 
 class Resource(BASE, SmaugBase):
@@ -147,6 +148,7 @@ class Resource(BASE, SmaugBase):
     id = Column(Integer, primary_key=True)
     resource_id = Column(String(36))
     resource_type = Column(String(64))
+    resource_name = Column(String(255))
     plan_id = Column(String(36), ForeignKey('plans.id'), nullable=False)
     plan = orm.relationship(Plan, backref="resources",
                             foreign_keys=plan_id,

@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -72,6 +73,9 @@ class PlanViewBuilder(common.ViewBuilder):
 
     def detail(self, request, plan):
         """Detailed view of a single plan."""
+        parameters = {}
+        if not plan.get('parameters'):
+            parameters = jsonutils.loads(plan.get('parameters'))
         plan_ref = {
             'plan': {
                 'id': plan.get('id'),
@@ -79,6 +83,7 @@ class PlanViewBuilder(common.ViewBuilder):
                 'resources': plan.get('resources'),
                 'provider_id': plan.get('provider_id'),
                 'status': plan.get('status'),
+                'parameters': parameters,
             }
         }
         return plan_ref
@@ -245,6 +250,16 @@ class PlansController(wsgi.Controller):
                     "a plan.")
             raise exception.InvalidInput(reason=msg)
 
+        if not plan.get("parameters"):
+            msg = _("parameters must be provided when creating "
+                    "a plan.")
+            raise exception.InvalidInput(reason=msg)
+
+        parameters = plan.get("parameters")
+        if not isinstance(parameters, dict):
+            msg = _("parameters must be a dict when creating a plan.")
+            raise exception.InvalidInput(reason=msg)
+
         self.validate_name_and_description(plan)
         self.validate_plan_resources(plan)
 
@@ -254,6 +269,7 @@ class PlansController(wsgi.Controller):
             'project_id': context.project_id,
             'status': 'suspended',
             'resources': plan.get('resources', None),
+            'parameters': jsonutils.dumps(parameters),
         }
 
         plan = objects.Plan(context=context, **plan_properties)
@@ -347,12 +363,12 @@ class PlansController(wsgi.Controller):
         resources_list = plan["resources"]
         if (isinstance(resources_list, list)) and (len(resources_list) > 0):
             for resource in resources_list:
-                if (isinstance(resource, dict) and (len(resource) == 2) and
-                        {"id", "type"}.issubset(resource)):
+                if (isinstance(resource, dict) and (len(resource) == 3) and
+                        {"id", "type", 'name'}.issubset(resource)):
                     pass
                 else:
-                    msg = _("Resource in list must be a dict when creating"
-                            " a plan.The keys of resource are id and type.")
+                    msg = _("Resource in list must be a dict when creating a "
+                            "plan.The keys of resource are id,type and name.")
                     raise exception.InvalidInput(reason=msg)
         else:
             msg = _("list resources must be provided when creating "

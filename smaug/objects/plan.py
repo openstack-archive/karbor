@@ -42,6 +42,7 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
         'project_id': fields.UUIDField(),
         'status': fields.StringField(nullable=True),
         'resources': fields.ListOfDictOfNullableStringsField(nullable=False),
+        'parameters': fields.StringField(),
     }
 
     # obj_extra_fields is used to hold properties that are not
@@ -90,6 +91,7 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
                 dict_temp = dict()
                 dict_temp['id'] = resource['resource_id']
                 dict_temp['type'] = resource['resource_type']
+                dict_temp['name'] = resource['resource_name']
                 resources_list.append(dict_temp)
             plan.resources = resources_list
 
@@ -124,6 +126,7 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
                     resource_dict["plan_id"] = resource_obj.get("plan_id")
                     resource_dict["id"] = resource_obj.get("resource_id")
                     resource_dict["type"] = resource_obj.get("resource_type")
+                    resource_dict["name"] = resource_obj.get("resource_name")
                     resources_dictlist.append(resource_dict)
                 self.resources = resources_dictlist
             db.plan_update(self._context, self.id, updates)

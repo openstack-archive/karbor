@@ -28,7 +28,8 @@ DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
 DEFAULT_STATUS = 'suspended'
 DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
 DEFAULT_RESOURCES = [{'id': 'key1',
-                      "type": "value1"}]
+                      "type": "value1", "name": "name1"}]
+DEFAULT_PARAMETERS = {"OS::Nova::Server": {"consistency": "os"}}
 
 
 class PlanApiTest(base.TestCase):
@@ -173,13 +174,15 @@ class PlanApiTest(base.TestCase):
                               provider_id=DEFAULT_PROVIDER_ID,
                               status=DEFAULT_STATUS,
                               project_id=DEFAULT_PROJECT_ID,
-                              resources=DEFAULT_RESOURCES):
+                              resources=DEFAULT_RESOURCES,
+                              parameters=DEFAULT_PARAMETERS):
         plan_req = {
             'name': name,
             'provider_id': provider_id,
             'status': status,
             'project_id': project_id,
             'resources': resources,
+            'parameters': parameters,
         }
 
         return plan_req

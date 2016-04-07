@@ -46,6 +46,7 @@ def define_tables(meta):
         Column('provider_id', String(length=36)),
         Column('project_id', String(length=255)),
         Column('status', String(length=64)),
+        Column('parameters', Text),
         mysql_engine='InnoDB'
     )
 
@@ -60,6 +61,7 @@ def define_tables(meta):
                nullable=False),
         Column('resource_id', String(length=36)),
         Column('resource_type', String(length=64)),
+        Column('resource_name', String(length=255)),
         mysql_engine='InnoDB'
     )
 

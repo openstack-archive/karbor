@@ -663,6 +663,7 @@ def _plan_resources_update(context, plan_id, resources, session=None):
         resource['plan_id'] = plan_id
         resource['resource_id'] = resource.pop('id')
         resource['resource_type'] = resource.pop('type')
+        resource['resource_name'] = resource.pop('name')
         resource_ref = _resource_create(context, resource)
         resources_list.append(resource_ref)
 
