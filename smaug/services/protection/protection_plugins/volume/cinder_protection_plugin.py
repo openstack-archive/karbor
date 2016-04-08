@@ -11,6 +11,7 @@
 #    under the License.
 
 import six
+from uuid import uuid4
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -23,6 +24,7 @@ from smaug.services.protection.protection_plugins.base_protection_plugin \
     import BaseProtectionPlugin
 from smaug.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
+from smaug.services.protection.restore_heat import HeatResource
 
 protection_opts = [
     cfg.IntOpt('protection_sync_interval',
@@ -138,10 +140,6 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                 resource_type=constants.VOLUME_RESOURCE_TYPE
             )
 
-    def restore_backup(self, **kwargs):
-        # TODO(hurong):
-        pass
-
     def sync_status(self):
         for resource_id, resource_info in self.protection_resource_map.items():
             backup_id = resource_info["backup_id"]
@@ -162,3 +160,39 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
             except Exception:
                 LOG.info(_("deleting volume backup finished."))
                 self.protection_resource_map.pop(resource_id)
+
+    def restore_backup(self, cntxt, checkpoint, **kwargs):
+        resource_node = kwargs.get("node")
+        resource_id = resource_node.value.id
+        heat_template = kwargs.get("heat_template")
+
+        name = kwargs.get("restore_name",
+                          "%s@%s" % (checkpoint.id, resource_id))
+        description = kwargs.get("restore_description")
+
+        heat_resource_id = str(uuid4())
+        heat_resource = HeatResource(heat_resource_id,
+                                     constants.VOLUME_RESOURCE_TYPE)
+
+        bank_section = checkpoint.get_resource_bank_section(resource_id)
+        try:
+            resource_definition = bank_section.get_object("metadata")
+            backup_id = resource_definition["backup_id"]
+            properties = {"backup_id": backup_id,
+                          "name": name}
+
+            if description is not None:
+                properties["description"] = description
+
+            for key, value in properties.items():
+                heat_resource.set_property(key, value)
+
+            heat_template.put_resource(resource_id, heat_resource)
+        except Exception as e:
+            LOG.error(_LE("restore volume backup failed, volume_id: %s."),
+                      resource_id)
+            raise exception.RestoreBackupFailed(
+                reason=six.text_type(e),
+                resource_id=resource_id,
+                resource_type=constants.VOLUME_RESOURCE_TYPE
+            )

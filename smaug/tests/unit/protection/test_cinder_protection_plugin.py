@@ -11,6 +11,7 @@
 #    under the License.
 
 import collections
+import datetime
 import mock
 
 from oslo_config import cfg
@@ -21,10 +22,11 @@ from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import BankSection
 from smaug.services.protection.client_factory import ClientFactory
-from smaug.services.protection.protection_plugins.volume.\
+from smaug.services.protection.protection_plugins.volume. \
     cinder_protection_plugin import CinderProtectionPlugin
 from smaug.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
+from smaug.services.protection.restore_heat import HeatTemplate
 from smaug.tests import base
 
 
@@ -54,7 +56,6 @@ ResourceNode = collections.namedtuple(
      "child_nodes"]
 )
 
-
 Image = collections.namedtuple(
     "Image",
     ["disk_format",
@@ -66,6 +67,7 @@ Image = collections.namedtuple(
 class FakeCheckpoint(object):
     def __init__(self):
         self.bank_section = fake_bank_section
+        self.id = "fake_id"
 
     def get_resource_bank_section(self, resource_id):
         return self.bank_section
@@ -150,6 +152,43 @@ class CinderProtectionPluginTest(base.TestCase):
 
         self.plugin.delete_backup(self.cntxt, self.checkpoint,
                                   node=resource_node)
+
+    def test_restore_backup(self):
+        heat_template = HeatTemplate()
+        resource = Resource(id="123",
+                            type=constants.VOLUME_RESOURCE_TYPE,
+                            name="fake")
+        resource_node = ResourceNode(value=resource,
+                                     child_nodes=[])
+        resource_definition = {"backup_id": "456"}
+        kwargs = {"node": resource_node,
+                  "heat_template": heat_template,
+                  "restore_name": "smaug restore volume",
+                  "restore_description": "smaug restore"}
+
+        fake_bank_section.get_object = mock.MagicMock()
+        fake_bank_section.get_object.return_value = resource_definition
+
+        self.plugin.restore_backup(self.cntxt, self.checkpoint,
+                                   **kwargs)
+        self.assertEqual(1, len(heat_template._resources))
+
+        heat_resource_id = heat_template._original_id_resource_map["123"]
+        template_dict = {
+            "heat_template_version": str(datetime.date(2015, 10, 15)),
+            "description": "smaug restore template",
+            "resources": {
+                heat_resource_id: {
+                    "type": "OS::Cinder::Volume",
+                    "properties": {
+                        "description": "smaug restore",
+                        "backup_id": "456",
+                        "name": "smaug restore volume",
+                    }
+                }
+            }
+        }
+        self.assertEqual(template_dict, heat_template.to_dict())
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()

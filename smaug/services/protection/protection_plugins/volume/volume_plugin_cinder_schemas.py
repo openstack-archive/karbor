@@ -59,11 +59,16 @@ RESTORE_SCHEMA = {
         "restore_name": {
             "type": "string",
             "title": "Restore Name",
-            "description": "The name of the restore.",
+            "description": "The name of the restored volume.",
+            "default": None
+        },
+        "restore_description": {
+            "type": "string",
+            "title": "Restore Name",
+            "description": "The description of the restored volume.",
             "default": None
         }
-    },
-    "required": ["volume_id"]
+    }
 }
 
 SAVED_INFO_SCHEMA = {
