@@ -31,14 +31,12 @@ def _raise_extension_exception(extmanager, ep, err):
 
 
 class ProtectableRegistry(object):
-    _plugin_map = {}
 
-    def __init__(self, cntx):
-        self._context = cntx
+    def __init__(self):
         self._protectable_map = {}
+        self._plugin_map = {}
 
-    @classmethod
-    def load_plugins(cls):
+    def load_plugins(self):
         """Load all protectable plugins configured and register them.
 
         """
@@ -48,47 +46,40 @@ class ProtectableRegistry(object):
             on_load_failure_callback=_raise_extension_exception)
 
         for e in mgr:
-            cls.register_plugin(e.obj)
+            self.register_plugin(e.obj)
 
-    @classmethod
-    def register_plugin(cls, plugin):
-        cls._plugin_map[plugin.get_resource_type()] = plugin
+    def register_plugin(self, plugin):
+        self._plugin_map[plugin.get_resource_type()] = plugin
 
-    @classmethod
-    def create_instance(cls, cntx):
-        return cls(cntx)
-
-    def _get_protectable(self, resource_type):
+    def _get_protectable(self, context, resource_type):
         if resource_type in self._protectable_map:
             return self._protectable_map[resource_type]
 
-        protectable = self._plugin_map[resource_type].instance(self._context)
+        protectable = self._plugin_map[resource_type].instance(context)
         self._protectable_map[resource_type] = protectable
         return protectable
 
-    @classmethod
-    def list_resource_types(cls):
+    def list_resource_types(self):
         """List all resource types supported by protectables.
 
         :return: The list of supported resource types.
         """
-        return [type for type in six.iterkeys(cls._plugin_map)]
+        return [type for type in six.iterkeys(self._plugin_map)]
 
-    @classmethod
-    def get_protectable_resource_plugin(cls, resource_type):
+    def get_protectable_resource_plugin(self, resource_type):
         """Get the protectable plugin with the specified type."""
-        return cls._plugin_map.get(resource_type)
+        return self._plugin_map.get(resource_type)
 
-    def list_resources(self, resource_type):
+    def list_resources(self, context, resource_type):
         """List resource instances of given type.
 
         :param resource_type: The resource type to list instance.
         :return: The list of resource instance.
         """
-        protectable = self._get_protectable(resource_type)
+        protectable = self._get_protectable(context, resource_type)
         return protectable.list_resources()
 
-    def fetch_dependent_resources(self, resource):
+    def fetch_dependent_resources(self, context, resource):
         """List dependent resources under given parent resource.
 
         :param resource: The parent resource to list dependent resources.
@@ -98,13 +89,17 @@ class ProtectableRegistry(object):
         for plugin in six.itervalues(self._plugin_map):
             if resource.type in plugin.get_parent_resource_types():
                 protectable = self._get_protectable(
+                    context,
                     plugin.get_resource_type())
                 result.extend(protectable.get_dependent_resources(resource))
 
         return result
 
-    def build_graph(self, resources):
+    def build_graph(self, context, resources):
+        def fetch_dependent_resources_context(resource):
+            return self.fetch_dependent_resources(context, resource)
+
         return build_graph(
             start_nodes=resources,
-            get_child_nodes_func=self.fetch_dependent_resources,
+            get_child_nodes_func=fetch_dependent_resources_context,
         )
