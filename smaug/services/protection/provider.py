@@ -1,6 +1,6 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
 #
@@ -44,8 +44,8 @@ PROTECTION_NAMESPACE = 'smaug.protections'
 CONF.register_opt(cfg.StrOpt('provider_config_dir',
                              default='providers.d',
                              help='Configuration directory for providers.'
-                             ' Absolute path, or relative to smaug '
-                             ' configuration directory.'))
+                                  ' Absolute path, or relative to smaug '
+                                  ' configuration directory.'))
 
 
 class PluggableProtectionProvider(object):
@@ -63,7 +63,7 @@ class PluggableProtectionProvider(object):
         self._plugin_map = {}
 
         if hasattr(self._config.provider, 'bank') \
-           and not self._config.provider.bank:
+                and not self._config.provider.bank:
             raise ImportError("Empty bank")
         self._load_bank(self._config.provider.bank)
         if hasattr(self._config.provider, 'plugin'):
@@ -166,7 +166,9 @@ class ProviderRegistry(object):
             else:
                 self.providers[provider.id] = provider
 
-    def list_providers(self):
+    def list_providers(self, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None):
+        # TODO(wangliuan) How to use the list option
         return [dict(id=provider.id, name=provider.name,
                      description=provider.description)
                 for provider in self.providers.values()]

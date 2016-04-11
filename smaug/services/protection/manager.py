@@ -253,10 +253,15 @@ class ProtectionManager(manager.Manager):
 
         return result
 
-    def list_providers(self, list_option=None):
-        return self.provider_registry.list_providers(list_option)
+    def list_providers(self, context, marker=None, limit=None,
+                       sort_keys=None, sort_dirs=None, filters=None):
+        return self.provider_registry.list_providers(marker=marker,
+                                                     limit=limit,
+                                                     sort_keys=sort_keys,
+                                                     sort_dirs=sort_dirs,
+                                                     filters=filters)
 
-    def show_provider(self, provider_id):
+    def show_provider(self, context, provider_id):
         provider = self.provider_registry.show_provider(provider_id)
         if isinstance(provider, PluggableProtectionProvider):
             response = {'id': provider.id,
