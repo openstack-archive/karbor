@@ -102,6 +102,9 @@ class TriggerManager(object):
 
         trigger.register_operation(operation_id, **kwargs)
 
+        if kwargs.get('resume'):
+            self._executor.resume_operation(operation_id, **kwargs)
+
     def unregister_operation(self, trigger_id, operation_id, **kwargs):
         """Unregister operation.
 

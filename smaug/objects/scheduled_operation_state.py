@@ -17,6 +17,7 @@ from oslo_versionedobjects import fields
 from smaug import db
 from smaug import exception
 from smaug.i18n import _
+from smaug import objects
 from smaug.objects import base
 
 CONF = cfg.CONF
@@ -35,12 +36,27 @@ class ScheduledOperationState(base.SmaugPersistentObject, base.SmaugObject,
         'operation_id': fields.UUIDField(),
         'service_id': fields.IntegerField(),
         'state': fields.StringField(),
+
+        'operation': fields.ObjectField("ScheduledOperation")
     }
 
+    INSTANCE_OPTIONAL_JOINED_FIELDS = ['operation']
+
     @staticmethod
-    def _from_db_object(context, state, db_state):
-        for name, field in state.fields.items():
+    def _from_db_object(context, state, db_state, expected_attrs=[]):
+        special_fields = set(state.INSTANCE_OPTIONAL_JOINED_FIELDS)
+        normal_fields = set(state.fields) - special_fields
+        for name in normal_fields:
             state[name] = db_state.get(name)
+
+        if 'operation' in expected_attrs:
+            if db_state.get('operation', None) is None:
+                state.operation = None
+            else:
+                if not state.obj_attr_is_set('operation'):
+                    state.operation = objects.ScheduledOperation(context)
+                state.operation._from_db_object(context, state.operation,
+                                                db_state['operation'])
 
         state._context = context
         state.obj_reset_changes()
@@ -76,3 +92,28 @@ class ScheduledOperationState(base.SmaugPersistentObject, base.SmaugObject,
         if self.operation_id:
             db.scheduled_operation_state_delete(self._context,
                                                 self.operation_id)
+
+
+@base.SmaugObjectRegistry.register
+class ScheduledOperationStateList(base.ObjectListBase, base.SmaugObject):
+    VERSION = '1.0'
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ScheduledOperationState'),
+    }
+
+    @base.remotable_classmethod
+    def get_by_filters(cls, context, filters, limit=None, marker=None,
+                       sort_keys=None, sort_dirs=None, columns_to_join=[]):
+
+        option_column = ScheduledOperationState.INSTANCE_OPTIONAL_JOINED_FIELDS
+        valid_columns = [column for column in columns_to_join
+                         if column in option_column]
+
+        db_state_list = db.scheduled_operation_state_get_all_by_filters_sort(
+            context, filters, limit=limit, marker=marker, sort_keys=sort_keys,
+            sort_dirs=sort_dirs, columns_to_join=valid_columns)
+
+        return base.obj_make_list(
+            context, cls(context), ScheduledOperationState, db_state_list,
+            expected_attrs=valid_columns)

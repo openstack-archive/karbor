@@ -321,6 +321,18 @@ def scheduled_operation_state_delete(context, operation_id):
     return IMPL.scheduled_operation_state_delete(context, operation_id)
 
 
+def scheduled_operation_state_get_all_by_filters_sort(
+        context, filters, limit=None, marker=None,
+        sort_keys=None, sort_dirs=None, columns_to_join=[]):
+    """Get all operation states that match all filters sorted by multiple keys.
+
+    sort_keys and sort_dirs must be a list of strings.
+    """
+    return IMPL.scheduled_operation_state_get_all_by_filters_sort(
+        context, filters, limit=limit, marker=marker, sort_keys=sort_keys,
+        sort_dirs=sort_dirs, columns_to_join=columns_to_join)
+
+
 ###################
 
 

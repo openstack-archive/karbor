@@ -47,6 +47,17 @@ class BaseExecutor(object):
         pass
 
     @abstractmethod
+    def resume_operation(self, operation_id, **kwargs):
+        """Resume operations.
+
+        Get operations which are not finished from DB by operation_id,
+        and execute them again.
+
+        :param operation_id: ID of operation
+        """
+        pass
+
+    @abstractmethod
     def shutdown(self):
         """Shutdown the executor"""
         pass

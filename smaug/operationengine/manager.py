@@ -18,6 +18,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from smaug import context
 from smaug import exception
 from smaug import manager
 from smaug import objects
@@ -46,9 +47,59 @@ class OperationEngineManager(manager.Manager):
     def init_host(self, **kwargs):
         self._trigger_manager = trigger_manager.TriggerManager()
         self._service_id = kwargs.get("service_id")
+        self._restore()
 
     def cleanup_host(self):
         self._trigger_manager.shutdown()
+
+    def _restore(self):
+        self._restore_triggers()
+        self._restore_operations()
+
+    def _restore_triggers(self):
+        limit = 100
+        marker = None
+        filters = {}
+        ctxt = context.get_admin_context()
+        while True:
+            triggers = objects.TriggerList.get_by_filters(
+                ctxt, filters, limit, marker)
+            if not triggers:
+                break
+
+            for trigger in triggers:
+                self._trigger_manager.add_trigger(trigger.id, trigger.type,
+                                                  trigger.properties)
+            if len(triggers) < limit:
+                break
+            marker = triggers[-1].id
+
+    def _restore_operations(self):
+        limit = 100
+        marker = None
+        filters = {"service_id": self._service_id,
+                   "state": [scheduled_operation_state.REGISTERED,
+                             scheduled_operation_state.TRIGGERED,
+                             scheduled_operation_state.RUNNING]}
+        columns_to_join = ['operation']
+        ctxt = context.get_admin_context()
+        resume_states = [scheduled_operation_state.TRIGGERED,
+                         scheduled_operation_state.RUNNING]
+        while True:
+            states = objects.ScheduledOperationStateList.get_by_filters(
+                ctxt, filters, limit, marker, columns_to_join=columns_to_join)
+            if not states:
+                break
+
+            for state in states:
+                resume = (state.state in resume_states)
+                self._trigger_manager.register_operation(
+                    state.operation.trigger_id, state.operation.id,
+                    resume=resume, end_time_for_run=state.end_time_for_run)
+
+            if len(states) < limit:
+                break
+            marker = states[-1].id
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput,

@@ -110,6 +110,15 @@ class ScheduledOperationState(BASE, SmaugBase):
     service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
     state = Column(String(32), nullable=False)
 
+    operation = orm.relationship(
+        ScheduledOperation,
+        foreign_keys=operation_id,
+        primaryjoin='and_('
+                    'ScheduledOperationState.operation_id == '
+                    'ScheduledOperation.id,'
+                    'ScheduledOperationState.deleted == 0,'
+                    'ScheduledOperation.deleted == 0)')
+
 
 class ScheduledOperationLog(BASE, SmaugBase):
     """Represents a scheduled operation log."""

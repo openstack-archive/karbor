@@ -21,11 +21,18 @@ from smaug.tests import base
 
 class FakeTriggerManager(object):
 
+    def __init__(self):
+        self._trigger = {}
+
     def register_operation(self, trigger_id, operation_id, **kwargs):
-        pass
+        if trigger_id in self._trigger:
+            self._trigger[trigger_id].append(operation_id)
 
     def unregister_operation(self, trigger_id, operation_id, **kwargs):
         pass
+
+    def add_trigger(self, trigger_id, trigger_type, trigger_property):
+        self._trigger[trigger_id] = []
 
 
 class OperationEngineManagerTestCase(base.TestCase):
@@ -41,6 +48,17 @@ class OperationEngineManagerTestCase(base.TestCase):
         self.ctxt = context.get_admin_context()
         self._trigger = self._create_one_trigger()
         self._operation = self._create_scheduled_operation(self._trigger.id)
+
+    def test_init_host(self):
+        trigger_id = self._trigger.id
+        operation_id = self._operation.id
+
+        self._create_operation_state(operation_id)
+        self.manager._restore()
+
+        trigger_manager = self.manager._trigger_manager
+        self.assertTrue(trigger_id in trigger_manager._trigger)
+        self.assertTrue(operation_id in trigger_manager._trigger[trigger_id])
 
     def test_create_operation(self):
         operation_id = "1234"
