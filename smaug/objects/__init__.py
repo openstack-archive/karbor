@@ -22,3 +22,4 @@ def register_all():
     __import__('smaug.objects.scheduled_operation_log')
     __import__('smaug.objects.scheduled_operation_state')
     __import__('smaug.objects.restore')
+    __import__('smaug.objects.operation_log')

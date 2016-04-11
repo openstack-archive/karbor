@@ -1096,6 +1096,162 @@ def _process_restore_filters(query, filters):
 ###############################
 
 
+@require_context
+def operation_log_create(context, values):
+    operation_log_ref = models.OperationLog()
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+    operation_log_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        operation_log_ref.save(session)
+        return operation_log_ref
+
+
+@require_context
+def operation_log_get(context, operation_log_id):
+    return _operation_log_get(context, operation_log_id)
+
+
+@require_context
+def _operation_log_get(context, operation_log_id, session=None):
+    result = model_query(
+        context,
+        models.OperationLog,
+        session=session).\
+        filter_by(id=operation_log_id).\
+        first()
+    if not result:
+        raise exception.OperationLogNotFound(restore_id=operation_log_id)
+
+    return result
+
+
+@require_context
+def operation_log_update(context, operation_log_id, values):
+    session = get_session()
+    with session.begin():
+        operation_log_ref = _operation_log_get(context, operation_log_id,
+                                               session=session)
+        operation_log_ref.update(values)
+        return operation_log_ref
+
+
+@require_context
+@_retry_on_deadlock
+def operation_log_destroy(context, operation_log_id):
+    session = get_session()
+    with session.begin():
+        operation_log_ref = _operation_log_get(context, operation_log_id,
+                                               session=session)
+        operation_log_ref.delete(session=session)
+
+
+def _operation_log_get_query(context, session=None, project_only=False):
+    return model_query(context, models.OperationLog, session=session,
+                       project_only=project_only)
+
+
+@require_admin_context
+def operation_log_get_all(context, marker, limit, sort_keys=None,
+                          sort_dirs=None,
+                          filters=None, offset=None):
+    """Retrieves all operation logs.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching operation logs
+    """
+    if filters and not is_valid_model_filters(models.OperationLog, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.OperationLog)
+        # No restores would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@require_context
+def operation_log_get_all_by_project(context, project_id, marker, limit,
+                                     sort_keys=None, sort_dirs=None,
+                                     filters=None,
+                                     offset=None):
+    """Retrieves all operation logs in a project.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param project_id: project for all plans being retrieved
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_plan_filters
+                    function for more information
+    :returns: list of matching restores
+    """
+    if filters and not is_valid_model_filters(models.OperationLog, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        authorize_project_context(context, project_id)
+        # Add in the project filter without modifying the given filters
+        filters = filters.copy() if filters else {}
+        filters['project_id'] = project_id
+        # Generate the query
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.OperationLog)
+        # No plans would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+def _process_operation_log_filters(query, filters):
+    if filters:
+        # Ensure that filters' keys exist on the model
+        if not is_valid_model_filters(models.OperationLog, filters):
+            return None
+        query = query.filter_by(**filters)
+    return query
+###############################
+
+
+@require_context
+def _list_common_get_query(context, model, session=None):
+    return model_query(context, model, session=session)
+
+
 def _list_common_process_exact_filter(model, query, filters, legal_keys):
     """Applies exact match filtering to a query.
 
@@ -1183,6 +1339,9 @@ PAGINATION_HELPERS = {
         _scheduled_operation_state_list_query,
         _scheduled_operation_state_list_process_filters,
         _scheduled_operation_state_get),
+    models.OperationLog: (_operation_log_get_query,
+                          _process_operation_log_filters,
+                          _operation_log_get)
 }
 
 

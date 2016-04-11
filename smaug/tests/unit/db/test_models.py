@@ -499,3 +499,75 @@ class RestoreDbTestCase(base.TestCase):
     def test_restore_update_nonexistent(self):
         self.assertRaises(exception.RestoreNotFound, db.restore_update,
                           self.ctxt, 42, {})
+
+
+class OperationLogTestCase(base.TestCase):
+
+    """Unit tests for smaug.db.api.operation_log_*."""
+
+    fake_operation_log = {
+        "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
+        "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
+        "scheduled_operation_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+        "state": "failed",
+        "error": "Could not access bank",
+        "entries": "[entries:{'timestamp': '2015-08-27T09:50:51-05:00',"
+                   "'message': 'Doing things'}]"
+    }
+
+    def _dict_from_object(self, obj, ignored_keys):
+        if ignored_keys is None:
+            ignored_keys = []
+        if isinstance(obj, dict):
+            items = obj.items()
+        else:
+            items = obj.iteritems()
+        return {k: v for k, v in items
+                if k not in ignored_keys}
+
+    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
+        obj1 = self._dict_from_object(obj1, ignored_keys)
+        obj2 = self._dict_from_object(obj2, ignored_keys)
+
+        self.assertEqual(
+            len(obj1), len(obj2),
+            "Keys mismatch: %s" % six.text_type(
+                set(obj1.keys()) ^ set(obj2.keys())))
+        for key, value in obj1.items():
+            self.assertEqual(value, obj2[key])
+
+    def setUp(self):
+        super(OperationLogTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def test_operation_log_create(self):
+        operation_log = db.operation_log_create(self.ctxt,
+                                                self.fake_operation_log)
+        self.assertTrue(uuidutils.is_uuid_like(operation_log['id']))
+        self.assertEqual('failed', operation_log.state)
+
+    def test_operation_log_get(self):
+        operation_log = db.operation_log_create(self.ctxt,
+                                                self.fake_operation_log)
+        self._assertEqualObjects(operation_log, db.operation_log_get(
+            self.ctxt, operation_log['id']))
+
+    def test_operation_log_destroy(self):
+        operation_log = db.operation_log_create(self.ctxt,
+                                                self.fake_operation_log)
+        db.operation_log_destroy(self.ctxt, operation_log['id'])
+        self.assertRaises(exception.OperationLogNotFound, db.operation_log_get,
+                          self.ctxt, operation_log['id'])
+
+    def test_operation_log_update(self):
+        operation_log = db.operation_log_create(self.ctxt,
+                                                self.fake_operation_log)
+        db.operation_log_update(self.ctxt, operation_log['id'],
+                                {'state': 'finished'})
+        operation_log = db.operation_log_get(self.ctxt, operation_log['id'])
+        self.assertEqual('finished', operation_log['state'])
+
+    def test_operation_log_update_nonexistent(self):
+        self.assertRaises(exception.OperationLogNotFound,
+                          db.operation_log_update,
+                          self.ctxt, 42, {})

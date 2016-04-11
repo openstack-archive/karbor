@@ -179,6 +179,20 @@ class Restore(BASE, SmaugBase):
     status = Column(String(64))
 
 
+class OperationLog(BASE, SmaugBase):
+    """Represents a operation log."""
+
+    __tablename__ = 'operation_logs'
+    id = Column(String(36), primary_key=True)
+    project_id = Column(String(255))
+    scheduled_operation_id = Column(String(36))
+    started_at = Column(DateTime)
+    ended_at = Column(DateTime)
+    state = Column(String(64))
+    error = Column(String(64))
+    entries = Column(Text)
+
+
 def register_models():
     """Register Models and create metadata.
 

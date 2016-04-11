@@ -81,6 +81,23 @@ def define_tables(meta):
         mysql_engine='InnoDB'
     )
 
+    operation_logs = Table(
+        'operation_logs', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean, nullable=False),
+        Column('id', String(length=36), primary_key=True, nullable=False),
+        Column('project_id', String(length=255), nullable=False),
+        Column('scheduled_operation_id', String(length=36)),
+        Column('started_at', DateTime),
+        Column('ended_at', DateTime),
+        Column('state', String(length=64)),
+        Column('error', String(length=255)),
+        Column('entries', Text),
+        mysql_engine='InnoDB'
+    )
+
     triggers = Table(
         'triggers', meta,
         Column('created_at', DateTime),
@@ -154,6 +171,7 @@ def define_tables(meta):
             plans,
             resources,
             restores,
+            operation_logs,
             triggers,
             scheduled_operations,
             scheduled_operation_states,
