@@ -1085,12 +1085,19 @@ definitions:
       name:
         type: string
         description: Display name of scheduled operation.
+      project_id:
+        type: string
+        format: UUID
+      operation_type:
+        type: string
       description:
         type: string
         description: Description about the scheduled operation.
       trigger_id:
         type: string
         format: UUID
+      operation_definition:
+        $ref: '#/definitions/OperationDefinition'
   OperationStatus:
     type: object
     properties:
@@ -1119,6 +1126,10 @@ definitions:
         description: |
           Type of the trigger. This defines what kind of trigger this
           object defines the arguments for.
+      properties:
+        type: object
+        description: |
+          Trigger properties. Supply parameters for the trigger type.
   TimeTrigger:
     description: |
       Trigger definition for time tigger.
@@ -1126,15 +1137,18 @@ definitions:
     - $ref: '#/definitions/Trigger'
     - type: object
       properties:
-        format:
-          type: string
-          enum: [ crontab ]
-        start_time:
-          type: string
-        trigger_window:
-          type: string
-          format: xsd:duration
-      required: [ start_time, trigger_window, format ]
+        property:
+          type: object
+          required: [ start_time, trigger_window, format ]
+          properties:
+            format:
+              type: string
+              enum: [ crontab ]
+            start_time:
+              type: string
+            trigger_window:
+              type: string
+              format: xsd:duration
   Restore:
     type: object
     properties:
