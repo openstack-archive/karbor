@@ -365,6 +365,9 @@ def _trigger_get(context, id, session=None):
 
 
 def trigger_create(context, values):
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+
     trigger_ref = models.Trigger()
     trigger_ref.update(values)
     trigger_ref.save(get_session())
@@ -415,6 +418,9 @@ def _scheduled_operation_get(context, id, columns_to_join=[], session=None):
 
 
 def scheduled_operation_create(context, values):
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+
     operation_ref = models.ScheduledOperation()
     operation_ref.update(values)
     operation_ref.save(get_session())

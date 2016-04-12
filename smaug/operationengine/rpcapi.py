@@ -1,5 +1,3 @@
-# Copyright 2012, Red Hat, Inc.
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -18,7 +16,6 @@ Client side of the OperationEngine manager RPC API.
 
 from oslo_config import cfg
 import oslo_messaging as messaging
-from oslo_serialization import jsonutils
 
 from smaug import rpc
 
@@ -42,10 +39,24 @@ class OperationEngineAPI(object):
                                   version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap=None)
 
-    def create_scheduled_operation(self, ctxt, request_spec=None):
-        request_spec_p = jsonutils.to_primitive(request_spec)
+    def create_scheduled_operation(self, ctxt, operation_id, trigger_id):
         cctxt = self.client.prepare(version='1.0')
-        return cctxt.cast(
-            ctxt,
-            'create_scheduled_operation',
-            request_spec=request_spec_p)
+        return cctxt.call(ctxt, 'create_scheduled_operation',
+                          operation_id=operation_id, trigger_id=trigger_id)
+
+    def delete_scheduled_operation(self, ctxt, operation_id, trigger_id):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(ctxt, 'delete_scheduled_operation',
+                          operation_id=operation_id, trigger_id=trigger_id)
+
+    def create_trigger(self, ctxt, trigger):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(ctxt, 'create_trigger', trigger=trigger)
+
+    def delete_trigger(self, ctxt, trigger_id):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(ctxt, 'delete_trigger', trigger_id=trigger_id)
+
+    def update_trigger(self, ctxt, trigger):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(ctxt, 'update_trigger', trigger=trigger)

@@ -12,6 +12,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from smaug import db
@@ -35,17 +36,30 @@ class Trigger(base.SmaugPersistentObject, base.SmaugObject,
         'name': fields.StringField(),
         'project_id': fields.StringField(),
         'type': fields.StringField(),
-        'properties': fields.StringField(),
+        'properties': fields.DictOfStringsField(),
     }
 
     @staticmethod
     def _from_db_object(context, trigger, db_trigger):
-        for name, field in trigger.fields.items():
+        special_fields = set(['properties'])
+
+        normal_fields = set(trigger.fields) - special_fields
+        for name in normal_fields:
             trigger[name] = db_trigger.get(name)
+
+        properties = db_trigger['properties']
+        if properties:
+            trigger['properties'] = jsonutils.loads(properties)
 
         trigger._context = context
         trigger.obj_reset_changes()
         return trigger
+
+    @staticmethod
+    def _convert_properties_to_db_format(updates):
+        properties = updates.pop('properties', None)
+        if properties is not None:
+            updates['properties'] = jsonutils.dumps(properties)
 
     @base.remotable_classmethod
     def get_by_id(cls, context, id):
@@ -60,6 +74,7 @@ class Trigger(base.SmaugPersistentObject, base.SmaugObject,
                                               reason=_('already created'))
 
         updates = self.smaug_obj_get_changes()
+        self._convert_properties_to_db_format(updates)
         db_trigger = db.trigger_create(self._context, updates)
         self._from_db_object(self._context, self, db_trigger)
 
@@ -67,6 +82,7 @@ class Trigger(base.SmaugPersistentObject, base.SmaugObject,
     def save(self):
         updates = self.smaug_obj_get_changes()
         if updates and self.id:
+            self._convert_properties_to_db_format(updates)
             db.trigger_update(self._context, self.id, updates)
             self.obj_reset_changes()
 
@@ -83,13 +99,14 @@ class TriggerList(base.ObjectListBase, base.SmaugObject):
     fields = {
         'objects': fields.ListOfObjectsField('Trigger'),
     }
-    child_versions = {
-        '1.0': '1.0'
-    }
 
     @base.remotable_classmethod
-    def get_by_filters(cls, context, filters,
-                       sort_key='created_at', sort_dir='desc', limit=None,
-                       marker=None, expected_attrs=None, use_slave=False,
-                       sort_keys=None, sort_dirs=None):
-        pass
+    def get_by_filters(cls, context, filters, limit=None,
+                       marker=None, sort_keys=None, sort_dirs=None):
+
+        db_trigger_list = db.trigger_get_all_by_filters_sort(
+            context, filters, limit=limit, marker=marker,
+            sort_keys=sort_keys, sort_dirs=sort_dirs)
+
+        return base.obj_make_list(context, cls(context), Trigger,
+                                  db_trigger_list)

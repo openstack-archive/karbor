@@ -102,7 +102,6 @@ class Service(service.Service):
         LOG.info(_LI('Starting %(topic)s node (version %(version_string)s)'),
                  {'topic': self.topic, 'version_string': version_string})
         self.model_disconnected = False
-        self.manager.init_host()
         ctxt = context.get_admin_context()
         try:
             service_ref = db.service_get_by_args(ctxt,
@@ -111,6 +110,8 @@ class Service(service.Service):
             self.service_id = service_ref['id']
         except exception.NotFound:
             self._create_service_ref(ctxt)
+
+        self.manager.init_host(service_id=self.service_id)
 
         LOG.debug("Creating RPC server for service %s", self.topic)
 

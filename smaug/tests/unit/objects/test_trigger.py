@@ -11,6 +11,7 @@
 #    under the License.
 
 import mock
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 
 from smaug import objects
@@ -38,20 +39,22 @@ class TestTrigger(test_objects.BaseObjectsTestCase):
 
     @mock.patch('smaug.db.trigger_get')
     def test_get_by_id(self, trigger_get):
-        db_trigger = Fake_Trigger
+        db_trigger = Fake_Trigger.copy()
         trigger_get.return_value = db_trigger
 
         trigger = self.Trigger_Class.get_by_id(self.context, Trigger_ID)
+        db_trigger['properties'] = jsonutils.loads(db_trigger['properties'])
         self._compare(self, db_trigger, trigger)
         trigger_get.assert_called_once_with(self.context, Trigger_ID)
 
     @mock.patch('smaug.db.trigger_create')
     def test_create(self, trigger_create):
-        db_trigger = Fake_Trigger
+        db_trigger = Fake_Trigger.copy()
         trigger_create.return_value = db_trigger
 
         trigger = self.Trigger_Class(context=self.context)
         trigger.create()
+        db_trigger['properties'] = jsonutils.loads(db_trigger['properties'])
         self._compare(self, db_trigger, trigger)
         trigger_create.assert_called_once_with(self.context, {})
 

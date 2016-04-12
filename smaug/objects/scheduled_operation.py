@@ -12,11 +12,13 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from smaug import db
 from smaug import exception
 from smaug.i18n import _
+from smaug import objects
 from smaug.objects import base
 
 CONF = cfg.CONF
@@ -36,27 +38,44 @@ class ScheduledOperation(base.SmaugPersistentObject, base.SmaugObject,
         'operation_type': fields.StringField(),
         'project_id': fields.StringField(),
         'trigger_id': fields.UUIDField(),
-        'operation_definition': fields.StringField(),
+        'operation_definition': fields.DictOfStringsField(),
 
-        'trigger': fields.DictOfStringsField(),
+        'trigger': fields.ObjectField("Trigger")
     }
 
     INSTANCE_OPTIONAL_JOINED_FIELDS = ['trigger']
 
     @staticmethod
     def _from_db_object(context, op, db_op, expected_attrs=[]):
-        for name, field in op.fields.items():
-            if name in op.INSTANCE_OPTIONAL_JOINED_FIELDS:
-                continue
+        special_fields = set(['operation_definition'] +
+                             op.INSTANCE_OPTIONAL_JOINED_FIELDS)
 
+        normal_fields = set(op.fields) - special_fields
+        for name in normal_fields:
             op[name] = db_op.get(name)
 
+        op_definition = db_op['operation_definition']
+        if op_definition:
+            op['operation_definition'] = jsonutils.loads(op_definition)
+
         if 'trigger' in expected_attrs:
-            op['trigger'] = db_op['trigger']
+            if db_op.get('trigger', None) is None:
+                op.trigger = None
+            else:
+                if not op.obj_attr_is_set('trigger'):
+                    op.trigger = objects.Trigger(context)
+                op.trigger._from_db_object(context, op.trigger,
+                                           db_op['trigger'])
 
         op._context = context
         op.obj_reset_changes()
         return op
+
+    @staticmethod
+    def _convert_operation_definition_to_db_format(updates):
+        op_definition = updates.pop('operation_definition', None)
+        if op_definition is not None:
+            updates['operation_definition'] = jsonutils.dumps(op_definition)
 
     @base.remotable_classmethod
     def get_by_id(cls, context, id, expected_attrs=[]):
@@ -74,6 +93,7 @@ class ScheduledOperation(base.SmaugPersistentObject, base.SmaugObject,
                                               reason=_('already created'))
 
         updates = self.smaug_obj_get_changes()
+        self._convert_operation_definition_to_db_format(updates)
         db_op = db.scheduled_operation_create(self._context, updates)
         self._from_db_object(self._context, self, db_op)
 
@@ -99,13 +119,14 @@ class ScheduledOperationList(base.ObjectListBase, base.SmaugObject):
     fields = {
         'objects': fields.ListOfObjectsField('ScheduledOperation'),
     }
-    child_versions = {
-        '1.0': '1.0'
-    }
 
     @base.remotable_classmethod
-    def get_by_filters(cls, context, filters,
-                       sort_key='created_at', sort_dir='desc', limit=None,
-                       marker=None, expected_attrs=None, use_slave=False,
-                       sort_keys=None, sort_dirs=None):
-        pass
+    def get_by_filters(cls, context, filters, limit=None,
+                       marker=None, sort_keys=None, sort_dirs=None):
+
+        db_operation_list = db.scheduled_operation_get_all_by_filters_sort(
+            context, filters, limit=limit, marker=marker,
+            sort_keys=sort_keys, sort_dirs=sort_dirs)
+
+        return base.obj_make_list(context, cls(context), ScheduledOperation,
+                                  db_operation_list)
