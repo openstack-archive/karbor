@@ -24,7 +24,7 @@ from smaug import exception
 from smaug.i18n import _LI, _LE
 from smaug import manager
 from smaug.resource import Resource
-from smaug.services.protection import protectable_registry as p_reg
+from smaug.services.protection.protectable_registry import ProtectableRegistry
 from smaug.services.protection.provider import PluggableProtectionProvider
 from smaug import utils
 
@@ -58,6 +58,8 @@ class ProtectionManager(manager.Manager):
         provider_reg = CONF.provider_registry
         self.provider_registry = utils.load_plugin(PROVIDER_NAMESPACE,
                                                    provider_reg)
+        self.protectable_registry = ProtectableRegistry()
+        self.protectable_registry.load_plugins()
         self.flow_engine = None
         # TODO(wangliuan)
 
@@ -180,24 +182,24 @@ class ProtectionManager(manager.Manager):
 
     def list_protectable_types(self, context):
         LOG.info(_LI("Start to list protectable types."))
-        return p_reg.ProtectableRegistry.list_resource_types()
+        return self.protectable_registry.list_resource_types()
 
     def show_protectable_type(self, context, protectable_type):
         LOG.info(_LI("Start to show protectable type %s"),
                  protectable_type)
 
-        plugin = p_reg.ProtectableRegistry.get_protectable_resource_plugin(
+        plugin = self.protectable_registry.get_protectable_resource_plugin(
             protectable_type)
         if not plugin:
             raise exception.ProtectableTypeNotFound(
                 protectable_type=protectable_type)
 
         dependents = []
-        for t in p_reg.ProtectableRegistry.list_resource_types():
+        for t in self.protectable_registry.list_resource_types():
             if t == protectable_type:
                 continue
 
-            p = p_reg.ProtectableRegistry.get_protectable_resource_plugin(t)
+            p = self.protectable_registry.get_protectable_resource_plugin(t)
             if p and protectable_type in p.get_parent_resource_types():
                 dependents.append(t)
 
@@ -210,10 +212,9 @@ class ProtectionManager(manager.Manager):
         LOG.info(_LI("Start to list protectable instances of type: %s"),
                  protectable_type)
 
-        registry = p_reg.ProtectableRegistry.create_instance(context)
-
         try:
-            resource_instances = registry.list_resources(protectable_type)
+            resource_instances = self.protectable_registry.list_resources(
+                context, protectable_type)
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("List resources of type %(type)s failed: %(err)s"),
                       {'type': protectable_type,
@@ -234,12 +235,12 @@ class ProtectionManager(manager.Manager):
                  {'type': protectable_type,
                   'id': protectable_id})
 
-        registry = p_reg.ProtectableRegistry.create_instance(context)
         parent_resource = Resource(type=protectable_type, id=protectable_id)
 
         try:
-            dependent_resources = registry.fetch_dependent_resources(
-                parent_resource)
+            dependent_resources = \
+                self.protectable_registry.fetch_dependent_resources(
+                    context, parent_resource)
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("List dependent resources of (%(res)s) "
                           "failed: %(err)s"),

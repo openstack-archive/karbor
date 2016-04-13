@@ -45,10 +45,9 @@ class _FakeProtectablePlugin(ProtectablePlugin):
 class ProtectableRegistryTest(base.TestCase):
     def setUp(self):
         super(ProtectableRegistryTest, self).setUp()
-        self.__map_backup = ProtectableRegistry._plugin_map
-        ProtectableRegistry._plugin_map = {}
+        self.protectable_registry = ProtectableRegistry()
         self._fake_plugin = _FakeProtectablePlugin(None)
-        ProtectableRegistry.register_plugin(self._fake_plugin)
+        self.protectable_registry.register_plugin(self._fake_plugin)
 
     def test_graph_building(self):
         A = Resource(_FAKE_TYPE, "A")
@@ -69,12 +68,12 @@ class ProtectableRegistryTest(base.TestCase):
             ),
         )
 
-        registry = ProtectableRegistry(None)
         for g, resources in test_matrix:
             self._fake_plugin.graph = g
-            result_graph = registry.build_graph(resources)
+            result_graph = self.protectable_registry.build_graph(None,
+                                                                 resources)
             self.assert_graph(result_graph, g)
-            registry._protectable_map = {}
+            self.protectable_registry._protectable_map = {}
 
     def assert_graph(self, g, g_dict):
         for item in g:
@@ -82,7 +81,3 @@ class ProtectableRegistryTest(base.TestCase):
             found = set(child.value for child in item.child_nodes)
             self.assertEqual(found, expected)
             self.assert_graph(item.child_nodes, g_dict)
-
-    def tearDown(self):
-        ProtectableRegistry._plugin_map = self.__map_backup
-        super(ProtectableRegistryTest, self).tearDown()

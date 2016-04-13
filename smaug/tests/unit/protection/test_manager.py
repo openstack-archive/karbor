@@ -35,6 +35,12 @@ class ProtectionServiceTest(base.TestCase):
         self.assertEqual(excepted, result)
 
     def test_show_protectable_type(self):
+        def mock_plugins(self):
+            self._plugin_map = {
+                "OS::Nova::Server": server_plugin,
+                "OS::Cinder::Volume": volume_plugin
+            }
+
         server_plugin = fakes.FakeProtectablePlugin()
         server_plugin.get_resource_type = mock.MagicMock(
             return_value="OS::Nova::Server")
@@ -42,9 +48,7 @@ class ProtectionServiceTest(base.TestCase):
         volume_plugin.get_parent_resource_types = mock.MagicMock(
             return_value=["OS::Nova::Server"])
 
-        protectable_registry.ProtectableRegistry._plugin_map = {
-            "OS::Nova::Server": server_plugin,
-            "OS::Cinder::Volume": volume_plugin}
+        protectable_registry.ProtectableRegistry.load_plugins = mock_plugins
 
         result = self.pro_manager.show_protectable_type(None,
                                                         "OS::Nova::Server")
