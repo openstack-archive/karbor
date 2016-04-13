@@ -390,7 +390,12 @@ class ProvidersController(wsgi.Controller):
                 "resources": plan.get("resources"),
             }
         }
-        self.protection_api.protect(context, plan)
+        checkpoint = self.protection_api.protect(context, plan)
+        if checkpoint is not None:
+            checkpoint_properties['id'] = checkpoint.get('checkpoint_id')
+        else:
+            msg = _("Get checkpoint failed.")
+            raise exc.HTTPNotFound(explanation=msg)
 
         returnval = self._checkpoint_view_builder.detail(
             req, checkpoint_properties)

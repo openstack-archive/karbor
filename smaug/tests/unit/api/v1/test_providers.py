@@ -127,6 +127,9 @@ class ProvidersApiTest(base.TestCase):
         mock_plan_create.return_value = {
             "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
         }
+        mock_protect.return_value = {
+            "checkpoint_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
+        }
         self.controller.checkpoints_create(
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
