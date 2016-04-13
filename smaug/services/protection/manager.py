@@ -63,7 +63,7 @@ class ProtectionManager(manager.Manager):
         self.flow_engine = None
         # TODO(wangliuan)
 
-    def init_host(self):
+    def init_host(self, **kwargs):
         """Handle initialization if this is a standalone service"""
         # TODO(wangliuan)
         LOG.info(_LI("Starting protection service"))
