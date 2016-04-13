@@ -9,6 +9,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from collections import namedtuple
 
 import smaug.services.protection.graph as graph
 from smaug.tests import base
@@ -75,6 +76,33 @@ class GraphBuilderTest(base.TestCase):
                 )
             else:
                 graph.build_graph(g.keys(), g.__getitem__)
+
+    def test_diamond_graph(self):
+        def test_node_children(testnode):
+            return testnode.children
+
+        TestNode = namedtuple('TestNode', ['id', 'children'])
+#          A
+#         / \
+#        B   C
+#         \ /
+#          D
+        test_diamond_left = TestNode('D', ())
+        test_diamond_right = TestNode('D', ())
+        print('id left: ', id(test_diamond_left))
+        print('id right:', id(test_diamond_right))
+        test_left = TestNode('B', (test_diamond_left, ))
+        test_right = TestNode('C', (test_diamond_right, ))
+        test_root = TestNode('A', (test_left, test_right, ))
+        test_nodes = {test_root, }
+        result_graph = graph.build_graph(test_nodes, test_node_children)
+        test_root_node = result_graph[0]
+        self.assertEqual(len(test_root_node.child_nodes), 2)
+        test_left_node = test_root_node.child_nodes[0]
+        test_right_node = test_root_node.child_nodes[1]
+
+        self.assertEqual(id(test_left_node.child_nodes[0]),
+                         id(test_right_node.child_nodes[0]))
 
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
