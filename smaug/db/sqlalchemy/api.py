@@ -476,6 +476,35 @@ def scheduled_operation_delete(context, id):
         session.flush()
 
 
+def _scheduled_operation_list_process_filters(query, filters):
+    exact_match_filter_names = ['project_id', 'operation_type', 'trigger_id']
+    query = _list_common_process_exact_filter(
+        models.ScheduledOperation, query, filters,
+        exact_match_filter_names)
+
+    regex_match_filter_names = ['name', 'operation_definition']
+    query = _list_common_process_regex_filter(
+        models.ScheduledOperation, query, filters,
+        regex_match_filter_names)
+
+    return query
+
+
+def scheduled_operation_get_all_by_filters_sort(
+        context, filters, limit=None, marker=None,
+        sort_keys=None, sort_dirs=None):
+
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(
+            context, session, marker, limit,
+            sort_keys, sort_dirs, filters,
+            paginate_type=models.ScheduledOperation,
+            use_model=True)
+
+        return query.all() if query else []
+
+
 ###################
 
 
@@ -1105,6 +1134,9 @@ PAGINATION_HELPERS = {
                      _restore_get),
     models.Trigger: (_list_common_get_query, _trigger_list_process_filters,
                      _trigger_get),
+    models.ScheduledOperation: (_list_common_get_query,
+                                _scheduled_operation_list_process_filters,
+                                _scheduled_operation_get),
 }
 
 
@@ -1153,7 +1185,7 @@ def _generate_paginate_query(context, session, marker, limit, sort_keys,
 
     marker_object = None
     if marker is not None:
-        marker_object = get(context, marker, session)
+        marker_object = get(context, marker, session=session)
 
     return sqlalchemyutils.paginate_query(query, paginate_type, limit,
                                           sort_keys,

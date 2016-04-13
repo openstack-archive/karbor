@@ -30,5 +30,10 @@
     "trigger:delete": "rule:admin_or_owner",
     "trigger:update": "rule:admin_or_owner",
     "trigger:get": "rule:admin_or_owner",
-    "trigger:list": ""
+    "trigger:list": "",
+
+    "scheduled_operation:create": "",
+    "scheduled_operation:delete": "rule:admin_or_owner",
+    "scheduled_operation:get": "rule:admin_or_owner",
+    "scheduled_operation:list": ""
 }
