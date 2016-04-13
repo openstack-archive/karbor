@@ -16,6 +16,7 @@ from oslo_log import log as logging
 
 import six
 
+from smaug import exception
 from smaug.i18n import _
 
 
@@ -30,6 +31,8 @@ GraphNode = namedtuple("GraphNode", (
     "value",
     "child_nodes",
 ))
+
+PackedGraph = namedtuple('PackedGraph', ['nodes', 'adjacency'])
 
 LOG = logging.getLogger(__name__)
 
@@ -127,3 +130,81 @@ class GraphWalker(object):
 
             for listener in self._listeners:
                 listener.on_node_exit(node)
+
+
+class PackGraphWalker(GraphWalkerListener):
+    """Pack a list of GraphNode
+
+    Allocate a serialized id (sid) for every node and build an adjacency list,
+    suitable for graph unpacking.
+    """
+    def __init__(self, adjacency_list, nodes_dict):
+        super(PackGraphWalker, self).__init__()
+        self._sid_counter = 0
+        self._node_to_sid = {}
+        self._adjacency_list = adjacency_list
+        self._sid_to_node = nodes_dict
+
+    def on_node_enter(self, node, already_visited):
+        pass
+
+    def on_node_exit(self, node):
+        def key_serialize(key):
+            return hex(key)
+
+        node_sid = self._sid_counter
+        self._sid_counter += 1
+        self._node_to_sid[node] = node_sid
+        self._sid_to_node[key_serialize(node_sid)] = node.value
+
+        if len(node.child_nodes) > 0:
+            children_sids = map(lambda node:
+                                key_serialize(self._node_to_sid[node]),
+                                node.child_nodes)
+            self._adjacency_list.append(
+                (key_serialize(node_sid), tuple(children_sids))
+            )
+
+
+def pack_graph(start_nodes):
+    """Return a PackedGraph from a list of GraphNodes
+
+    Packs a graph into a flat PackedGraph (nodes dictionary, adjacency list).
+    """
+    walker = GraphWalker()
+    nodes_dict = {}
+    adjacency_list = []
+    packer = PackGraphWalker(adjacency_list, nodes_dict)
+    walker.register_listener(packer)
+    walker.walk_graph(start_nodes)
+    return PackedGraph(nodes_dict, tuple(adjacency_list))
+
+
+def unpack_graph(packed_graph):
+    """Return a list of GraphNodes from a PackedGraph
+
+    Unpacks a PackedGraph, which must have the property: each parent node in
+    the adjacency list appears after its children.
+    """
+    (nodes, adjacency_list) = packed_graph
+    nodes_dict = dict(nodes)
+    graph_nodes_dict = {}
+
+    for (parent_sid, children_sids) in adjacency_list:
+        if parent_sid in graph_nodes_dict:
+            raise exception.InvalidInput(reason="PackedGraph adjacency list "
+                                         "must be topologically ordered")
+        children = []
+        for child_sid in children_sids:
+            if child_sid not in graph_nodes_dict:
+                graph_nodes_dict[child_sid] = GraphNode(
+                    nodes_dict[child_sid], ())
+            children.append(graph_nodes_dict[child_sid])
+            del(nodes_dict[child_sid])
+        graph_nodes_dict[parent_sid] = GraphNode(nodes_dict[parent_sid],
+                                                 tuple(children))
+
+    result_nodes = []
+    for sid in nodes_dict:
+        result_nodes.append(graph_nodes_dict[sid])
+    return result_nodes
