@@ -24,5 +24,11 @@
     "provider:checkpoint_get": "rule:admin_or_owner",
     "provider:checkpoint_get_all": "rule:admin_or_owner",
     "provider:checkpoint_create": "rule:admin_or_owner",
-    "provider:checkpoint_delete": "rule:admin_or_owner"
+    "provider:checkpoint_delete": "rule:admin_or_owner",
+
+    "trigger:create": "",
+    "trigger:delete": "rule:admin_or_owner",
+    "trigger:update": "rule:admin_or_owner",
+    "trigger:get": "rule:admin_or_owner",
+    "trigger:list": ""
 }

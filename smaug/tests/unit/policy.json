@@ -6,5 +6,10 @@
     "admin_api": "is_admin:True",
 
     "plan:create": "",
-    "plan:delete": "rule:admin_or_owner"
+    "plan:delete": "rule:admin_or_owner",
+
+    "trigger:create": "",
+    "trigger:delete": "rule:admin_or_owner",
+    "trigger:get": "rule:admin_or_owner",
+    "trigger:list": ""
 }

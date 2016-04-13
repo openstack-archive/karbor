@@ -16,6 +16,7 @@ from smaug.api.v1 import protectables
 from smaug.api.v1 import providers
 from smaug.api.v1 import restores
 from smaug.api.v1 import scheduled_operations
+from smaug.api.v1 import triggers
 from smaug.wsgi import common as wsgi_common
 
 
@@ -29,7 +30,9 @@ class APIRouter(wsgi_common.Router):
         restores_resources = restores.create_resource()
         protectables_resources = protectables.create_resource()
         providers_resources = providers.create_resource()
+        trigger_resources = triggers.create_resource()
         scheduled_operation_resources = scheduled_operations.create_resource()
+
         mapper.resource("plan", "plans",
                         controller=plans_resources,
                         collection={},
@@ -74,6 +77,10 @@ class APIRouter(wsgi_common.Router):
                        controller=providers_resources,
                        action='checkpoints_delete',
                        conditions={"method": ['DELETE']})
+        mapper.resource("trigger", "triggers",
+                        controller=trigger_resources,
+                        collection={},
+                        member={'action': 'POST'})
         mapper.resource("scheduled_operation", "scheduled_operations",
                         controller=scheduled_operation_resources,
                         collection={'detail': 'GET'},
