@@ -10,7 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from collections import namedtuple
+from oslo_serialization import jsonutils
+from oslo_serialization import msgpackutils
 
+from smaug import exception
 import smaug.services.protection.graph as graph
 from smaug.tests import base
 
@@ -103,6 +106,59 @@ class GraphBuilderTest(base.TestCase):
 
         self.assertEqual(id(test_left_node.child_nodes[0]),
                          id(test_right_node.child_nodes[0]))
+
+    def test_graph_pack_unpack(self):
+        test_base = {
+            "A1": ["B1", "B2"],
+            "B1": ["C1", "C2"],
+            "B2": ["C3", "C2"],
+            "C1": [],
+            "C2": [],
+            "C3": [],
+        }
+
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        packed_graph = graph.pack_graph(test_graph)
+        unpacked_graph = graph.unpack_graph(packed_graph)
+        self.assertEqual(test_graph, unpacked_graph)
+
+    def test_graph_serialize_deserialize(self):
+        Format = namedtuple('Format', ['loads', 'dumps'])
+        formats = [
+            Format(jsonutils.loads, jsonutils.dumps),
+            Format(msgpackutils.loads, msgpackutils.dumps),
+        ]
+        test_base = {
+            "A1": ["B1", "B2"],
+            "B1": ["C1", "C2"],
+            "B2": ["C3", "C2"],
+            "C1": [],
+            "C2": [],
+            "C3": [],
+        }
+
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        for fmt in formats:
+            serialized = fmt.dumps(graph.pack_graph(test_graph))
+            unserialized = graph.unpack_graph(fmt.loads(serialized))
+            self.assertEqual(test_graph, unserialized)
+
+    def test_graph_deserialize_unordered_adjacency(self):
+        test_base = {
+            "A1": ["B1", "B2"],
+            "B1": ["C1", "C2"],
+            "B2": ["C3", "C2"],
+            "C1": [],
+            "C2": [],
+            "C3": [],
+        }
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        packed_graph = graph.pack_graph(test_graph)
+        reversed_adjacency = tuple(reversed(packed_graph.adjacency))
+        packed_graph = graph.PackedGraph(packed_graph.nodes,
+                                         reversed_adjacency)
+        with self.assertRaisesRegex(exception.InvalidInput, "adjacency list"):
+            graph.unpack_graph(packed_graph)
 
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
