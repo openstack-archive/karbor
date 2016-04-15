@@ -322,3 +322,7 @@ class InvalidTaskFlowObject(Invalid):
 
 class InvalidOriginalId(Invalid):
     message = _("The original_id: %(original_id)s is invalid.")
+
+
+class CheckpointNotAvailable(SmaugException):
+    message = _("The checkpoint %(checkpoint_id)s is not available")

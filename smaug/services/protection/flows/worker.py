@@ -18,6 +18,7 @@ from oslo_utils import importutils
 from smaug.common import constants
 from smaug.i18n import _LE
 from smaug.services.protection.flows import create_protection
+from smaug.services.protection.flows import create_restoration
 
 workflow_opts = [
     cfg.StrOpt(
@@ -57,6 +58,16 @@ class Worker(object):
                                                          provider)
             return protection_flow
         # TODO(wangliuan)implement the other operation
+
+    def get_restoration_flow(self, context, operation_type, checkpoint,
+                             provider, restore):
+        restoration_flow = create_restoration.get_flow(context,
+                                                       self.workflow_engine,
+                                                       operation_type,
+                                                       checkpoint,
+                                                       provider,
+                                                       restore)
+        return restoration_flow
 
     def run_flow(self, flow_engine):
         self.workflow_engine.run_engine(flow_engine)
