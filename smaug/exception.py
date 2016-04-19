@@ -318,3 +318,7 @@ class TriggerIsInvalid(Invalid):
 
 class InvalidTaskFlowObject(Invalid):
     message = _("The task flow is invalid: %(reason)s")
+
+
+class InvalidOriginalId(Invalid):
+    message = _("The original_id: %(original_id)s is invalid.")
