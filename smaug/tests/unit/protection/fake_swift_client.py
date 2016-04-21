@@ -11,8 +11,9 @@
 #    under the License.
 
 import os
-from swiftclient import ClientException
 import tempfile
+
+from swiftclient import ClientException
 
 
 class FakeSwiftClient(object):
@@ -27,6 +28,7 @@ class FakeSwiftClient(object):
 class FakeSwiftConnection(object):
     def __init__(self, *args, **kwargs):
         self.swiftdir = tempfile.mkdtemp()
+        self.object_headers = {}
 
     def put_container(self, container):
         container_dir = self.swiftdir + "/" + container
@@ -58,6 +60,10 @@ class FakeSwiftConnection(object):
                 os.makedirs(obj_dir)
             with open(obj_file, "w") as f:
                 f.write(contents)
+
+            self.object_headers[obj_file] = {}
+            for key, value in headers.items():
+                self.object_headers[obj_file][str(key)] = str(value)
             return
         else:
             raise ClientException("error_container")
@@ -68,7 +74,7 @@ class FakeSwiftConnection(object):
         if os.path.exists(container_dir) is True:
             if os.path.exists(obj_file) is True:
                 with open(obj_file, "r") as f:
-                    return {}, f.read()
+                    return self.object_headers[obj_file], f.read()
             else:
                 raise ClientException("error_obj")
         else:
@@ -80,19 +86,7 @@ class FakeSwiftConnection(object):
         if os.path.exists(container_dir) is True:
             if os.path.exists(obj_file) is True:
                 os.remove(obj_file)
-            else:
-                raise ClientException("error_obj")
-        else:
-            raise ClientException("error_container")
-
-    def update_object(self, container, obj, contents):
-        container_dir = self.swiftdir + "/" + container
-        obj_file = container_dir + "/" + obj
-        if os.path.exists(container_dir) is True:
-            if os.path.exists(obj_file) is True:
-                with open(obj_file, "w") as f:
-                    f.write(contents)
-                    return
+                self.object_headers.pop(obj_file)
             else:
                 raise ClientException("error_obj")
         else:

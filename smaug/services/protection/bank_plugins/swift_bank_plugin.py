@@ -142,26 +142,30 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         return self.owner_id
 
     def create_object(self, key, value):
+        serialized = False
         try:
             if not isinstance(value, str):
                 value = json.dumps(value)
+                serialized = True
             self._put_object(container=self.bank_object_container,
                              obj=key,
                              contents=value,
-                             headers={'x-object-meta-serialized': True})
+                             headers={'x-object-meta-serialized': serialized})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("create object failed, err: %s."), err)
             raise exception.BankCreateObjectFailed(reasone=err,
                                                    key=key)
 
     def update_object(self, key, value):
+        serialized = False
         try:
             if not isinstance(value, str):
                 value = json.dumps(value)
+                serialized = True
             self._put_object(container=self.bank_object_container,
                              obj=key,
                              contents=value,
-                             headers={'x-object-meta-serialized': True})
+                             headers={'x-object-meta-serialized': serialized})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("update object failed, err: %s."), err)
             raise exception.BankUpdateObjectFailed(reasone=err,
@@ -249,7 +253,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         try:
             (_resp, body) = self.connection.get_object(container=container,
                                                        obj=obj)
-            if _resp.get("x-object-meta-serialized") == "True":
+            if _resp.get("x-object-meta-serialized").lower() == "true":
                 body = json.loads(body)
             return body
         except ClientException as err:

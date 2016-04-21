@@ -103,3 +103,8 @@ class SwiftBankPluginTest(base.TestCase):
         with open(object_file, "r") as f:
             contents = f.read()
         self.assertEqual(contents, "value-2")
+
+    def test_create_get_dict_object(self):
+        self.swift_bank_plugin.create_object("dict_object", {"key": "value"})
+        value = self.swift_bank_plugin.get_object("dict_object")
+        self.assertEqual(value, {"key": "value"})
