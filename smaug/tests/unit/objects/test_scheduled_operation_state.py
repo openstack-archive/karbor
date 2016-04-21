@@ -13,6 +13,7 @@
 import mock
 from oslo_utils import timeutils
 
+from smaug import context
 from smaug import objects
 from smaug.tests.unit import objects as test_objects
 
@@ -75,3 +76,66 @@ class TestScheduledOperationState(test_objects.BaseObjectsTestCase):
         state.destroy()
         state_delete.assert_called_once_with(self.context,
                                              state.operation_id)
+
+
+class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
+
+    def setUp(self):
+        super(TestScheduledOperationStateList, self).setUp()
+        self.context = context.get_admin_context()
+
+    def test_get_by_filters(self):
+        service = self._create_service()
+        trigger = self._create_trigger()
+        operation = self._create_operation(trigger.id)
+        state = self._create_operation_state(operation.id, service.id)
+
+        states = objects.ScheduledOperationStateList.get_by_filters(
+            self.context, {'service_id': service.id},
+            columns_to_join=['operation'])
+        self.assertEqual(1, len(states.objects))
+        state1 = states.objects[0]
+        self.assertEqual(state.id, state1.id)
+        self.assertEqual(operation.id, state1.operation.id)
+
+    def _create_service(self):
+        service_info = {
+            'host': "abc",
+            'binary': 'smaug-operationengine'
+        }
+        service = objects.Service(self.context, **service_info)
+        service.create()
+        return service
+
+    def _create_trigger(self):
+        trigger_info = {
+            'name': 'daily',
+            'project_id': '123',
+            'type': 'time',
+            'properties': {}
+        }
+        trigger = objects.Trigger(self.context, **trigger_info)
+        trigger.create()
+        return trigger
+
+    def _create_operation(self, trigger_id):
+        operation_info = {
+            'name': 'protect vm',
+            'operation_type': 'protect',
+            'project_id': '123',
+            'trigger_id': trigger_id,
+            'operation_definition': {}
+        }
+        operation = objects.ScheduledOperation(self.context, **operation_info)
+        operation.create()
+        return operation
+
+    def _create_operation_state(self, operation_id, service_id):
+        state_info = {
+            'operation_id': operation_id,
+            'service_id': service_id,
+            'state': 'triggered',
+        }
+        state = objects.ScheduledOperationState(self, **state_info)
+        state.create()
+        return state

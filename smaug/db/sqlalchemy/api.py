@@ -396,6 +396,10 @@ def trigger_delete(context, id):
         trigger_ref.delete(session=session)
 
 
+def _trigger_list_query(context, session, **kwargs):
+    return model_query(context, models.Trigger, session=session)
+
+
 def _trigger_list_process_filters(query, filters):
     exact_match_filter_names = ['project_id', 'type']
     query = _list_common_process_exact_filter(models.Trigger, query, filters,
@@ -476,6 +480,10 @@ def scheduled_operation_delete(context, id):
         session.flush()
 
 
+def _scheduled_operation_list_query(context, session, **kwargs):
+    return model_query(context, models.ScheduledOperation, session=session)
+
+
 def _scheduled_operation_list_process_filters(query, filters):
     exact_match_filter_names = ['project_id', 'operation_type', 'trigger_id']
     query = _list_common_process_exact_filter(
@@ -551,6 +559,43 @@ def scheduled_operation_state_delete(context, operation_id):
                                                    session=session)
         session.delete(state_ref)
         session.flush()
+
+
+def _scheduled_operation_state_list_query(context, session, **kwargs):
+    query = model_query(context, models.ScheduledOperationState,
+                        session=session)
+
+    valid_columns = ['operation']
+    columns_to_join = kwargs.get('columns_to_join', [])
+    for column in columns_to_join:
+        if column in valid_columns:
+            query = query.options(joinedload(column))
+
+    return query
+
+
+def _scheduled_operation_state_list_process_filters(query, filters):
+    exact_match_filter_names = ['service_id', 'state']
+    query = _list_common_process_exact_filter(
+        models.ScheduledOperationState, query, filters,
+        exact_match_filter_names)
+
+    return query
+
+
+def scheduled_operation_state_get_all_by_filters_sort(
+        context, filters, limit=None, marker=None,
+        sort_keys=None, sort_dirs=None, columns_to_join=[]):
+
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(
+            context, session, marker, limit,
+            sort_keys, sort_dirs, filters,
+            paginate_type=models.ScheduledOperationState,
+            use_model=True, columns_to_join=columns_to_join)
+
+        return query.all() if query else []
 
 
 ###################
@@ -1050,11 +1095,6 @@ def _process_restore_filters(query, filters):
 ###############################
 
 
-@require_context
-def _list_common_get_query(context, model, session=None):
-    return model_query(context, model, session=session)
-
-
 def _list_common_process_exact_filter(model, query, filters, legal_keys):
     """Applies exact match filtering to a query.
 
@@ -1133,11 +1173,15 @@ PAGINATION_HELPERS = {
     models.Plan: (_plan_get_query, _process_plan_filters, _plan_get),
     models.Restore: (_restore_get_query, _process_restore_filters,
                      _restore_get),
-    models.Trigger: (_list_common_get_query, _trigger_list_process_filters,
+    models.Trigger: (_trigger_list_query, _trigger_list_process_filters,
                      _trigger_get),
-    models.ScheduledOperation: (_list_common_get_query,
+    models.ScheduledOperation: (_scheduled_operation_list_query,
                                 _scheduled_operation_list_process_filters,
                                 _scheduled_operation_get),
+    models.ScheduledOperationState: (
+        _scheduled_operation_state_list_query,
+        _scheduled_operation_state_list_process_filters,
+        _scheduled_operation_state_get),
 }
 
 
@@ -1146,7 +1190,8 @@ PAGINATION_HELPERS = {
 
 def _generate_paginate_query(context, session, marker, limit, sort_keys,
                              sort_dirs, filters, offset=None,
-                             paginate_type=models.Plan, use_model=False):
+                             paginate_type=models.Plan, use_model=False,
+                             **kwargs):
     """Generate the query to include the filters and the paginate options.
 
     Returns a query with sorting / pagination criteria added or None
@@ -1175,7 +1220,7 @@ def _generate_paginate_query(context, session, marker, limit, sort_keys,
                                                sort_dirs,
                                                default_dir='desc')
     if use_model:
-        query = get_query(context, session=session, model=paginate_type)
+        query = get_query(context, session=session, **kwargs)
     else:
         query = get_query(context, session=session)
 
