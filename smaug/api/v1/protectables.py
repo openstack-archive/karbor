@@ -271,8 +271,7 @@ class ProtectablesController(wsgi.Controller):
 
         dependents = self.protection_api.\
             list_protectable_dependents(context, protectable_id,
-                                        protectable_type,
-                                        instance.get('name'))
+                                        protectable_type)
         instance["dependent_resources"] = dependents
 
         retval_instance = self._view_builder.detail(req, instance)
