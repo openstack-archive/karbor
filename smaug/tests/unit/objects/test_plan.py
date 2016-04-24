@@ -86,6 +86,12 @@ class TestPlan(test_objects.BaseObjectsTestCase):
         admin_context = plan_destroy.call_args[0][0]
         self.assertTrue(admin_context.is_admin)
 
+    def test_parameters(self):
+        db_plan = fake_plan.fake_db_plan()
+        plan = objects.Plan._from_db_object(self.context,
+                                            objects.Plan(), db_plan)
+        self.assertEqual(plan.parameters, fake_plan.db_plan['parameters'])
+
     def test_obj_fields(self):
         plan = objects.Plan(context=self.context, id="2", name="testname")
         self.assertEqual(['plan_resources'], plan.obj_extra_fields)
