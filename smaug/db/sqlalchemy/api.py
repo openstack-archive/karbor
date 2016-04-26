@@ -653,6 +653,7 @@ def _resource_refs(resource_list, meta_class):
             resource_ref = meta_class()
             resource_ref['resource_id'] = resource['id']
             resource_ref['resource_type'] = resource['type']
+            resource_ref['resource_name'] = resource['name']
             resource_refs.append(resource_ref)
     return resource_refs
 

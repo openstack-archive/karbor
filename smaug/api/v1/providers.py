@@ -134,6 +134,7 @@ class CheckpointViewBuilder(common.ViewBuilder):
                 'status': checkpoint.get('status'),
                 'provider_id': checkpoint.get('provider_id'),
                 'protection_plan': checkpoint.get('protection_plan'),
+                'resource_graph': checkpoint.get('resource_graph'),
             }
         }
         return checkpoint_ref
