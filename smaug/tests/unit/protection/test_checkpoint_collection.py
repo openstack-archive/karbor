@@ -10,7 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from datetime import datetime
 import mock
+
+from oslo_utils import timeutils
 
 from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.checkpoint import CheckpointCollection
@@ -40,6 +43,39 @@ class CheckpointCollectionTest(base.TestCase):
         result = {
             collection.create(fake_protection_plan()).id for i in range(10)}
         self.assertEqual(set(collection.list_ids()), result)
+
+    def test_list_checkpoints_by_plan_id(self):
+        collection = self._create_test_collection()
+        plan_1 = fake_protection_plan()
+        plan_1["id"] = "fake_plan_id_1"
+        checkpoints_plan_1 = {collection.create(plan_1).id for i in range(10)}
+
+        plan_2 = fake_protection_plan()
+        plan_2["id"] = "fake_plan_id_2"
+        checkpoints_plan_2 = {collection.create(plan_2).id for i in range(10)}
+        self.assertEqual(set(collection.list_ids(plan_id="fake_plan_id_1")),
+                         checkpoints_plan_1)
+        self.assertEqual(set(collection.list_ids(plan_id="fake_plan_id_2")),
+                         checkpoints_plan_2)
+
+    def test_list_checkpoints_by_date(self):
+        collection = self._create_test_collection()
+        date1 = datetime.strptime("2016-06-12", "%Y-%m-%d")
+        timeutils.utcnow = mock.MagicMock()
+        timeutils.utcnow.return_value = date1
+        checkpoints_date_1 = {
+            collection.create(fake_protection_plan()).id for i in range(10)}
+        date2 = datetime.strptime("2016-06-13", "%Y-%m-%d")
+        timeutils.utcnow = mock.MagicMock()
+        timeutils.utcnow.return_value = date2
+        checkpoints_date_2 = {
+            collection.create(fake_protection_plan()).id for i in range(10)}
+        self.assertEqual(set(collection.list_ids(start_date=date1,
+                                                 end_date=date1)),
+                         checkpoints_date_1)
+        self.assertEqual(set(collection.list_ids(start_date=date2,
+                                                 end_date=date2)),
+                         checkpoints_date_2)
 
     def test_delete_checkpoint(self):
         collection = self._create_test_collection()

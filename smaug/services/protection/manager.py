@@ -14,6 +14,7 @@
 Protection Service
 """
 
+from datetime import datetime
 import six
 
 from oslo_config import cfg
@@ -208,38 +209,31 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         pass
 
+    @messaging.expected_exceptions(exception.ProviderNotFound)
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
                          sort_keys=None, sort_dirs=None, filters=None):
         LOG.info(_LI("Starting list checkpoints. "
                      "provider_id:%s"), provider_id)
-
-        return_stub = [
-            {
-                "id": "b42503e6-8e9c-4e4f-94e8-745d4eabdc51",
-                "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-                "status": "comitted",
-                "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
-                "protection_plan": {
-                    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                    "name": "My 3 tier application",
-                    "resources": [
-                        {
-                            "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
-                            "type": "OS::Nova::Server"
-                        },
-                        {
-                            "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-                            "type": "OS::Cinder::Volume"
-                        },
-                        {
-                            "id": "62e51e85-4f31-441f-9a5d-6e93e3196628",
-                            "type": "OS::Cinder::Volume"
-                        }
-                    ],
-                }
-            }
-        ]
-        return return_stub
+        plan_id = filters.get("plan_id", None)
+        start_date = None
+        end_date = None
+        if filters.get("start_date", None):
+            start_date = datetime.strptime(
+                filters.get("start_date"), "%Y-%m-%d")
+        if filters.get("end_date", None):
+            end_date = datetime.strptime(
+                filters.get("end_date"), "%Y-%m-%d")
+        sort_dir = None if sort_dirs is None else sort_dirs[0]
+        provider = self.provider_registry.show_provider(provider_id)
+        if provider is None:
+            raise exception.ProviderNotFound(provider_id=provider_id)
+        checkpoint_ids = provider.list_checkpoints(
+            limit=limit, marker=marker, plan_id=plan_id,
+            start_date=start_date, end_date=end_date, sort_dir=sort_dir)
+        checkpoints = []
+        for checkpoint_id in checkpoint_ids:
+            checkpoints.append(provider.get_checkpoint(checkpoint_id))
+        return checkpoints
 
     @messaging.expected_exceptions(exception.ProviderNotFound,
                                    exception.CheckpointNotFound)

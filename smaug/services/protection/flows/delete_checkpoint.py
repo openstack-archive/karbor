@@ -58,9 +58,9 @@ class SyncCheckpointStatusTask(task.Task):
         if constants.RESOURCE_STATUS_ERROR in list_status:
             checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
             checkpoint.commit()
+            raise loopingcall.LoopingCallDone()
         elif [constants.RESOURCE_STATUS_DELETED] == list_status:
-            checkpoint.status = constants.CHECKPOINT_STATUS_DELETED
-            checkpoint.commit()
+            checkpoint.delete()
             LOG.info(_("Stop sync checkpoint status,checkpoint_id:"
                        "%(checkpoint_id)s,checkpoint status:"
                        "%(checkpoint_status)s") %

@@ -42,26 +42,17 @@ class CheckpointTest(base.TestCase):
     def test_create_in_section(self):
         bank = bank_plugin.Bank(_InMemoryBankPlugin())
         bank_lease = _InMemoryLeasePlugin()
-        bank_section = bank_plugin.BankSection(bank, "/checkpoints")
+        checkpoints_section = bank_plugin.BankSection(bank, "/checkpoints")
+        indices_section = bank_plugin.BankSection(bank, "/indices")
         owner_id = bank.get_owner_id()
         plan = fake_protection_plan()
-        cp = checkpoint.Checkpoint.create_in_section(bank_section=bank_section,
-                                                     bank_lease=bank_lease,
-                                                     owner_id=owner_id,
-                                                     plan=plan)
-        checkpoint_data = {
-            "version": checkpoint.Checkpoint.VERSION,
-            "id": cp.id,
-            "status": "protecting",
-            "owner_id": owner_id,
-            "provider_id": "fake_id",
-            "project_id": None,
-            "protection_plan": {
-                "id": plan.get("id"),
-                "name": plan.get("name"),
-                "resources": plan.get("resources")
-            }
-        }
+        cp = checkpoint.Checkpoint.create_in_section(
+            checkpoints_section=checkpoints_section,
+            indices_section=indices_section,
+            bank_lease=bank_lease,
+            owner_id=owner_id,
+            plan=plan)
+        checkpoint_data = cp._md_cache
         self.assertEqual(
             checkpoint_data,
             bank._plugin.get_object(
@@ -75,33 +66,22 @@ class CheckpointTest(base.TestCase):
     def test_resource_graph(self):
         bank = bank_plugin.Bank(_InMemoryBankPlugin())
         bank_lease = _InMemoryLeasePlugin()
-        bank_section = bank_plugin.BankSection(bank, "/checkpoints")
+        checkpoints_section = bank_plugin.BankSection(bank, "/checkpoints")
+        indices_section = bank_plugin.BankSection(bank, "/indices")
         owner_id = bank.get_owner_id()
         plan = fake_protection_plan()
-        cp = checkpoint.Checkpoint.create_in_section(bank_section=bank_section,
-                                                     bank_lease=bank_lease,
-                                                     owner_id=owner_id,
-                                                     plan=plan)
+        cp = checkpoint.Checkpoint.create_in_section(
+            checkpoints_section=checkpoints_section,
+            indices_section=indices_section,
+            bank_lease=bank_lease,
+            owner_id=owner_id,
+            plan=plan)
 
         resource_graph = graph.build_graph([A, B, C, D],
                                            resource_map.__getitem__)
         cp.resource_graph = resource_graph
         cp.commit()
-        checkpoint_data = {
-            "version": checkpoint.Checkpoint.VERSION,
-            "id": cp.id,
-            "status": "protecting",
-            "owner_id": owner_id,
-            "provider_id": "fake_id",
-            "project_id": None,
-            "protection_plan": {
-                "id": plan.get("id"),
-                "name": plan.get("name"),
-                "resources": plan.get("resources")
-            },
-            "resource_graph": graph.serialize_resource_graph(
-                resource_graph)
-        }
+        checkpoint_data = cp._md_cache
         self.assertEqual(
             checkpoint_data,
             bank._plugin.get_object(

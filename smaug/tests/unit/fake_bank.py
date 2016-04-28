@@ -33,7 +33,8 @@ class FakeBankPlugin(bank_plugin.BankPlugin):
     def get_object(self, key):
         return
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None,
+                     marker=None, sort_dir=None):
         return
 
     def delete_object(self, key):
