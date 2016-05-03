@@ -26,7 +26,9 @@ class SmaugTest(smaug_base.SmaugBaseTest):
             "My 3 tier application",
             "2220f8b1-975d-4621-a872-fa9afb43cb6c",
             [{"type": "OS::Cinder::Volume",
-             "id": "5fad94de-2926-486b-ae73-ff5d3477f80d"}])
+              "name": "fake_name",
+             "id": "5fad94de-2926-486b-ae73-ff5d3477f80d"}],
+            {"parameters": {"OS::Nova::Server": {"consistency": "os"}}})
         plan_id = plan.get("id")
         plan_item = self.smaug_client.plans.get(plan_id)
         plan_item_id = plan_item.id
