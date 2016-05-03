@@ -14,18 +14,18 @@ from oslo_versionedobjects import fields
 
 from smaug import objects
 
+db_plan = {
+    'id': '1',
+    'name': 'My 3 tier application',
+    'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
+    'status': 'started',
+    'project_id': '39bb894794b741e982bd26144d2949f6',
+    'resources': [],
+    'parameters': {'OS::Nova::Server': {"consistency": "os"}},
+}
+
 
 def fake_db_plan(**updates):
-    db_plan = {
-        'id': '1',
-        'name': 'My 3 tier application',
-        'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
-        'status': 'started',
-        'project_id': '39bb894794b741e982bd26144d2949f6',
-        'resources': [],
-        'parameters': '{OS::Nova::Server: {consistency: os}}'
-    }
-
     for name, field in objects.Plan.fields.items():
         if name in db_plan:
             continue

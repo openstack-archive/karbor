@@ -14,7 +14,6 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -73,9 +72,6 @@ class PlanViewBuilder(common.ViewBuilder):
 
     def detail(self, request, plan):
         """Detailed view of a single plan."""
-        parameters = {}
-        if not plan.get('parameters'):
-            parameters = jsonutils.loads(plan.get('parameters'))
         plan_ref = {
             'plan': {
                 'id': plan.get('id'),
@@ -83,7 +79,7 @@ class PlanViewBuilder(common.ViewBuilder):
                 'resources': plan.get('resources'),
                 'provider_id': plan.get('provider_id'),
                 'status': plan.get('status'),
-                'parameters': parameters,
+                'parameters': plan.get('parameters'),
             }
         }
         return plan_ref
@@ -269,7 +265,7 @@ class PlansController(wsgi.Controller):
             'project_id': context.project_id,
             'status': 'suspended',
             'resources': plan.get('resources', None),
-            'parameters': jsonutils.dumps(parameters),
+            'parameters': parameters,
         }
 
         plan = objects.Plan(context=context, **plan_properties)

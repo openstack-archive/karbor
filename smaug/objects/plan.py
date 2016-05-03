@@ -42,7 +42,7 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
         'project_id': fields.UUIDField(),
         'status': fields.StringField(nullable=True),
         'resources': fields.ListOfDictOfNullableStringsField(nullable=False),
-        'parameters': fields.StringField(),
+        'parameters': base.DictOfDictOfStringsField(),
     }
 
     # obj_extra_fields is used to hold properties that are not

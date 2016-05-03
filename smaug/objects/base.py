@@ -201,3 +201,7 @@ class ObjectListBase(base.ObjectListBase):
 
 class SmaugObjectSerializer(base.VersionedObjectSerializer):
     OBJ_BASE_CLASS = SmaugObject
+
+
+class DictOfDictOfStringsField(fields.AutoTypedField):
+    AUTO_TYPE = fields.Dict(fields.Dict(fields.String()))
