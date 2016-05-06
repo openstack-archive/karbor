@@ -171,13 +171,13 @@ class BankSection(object):
         if marker is not None:
             marker = self._prepend_prefix(marker)
 
-        return (key[len(self._prefix):]
+        return [key[len(self._prefix):]
                 for key in self._bank.list_objects(
                     prefix,
                     limit,
                     marker,
                     )
-                )
+                ]
 
     def delete_object(self, key):
         self._validate_writable()
