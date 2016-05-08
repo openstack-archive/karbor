@@ -280,6 +280,10 @@ class BankListObjectsFailed(SmaugException):
     message = _("Get Object in Bank Failed: %(reason)s")
 
 
+class BankReadonlyViolation(SmaugException):
+    message = _("Bank read-only violation")
+
+
 class AcquireLeaseFailed(SmaugException):
     message = _("Acquire Lease in Failed: %(reason)s")
 

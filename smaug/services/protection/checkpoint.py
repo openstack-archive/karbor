@@ -124,7 +124,7 @@ class CheckpointCollection(object):
         if marker is not None:
             marker = _checkpoint_id_to_index_file(marker)
 
-        return [key[1:-len(_INDEX_FILE_SUFFIX)]
+        return [key[:-len(_INDEX_FILE_SUFFIX)]
                 for key in self._checkpoints_section.list_objects(
                     limit=limit,
                     marker=marker)

@@ -10,15 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import abc
 import os
+import six
 
 from oslo_config import cfg
 from oslo_log import log as logging
 
-import abc
-import six
-
-from smaug.i18n import _
+from smaug import exception
 
 CONF = cfg.CONF
 
@@ -110,6 +109,9 @@ class Bank(object):
     def delete_object(self, key):
         return self._plugin.delete_object(self._normalize_key(key))
 
+    def get_sub_section(self, prefix, is_writable=True):
+        return BankSection(self, prefix, is_writable)
+
 
 class BankSection(object):
     """Bank Section compartmentalizes a section of a bank.
@@ -119,6 +121,8 @@ class BankSection(object):
     accessing part of it.
     """
     def __init__(self, bank, prefix, is_writable=True):
+        self._validate_key(prefix)
+
         self._bank = bank
         self._prefix = os.path.normpath(prefix or "/")
         if not self._prefix.startswith("/"):
@@ -126,13 +130,30 @@ class BankSection(object):
 
         self._is_writable = is_writable
 
+    def get_sub_section(self, prefix, is_writable=True):
+        if is_writable and not self._is_writable:
+            raise exception.BankReadonlyViolation()
+
+        return BankSection(self._bank, self._prefix + '/' + prefix,
+                           self._is_writable)
+
     @property
     def is_writable(self):
         return self._is_writable
 
-    def _prepend_prefix(self, key):
+    @staticmethod
+    def _validate_key(key):
         if not key:
-            raise RuntimeError(_("No key specified"))
+            raise exception.InvalidParameterValue(
+                err='Invalid parameter: empty'
+            )
+        if key.find('..') != -1:
+            raise exception.InvalidParameterValue(
+                err='Invalid parameter: must not contain ".."'
+            )
+
+    def _prepend_prefix(self, key):
+        self._validate_key(key)
 
         if not key.startswith("/"):
             key = "/" + key
@@ -141,7 +162,7 @@ class BankSection(object):
 
     def _validate_writable(self):
         if not self.is_writable:
-            raise RuntimeError(_("Bank section is read only"))
+            raise exception.BankReadonlyViolation()
 
     def create_object(self, key, value):
         self._validate_writable()
@@ -171,7 +192,7 @@ class BankSection(object):
         if marker is not None:
             marker = self._prepend_prefix(marker)
 
-        return [key[len(self._prefix):]
+        return [key[len(self._prefix) + 1:]
                 for key in self._bank.list_objects(
                     prefix,
                     limit,
