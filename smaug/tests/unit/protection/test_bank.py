@@ -14,6 +14,7 @@ from collections import OrderedDict
 
 import six
 
+from smaug import exception
 from smaug.tests import base
 
 from smaug.services.protection.bank_plugin import Bank
@@ -62,8 +63,18 @@ class BankSectionTest(base.TestCase):
     def test_empty_key(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=True)
-        self.assertRaises(RuntimeError, section.create_object, "", "value")
-        self.assertRaises(RuntimeError, section.create_object, None, "value")
+        self.assertRaises(
+            exception.InvalidParameterValue,
+            section.create_object,
+            "",
+            "value",
+        )
+        self.assertRaises(
+            exception.InvalidParameterValue,
+            section.create_object,
+            None,
+            "value",
+        )
 
     def test_delete_object(self):
         bank = self._create_test_bank()
@@ -82,7 +93,7 @@ class BankSectionTest(base.TestCase):
         bank.create_object("/prefixd", "value")  # Should not appear
         section.create_object("/b", "value")
         section.create_object("c", "value")
-        expected_result = ["/a", "/b", "/c"]
+        expected_result = ["a", "b", "c"]
         self.assertEqual(list(section.list_objects("/")), expected_result)
         self.assertEqual(list(section.list_objects("///")), expected_result)
         self.assertEqual(list(section.list_objects(None)), expected_result)
@@ -91,7 +102,7 @@ class BankSectionTest(base.TestCase):
             expected_result[:2],
         )
         self.assertEqual(
-            list(section.list_objects("/", limit=2, marker="/b")),
+            list(section.list_objects("/", limit=2, marker="b")),
             expected_result[2:4],
         )
 
@@ -99,20 +110,57 @@ class BankSectionTest(base.TestCase):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=False)
         self.assertRaises(
-            RuntimeError,
+            exception.BankReadonlyViolation,
             section.create_object,
             "object",
             "value",
         )
         bank.create_object("/prefix/object", "value")
         self.assertRaises(
-            RuntimeError,
+            exception.BankReadonlyViolation,
             section.update_object,
             "object",
             "value",
         )
         self.assertRaises(
-            RuntimeError,
+            exception.BankReadonlyViolation,
             section.delete_object,
             "object",
+        )
+
+    def test_double_dot_key(self):
+        bank = self._create_test_bank()
+        section = BankSection(bank, "/prefix")
+        self.assertRaises(
+            exception.InvalidParameterValue,
+            section.create_object,
+            "/../../",
+            "",
+        )
+
+    def test_double_dot_section_prefix(self):
+        bank = self._create_test_bank()
+        self.assertRaises(
+            exception.InvalidParameterValue,
+            BankSection,
+            bank,
+            '/../../',
+        )
+
+    def test_nested_sections(self):
+        bank = self._create_test_bank()
+        top_section = BankSection(bank, "/top")
+        mid_section = top_section.get_sub_section("/mid")
+        bottom_section = mid_section.get_sub_section("/bottom")
+        bottom_section.create_object("key", "value")
+        self.assertEqual(bank.get_object("/top/mid/bottom/key"), "value")
+
+    def test_nested_sections_read_only(self):
+        bank = self._create_test_bank()
+        section = BankSection(bank, "/top", is_writable=False)
+        self.assertRaises(
+            exception.BankReadonlyViolation,
+            section.get_sub_section,
+            "/mid",
+            is_writable=True,
         )
