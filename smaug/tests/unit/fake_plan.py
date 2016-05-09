@@ -21,7 +21,7 @@ db_plan = {
     'status': 'started',
     'project_id': '39bb894794b741e982bd26144d2949f6',
     'resources': [],
-    'parameters': {'OS::Nova::Server': {"consistency": "os"}},
+    'parameters': '{"OS::Nova::Server": {"consistency": "os"}}',
 }
 
 

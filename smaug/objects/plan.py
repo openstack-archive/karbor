@@ -12,6 +12,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from smaug import db
@@ -80,6 +81,8 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
             value = db_plan.get(name)
             if isinstance(field, fields.IntegerField):
                 value = value or 0
+            if name == "parameters" and value is not None:
+                value = jsonutils.loads(value)
             plan[name] = value
 
         # Get data from db_plan object that was queried by joined query
@@ -106,6 +109,10 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
                                               reason=_('already created'))
         updates = self.smaug_obj_get_changes()
 
+        parameters = updates.pop('parameters', None)
+        if parameters is not None:
+            updates['parameters'] = jsonutils.dumps(parameters)
+
         db_plan = db.plan_create(self._context, updates)
         kargs = {}
         if hasattr(Plan, 'DEFAULT_EXPECTED_ATTR'):
@@ -116,6 +123,11 @@ class Plan(base.SmaugPersistentObject, base.SmaugObject,
     def save(self):
         updates = self.smaug_obj_get_changes()
         if updates:
+            if 'parameters' in updates:
+                parameters = updates.pop('parameters', None)
+                if parameters is not None:
+                    updates['parameters'] = jsonutils.dumps(parameters)
+
             if 'resources' in updates:
                 resources = updates.pop('resources', None)
                 resources_objlist = db.plan_resources_update(

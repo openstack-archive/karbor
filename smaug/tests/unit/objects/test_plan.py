@@ -14,6 +14,8 @@
 
 import mock
 
+from oslo_serialization import jsonutils
+
 from smaug import objects
 from smaug.tests.unit import fake_plan
 from smaug.tests.unit import objects as test_objects
@@ -90,7 +92,8 @@ class TestPlan(test_objects.BaseObjectsTestCase):
         db_plan = fake_plan.fake_db_plan()
         plan = objects.Plan._from_db_object(self.context,
                                             objects.Plan(), db_plan)
-        self.assertEqual(plan.parameters, fake_plan.db_plan['parameters'])
+        self.assertEqual(plan.parameters,
+                         jsonutils.loads(fake_plan.db_plan['parameters']))
 
     def test_obj_fields(self):
         plan = objects.Plan(context=self.context, id="2", name="testname")
