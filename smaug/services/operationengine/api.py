@@ -17,7 +17,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from smaug.db import base
-from smaug.operationengine import rpcapi as operationengine_rpcapi
+from smaug.services.operationengine import rpcapi as operationengine_rpcapi
 
 
 CONF = cfg.CONF

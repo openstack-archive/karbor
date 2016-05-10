@@ -20,8 +20,8 @@ import six
 
 from smaug import exception
 from smaug.i18n import _, _LE
-from smaug.operationengine.engine import triggers
-from smaug.operationengine.engine.triggers.timetrigger import\
+from smaug.services.operationengine.engine import triggers
+from smaug.services.operationengine.engine.triggers.timetrigger import\
     time_format_manager
 
 time_trigger_opts = [

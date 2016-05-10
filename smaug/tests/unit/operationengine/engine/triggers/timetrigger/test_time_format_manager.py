@@ -14,7 +14,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from smaug import exception
-from smaug.operationengine.engine.triggers.timetrigger import\
+from smaug.services.operationengine.engine.triggers.timetrigger import\
     time_format_manager
 from smaug.tests import base
 

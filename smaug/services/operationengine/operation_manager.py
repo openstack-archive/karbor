@@ -16,7 +16,7 @@ Manage all operations.
 
 from smaug import exception
 from smaug.i18n import _
-from smaug.operationengine import operations
+from smaug.services.operationengine import operations
 
 
 class OperationManager(object):

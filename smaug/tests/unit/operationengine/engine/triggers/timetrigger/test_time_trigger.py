@@ -15,8 +15,8 @@ from datetime import timedelta
 import eventlet
 
 from smaug import exception
-from smaug.operationengine.engine.triggers.timetrigger.time_trigger import\
-    TimeTrigger
+from smaug.services.operationengine.engine.triggers.timetrigger.time_trigger \
+    import TimeTrigger
 from smaug.tests import base
 
 

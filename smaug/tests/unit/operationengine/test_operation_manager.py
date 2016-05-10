@@ -11,7 +11,7 @@
 #    under the License.
 
 from smaug import exception
-from smaug.operationengine import operation_manager
+from smaug.services.operationengine import operation_manager
 from smaug.tests import base
 
 

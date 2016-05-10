@@ -14,8 +14,8 @@ from datetime import datetime
 from datetime import timedelta
 
 from smaug import exception
-from smaug.operationengine.engine.triggers.timetrigger.timeformats import\
-    crontab_time
+from smaug.services.operationengine.engine.triggers.timetrigger.timeformats \
+    import crontab_time
 from smaug.tests import base
 
 

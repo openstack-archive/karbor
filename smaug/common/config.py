@@ -53,7 +53,8 @@ global_opts = [
                default='smaug-operationengine',
                help='The topic that OperationEngine nodes listen on'),
     cfg.StrOpt('operationengine_manager',
-               default='smaug.operationengine.manager.OperationEngineManager',
+               default='smaug.services.operationengine.manager.'
+               'OperationEngineManager',
                help='Full class name for the Manager for OperationEngine'),
     cfg.StrOpt('protection_topic',
                default='smaug-protection',

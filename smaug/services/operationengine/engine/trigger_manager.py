@@ -16,7 +16,7 @@ Manage all triggers.
 
 from smaug import exception
 from smaug.i18n import _
-from smaug.operationengine.engine import triggers as all_triggers
+from smaug.services.operationengine.engine import triggers as all_triggers
 
 
 class TriggerManager(object):

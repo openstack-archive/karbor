@@ -26,8 +26,8 @@ from smaug.i18n import _, _LI
 
 from smaug import objects
 from smaug.objects import base as objects_base
-from smaug.operationengine import api as operationengine_api
 import smaug.policy
+from smaug.services.operationengine import api as operationengine_api
 from smaug import utils
 
 import six

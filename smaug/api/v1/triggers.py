@@ -23,8 +23,8 @@ from smaug.api.openstack import wsgi
 from smaug import exception
 from smaug.i18n import _
 from smaug import objects
-from smaug.operationengine import api as operationengine_api
 from smaug import policy
+from smaug.services.operationengine import api as operationengine_api
 from smaug import utils
 
 LOG = logging.getLogger(__name__)

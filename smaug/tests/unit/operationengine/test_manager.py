@@ -14,8 +14,8 @@ from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 from smaug import context
 from smaug import objects
-from smaug.operationengine import manager as service_manager
-from smaug.operationengine import scheduled_operation_state
+from smaug.services.operationengine import manager as service_manager
+from smaug.services.operationengine import scheduled_operation_state
 from smaug.tests import base
 
 

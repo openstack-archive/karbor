@@ -11,7 +11,7 @@
 #    under the License.
 
 from smaug import exception
-from smaug.operationengine.operations import protect_operation
+from smaug.services.operationengine.operations import protect_operation
 from smaug.tests import base
 
 

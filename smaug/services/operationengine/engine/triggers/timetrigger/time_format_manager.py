@@ -16,7 +16,7 @@ Manage all time formats.
 
 from smaug import exception
 from smaug.i18n import _
-from smaug.operationengine.engine.triggers.timetrigger import\
+from smaug.services.operationengine.engine.triggers.timetrigger import\
     timeformats
 
 

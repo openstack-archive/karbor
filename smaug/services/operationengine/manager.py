@@ -22,8 +22,8 @@ from smaug import context
 from smaug import exception
 from smaug import manager
 from smaug import objects
-from smaug.operationengine.engine import trigger_manager
-from smaug.operationengine import scheduled_operation_state
+from smaug.services.operationengine.engine import trigger_manager
+from smaug.services.operationengine import scheduled_operation_state
 
 
 CONF = cfg.CONF
