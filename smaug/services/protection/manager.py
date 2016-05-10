@@ -1,5 +1,5 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
+# not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
@@ -20,10 +20,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from smaug.common import constants
 from smaug import exception
-from smaug.i18n import _LI, _LE
+from smaug.i18n import _, _LI, _LE
 from smaug import manager
 from smaug.resource import Resource
+from smaug.services.protection.flows import worker as flow_manager
 from smaug.services.protection.protectable_registry import ProtectableRegistry
 from smaug.services.protection.provider import PluggableProtectionProvider
 from smaug import utils
@@ -31,9 +33,6 @@ from smaug import utils
 LOG = logging.getLogger(__name__)
 
 protection_manager_opts = [
-    cfg.IntOpt('update_protection_stats_interval',
-               default=3600,
-               help='update protection status interval'),
     cfg.StrOpt('provider_registry',
                default='smaug.services.protection.provider.ProviderRegistry',
                help='the provider registry')
@@ -60,8 +59,7 @@ class ProtectionManager(manager.Manager):
                                                    provider_reg)
         self.protectable_registry = ProtectableRegistry()
         self.protectable_registry.load_plugins()
-        self.flow_engine = None
-        # TODO(wangliuan)
+        self.worker = flow_manager.Worker()
 
     def init_host(self, **kwargs):
         """Handle initialization if this is a standalone service"""
@@ -74,18 +72,43 @@ class ProtectionManager(manager.Manager):
 
         :param plan: Define that protection plan should be done
         """
+
         LOG.info(_LI("Starting protection service:protect action"))
         LOG.debug('protecting  :%s tpye:%s', plan,
                   type(plan))
 
-        # TODO(wangliuan)
-        return True
+        if not plan:
+            raise exception.InvalidPlan(reason='the protection plan is None')
+        provider_id = plan.get('provider_id', None)
+        plan_id = plan.get('id', None)
+        provider = self.provider_registry.show_provider(provider_id)
+        if not provider:
+            raise exception.ProviderNotFound(provider_id=provider_id)
+        try:
+            protection_flow = self.worker.get_flow(context,
+                                                   constants.OPERATION_PROTECT,
+                                                   plan=plan,
+                                                   provider=provider)
+        except Exception:
+            LOG.exception(_LE("Failed to create protection flow,plan:%s"),
+                          plan_id)
+            raise exception.SmaugException(_(
+                "Failed to create protection flow"
+            ))
+        try:
+            self.worker.run_flow(protection_flow)
+        except Exception:
+            LOG.exception(_LE("Failed to run protection flow"))
+            raise
+        finally:
+            checkpoint = self.worker.flow_outputs(protection_flow,
+                                                  target='checkpoint')
+            return {'checkpoint_id': checkpoint.id}
 
     def restore(self, context, restore=None):
         LOG.info(_LI("Starting restore service:restore action"))
         LOG.debug('restore :%s tpye:%s', restore,
                   type(restore))
-
         # TODO(wangliuan)
         return True
 
@@ -102,15 +125,6 @@ class ProtectionManager(manager.Manager):
         pass
 
     def suspend(self, plan):
-        # TODO(wangliuan)
-        pass
-
-    def _update_protection_stats(self, plan):
-        """Update protection stats
-
-        use the loopingcall to update protection status(
-        interval=CONF.update_protection_stats_interval)
-        """
         # TODO(wangliuan)
         pass
 

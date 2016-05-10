@@ -13,6 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import futurist
+
+from oslo_log import log as logging
+
+from smaug.i18n import _LE
+
+from taskflow import engines
+from taskflow.patterns import graph_flow
+from taskflow.patterns import linear_flow
+
 
 def fake_protection_plan():
     protection_plan = {'id': 'fake_id',
@@ -28,41 +38,6 @@ def fake_protection_plan():
     return protection_plan
 
 
-def fake_protection_definitions():
-    protection_definitions = [{'plugin_id': 'fake_plugin_id'}]
-    return protection_definitions
-
-
-class FakeCheckpointManager(object):
-    def __init__(self):
-        super(FakeCheckpointManager, self).__init__()
-        self.fake_checkpoint = None
-        self.fake_checkpoint_status = None
-        self.fake_protection_definition = None
-
-    def list_checkpoints(self, list_options):
-        # TODO(wangliuan)
-        pass
-
-    def show_checkpoint(self, checkpoint_id):
-        return 'fake_checkpoint'
-
-    def delete_checkpoint(self, checkpoint_id):
-        # TODO(wangliuan)
-        pass
-
-    def create_checkpoint(self, plan):
-        self.fake_checkpoint = 'fake_checkpoint'
-        return 'fake_checkpoint'
-
-    def update_checkpoint(self, checkpoint, **kwargs):
-        status = kwargs.get('status', 'error')
-        self.fake_checkpoint_status = status
-
-    def update_protection_definition(self, checkpoint, **kwargs):
-        self.fake_protection_definition = 'fake_definition'
-
-
 class FakeProtectablePlugin(object):
     def get_resource_type(self):
         pass
@@ -75,3 +50,90 @@ class FakeProtectablePlugin(object):
 
     def get_dependent_resources(self, parent_resource):
         pass
+
+
+LOG = logging.getLogger(__name__)
+
+
+class FakeCheckpoint(object):
+    def __init__(self):
+        self.id = 'fake_checkpoint'
+        self.status = 'protecting'
+
+    def purge(self):
+        pass
+
+    def commit(self):
+        pass
+
+
+class FakeCheckpointCollection(object):
+    def create(self, plan):
+        return FakeCheckpoint()
+
+
+class FakeProvider(object):
+    def __init__(self):
+        self.id = 'test'
+        self.name = 'provider'
+        self.description = 'fake_provider'
+        self.extend_info_schema = {}
+
+    def build_task_flow(self, plan):
+        status_getters = []
+        return {'status_getters': status_getters,
+                'task_flow': graph_flow.Flow('fake_flow')
+                }
+
+    def get_checkpoint_collection(self):
+        return FakeCheckpointCollection()
+
+
+class FakeFlowEngine(object):
+    def __init__(self):
+        super(FakeFlowEngine, self).__init__()
+
+    def add_tasks(self, flow, *nodes, **kwargs):
+        if flow is None:
+            LOG.error(_LE("The flow is None,get it first"))
+        flow.add(*nodes, **kwargs)
+
+    def build_flow(self, flow_name, flow_type='graph'):
+        if flow_type == 'linear':
+            return linear_flow.Flow(flow_name)
+        elif flow_type == 'graph':
+            return graph_flow.Flow(flow_name)
+        else:
+            LOG.error(_LE("unsupported flow type:%s"), flow_type)
+            return
+
+    def get_engine(self, flow, **kwargs):
+        if flow is None:
+            LOG.error(_LE("Flow is None,build it first"))
+            return
+        executor = kwargs.get('executor', None)
+        engine = kwargs.get('engine', None)
+        store = kwargs.get('store', None)
+        if not executor:
+            executor = futurist.GreenThreadPoolExecutor()
+        if not engine:
+            engine = 'parallel'
+        flow_engine = engines.load(flow,
+                                   executor=executor,
+                                   engine=engine,
+                                   store=store)
+        return flow_engine
+
+    def run_engine(self, flow_engine):
+        if flow_engine is None:
+            LOG.error(_LE("Flow engine is None,get it first"))
+            return
+        flow_engine.run()
+
+    def output(self, flow_engine, target=None):
+        if flow_engine is None:
+            LOG.error(_LE("Flow engine is None,return nothing"))
+            return
+        if target:
+            return flow_engine.storage.fetch(target)
+        return flow_engine.storage.fetch_all()

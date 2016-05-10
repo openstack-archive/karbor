@@ -12,16 +12,32 @@
 
 import mock
 
+from oslo_config import cfg
+from oslo_log import log as logging
+
+from smaug import exception
 from smaug.resource import Resource
+from smaug.services.protection.flows import worker as flow_manager
 from smaug.services.protection import manager
 from smaug.services.protection import protectable_registry
+from smaug.services.protection import provider
+
 from smaug.tests import base
 from smaug.tests.unit.protection import fakes
+
+LOG = logging.getLogger(__name__)
+
+CONF = cfg.CONF
 
 
 class ProtectionServiceTest(base.TestCase):
     def setUp(self):
+        self.load_engine = flow_manager.Worker._load_engine
+        flow_manager.Worker._load_engine = mock.Mock()
+        flow_manager.Worker._load_engine.return_value = fakes.FakeFlowEngine()
         super(ProtectionServiceTest, self).setUp()
+        mock_engine = mock.MagicMock()
+        mock_engine.return_value = fakes.FakeFlowEngine()
         self.pro_manager = manager.ProtectionManager()
         self.protection_plan = fakes.fake_protection_plan()
 
@@ -103,3 +119,20 @@ class ProtectionServiceTest(base.TestCase):
                           {'type': 'OS::Cinder::Volume', 'id': '654321',
                            'name': 'name654'}],
                          result)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_protect(self, mock_provider):
+        mock_provider.return_value = fakes.FakeProvider()
+        self.pro_manager.protect(None, fakes.fake_protection_plan())
+
+    @mock.patch.object(flow_manager.Worker, 'get_flow')
+    def test_protect_in_error(self, mock_flow):
+        mock_flow.side_effect = Exception()
+        self.assertRaises(exception.SmaugException,
+                          self.pro_manager.protect,
+                          None,
+                          fakes.fake_protection_plan())
+
+    def tearDown(self):
+        flow_manager.Worker._load_engine = self.load_engine
+        super(ProtectionServiceTest, self).tearDown()

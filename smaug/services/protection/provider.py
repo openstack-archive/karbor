@@ -136,6 +136,24 @@ class PluggableProtectionProvider(object):
         return self.checkpoint_collection
 
     def build_task_flow(self, ctx):
+        """build task flow
+
+        :param ctx: dict
+        {'context': the request context,
+           'plan': the backup plan,
+           'task_builder': a workflow_engine object,
+           'operation_type': the operation type
+        }
+        :return: dict,depending on operation type
+        for protect operation:
+        {'status_getters': [{'resource_id':the resource id,
+                          'get_resource_status':function address
+                          }]
+         'task_flow':graph flow
+        }
+
+        """
+
         # TODO(wangliuan)
         pass
 
