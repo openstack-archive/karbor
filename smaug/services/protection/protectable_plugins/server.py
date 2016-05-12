@@ -30,12 +30,10 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     _SUPPORT_RESOURCE_TYPE = constants.SERVER_RESOURCE_TYPE
 
-    @property
-    def _client(self):
-        if not hasattr(self, '_client_instance'):
-            self._client_instance = ClientFactory.create_client(
-                "nova",
-                self._context)
+    def _client(self, context):
+        self._client_instance = ClientFactory.create_client(
+            "nova",
+            context)
 
         return self._client_instance
 
@@ -45,9 +43,9 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
     def get_parent_resource_types(self):
         return (constants.PROJECT_RESOURCE_TYPE, )
 
-    def list_resources(self):
+    def list_resources(self, context):
         try:
-            servers = self._client.servers.list(detailed=False)
+            servers = self._client(context).servers.list(detailed=False)
         except Exception as e:
             LOG.exception(_LE("List all servers from nova failed."))
             raise exception.ListProtectableResourceFailed(
@@ -59,9 +57,9 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       name=server.name)
                     for server in servers]
 
-    def show_resource(self, resource_id):
+    def show_resource(self, context, resource_id):
         try:
-            server = self._client.servers.get(resource_id)
+            server = self._client(context).servers.get(resource_id)
         except Exception as e:
             LOG.exception(_LE("Show a server from nova failed."))
             raise exception.ListProtectableResourceFailed(
@@ -72,7 +70,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                      id=server.id,
                                      name=server.name)
 
-    def get_dependent_resources(self, parent_resource):
+    def get_dependent_resources(self, context, parent_resource):
         # Utilize list_resource here, cause its function is
         # listing resources of given project
-        return self.list_resources()
+        return self.list_resources(context)

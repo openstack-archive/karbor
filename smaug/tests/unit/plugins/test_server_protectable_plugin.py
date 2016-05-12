@@ -12,6 +12,7 @@
 
 import collections
 import mock
+from novaclient.v2 import servers
 
 from oslo_config import cfg
 from smaug.context import RequestContext
@@ -40,15 +41,17 @@ class ServerProtectablePluginTest(base.TestCase):
                              'http://127.0.0.1:8774/v2.1',
                              'nova_client')
         plugin = ServerProtectablePlugin(self._context)
-        self.assertEqual('compute', plugin._client.client.service_type)
+        self.assertEqual('compute',
+                         plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         plugin._client.client.management_url)
+                         plugin._client(self._context).client.management_url)
 
     def test_create_client_by_catalog(self):
         plugin = ServerProtectablePlugin(self._context)
-        self.assertEqual('compute', plugin._client.client.service_type)
+        self.assertEqual('compute',
+                         plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         plugin._client.client.management_url)
+                         plugin._client(self._context).client.management_url)
 
     def test_get_resource_type(self):
         plugin = ServerProtectablePlugin(self._context)
@@ -59,36 +62,36 @@ class ServerProtectablePluginTest(base.TestCase):
         self.assertEqual(("OS::Keystone::Project", ),
                          plugin.get_parent_resource_types())
 
-    def test_list_resources(self):
+    @mock.patch.object(servers.ServerManager, 'list')
+    def test_list_resources(self, mock_server_list):
         plugin = ServerProtectablePlugin(self._context)
-        plugin._client.servers.list = mock.MagicMock()
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
-        plugin._client.servers.list.return_value = [
+        mock_server_list.return_value = [
             server_info(id='123', name='name123'),
             server_info(id='456', name='name456')]
         self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
                           Resource('OS::Nova::Server', '456', 'name456')],
-                         plugin.list_resources())
+                         plugin.list_resources(self._context))
 
-    def test_show_resource(self):
+    @mock.patch.object(servers.ServerManager, 'get')
+    def test_show_resource(self, mock_server_get):
         plugin = ServerProtectablePlugin(self._context)
-        plugin._client.servers.get = mock.MagicMock()
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
-        plugin._client.servers.get.return_value = server_info(id='123',
-                                                              name='name123')
+        mock_server_get.return_value = \
+            server_info(id='123', name='name123')
         self.assertEqual(Resource('OS::Nova::Server', '123', 'name123'),
-                         plugin.show_resource('123'))
+                         plugin.show_resource(self._context, '123'))
 
-    def test_get_dependent_resources(self):
+    @mock.patch.object(servers.ServerManager, 'list')
+    def test_get_dependent_resources(self, mock_server_list):
         plugin = ServerProtectablePlugin(self._context)
-        plugin._client.servers.list = mock.MagicMock()
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
-        plugin._client.servers.list.return_value = [
+        mock_server_list.return_value = [
             server_info(id='123', name='name123'),
             server_info(id='456', name='name456')]
         self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
                           Resource('OS::Nova::Server', '456', 'name456')],
-                         plugin.get_dependent_resources(None))
+                         plugin.get_dependent_resources(self._context, None))

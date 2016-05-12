@@ -30,12 +30,10 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     _SUPPORT_RESOURCE_TYPE = constants.VOLUME_RESOURCE_TYPE
 
-    @property
-    def _client(self):
-        if not hasattr(self, '_client_instance'):
-            self._client_instance = ClientFactory.create_client(
-                "cinder",
-                self._context)
+    def _client(self, context):
+        self._client_instance = ClientFactory.create_client(
+            "cinder",
+            context)
 
         return self._client_instance
 
@@ -46,9 +44,9 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return (constants.SERVER_RESOURCE_TYPE,
                 constants.PROJECT_RESOURCE_TYPE)
 
-    def list_resources(self):
+    def list_resources(self, context):
         try:
-            volumes = self._client.volumes.list(detailed=False)
+            volumes = self._client(context).volumes.list(detailed=False)
         except Exception as e:
             LOG.exception(_LE("List all summary volumes "
                               "from cinder failed."))
@@ -60,9 +58,9 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=vol.id, name=vol.name)
                     for vol in volumes]
 
-    def show_resource(self, resource_id):
+    def show_resource(self, context, resource_id):
         try:
-            volume = self._client.volumes.get(resource_id)
+            volume = self._client(context).volumes.get(resource_id)
         except Exception as e:
             LOG.exception(_LE("Show a summary volume "
                               "from cinder failed."))
@@ -73,7 +71,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
             return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                      id=volume.id, name=volume.name)
 
-    def get_dependent_resources(self, parent_resource):
+    def get_dependent_resources(self, context, parent_resource):
         def _is_attached_to(vol):
             if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
                 return any([s.get('server_id') == parent_resource.id
@@ -83,7 +81,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                     parent_resource.id
 
         try:
-            volumes = self._client.volumes.list(detailed=True)
+            volumes = self._client(context).volumes.list(detailed=True)
         except Exception as e:
             LOG.exception(_LE("List all detailed volumes "
                               "from cinder failed."))

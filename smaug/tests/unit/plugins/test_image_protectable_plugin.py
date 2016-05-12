@@ -1,18 +1,19 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 from collections import namedtuple
+from glanceclient.v2 import images
 import mock
-
+from novaclient.v2 import servers
 from oslo_config import cfg
 from smaug.common import constants
 from smaug.context import RequestContext
@@ -22,7 +23,6 @@ from smaug.services.protection.protectable_plugins.image import \
 from smaug.tests import base
 
 CONF = cfg.CONF
-
 
 image_info = namedtuple('image_info', field_names=['id', 'owner', 'name'])
 server_info = namedtuple('server_info', field_names=['id', 'type', 'name',
@@ -51,10 +51,12 @@ class ImageProtectablePluginTest(base.TestCase):
         CONF.set_default('nova_endpoint', 'http://127.0.0.1:8774/v2.1',
                          'nova_client')
         plugin = ImageProtectablePlugin(self._context)
-        self.assertEqual(plugin._glance_client.http_client.endpoint,
-                         'http://127.0.0.1:9292')
-        self.assertEqual(plugin._nova_client.client.management_url,
-                         'http://127.0.0.1:8774/v2.1/abcd')
+        self.assertEqual(
+            plugin._glance_client(self._context).http_client.endpoint,
+            'http://127.0.0.1:9292')
+        self.assertEqual(
+            plugin._nova_client(self._context).client.management_url,
+            'http://127.0.0.1:8774/v2.1/abcd')
 
     def test_create_client_by_catalog(self):
         CONF.set_default('glance_catalog_info', 'image:glance:publicURL',
@@ -62,64 +64,74 @@ class ImageProtectablePluginTest(base.TestCase):
         CONF.set_default('nova_catalog_info', 'compute:nova:publicURL',
                          'nova_client')
         plugin = ImageProtectablePlugin(self._context)
-        self.assertEqual(plugin._glance_client.http_client.endpoint,
-                         'http://127.0.0.1:9292')
-        self.assertEqual(plugin._nova_client.client.management_url,
-                         'http://127.0.0.1:8774/v2.1/abcd')
+        self.assertEqual(
+            plugin._glance_client(self._context).http_client.endpoint,
+            'http://127.0.0.1:9292')
+        self.assertEqual(
+            plugin._nova_client(self._context).client.management_url,
+            'http://127.0.0.1:8774/v2.1/abcd')
 
     def test_get_resource_type(self):
         plugin = ImageProtectablePlugin(self._context)
-        self.assertEqual(plugin.get_resource_type(),
-                         constants.IMAGE_RESOURCE_TYPE)
+        self.assertEqual(
+            plugin.get_resource_type(),
+            constants.IMAGE_RESOURCE_TYPE)
 
     def test_get_parent_resource_type(self):
         plugin = ImageProtectablePlugin(self._context)
-        self.assertItemsEqual(plugin.get_parent_resource_types(),
-                              (constants.SERVER_RESOURCE_TYPE,
-                               constants.PROJECT_RESOURCE_TYPE))
+        self.assertItemsEqual(
+            plugin.get_parent_resource_types(),
+            (constants.SERVER_RESOURCE_TYPE, constants.PROJECT_RESOURCE_TYPE))
 
-    def test_list_resources(self):
+    @mock.patch.object(images.Controller, 'list')
+    def test_list_resources(self, mokc_image_list):
         plugin = ImageProtectablePlugin(self._context)
-        plugin._glance_client.images.list = mock.MagicMock(return_value=[
-            image_info(id='123', name='name123', owner='abcd'),
-            image_info(id='456', name='name456', owner='efgh'),
-        ])
-        self.assertEqual(plugin.list_resources(),
+        mokc_image_list.return_value = \
+            [
+                image_info(id='123', name='name123', owner='abcd'),
+                image_info(id='456', name='name456', owner='efgh'),
+            ]
+        self.assertEqual(plugin.list_resources(self._context),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='123', name='name123'),
                           resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='456', name='name456')
                           ])
 
-    def test_show_resource(self):
+    @mock.patch.object(images.Controller, 'get')
+    def test_show_resource(self, mock_image_get):
         image_info = namedtuple('image_info', field_names=['id', 'name'])
         plugin = ImageProtectablePlugin(self._context)
-        plugin._glance_client.images.get = \
-            mock.MagicMock(return_value=image_info(id='123', name='name123'))
-        self.assertEqual(plugin.show_resource('123'),
+        mock_image_get.return_value = \
+            image_info(id='123', name='name123')
+        self.assertEqual(plugin.show_resource(self._context, '123'),
                          resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                            id='123', name='name123'))
 
-    def test_get_server_dependent_resources(self):
+    @mock.patch.object(servers.ServerManager, 'get')
+    def test_get_server_dependent_resources(self, mock_server_get):
         vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,
                          name='nameserver1',
                          image=dict(id='123', name='name123'))
         plugin = ImageProtectablePlugin(self._context)
-        plugin._nova_client.servers.get = mock.MagicMock(return_value=vm)
-        self.assertEqual(plugin.get_dependent_resources(vm),
+        mock_server_get.return_value = vm
+        self.assertEqual(plugin.get_dependent_resources(self._context, vm),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='123', name='name123')])
 
-    def test_get_project_dependent_resources(self):
+    @mock.patch.object(images.Controller, 'list')
+    def test_get_project_dependent_resources(self, mock_image_list):
         project = project_info(id='abcd', type=constants.PROJECT_RESOURCE_TYPE,
                                name='nameabcd')
         plugin = ImageProtectablePlugin(self._context)
-        plugin._glance_client.images.list = mock.MagicMock(return_value=[
-            image_info('123', 'abcd', 'nameabcd'),
-            image_info('456', 'efgh', 'nameefgh'),
-        ])
-        self.assertEqual(plugin.get_dependent_resources(project),
-                         [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
-                                            name='nameabcd',
-                                            id='123')])
+        mock_image_list.return_value = \
+            [
+                image_info('123', 'abcd', 'nameabcd'),
+                image_info('456', 'efgh', 'nameefgh'),
+            ]
+        self.assertEqual(
+            plugin.get_dependent_resources(self._context, project),
+            [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
+                               name='nameabcd',
+                               id='123')])

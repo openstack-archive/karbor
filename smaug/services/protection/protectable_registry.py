@@ -77,7 +77,7 @@ class ProtectableRegistry(object):
         :return: The list of resource instance.
         """
         protectable = self._get_protectable(context, resource_type)
-        return protectable.list_resources()
+        return protectable.list_resources(context)
 
     def show_resource(self, context, resource_type, resource_id):
         """List resource instances of given type.
@@ -87,7 +87,7 @@ class ProtectableRegistry(object):
         :return: The show of resource instance.
         """
         protectable = self._get_protectable(context, resource_type)
-        return protectable.show_resource(resource_id)
+        return protectable.show_resource(context, resource_id)
 
     def fetch_dependent_resources(self, context, resource):
         """List dependent resources under given parent resource.
@@ -101,7 +101,8 @@ class ProtectableRegistry(object):
                 protectable = self._get_protectable(
                     context,
                     plugin.get_resource_type())
-                result.extend(protectable.get_dependent_resources(resource))
+                result.extend(protectable.get_dependent_resources(context,
+                                                                  resource))
 
         return result
 

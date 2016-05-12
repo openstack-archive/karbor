@@ -1,5 +1,5 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
+# not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
@@ -27,18 +27,14 @@ LOG = logging.getLogger(__name__)
 class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
     _SUPPORT_RESOURCE_TYPE = constants.IMAGE_RESOURCE_TYPE
 
-    @property
-    def _glance_client(self):
-        if not hasattr(self, '_glance_client_instance'):
-            self._glance_client_instance = \
-                ClientFactory.create_client('glance', self._context)
+    def _glance_client(self, context):
+        self._glance_client_instance = \
+            ClientFactory.create_client('glance', context)
         return self._glance_client_instance
 
-    @property
-    def _nova_client(self):
-        if not hasattr(self, '_nova_client_instance'):
-            self._nova_client_instance = \
-                ClientFactory.create_client('nova', self._context)
+    def _nova_client(self, context):
+        self._nova_client_instance = \
+            ClientFactory.create_client('nova', context)
         return self._nova_client_instance
 
     def get_resource_type(self):
@@ -48,9 +44,9 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return (constants.SERVER_RESOURCE_TYPE,
                 constants.PROJECT_RESOURCE_TYPE,)
 
-    def list_resources(self):
+    def list_resources(self, context):
         try:
-            images = self._glance_client.images.list()
+            images = self._glance_client(context).images.list()
         except Exception as e:
             LOG.exception(_LE("List all images from glance failed."))
             raise exception.ListProtectableResourceFailed(
@@ -61,9 +57,11 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=image.id, name=image.name)
                     for image in images]
 
-    def _get_dependent_resources_by_server(self, parent_resource):
+    def _get_dependent_resources_by_server(self,
+                                           context,
+                                           parent_resource):
         try:
-            server = self._nova_client.servers.get(parent_resource.id)
+            server = self._nova_client(context).servers.get(parent_resource.id)
         except Exception as e:
             LOG.exception(_LE("List all server from nova failed."))
             raise exception.ListProtectableResourceFailed(
@@ -74,9 +72,11 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=server.image['id'],
                                       name=server.image['name'])]
 
-    def _get_dependent_resources_by_project(self, parent_resource):
+    def _get_dependent_resources_by_project(self,
+                                            context,
+                                            parent_resource):
         try:
-            images = self._glance_client.images.list()
+            images = self._glance_client(context).images.list()
         except Exception as e:
             LOG.exception(_LE("List all images from glance failed."))
             raise exception.ListProtectableResourceFailed(
@@ -89,9 +89,9 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                     for image in images
                     if image.owner == parent_resource.id]
 
-    def show_resource(self, resource_id):
+    def show_resource(self, context, resource_id):
         try:
-            image = self._glance_client.images.get(resource_id)
+            image = self._glance_client(context).images.get(resource_id)
         except Exception as e:
             LOG.exception(_LE("Show a image from glance failed."))
             raise exception.ListProtectableResourceFailed(
@@ -101,11 +101,13 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
             return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                      id=image.id, name=image.name)
 
-    def get_dependent_resources(self, parent_resource):
+    def get_dependent_resources(self, context, parent_resource):
         if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
-            return self._get_dependent_resources_by_server(parent_resource)
+            return self._get_dependent_resources_by_server(context,
+                                                           parent_resource)
 
         if parent_resource.type == constants.PROJECT_RESOURCE_TYPE:
-            return self._get_dependent_resources_by_project(parent_resource)
+            return self._get_dependent_resources_by_project(context,
+                                                            parent_resource)
 
         return []

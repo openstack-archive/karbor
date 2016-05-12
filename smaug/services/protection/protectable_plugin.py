@@ -43,7 +43,7 @@ class ProtectablePlugin(object):
         pass
 
     @abc.abstractmethod
-    def list_resources(self):
+    def list_resources(self, context):
         """List resource instances of type this plugin supported.
 
         :return: The list of resource instance.
@@ -51,7 +51,7 @@ class ProtectablePlugin(object):
         pass
 
     @abc.abstractmethod
-    def get_dependent_resources(self, parent_resource):
+    def get_dependent_resources(self, context, parent_resource):
         """List dependent resource instances.
 
         The listed resource instances are of type this plugin supported,

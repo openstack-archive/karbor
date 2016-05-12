@@ -35,10 +35,10 @@ class _FakeProtectablePlugin(ProtectablePlugin):
     def get_parent_resource_types(self):
         return _FAKE_TYPE
 
-    def list_resources(self):
+    def list_resources(self, context):
         return self.graph.values()
 
-    def get_dependent_resources(self, parent_resource):
+    def get_dependent_resources(self, context, parent_resource):
         return self.graph[parent_resource]
 
 
