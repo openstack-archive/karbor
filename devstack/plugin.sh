@@ -47,7 +47,6 @@ function configure_smaug_api {
         cp -R $SMAUG_DIR/etc/providers.d $SMAUG_CONF_DIR
 
         iniset $SMAUG_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
-        iniset $SMAUG_API_CONF DEFAULT verbose True
         iniset $SMAUG_API_CONF DEFAULT use_syslog $SYSLOG
         echo "Configuring Smaug API Database"
         iniset $SMAUG_API_CONF database connection `database_connection_url smaug`
