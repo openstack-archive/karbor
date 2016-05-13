@@ -85,7 +85,8 @@ class ProtectionServiceTest(base.TestCase):
 
         result = self.pro_manager.show_protectable_instance(
             fake_cntx, 'OS::Nova::Server', '123456')
-        self.assertEqual({'id': '123456', 'name': 'name123'},
+        self.assertEqual({'id': '123456', 'name': 'name123',
+                          'type': 'OS::Nova::Server'},
                          result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,

@@ -296,7 +296,8 @@ class ProtectionManager(manager.Manager):
                        'err': six.text_type(err)})
             raise
 
-        return dict(id=resource_instance.id, name=resource_instance.name)
+        return dict(id=resource_instance.id, name=resource_instance.name,
+                    type=resource_instance.type)
 
     def list_protectable_dependents(self, context,
                                     protectable_id,

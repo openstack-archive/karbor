@@ -1,5 +1,5 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
+# not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from cinderclient.v2 import volumes
 from collections import namedtuple
 import mock
 
@@ -44,15 +45,17 @@ class VolumeProtectablePluginTest(base.TestCase):
                              'http://127.0.0.1:8776/v2',
                              'cinder_client')
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertEqual('volumev2', plugin._client.client.service_type)
+        self.assertEqual('volumev2',
+                         plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8776/v2/abcd',
-                         plugin._client.client.management_url)
+                         plugin._client(self._context).client.management_url)
 
     def test_create_client_by_catalog(self):
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertEqual('volumev2', plugin._client.client.service_type)
+        self.assertEqual('volumev2',
+                         plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8776/v2/abcd',
-                         plugin._client.client.management_url)
+                         plugin._client(self._context).client.management_url)
 
     def test_get_resource_type(self):
         plugin = VolumeProtectablePlugin(self._context)
@@ -63,47 +66,45 @@ class VolumeProtectablePluginTest(base.TestCase):
         self.assertItemsEqual(("OS::Nova::Server", "OS::Keystone::Project"),
                               plugin.get_parent_resource_types())
 
-    def test_list_resources(self):
+    @mock.patch.object(volumes.VolumeManager, 'list')
+    def test_list_resources(self, mock_volume_list):
         plugin = VolumeProtectablePlugin(self._context)
-        plugin._client.volumes.list = mock.MagicMock()
 
-        plugin._client.volumes.list.return_value = [vol_info('123', [],
-                                                             'name123'),
-                                                    vol_info('456', [],
-                                                             'name456')]
+        mock_volume_list.return_value = \
+            [vol_info('123', [], 'name123'), vol_info('456', [], 'name456')]
         self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123'),
                           Resource('OS::Cinder::Volume', '456', 'name456')],
-                         plugin.list_resources())
+                         plugin.list_resources(self._context))
 
-    def test_show_resource(self):
+    @mock.patch.object(volumes.VolumeManager, 'get')
+    def test_show_resource(self, mock_volume_get):
         plugin = VolumeProtectablePlugin(self._context)
-        plugin._client.volumes.get = mock.MagicMock()
 
         vol_info = namedtuple('vol_info', ['id', 'name'])
-        plugin._client.volumes.get.return_value = vol_info(id='123',
-                                                           name='name123')
+        mock_volume_get.return_value = \
+            vol_info(id='123', name='name123')
         self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123'),
-                         plugin.show_resource("123"))
+                         plugin.show_resource(self._context, "123"))
 
-    def test_get_server_dependent_resources(self):
+    @mock.patch.object(volumes.VolumeManager, 'list')
+    def test_get_server_dependent_resources(self, mock_volume_list):
         plugin = VolumeProtectablePlugin(self._context)
-        plugin._client.volumes.list = mock.MagicMock()
 
         attached = [{'server_id': 'abcdef', 'name': 'name'}]
-        plugin._client.volumes.list.return_value = [
+        mock_volume_list.return_value = [
             vol_info('123', attached, 'name123'),
             vol_info('456', [], 'name456'),
         ]
         self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123')],
-                         plugin.get_dependent_resources(Resource(
-                             "OS::Nova::Server", 'abcdef', 'name'
-                         )))
+                         plugin.get_dependent_resources(
+                             self._context,
+                             Resource("OS::Nova::Server", 'abcdef', 'name')))
 
-    def test_get_project_dependent_resources(self):
+    @mock.patch.object(volumes.VolumeManager, 'list')
+    def test_get_project_dependent_resources(self, mock_volume_list):
         project = project_info('abcd', constants.PROJECT_RESOURCE_TYPE,
                                'nameabcd')
         plugin = VolumeProtectablePlugin(self._context)
-        plugin._client.volumes.list = mock.MagicMock()
 
         volumes = [
             mock.Mock(name='Volume', id='123'),
@@ -114,6 +115,7 @@ class VolumeProtectablePluginTest(base.TestCase):
         setattr(volumes[0], 'name', 'name123')
         setattr(volumes[1], 'name', 'name456')
 
-        plugin._client.volumes.list.return_value = volumes
-        self.assertEqual(plugin.get_dependent_resources(project),
-                         [Resource('OS::Cinder::Volume', '123', 'name123')])
+        mock_volume_list.return_value = volumes
+        self.assertEqual(
+            plugin.get_dependent_resources(self._context, project),
+            [Resource('OS::Cinder::Volume', '123', 'name123')])
