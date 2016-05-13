@@ -107,10 +107,47 @@ class ProtectionManager(manager.Manager):
 
     def restore(self, context, restore=None):
         LOG.info(_LI("Starting restore service:restore action"))
-        LOG.debug('restore :%s tpye:%s', restore,
-                  type(restore))
-        # TODO(wangliuan)
-        return True
+
+        checkpoint_id = restore["checkpoint_id"]
+        provider_id = restore["provider_id"]
+        provider = self.provider_registry.show_provider(provider_id)
+        try:
+            checkpoint_collection = provider.get_checkpoint_collection()
+            checkpoint = checkpoint_collection.get(checkpoint_id)
+        except Exception:
+            LOG.error(_LE("get checkpoint failed, checkpoint_id:%s"),
+                      checkpoint_id)
+            raise exception.InvalidInput(
+                reason="Invalid checkpoint_id or provider_id")
+
+        if checkpoint.status in [constants.CHECKPOINT_STATUS_ERROR,
+                                 constants.CHECKPOINT_STATUS_PROTECTING]:
+            raise exception.CheckpointNotAvailable(
+                checkpoint_id=checkpoint_id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_RESTORING
+        checkpoint.commit()
+
+        try:
+            restoration_flow = self.worker.get_restoration_flow(
+                context,
+                constants.OPERATION_RESTORE,
+                checkpoint,
+                provider,
+                restore
+            )
+        except Exception:
+            LOG.exception(
+                _LE("Failed to create restoration flow, checkpoint:%s"),
+                checkpoint_id)
+            raise exception.SmaugException(_(
+                "Failed to create restoration flow"
+            ))
+        try:
+            self.worker.run_flow(restoration_flow)
+            return True
+        except Exception:
+            LOG.exception(_LE("Failed to run restoration flow"))
+            raise
 
     def delete(self, context, provider_id, checkpoint_id):
         # TODO(wangliuan)

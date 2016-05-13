@@ -18,10 +18,27 @@ import futurist
 from oslo_log import log as logging
 
 from smaug.i18n import _LE
+from smaug.resource import Resource
+from smaug.services.protection.graph import build_graph
 
 from taskflow import engines
 from taskflow.patterns import graph_flow
 from taskflow.patterns import linear_flow
+
+A = Resource(id='A', type='fake', name='fake')
+B = Resource(id='B', type='fake', name='fake')
+C = Resource(id='C', type='fake', name='fake')
+D = Resource(id='D', type='fake', name='fake')
+E = Resource(id='E', type='fake', name='fake')
+
+resource_map = {
+    A: [C],
+    B: [C],
+    C: [D, E],
+    D: [],
+    E: [],
+}
+resource_graph = build_graph([A, B, C, D], resource_map.__getitem__)
 
 
 def fake_protection_plan():
@@ -36,6 +53,20 @@ def fake_protection_plan():
                        'provider_id': 'fake_id'
                        }
     return protection_plan
+
+
+def fake_restore():
+    restore = {
+        'id': 'fake_id',
+        'provider_id': 'fake_provider_id',
+        'checkpoint_id': 'fake_checkpoint_id',
+        'parameters': {
+            'username': 'fake_username',
+            'password': 'fake_password'
+        },
+        'restore_target': 'fake_target_url',
+    }
+    return restore
 
 
 class FakeProtectablePlugin(object):
@@ -58,7 +89,8 @@ LOG = logging.getLogger(__name__)
 class FakeCheckpoint(object):
     def __init__(self):
         self.id = 'fake_checkpoint'
-        self.status = 'protecting'
+        self.status = 'available'
+        self.resource_graph = resource_graph
 
     def purge(self):
         pass
@@ -69,6 +101,9 @@ class FakeCheckpoint(object):
 
 class FakeCheckpointCollection(object):
     def create(self, plan):
+        return FakeCheckpoint()
+
+    def get(self, checkpoint_id):
         return FakeCheckpoint()
 
 
