@@ -14,7 +14,8 @@ import math
 import mock
 import os
 from oslo_config import cfg
-from oslo_utils import importutils
+from smaug.services.protection.bank_plugins.swift_bank_plugin \
+    import SwiftBankPlugin
 from smaug.tests import base
 from smaug.tests.unit.protection.fake_swift_client import FakeSwiftClient
 from swiftclient import client as swift
@@ -33,17 +34,11 @@ class FakeConf(object):
 class SwiftBankPluginTest(base.TestCase):
     def setUp(self):
         super(SwiftBankPluginTest, self).setUp()
-        self.conf = FakeConf()
         self.fake_connection = FakeSwiftClient.connection()
-        import_str = "smaug.services.protection.bank_plugins." \
-                     "swift_bank_plugin.SwiftBankPlugin"
-        self.object_container = "objects"
-        swift_bank_plugin_cls = importutils.import_class(
-            import_str=import_str)
+        self.conf = FakeConf()
         swift.Connection = mock.MagicMock()
         swift.Connection.return_value = self.fake_connection
-        self.swift_bank_plugin = swift_bank_plugin_cls(CONF, None,
-                                                       self.object_container)
+        self.swift_bank_plugin = SwiftBankPlugin(CONF)
 
     def test_acquire_lease(self):
         self.swift_bank_plugin.acquire_lease()
@@ -69,7 +64,7 @@ class SwiftBankPluginTest(base.TestCase):
     def test_create_object(self):
         self.swift_bank_plugin.create_object("key-1", "value-1")
         object_file = os.path.join(self.fake_connection.swiftdir,
-                                   self.object_container,
+                                   "smaug",
                                    "key-1")
         with open(object_file, "r") as f:
             contents = f.read()
@@ -79,7 +74,7 @@ class SwiftBankPluginTest(base.TestCase):
         self.swift_bank_plugin.create_object("key", "value")
         self.swift_bank_plugin.delete_object("key")
         object_file = os.path.join(self.fake_connection.swiftdir,
-                                   self.object_container,
+                                   "smaug",
                                    "key")
         self.assertEqual(os.path.isfile(object_file), False)
 
@@ -98,7 +93,7 @@ class SwiftBankPluginTest(base.TestCase):
         self.swift_bank_plugin.create_object("key-1", "value-1")
         self.swift_bank_plugin.update_object("key-1", "value-2")
         object_file = os.path.join(self.fake_connection.swiftdir,
-                                   self.object_container,
+                                   "smaug",
                                    "key-1")
         with open(object_file, "r") as f:
             contents = f.read()
