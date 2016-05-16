@@ -10,11 +10,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from cinderclient.v2 import client as cinder_client
+from smaugclient.v1 import client as smaug_client
+
 import os_client_config
 
 from oslotest import base
-
-from smaugclient.v1 import client as smaug_client
 
 
 def _get_cloud_config(cloud='devstack-admin'):
@@ -61,6 +62,31 @@ def _get_smaug_client_from_creds():
     return client
 
 
+def _get_cinder_client_from_creds():
+    api_version = ""
+    cloud_config = _get_cloud_config()
+    keystone_session = cloud_config.get_session_client("volumev2")
+    keystone_auth = cloud_config.get_auth()
+    region_name = cloud_config.get_region_name()
+    service_type = "volumev2"
+    endpoint_type = "publicURL"
+    endpoint = keystone_auth.get_endpoint(
+        keystone_session,
+        service_type=service_type,
+        region_name=region_name)
+
+    kwargs = {
+        'session': keystone_session,
+        'auth': keystone_auth,
+        'service_type': service_type,
+        'endpoint_type': endpoint_type,
+        'region_name': region_name,
+    }
+
+    client = cinder_client.Client(api_version, endpoint, **kwargs)
+    return client
+
+
 class SmaugBaseTest(base.BaseTestCase):
     """Basic class for Smaug fullstack testing
 
@@ -71,3 +97,4 @@ class SmaugBaseTest(base.BaseTestCase):
     def setUp(self):
         super(SmaugBaseTest, self).setUp()
         self.smaug_client = _get_smaug_client_from_creds()
+        self.cinder_client = _get_cinder_client_from_creds()
