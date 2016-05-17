@@ -16,9 +16,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from smaug.common import constants
 from smaug.i18n import _LE
-
 from smaug.resource import Resource
-from smaug.services.protection.bank_plugin import Bank
+from smaug.services.protection import bank_plugin
 from smaug.services.protection.checkpoint import CheckpointCollection
 from smaug.services.protection.graph import GraphWalker
 from smaug.services.protection.protectable_registry import ProtectableRegistry
@@ -74,18 +73,17 @@ class PluggableProtectionProvider(object):
         if hasattr(self._config.provider, 'bank') \
                 and not self._config.provider.bank:
             raise ImportError("Empty bank")
+
         self._load_bank(self._config.provider.bank)
+        self._bank = bank_plugin.Bank(self._bank_plugin)
+        self.checkpoint_collection = CheckpointCollection(
+            self._bank)
+
         if hasattr(self._config.provider, 'plugin'):
             for plugin_name in self._config.provider.plugin:
                 if not plugin_name:
                     raise ImportError("Empty protection plugin")
                 self._load_plugin(plugin_name)
-
-        if self._bank_plugin:
-            self.checkpoint_collection = CheckpointCollection(
-                Bank(self._bank_plugin))
-        else:
-            LOG.error(_LE('Bank plugin not exist, check your configuration'))
 
     @property
     def id(self):
@@ -105,7 +103,7 @@ class PluggableProtectionProvider(object):
 
     @property
     def bank(self):
-        return self._bank_plugin
+        return self._bank
 
     @property
     def plugins(self):

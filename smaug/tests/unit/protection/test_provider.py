@@ -37,7 +37,8 @@ class ProviderRegistryTest(base.TestCase):
     def test_provider_bank_config(self):
         pr = provider.ProviderRegistry()
         provider1 = pr.show_provider('fake_id1')
-        self.assertEqual(provider1.bank._config.fake_bank.fake_host, 'thor')
+        self.assertEqual(provider1.bank._plugin._config.fake_bank.fake_host,
+                         'thor')
 
     def test_provider_plugin_config(self):
         pr = provider.ProviderRegistry()
