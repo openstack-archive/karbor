@@ -22,40 +22,10 @@ from smaug import exception
 from smaug.i18n import _, _LE
 from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import LeasePlugin
-from swiftclient import client as swift
+from smaug.services.protection import client_factory
 from swiftclient import ClientException
 
-swift_client_opts = [
-    cfg.StrOpt('bank_swift_url',
-               help='The URL of the Swift endpoint'),
-    cfg.StrOpt('bank_swift_auth_url',
-               help='The URL of the Keystone endpoint'),
-    cfg.StrOpt('bank_swift_auth_version',
-               default='1',
-               help='Swift authentication version. '
-                    'Specify "1" for auth 1.0, or "2" for auth 2.0'),
-    cfg.StrOpt('bank_swift_tenant_name',
-               help='Swift tenant/account name. '
-                    'Required when connecting to an auth 2.0 system'),
-    cfg.StrOpt('bank_swift_user',
-               help='Swift user name'),
-    cfg.StrOpt('bank_swift_key',
-               help='Swift key for authentication'),
-    cfg.IntOpt('bank_swift_retry_attempts',
-               default=3,
-               help='The number of retries to make for '
-                    'Swift operations'),
-    cfg.IntOpt('bank_swift_retry_backoff',
-               default=2,
-               help='The backoff time in seconds '
-                    'between Swift retries'),
-    cfg.StrOpt('bank_swift_ca_cert_file',
-               help='Location of the CA certificate file '
-                    'to use for swift client requests.'),
-    cfg.BoolOpt('bank_swift_auth_insecure',
-                default=False,
-                help='Bypass verification of server certificate when '
-                     'making SSL connection to Swift.'),
+swift_bank_plugin_opts = [
     cfg.StrOpt('bank_swift_object_container',
                default='smaug',
                help='The default swift container to use.'),
@@ -69,21 +39,15 @@ class SwiftConnectionFailed(exception.SmaugException):
 
 
 class SwiftBankPlugin(BankPlugin, LeasePlugin):
-    def __init__(self, config):
+    def __init__(self, config, context):
         super(SwiftBankPlugin, self).__init__(config)
-        self._config.register_opts(swift_client_opts, "swift_client")
-        self.swift_retry_attempts = \
-            self._config.swift_client.bank_swift_retry_attempts
-        self.swift_retry_backoff = \
-            self._config.swift_client.bank_swift_retry_backoff
-        self.swift_auth_insecure = \
-            self._config.swift_client.bank_swift_auth_insecure
-        self.swift_ca_cert_file = \
-            self._config.swift_client.bank_swift_ca_cert_file
+        self._config.register_opts(swift_bank_plugin_opts,
+                                   "swift_bank_plugin")
         self.bank_object_container = \
-            self._config.swift_client.bank_swift_object_container
+            self._config.swift_bank_plugin.bank_swift_object_container
         self.lease_expire_window = self._config.lease_expire_window
         self.lease_renew_window = self._config.lease_renew_window
+        self.context = context
         # TODO(luobin):
         # init lease_validity_window
         # according to lease_renew_window if not configured
@@ -117,18 +81,9 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                initial_delay=self.lease_renew_window)
 
     def _setup_connection(self):
-        connection = swift.Connection(
-            authurl=self._config.swift_client.bank_swift_auth_url,
-            auth_version=self._config.swift_client.bank_swift_auth_version,
-            tenant_name=self._config.swift_client.bank_swift_tenant_name,
-            user=self._config.swift_client.bank_swift_user,
-            key=self._config.swift_client.bank_swift_key,
-            retries=self.swift_retry_attempts,
-            starting_backoff=self.swift_retry_backoff,
-            insecure=self.swift_auth_insecure,
-            cacert=self.swift_ca_cert_file)
-
-        return connection
+        return client_factory.ClientFactory.create_client('swift',
+                                                          self.context,
+                                                          self._config)
 
     def get_owner_id(self):
         return self.owner_id

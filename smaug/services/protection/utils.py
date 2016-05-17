@@ -33,18 +33,20 @@ def _parse_service_catalog_info(config, context):
         "from service catalog") % service_type)
 
 
-def _parse_service_endpoint(endpoint_url, context, append_project=False):
-    return '%s/%s' % (endpoint_url, context.project_id) if append_project \
-        else endpoint_url
+def _parse_service_endpoint(endpoint_url, context, append_project_fmt=None):
+    if not append_project_fmt:
+        return endpoint_url
+    return append_project_fmt \
+        % {'url': endpoint_url, 'project': context.project_id}
 
 
-def get_url(service, context, conf, append_project=False):
+def get_url(service, context, conf, append_project_fmt=None):
     '''Return the url of given service endpoint.'''
     client_conf = getattr(conf, service + '_client')
 
     endpoint = getattr(client_conf, service + '_endpoint')
     if endpoint is not None:
-        return _parse_service_endpoint(endpoint, context, append_project)
+        return _parse_service_endpoint(endpoint, context, append_project_fmt)
 
     return _parse_service_catalog_info(
         getattr(client_conf, service + '_catalog_info'),
