@@ -15,7 +15,6 @@ from uuid import uuid4
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
-from smaug.common import constants
 from smaug.i18n import _, _LE
 from smaug.services.protection.clients import heat
 from smaug.services.protection.restore_heat import HeatTemplate
@@ -72,12 +71,7 @@ class SyncStackStatusTask(task.Task):
             stack_status = getattr(stack, 'stack_status')
             if stack_status == 'CREATE_IN_PROGRESS':
                 return
-            if stack_status == 'CREATE_COMPLETE':
-                checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE
-                checkpoint.commit()
-            if stack_status == 'CREATE_FAILED':
-                checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_RESTORING
-                checkpoint.commit()
+
             raise loopingcall.LoopingCallDone()
         except Exception as err:
             LOG.info(_("stop sync stack status, stack_id:%s"), stack_id)
