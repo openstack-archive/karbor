@@ -30,9 +30,6 @@ swift_client_opts = [
                help='The URL of the Swift endpoint'),
     cfg.StrOpt('bank_swift_auth_url',
                help='The URL of the Keystone endpoint'),
-    cfg.StrOpt('bank_swift_auth',
-               default='single_user',
-               help='Swift authentication mechanism'),
     cfg.StrOpt('bank_swift_auth_version',
                default='1',
                help='Swift authentication version. '
@@ -59,6 +56,9 @@ swift_client_opts = [
                 default=False,
                 help='Bypass verification of server certificate when '
                      'making SSL connection to Swift.'),
+    cfg.StrOpt('bank_swift_object_container',
+               default='smaug',
+               help='The default swift container to use.'),
 ]
 
 LOG = logging.getLogger(__name__)
@@ -69,9 +69,8 @@ class SwiftConnectionFailed(exception.SmaugException):
 
 
 class SwiftBankPlugin(BankPlugin, LeasePlugin):
-    def __init__(self, config, context, object_container):
+    def __init__(self, config):
         super(SwiftBankPlugin, self).__init__(config)
-        self.context = context
         self._config.register_opts(swift_client_opts, "swift_client")
         self.swift_retry_attempts = \
             self._config.swift_client.bank_swift_retry_attempts
@@ -81,6 +80,8 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self._config.swift_client.bank_swift_auth_insecure
         self.swift_ca_cert_file = \
             self._config.swift_client.bank_swift_ca_cert_file
+        self.bank_object_container = \
+            self._config.swift_client.bank_swift_object_container
         self.lease_expire_window = self._config.lease_expire_window
         self.lease_renew_window = self._config.lease_renew_window
         # TODO(luobin):
@@ -92,7 +93,6 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         self.owner_id = str(uuid.uuid4())
         self.lease_expire_time = 0
         self.bank_leases_container = "leases"
-        self.bank_object_container = object_container
         self.connection = self._setup_connection()
 
         # create container
@@ -117,25 +117,17 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                initial_delay=self.lease_renew_window)
 
     def _setup_connection(self):
-        if self._config.swift_client.bank_swift_auth == "single_user":
-            connection = swift.Connection(
-                authurl=self._config.swift_client.bank_swift_auth_url,
-                auth_version=self._config.swift_client.bank_swift_auth_version,
-                tenant_name=self._config.swift_client.bank_swift_tenant_name,
-                user=self._config.swift_client.bank_swift_user,
-                key=self._config.swift_client.bank_swift_key,
-                retries=self.swift_retry_attempts,
-                starting_backoff=self.swift_retry_backoff,
-                insecure=self.swift_auth_insecure,
-                cacert=self.swift_ca_cert_file)
-        else:
-            connection = swift.Connection(
-                preauthurl=self._config.swift_client.bank_swift_url,
-                preauthtoken=self.context.auth_token,
-                retries=self.swift_retry_attempts,
-                starting_backoff=self.swift_retry_backoff,
-                insecure=self.swift_auth_insecure,
-                cacert=self.swift_ca_cert_file)
+        connection = swift.Connection(
+            authurl=self._config.swift_client.bank_swift_auth_url,
+            auth_version=self._config.swift_client.bank_swift_auth_version,
+            tenant_name=self._config.swift_client.bank_swift_tenant_name,
+            user=self._config.swift_client.bank_swift_user,
+            key=self._config.swift_client.bank_swift_key,
+            retries=self.swift_retry_attempts,
+            starting_backoff=self.swift_retry_backoff,
+            insecure=self.swift_auth_insecure,
+            cacert=self.swift_ca_cert_file)
+
         return connection
 
     def get_owner_id(self):
@@ -153,7 +145,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                              headers={'x-object-meta-serialized': serialized})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("create object failed, err: %s."), err)
-            raise exception.BankCreateObjectFailed(reasone=err,
+            raise exception.BankCreateObjectFailed(reason=err,
                                                    key=key)
 
     def update_object(self, key, value):
@@ -168,7 +160,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                              headers={'x-object-meta-serialized': serialized})
         except SwiftConnectionFailed as err:
             LOG.error(_LE("update object failed, err: %s."), err)
-            raise exception.BankUpdateObjectFailed(reasone=err,
+            raise exception.BankUpdateObjectFailed(reason=err,
                                                    key=key)
 
     def delete_object(self, key):
@@ -177,7 +169,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                 obj=key)
         except SwiftConnectionFailed as err:
             LOG.error(_LE("delete object failed, err: %s."), err)
-            raise exception.BankDeleteObjectFailed(reasone=err,
+            raise exception.BankDeleteObjectFailed(reason=err,
                                                    key=key)
 
     def get_object(self, key):
@@ -186,7 +178,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                     obj=key)
         except SwiftConnectionFailed as err:
             LOG.error(_LE("get object failed, err: %s."), err)
-            raise exception.BankGetObjectFailed(reasone=err,
+            raise exception.BankGetObjectFailed(reason=err,
                                                 key=key)
 
     def list_objects(self, prefix=None, limit=None, marker=None):
@@ -198,10 +190,10 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                        marker=marker)
         except SwiftConnectionFailed as err:
             LOG.error(_LE("list objects failed, err: %s."), err)
-            raise exception.BankListObjectsFailed(reasone=err)
+            raise exception.BankListObjectsFailed(reason=err)
         for obj in body:
             if obj.get("name"):
-                object_names.append(obj.get("name").lstrip(prefix))
+                object_names.append(obj.get("name"))
         return object_names
 
     def acquire_lease(self):
