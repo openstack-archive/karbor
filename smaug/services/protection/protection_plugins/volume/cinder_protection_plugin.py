@@ -12,7 +12,9 @@
 
 import six
 
+from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_service import loopingcall
 from smaug.common import constants
 from smaug import exception
 from smaug.i18n import _, _LE
@@ -22,6 +24,14 @@ from smaug.services.protection.protection_plugins.base_protection_plugin \
 from smaug.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
 
+protection_opts = [
+    cfg.IntOpt('protection_sync_interval',
+               default=60,
+               help='update protection status interval')
+]
+CONF = cfg.CONF
+CONF.register_opts(protection_opts)
+
 LOG = logging.getLogger(__name__)
 
 
@@ -30,6 +40,13 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
 
     def __init__(self, config=None):
         super(CinderProtectionPlugin, self).__init__(config)
+        self.protection_resource_map = {}
+        self.protection_sync_interval = CONF.protection_sync_interval
+
+        sync_status_loop = loopingcall.FixedIntervalLoopingCall(
+            self.sync_status)
+        sync_status_loop.start(interval=self.protection_sync_interval,
+                               initial_delay=self.protection_sync_interval)
 
     def get_supported_resources_types(self):
         return self._SUPPORT_RESOURCE_TYPES
@@ -71,7 +88,12 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                                                   force=True)
             resource_definition["backup_id"] = backup.id
             bank_section.create_object("metadata", resource_definition)
-
+            self.protection_resource_map[volume_id] = {
+                "bank_section": bank_section,
+                "backup_id": backup.id,
+                "cinder_client": cinder_client,
+                "operation": "create"
+            }
         except Exception as e:
             LOG.error(_LE("create volume backup failed, volume_id: %s."),
                       volume_id)
@@ -82,8 +104,6 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE
             )
-
-    # TODO(hurong): add sync function to update resource status
 
     def delete_backup(self, cntxt, checkpoint, **kwargs):
         resource_node = kwargs.get("node")
@@ -99,7 +119,13 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
             resource_definition = bank_section.get_object("metadata")
             backup_id = resource_definition["backup_id"]
             cinder_client.backups.delete(backup_id)
-            bank_section.update_object("metadata", resource_definition)
+            bank_section.delete_object("metadata", resource_definition)
+            self.protection_resource_map[resource_id] = {
+                "bank_section": bank_section,
+                "backup_id": backup_id,
+                "cinder_client": cinder_client,
+                "operation": "delete"
+            }
         except Exception as e:
             LOG.error(_LE("delete volume backup failed, volume_id: %s."),
                       resource_id)
@@ -115,3 +141,24 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
     def restore_backup(self, **kwargs):
         # TODO(hurong):
         pass
+
+    def sync_status(self):
+        for resource_id, resource_info in self.protection_resource_map.items():
+            backup_id = resource_info["backup_id"]
+            bank_section = resource_info["bank_section"]
+            cinder_client = resource_info["cinder_client"]
+            try:
+                backup = cinder_client.backups.get(backup_id)
+                if backup.status == "available":
+                    bank_section.update_object(
+                        "status", constants.RESOURCE_STATUS_AVAILABLE)
+                    self.protection_resource_map.pop(resource_id)
+                elif backup.status in ["error", "error-deleting"]:
+                    bank_section.update_object(
+                        "status", constants.RESOURCE_STATUS_ERROR)
+                    self.protection_resource_map.pop(resource_id)
+                else:
+                    continue
+            except Exception:
+                LOG.info(_("deleting volume backup finished."))
+                self.protection_resource_map.pop(resource_id)
