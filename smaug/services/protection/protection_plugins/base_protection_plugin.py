@@ -55,6 +55,10 @@ class BaseProtectionPlugin(ProtectionPlugin):
 
             kwargs['name'] = resource.id
             operation = context.operation
+            if operation == constants.OPERATION_RESTORE:
+                requires.append("heat_template")
+                inject["heat_template"] = context.heat_template
+
             task_callback = self.task_callback_map.get(operation, None)
             if task_callback is not None:
                 task = context.workflow_engine.create_task(task_callback,
