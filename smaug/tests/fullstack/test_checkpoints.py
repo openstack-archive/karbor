@@ -61,3 +61,35 @@ class CheckpointsTest(smaug_base.SmaugBaseTest):
         checkpoints = self.smaug_client.checkpoints.list(self.provider_id)
         after_num = len(checkpoints)
         self.assertEqual(before_num, after_num)
+
+    def test_checkpoint_list(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ])
+
+        checkpoints = self.smaug_client.checkpoints.list(self.provider_id)
+        before_num = len(checkpoints)
+
+        checkpoint = objects.Checkpoint()
+        checkpoint.create(self.provider_id, plan.id)
+
+        checkpoints = self.smaug_client.checkpoints.list(self.provider_id)
+        after_num = len(checkpoints)
+        self.assertEqual(1, after_num - before_num)
+
+    def test_checkpoint_get(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ])
+
+        checkpoint = objects.Checkpoint()
+        checkpoint.create(self.provider_id, plan.id)
+
+        # sanity
+        checkpoint_item = self.smaug_client.checkpoints.get(self.provider_id,
+                                                            checkpoint.id)
+        self.assertEqual(constants.CHECKPOINT_STATUS_AVAILABLE,
+                         checkpoint_item.status)
+        self.assertEqual(checkpoint.id, checkpoint_item.id)
