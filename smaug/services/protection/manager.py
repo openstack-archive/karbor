@@ -124,8 +124,6 @@ class ProtectionManager(manager.Manager):
                                  constants.CHECKPOINT_STATUS_PROTECTING]:
             raise exception.CheckpointNotAvailable(
                 checkpoint_id=checkpoint_id)
-        checkpoint.status = constants.CHECKPOINT_STATUS_RESTORING
-        checkpoint.commit()
 
         try:
             restoration_flow = self.worker.get_restoration_flow(
