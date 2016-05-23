@@ -14,7 +14,9 @@ from uuid import uuid4 as uuid
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from smaug import resource
 from smaug.services.protection.bank_plugin import BankSection
+from smaug.services.protection import graph
 
 CONF = cfg.CONF
 
@@ -56,9 +58,30 @@ class Checkpoint(object):
         # TODO(yinwei): check for valid values and transitions
         return self._md_cache["owner_id"]
 
+    @property
+    def resource_graph(self):
+        packed_graph = self._md_cache.get("resource_graph", None)
+        if packed_graph is not None:
+            nodes = packed_graph[0]
+            for sid, value in nodes.items():
+                nodes[sid] = resource.Resource(type=value[0],
+                                               id=value[1],
+                                               name=value[2])
+            return graph.unpack_graph(packed_graph)
+        else:
+            return None
+
+    @property
+    def protection_plan(self):
+        return self._md_cache["protection_plan"]
+
     @status.setter
     def status(self, value):
         self._md_cache["status"] = value
+
+    @resource_graph.setter
+    def resource_graph(self, resource_graph):
+        self._md_cache["resource_graph"] = graph.pack_graph(resource_graph)
 
     def _is_supported_version(self, version):
         return version in self.SUPPORTED_VERSIONS
@@ -86,7 +109,7 @@ class Checkpoint(object):
 
     @classmethod
     def create_in_section(cls, bank_section, bank_lease, owner_id,
-                          checkpoint_id=None):
+                          plan, checkpoint_id=None):
         checkpoint_id = checkpoint_id or cls._generate_id()
         bank_section.create_object(
             key=_checkpoint_id_to_index_file(checkpoint_id),
@@ -95,6 +118,11 @@ class Checkpoint(object):
                 "id": checkpoint_id,
                 "status": "protecting",
                 "owner_id": owner_id,
+                "protection_plan": {
+                    "id": plan.get("id"),
+                    "name": plan.get("name"),
+                    "resources": plan.get("resources")
+                }
             }
         )
         return Checkpoint(bank_section,
@@ -166,4 +194,5 @@ class CheckpointCollection(object):
         # future patches.
         return Checkpoint.create_in_section(self._checkpoints_section,
                                             self._bank_lease,
-                                            self._bank.get_owner_id())
+                                            self._bank.get_owner_id(),
+                                            plan)

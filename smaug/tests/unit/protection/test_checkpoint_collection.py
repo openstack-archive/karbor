@@ -15,6 +15,7 @@ import mock
 from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.checkpoint import CheckpointCollection
 from smaug.tests import base
+from smaug.tests.unit.protection.fakes import fake_protection_plan
 from smaug.tests.unit.protection.test_bank import _InMemoryBankPlugin
 from smaug.tests.unit.protection.test_bank import _InMemoryLeasePlugin
 
@@ -26,7 +27,7 @@ class CheckpointCollectionTest(base.TestCase):
 
     def test_create_checkpoint(self):
         collection = self._create_test_collection()
-        checkpoint = collection.create(None)
+        checkpoint = collection.create(fake_protection_plan())
         checkpoint.status = "finished"
         checkpoint.commit()
         self.assertEqual(
@@ -36,19 +37,21 @@ class CheckpointCollectionTest(base.TestCase):
 
     def test_list_checkpoints(self):
         collection = self._create_test_collection()
-        result = {collection.create(None).id for i in range(10)}
+        result = {
+            collection.create(fake_protection_plan()).id for i in range(10)}
         self.assertEqual(set(collection.list_ids()), result)
 
     def test_delete_checkpoint(self):
         collection = self._create_test_collection()
-        result = {collection.create(None).id for i in range(10)}
+        result = {
+            collection.create(fake_protection_plan()).id for i in range(10)}
         checkpoint = collection.get(result.pop())
         checkpoint.purge()
         self.assertEqual(set(collection.list_ids()), result)
 
     def test_write_checkpoint_with_invalid_lease(self):
         collection = self._create_test_collection()
-        checkpoint = collection.create(None)
+        checkpoint = collection.create(fake_protection_plan())
         collection._bank_lease.check_lease_validity = mock.MagicMock()
         collection._bank_lease.check_lease_validity.return_value = False
         checkpoint.status = "finished"

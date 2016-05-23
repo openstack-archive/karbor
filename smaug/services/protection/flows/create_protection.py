@@ -31,15 +31,17 @@ LOG = logging.getLogger(__name__)
 
 
 class CreateCheckpointTask(task.Task):
-    def __init__(self, plan, provider):
+    def __init__(self, plan, provider, resource_graph):
         provides = 'checkpoint'
         super(CreateCheckpointTask, self).__init__(provides=provides)
         self._plan = plan
         self._provider = provider
+        self._resource_graph = resource_graph
 
     def execute(self):
         checkpoint_collection = self._provider.get_checkpoint_collection()
         checkpoint = checkpoint_collection.create(self._plan)
+        checkpoint.resource_graph = self._resource_graph
         return checkpoint
 
     def revert(self, result, **kwargs):
@@ -69,10 +71,13 @@ class SyncCheckpointStatusTask(task.Task):
             get_resource_stats = s.get('get_resource_stats')
             status[resource_id] = get_resource_stats(checkpoint,
                                                      resource_id)
-        if constants.CHECKPOINT_STATUS_ERROR in status.values():
+        if constants.RESOURCE_STATUS_ERROR in status.values():
             checkpoint.status = constants.CHECKPOINT_STATUS_ERROR
             checkpoint.commit()
-        elif constants.CHECKPOINT_STATUS_PROTECTING in status.values():
+        elif constants.RESOURCE_STATUS_PROTECTING in status.values():
+            checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
+            checkpoint.commit()
+        elif constants.RESOURCE_STATUS_UNDEFINED in status.values():
             checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
             checkpoint.commit()
         else:
@@ -96,8 +101,10 @@ def get_flow(context, workflow_engine, operation_type, plan, provider):
     result = provider.build_task_flow(ctx)
     status_getters = result.get('status_getters')
     resource_flow = result.get('task_flow')
+    resource_graph = result.get('resource_graph')
     workflow_engine.add_tasks(protection_flow,
-                              CreateCheckpointTask(plan, provider),
+                              CreateCheckpointTask(plan, provider,
+                                                   resource_graph),
                               resource_flow,
                               SyncCheckpointStatusTask(status_getters))
     flow_engine = workflow_engine.get_engine(protection_flow)
