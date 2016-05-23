@@ -14,11 +14,10 @@ import math
 import mock
 import os
 from oslo_config import cfg
-from smaug.services.protection.bank_plugins.swift_bank_plugin \
-    import SwiftBankPlugin
+from oslo_utils import importutils
+from smaug.services.protection.clients import swift
 from smaug.tests import base
 from smaug.tests.unit.protection.fake_swift_client import FakeSwiftClient
-from swiftclient import client as swift
 import time
 
 CONF = cfg.CONF
@@ -34,11 +33,17 @@ class FakeConf(object):
 class SwiftBankPluginTest(base.TestCase):
     def setUp(self):
         super(SwiftBankPluginTest, self).setUp()
-        self.fake_connection = FakeSwiftClient.connection()
         self.conf = FakeConf()
-        swift.Connection = mock.MagicMock()
-        swift.Connection.return_value = self.fake_connection
-        self.swift_bank_plugin = SwiftBankPlugin(CONF)
+        self.fake_connection = FakeSwiftClient.connection()
+        swift.create = mock.MagicMock()
+        swift.create.return_value = self.fake_connection
+        import_str = "smaug.services.protection.bank_plugins." \
+                     "swift_bank_plugin.SwiftBankPlugin"
+        self.object_container = "objects"
+        swift_bank_plugin_cls = importutils.import_class(
+            import_str=import_str)
+
+        self.swift_bank_plugin = swift_bank_plugin_cls(CONF, None)
 
     def test_acquire_lease(self):
         self.swift_bank_plugin.acquire_lease()

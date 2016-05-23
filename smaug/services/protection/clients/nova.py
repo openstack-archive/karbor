@@ -39,7 +39,8 @@ NOVACLIENT_VERSION = '2'
 def create(context, conf):
     conf.register_opts(nova_client_opts, group=SERVICE + '_client')
     try:
-        url = utils.get_url(SERVICE, context, conf, append_project=True)
+        url = utils.get_url(SERVICE, context, conf,
+                            append_project_fmt='%(url)s/%(project)s')
     except Exception:
         LOG.error(_LE("Get nova service endpoint url failed."))
         raise
