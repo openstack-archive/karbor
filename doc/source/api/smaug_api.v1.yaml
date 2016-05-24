@@ -518,6 +518,40 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /protectables/{protectable_type}/instances/{resource_id}:
+    get:
+      summary: Resource Instance
+      description: |
+        Return information about a specific instance and it's immediate dependencies.
+      parameters:
+        - $ref: '#/parameters/protectable_typeParam'
+        - $ref: '#/parameters/resource_idParam'
+      tags:
+        - Protectable
+        - Resource
+      responses:
+        '200':
+          description: Information about the instance.
+          schema:
+            $ref: '#/definitions/Resource'
+          examples:
+            application/json:
+              {
+                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
+                "type": "OS::Nova::Server",
+                "name": "My VM",
+                "dependent_resources": [
+                  {
+                    "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
+                    "type": "OS::Cinder::Volume",
+                    "name": "My Volume"
+                  }
+                ]
+              }
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   /{project_id}/scheduled_operations:
     get:
       summary: Scheduled Operations
@@ -1386,6 +1420,13 @@ parameters:
     required: true
     in: path
     description: id of the trigger.
+  resource_idParam:
+    name: resource_id
+    type: string
+    format: uuid
+    required: true
+    in: path
+    description: id of the resource.
   restore_idParam:
     name: restore_id
     type: string
