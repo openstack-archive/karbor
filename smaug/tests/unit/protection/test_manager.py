@@ -17,14 +17,12 @@ from oslo_log import log as logging
 
 from smaug import exception
 from smaug.resource import Resource
-from smaug.services.protection.clients import heat
 from smaug.services.protection.flows import worker as flow_manager
 from smaug.services.protection import manager
 from smaug.services.protection import protectable_registry
 from smaug.services.protection import provider
 
 from smaug.tests import base
-from smaug.tests.unit.protection import fake_clients
 from smaug.tests.unit.protection import fakes
 
 LOG = logging.getLogger(__name__)
@@ -38,8 +36,6 @@ class ProtectionServiceTest(base.TestCase):
         flow_manager.Worker._load_engine = mock.Mock()
         flow_manager.Worker._load_engine.return_value = fakes.FakeFlowEngine()
         super(ProtectionServiceTest, self).setUp()
-        mock_engine = mock.MagicMock()
-        mock_engine.return_value = fakes.FakeFlowEngine()
         self.pro_manager = manager.ProtectionManager()
         self.protection_plan = fakes.fake_protection_plan()
 
@@ -85,9 +81,9 @@ class ProtectionServiceTest(base.TestCase):
 
         result = self.pro_manager.show_protectable_instance(
             fake_cntx, 'OS::Nova::Server', '123456')
-        self.assertEqual({'id': '123456', 'name': 'name123',
-                          'type': 'OS::Nova::Server'},
-                         result)
+        self.assertEqual(
+            {'id': '123456', 'name': 'name123', 'type': 'OS::Nova::Server'},
+            result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
                        'list_resources')
@@ -127,13 +123,6 @@ class ProtectionServiceTest(base.TestCase):
     def test_protect(self, mock_provider):
         mock_provider.return_value = fakes.FakeProvider()
         self.pro_manager.protect(None, fakes.fake_protection_plan())
-
-    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
-    def test_restore(self, mock_provider):
-        mock_provider.return_value = fakes.FakeProvider()
-        heat.create = mock.MagicMock()
-        heat.create.return_value = fake_clients.FakeHeatClient()
-        self.pro_manager.restore(None, fakes.fake_restore())
 
     @mock.patch.object(flow_manager.Worker, 'get_flow')
     def test_protect_in_error(self, mock_flow):

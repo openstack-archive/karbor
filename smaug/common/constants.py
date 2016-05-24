@@ -11,11 +11,20 @@
 #    under the License.
 
 #  operation type
-OPERATION_PROTECT = 'protect'
-OPERATION_RESTORE = 'restore'
-OPERATION_START = 'start'
-OPERATION_DELETE = 'delete'
-OPERATION_SUSPEND = 'suspend'
+OPERATION_TYPES = (
+    OPERATION_PROTECT,
+    OPERATION_RESTORE,
+    OPERATION_DELETE,
+    OPERATION_START,
+    OPERATION_SUSPEND,
+) = (
+    'protect',
+    'restore',
+    'delete',
+    'start',
+    'suspend',
+)
+
 
 #  plugin type
 PLUGIN_BANK = 'bank'
@@ -28,7 +37,7 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   ) = ('OS::Keystone::Project',
                        'OS::Nova::Server',
                        'OS::Cinder::Volume',
-                       'OS::Glance::Image'
+                       'OS::Glance::Image',
                        )
 
 CHECKPOINT_STATUS_ERROR = 'error'

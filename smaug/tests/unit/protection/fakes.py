@@ -206,7 +206,7 @@ class FakeFlowEngine(object):
 
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None,get it first"))
+            LOG.error(_LE("The flow is None, get it first"))
         flow.add(*nodes, **kwargs)
 
     def build_flow(self, flow_name, flow_type='graph'):
@@ -220,7 +220,7 @@ class FakeFlowEngine(object):
 
     def get_engine(self, flow, **kwargs):
         if flow is None:
-            LOG.error(_LE("Flow is None,build it first"))
+            LOG.error(_LE("Flow is None, build it first"))
             return
         executor = kwargs.get('executor', None)
         engine = kwargs.get('engine', None)
