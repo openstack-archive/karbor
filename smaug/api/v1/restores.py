@@ -14,7 +14,6 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -253,7 +252,7 @@ class RestoresController(wsgi.Controller):
             'provider_id': restore.get('provider_id'),
             'checkpoint_id': restore.get('checkpoint_id'),
             'restore_target': restore.get('restore_target'),
-            'parameters': jsonutils.dumps(parameters),
+            'parameters': parameters,
             'status': 'started',
         }
 

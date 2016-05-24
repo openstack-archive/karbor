@@ -12,6 +12,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from smaug import db
@@ -37,7 +38,7 @@ class Restore(base.SmaugPersistentObject, base.SmaugObject,
         'provider_id': fields.UUIDField(),
         'checkpoint_id': fields.UUIDField(),
         'restore_target': fields.StringField(nullable=True),
-        'parameters': fields.StringField(nullable=True),
+        'parameters': fields.DictOfStringsField(nullable=True),
         'status': fields.StringField(nullable=True),
     }
 
@@ -49,6 +50,8 @@ class Restore(base.SmaugPersistentObject, base.SmaugObject,
                 value = value or 0
             elif isinstance(field, fields.DateTimeField):
                 value = value or None
+            if name == "parameters" and value is not None:
+                value = jsonutils.loads(value)
             restore[name] = value
 
         restore._context = context
@@ -61,6 +64,11 @@ class Restore(base.SmaugPersistentObject, base.SmaugObject,
             raise exception.ObjectActionError(action='create',
                                               reason=_('already created'))
         updates = self.smaug_obj_get_changes()
+
+        parameters = updates.pop('parameters', None)
+        if parameters is not None:
+            updates['parameters'] = jsonutils.dumps(parameters)
+
         db_restore = db.restore_create(self._context, updates)
         self._from_db_object(self._context, self, db_restore)
 
