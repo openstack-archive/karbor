@@ -55,7 +55,6 @@ class CheckpointCollectionTest(base.TestCase):
         collection._bank_lease.check_lease_validity = mock.MagicMock()
         collection._bank_lease.check_lease_validity.return_value = False
         checkpoint.status = "finished"
-        self.assertRaises(RuntimeError, checkpoint.commit)
         self.assertNotEqual(
             checkpoint.status,
             collection.get(checkpoint_id=checkpoint.id).status,

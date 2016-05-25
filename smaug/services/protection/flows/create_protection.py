@@ -42,6 +42,7 @@ class CreateCheckpointTask(task.Task):
         checkpoint_collection = self._provider.get_checkpoint_collection()
         checkpoint = checkpoint_collection.create(self._plan)
         checkpoint.resource_graph = self._resource_graph
+        checkpoint.commit()
         return checkpoint
 
     def revert(self, result, **kwargs):
