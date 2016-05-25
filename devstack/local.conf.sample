@@ -16,6 +16,7 @@ ENABLED_SERVICES+=,n-cpu,n-api,n-crt,n-obj,n-cond,n-sch,n-novnc,n-cauth
 ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 ENABLED_SERVICES+=,cinder,g-api,g-reg
 ENABLED_SERVICES+=,c-api,c-vol,c-sch,c-bak,horizon
+ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
 
 #Add the smaug services
 enable_service smaug-api
