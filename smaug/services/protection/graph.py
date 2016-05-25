@@ -206,5 +206,7 @@ def unpack_graph(packed_graph):
 
     result_nodes = []
     for sid in nodes_dict:
+        if sid not in graph_nodes_dict:
+            graph_nodes_dict[sid] = GraphNode(nodes_dict[sid], ())
         result_nodes.append(graph_nodes_dict[sid])
     return result_nodes
