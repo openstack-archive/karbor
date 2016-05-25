@@ -14,7 +14,6 @@ from uuid import uuid4 as uuid
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from smaug import resource
 from smaug.services.protection.bank_plugin import BankSection
 from smaug.services.protection import graph
 
@@ -60,14 +59,11 @@ class Checkpoint(object):
 
     @property
     def resource_graph(self):
-        packed_graph = self._md_cache.get("resource_graph", None)
-        if packed_graph is not None:
-            nodes = packed_graph[0]
-            for sid, value in nodes.items():
-                nodes[sid] = resource.Resource(type=value[0],
-                                               id=value[1],
-                                               name=value[2])
-            return graph.unpack_graph(packed_graph)
+        serialized_resource_graph = self._md_cache.get("resource_graph", None)
+        if serialized_resource_graph is not None:
+            resource_graph = graph.deserialize_resource_graph(
+                serialized_resource_graph)
+            return resource_graph
         else:
             return None
 
@@ -81,7 +77,9 @@ class Checkpoint(object):
 
     @resource_graph.setter
     def resource_graph(self, resource_graph):
-        self._md_cache["resource_graph"] = graph.pack_graph(resource_graph)
+        serialized_resource_graph = graph.serialize_resource_graph(
+            resource_graph)
+        self._md_cache["resource_graph"] = serialized_resource_graph
 
     def _is_supported_version(self, version):
         return version in self.SUPPORTED_VERSIONS
