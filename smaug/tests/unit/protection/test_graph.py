@@ -160,6 +160,24 @@ class GraphBuilderTest(base.TestCase):
         with self.assertRaisesRegex(exception.InvalidInput, "adjacency list"):
             graph.unpack_graph(packed_graph)
 
+    def test_pack_unpack_graph_with_isolated_node(self):
+        test_base = {
+            "A1": ["B1", "B2"],
+            "B1": ["C1", "C2"],
+            "B2": ["C3", "C2"],
+            "C1": [],
+            "C2": [],
+            "C3": [],
+            "C4": []
+        }
+
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        packed_graph = graph.pack_graph(test_graph)
+        unpacked_graph = graph.unpack_graph(packed_graph)
+        self.assertEqual(len(test_graph), len(unpacked_graph))
+        for start_node in test_graph:
+            self.assertEqual(True, start_node in unpacked_graph)
+
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
     def __init__(self, expected_event_stream, test):
