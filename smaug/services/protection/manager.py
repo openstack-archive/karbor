@@ -269,7 +269,14 @@ class ProtectionManager(manager.Manager):
         }
 
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
-    def list_protectable_instances(self, context, protectable_type):
+    def list_protectable_instances(self, context,
+                                   protectable_type=None,
+                                   marker=None,
+                                   limit=None,
+                                   sort_keys=None,
+                                   sort_dirs=None,
+                                   filters=None):
+
         LOG.info(_LI("Start to list protectable instances of type: %s"),
                  protectable_type)
 
