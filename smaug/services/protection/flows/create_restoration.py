@@ -15,8 +15,9 @@ from uuid import uuid4
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+
 from smaug.i18n import _, _LE
-from smaug.services.protection.clients import heat
+from smaug.services.protection.client_factory import ClientFactory
 from smaug.services.protection.restore_heat import HeatTemplate
 from taskflow import task
 
@@ -85,10 +86,12 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
     password = restore["parameters"]["password"]
 
     # TODO(luobin): create a heat_client
-    heat_client_conf = {"auth_url": target,
-                        "username": username,
-                        "password": password}
-    heat_client = heat.create(context=context, conf=heat_client_conf)
+    kwargs = {"auth_url": target,
+              "username": username,
+              "password": password}
+    heat_client = ClientFactory.create_client("heat",
+                                              context=context,
+                                              **kwargs)
 
     # TODO(luobin): create a heat_template
     heat_template = HeatTemplate()
