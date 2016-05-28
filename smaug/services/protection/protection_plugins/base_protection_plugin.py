@@ -45,27 +45,22 @@ class BaseProtectionPlugin(ProtectionPlugin):
         kwargs = {}
         inject = {}
         requires = []
-        # context_parameters = context.parameters
-        # if context_parameters is None:
-        #     context_parameters = {}
+        parameters = {}
         resource = context.node.value
-        context_parameters = {}
         if context.is_first_visited is True:
-            # TODO(wangliuan): Need add parameters handler
-            context_parameters[resource.type] = \
-                {'backup_name': 'test_protect',
-                 'restore_name': 'test_restore'}
-            parameters = context_parameters[resource.type].copy()
             parameters['node'] = context.node
             parameters['cntxt'] = context.cntxt
-
             kwargs['name'] = resource.id
             operation = context.operation
             if operation == constants.OPERATION_PROTECT:
+                parameters.update(context.parameters.get(resource.type, {}))
+                res_params = resource.type + '#' + str(resource.id)
+                parameters.update(context.parameters.get(res_params, {}))
                 inject = parameters
                 requires = parameters.keys()
                 requires.append('checkpoint')
             elif operation == constants.OPERATION_RESTORE:
+                parameters.update(context.parameters)
                 parameters['checkpoint'] = context.checkpoint
                 parameters['heat_template'] = context.heat_template
                 inject = parameters
