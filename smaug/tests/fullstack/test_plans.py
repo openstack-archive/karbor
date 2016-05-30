@@ -10,70 +10,112 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 from smaug.tests.fullstack import smaug_base
-import utils
 
 
 class PlansTest(smaug_base.SmaugBaseTest):
-    """Test Plans operation
+    """Test Plans operation"""
 
-    """
-
-    def create_plan(self):
+    def create_plan(self, provider_id, volume_id):
         plan1 = self.smaug_client.plans.create(
             "My plan app1",
-            "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
-            [{"type": "OS::Cinder::Volume",
-              "name": "fake_name",
-              "id": "5fad94de-2926-486b-ae73-ff5d3477f80d"}],
-            {"parameters": {"OS::Nova::Server": {"consistency": "os"}}})
+            provider_id,
+            [{"id": volume_id,
+              "type": "OS::Cinder::Volume",
+              "name": "fake_name"}],
+            {"OS::Nova::Server": {"consistency": "os"}})
         plan2 = self.smaug_client.plans.create(
             "My plan app2",
-            "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
-            [{"type": "OS::Cinder::Volume",
-              "name": "fake_name",
-              "id": "5fad94de-2926-486b-ae73-ff5d3477f80d"}],
-            {"parameters": {"OS::Nova::Server": {"consistency": "os"}}})
+            provider_id,
+            [{"id": volume_id,
+              "type": "OS::Cinder::Volume",
+              "name": "fake_name"}],
+            {"OS::Nova::Server": {"consistency": "os"}})
         return plan1, plan2
 
     def test_plans_create(self):
-        plan1, plan2 = self.create_plan()
-        plan_item = utils.wait_until_is_and_return(
-            lambda: self.smaug_client.plans.get(plan1.get("id")),
-            exception=Exception('No plan data in db')
-        )
-        self.assertEqual("My plan app1", plan_item.name)
-        self.assertEqual(plan1.get("id"), plan_item.id)
+        # retrieve providers
+        providers = self.provider_list()
+        self.assertTrue(len(providers))
+        # create volume
+        volume = self.create_volume(1)
+        # get num of plans before creating
+        plans = self.smaug_client.plans.list()
+        before_num = len(plans)
+        # create plan
+        plan1, plan2 = self.create_plan(providers[0].id, volume.id)
+        # get num of plans after creating
+        plans_ = self.smaug_client.plans.list()
+        after_num = len(plans_)
+        self.assertEqual(2, after_num - before_num)
         self.smaug_client.plans.delete(plan1.get("id"))
         self.smaug_client.plans.delete(plan2.get("id"))
+        self.delete_volume(volume.id)
 
     def test_plans_list(self):
-        plan1, plan2 = self.create_plan()
-        plan_item = utils.wait_until_is_and_return(
-            lambda: self.smaug_client.plans.list(),
-            exception=Exception('No plan data in db')
-        )
+        self.cleanup_plans()
+        # retrieve providers
+        providers = self.provider_list()
+        self.assertTrue(len(providers))
+        # create plan
+        volume = self.create_volume(1)
+        plan1, plan2 = self.create_plan(providers[0].id, volume.id)
+        # list plans after creating
+        plan_item = self.smaug_client.plans.list()
         self.assertEqual(2, len(plan_item))
         self.smaug_client.plans.delete(plan1.get("id"))
         self.smaug_client.plans.delete(plan2.get("id"))
+        self.delete_volume(volume.id)
 
     def test_plans_get(self):
-        plan1, plan2 = self.create_plan()
-        plan_item = utils.wait_until_is_and_return(
-            lambda: self.smaug_client.plans.get(plan1.get("id")),
-            exception=Exception('No plan data in db')
-        )
-        self.assertEqual("My plan app1", plan_item.name)
+        # retrieve providers
+        providers = self.provider_list()
+        self.assertTrue(len(providers))
+        # create plan
+        volume = self.create_volume(1)
+        plan1, plan2 = self.create_plan(providers[0].id, volume.id)
+        # get plan
+        plan_item1 = self.smaug_client.plans.get(plan1.get("id"))
+        self.assertEqual("My plan app1", plan_item1.name)
+        plan_item2 = self.smaug_client.plans.get(plan2.get("id"))
+        self.assertEqual("My plan app2", plan_item2.name)
         self.smaug_client.plans.delete(plan1.get("id"))
         self.smaug_client.plans.delete(plan2.get("id"))
+        self.delete_volume(volume.id)
 
     def test_plans_update(self):
-        plan1, plan2 = self.create_plan()
-        plan = self.smaug_client.plans.get(plan1.get("id"))
-        self.assertEqual("My plan app1", plan.name)
+        # retrieve providers
+        providers = self.provider_list()
+        self.assertTrue(len(providers))
+        # create plan
+        volume = self.create_volume(1, "Volume1")
+        plan1, plan2 = self.create_plan(providers[0].id, volume.id)
+        # get old plan
+        plan_old = self.smaug_client.plans.get(plan1.get("id"))
+        self.assertEqual("My plan app1", plan_old.name)
+        self.assertEqual("suspended", plan_old.status)
+        self.assertEqual([{"id": volume.id,
+                           "type": "OS::Cinder::Volume",
+                           "name": "fake_name"}],
+                         plan_old.resources)
+        # update name
         data = {"name": "fake_plan"}
-        plan_item = self.smaug_client.plans.update(plan2.get("id"), data)
+        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
         self.assertEqual("fake_plan", plan_item.name)
+        # update resources
+        data = {"resources": [{"id": volume.id,
+                               "type": "OS::Cinder::Volume",
+                               "name": volume.name}]}
+        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
+        self.assertEqual([{"id": volume.id,
+                           "type": "OS::Cinder::Volume",
+                           "name": volume.name}],
+                         plan_item.resources)
+        # update status
+        data = {"status": "started"}
+        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
+        self.assertEqual("started", plan_item.status)
+        # cleanup
         self.smaug_client.plans.delete(plan1.get("id"))
         self.smaug_client.plans.delete(plan2.get("id"))
+        self.delete_volume(volume.id)

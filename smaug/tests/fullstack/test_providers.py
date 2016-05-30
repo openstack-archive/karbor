@@ -16,12 +16,13 @@ from smaug.tests.fullstack import smaug_base
 
 class ProvidersTest(smaug_base.SmaugBaseTest):
     """Test Providers operation"""
-    provider_id = u"cf56bd3e-97a7-4078-b6d5-f36246333fd9"
 
     def test_providers_list(self):
         provider_res = self.smaug_client.providers.list()
-        self.assertEqual(1, len(provider_res))
+        self.assertTrue(len(provider_res))
 
     def test_provider_get(self):
-        provider_res = self.smaug_client.providers.get(self.provider_id)
-        self.assertEqual("OS Infra Provider", provider_res.name)
+        providers = self.provider_list()
+        for provider in providers:
+            provider_res = self.smaug_client.providers.get(provider.id)
+            self.assertEqual(provider.name, provider_res.name)
