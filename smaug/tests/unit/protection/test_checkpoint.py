@@ -94,7 +94,8 @@ class CheckpointTest(base.TestCase):
                 "name": plan.get("name"),
                 "resources": plan.get("resources")
             },
-            "resource_graph": graph.pack_graph(resource_graph)
+            "resource_graph": graph.serialize_resource_graph(
+                resource_graph)
         }
         self.assertEqual(
             checkpoint_data,
@@ -102,6 +103,6 @@ class CheckpointTest(base.TestCase):
                 "/checkpoints%s" % checkpoint._index_file_path
             )
         )
-        self.assertEqual(
-            graph.unpack_graph(graph.pack_graph(resource_graph)),
-            checkpoint.resource_graph)
+        self.assertEqual(len(resource_graph), len(checkpoint.resource_graph))
+        for start_node in resource_graph:
+            self.assertEqual(True, start_node in checkpoint.resource_graph)

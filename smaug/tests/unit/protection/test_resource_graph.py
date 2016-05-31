@@ -18,6 +18,7 @@ from smaug.services.protection.resource_graph \
 from smaug.tests import base
 from smaug.tests.unit.protection.fakes import FakeProtectionPlugin
 from smaug.tests.unit.protection.fakes import plan_resources
+from smaug.tests.unit.protection.fakes import resource_graph
 from smaug.tests.unit.protection.fakes import resource_map
 
 
@@ -57,3 +58,14 @@ class ResourceGraphWalkerListenerTest(base.TestCase):
 
     def tearDown(self):
         super(ResourceGraphWalkerListenerTest, self).tearDown()
+
+
+class SerializeResourceGraphTest(base.TestCase):
+    def test_serialize_deserialize_packed_resource_graph(self):
+        serialized_resource_graph = graph.serialize_resource_graph(
+            resource_graph)
+        deserialized_resource_graph = graph.deserialize_resource_graph(
+            serialized_resource_graph)
+        self.assertEqual(len(resource_graph), len(deserialized_resource_graph))
+        for start_node in resource_graph:
+            self.assertEqual(True, start_node in deserialized_resource_graph)

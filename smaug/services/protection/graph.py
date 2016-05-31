@@ -11,6 +11,7 @@
 #    under the License.
 import abc
 from collections import namedtuple
+import json
 
 from oslo_log import log as logging
 
@@ -18,6 +19,7 @@ import six
 
 from smaug import exception
 from smaug.i18n import _
+from smaug.resource import Resource
 
 
 _GraphBuilderContext = namedtuple("_GraphBuilderContext", (
@@ -210,3 +212,20 @@ def unpack_graph(packed_graph):
             graph_nodes_dict[sid] = GraphNode(nodes_dict[sid], ())
         result_nodes.append(graph_nodes_dict[sid])
     return result_nodes
+
+
+def serialize_resource_graph(resource_graph):
+    packed_resource_graph = pack_graph(resource_graph)
+    return json.dumps(packed_resource_graph)
+
+
+def deserialize_resource_graph(serialized_resource_graph):
+    deserialized_graph = json.loads(serialized_resource_graph)
+    packed_resource_graph = PackedGraph(nodes=deserialized_graph[0],
+                                        adjacency=deserialized_graph[1])
+    for sid, node in packed_resource_graph.nodes.items():
+        packed_resource_graph.nodes[sid] = Resource(type=node[0],
+                                                    id=node[1],
+                                                    name=node[2])
+    resource_graph = unpack_graph(packed_resource_graph)
+    return resource_graph
