@@ -70,6 +70,11 @@ class BaseProtectionPlugin(ProtectionPlugin):
                 parameters['heat_template'] = context.heat_template
                 inject = parameters
                 requires = parameters.keys()
+            elif operation == constants.OPERATION_DELETE:
+                parameters['checkpoint'] = context.checkpoint
+                inject = parameters
+                requires = parameters.keys()
+                requires.append('checkpoint')
 
             task_callback = self.task_callback_map.get(operation, None)
             if task_callback is not None:

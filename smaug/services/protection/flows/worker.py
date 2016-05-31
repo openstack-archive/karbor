@@ -19,6 +19,7 @@ from smaug.common import constants
 from smaug.i18n import _LE
 from smaug.services.protection.flows import create_protection
 from smaug.services.protection.flows import create_restoration
+from smaug.services.protection.flows import delete_checkpoint
 
 workflow_opts = [
     cfg.StrOpt(
@@ -68,6 +69,16 @@ class Worker(object):
                                                        provider,
                                                        restore)
         return restoration_flow
+
+    def get_delete_checkpoint_flow(self, context, operation_type, checkpoint,
+                                   provider):
+        delete_checkpoint_flow = delete_checkpoint.get_flow(
+            context,
+            self.workflow_engine,
+            operation_type,
+            checkpoint,
+            provider)
+        return delete_checkpoint_flow
 
     def run_flow(self, flow_engine):
         self.workflow_engine.run_engine(flow_engine)

@@ -23,7 +23,7 @@ from taskflow import task
 
 sync_status_opts = [
     cfg.IntOpt('sync_status_interval',
-               default=600,
+               default=60,
                help='update protection status interval')
 ]
 

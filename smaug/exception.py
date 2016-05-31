@@ -334,3 +334,7 @@ class InvalidOriginalId(Invalid):
 
 class CheckpointNotAvailable(SmaugException):
     message = _("The checkpoint %(checkpoint_id)s is not available")
+
+
+class CheckpointNotBeDeleted(SmaugException):
+    message = _("The checkpoint %(checkpoint_id)s can not be deleted.")
