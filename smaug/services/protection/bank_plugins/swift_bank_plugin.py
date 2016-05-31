@@ -33,25 +33,41 @@ swift_bank_plugin_opts = [
 
 LOG = logging.getLogger(__name__)
 
+lease_opt = [cfg.IntOpt('lease_expire_window',
+                        default=600,
+                        help='expired_window for bank lease, in seconds'),
+             cfg.IntOpt('lease_renew_window',
+                        default=120,
+                        help='period for bank lease, in seconds, '
+                             'between bank lease client renew the lease'),
+             cfg.IntOpt('lease_validity_window',
+                        default=100,
+                        help='validity_window for bank lease, in seconds'), ]
+
 
 class SwiftConnectionFailed(exception.SmaugException):
     message = _("Connection to swift failed: %(reason)s")
 
 
 class SwiftBankPlugin(BankPlugin, LeasePlugin):
-    def __init__(self, config, context):
+    def __init__(self, config, context=None):
         super(SwiftBankPlugin, self).__init__(config)
         self._config.register_opts(swift_bank_plugin_opts,
                                    "swift_bank_plugin")
+        self._config.register_opts(lease_opt,
+                                   "swift_bank_plugin")
         self.bank_object_container = \
             self._config.swift_bank_plugin.bank_swift_object_container
-        self.lease_expire_window = self._config.lease_expire_window
-        self.lease_renew_window = self._config.lease_renew_window
+        self.lease_expire_window = \
+            self._config.swift_bank_plugin.lease_expire_window
+        self.lease_renew_window = \
+            self._config.swift_bank_plugin.lease_renew_window
         self.context = context
         # TODO(luobin):
         # init lease_validity_window
         # according to lease_renew_window if not configured
-        self.lease_validity_window = self._config.lease_validity_window
+        self.lease_validity_window = \
+            self._config.swift_bank_plugin.lease_validity_window
 
         # TODO(luobin): create a uuid of this bank_plugin
         self.owner_id = str(uuid.uuid4())
