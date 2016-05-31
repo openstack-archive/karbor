@@ -290,6 +290,8 @@ Smaug daily IRC Channel: #openstack-smaug
 Smaug bi-weekly IRC Meeting on (even) Tuesday at 1400 UTC in #openstack-meeting
 at freenode:\ http://eavesdrop.openstack.org/#Smaug_Project_Meetingtion(s).
 
+Smaug Trello Board\ https://trello.com/b/Sudr4fKT/smaug
+
 Additional references
 -----------------------
 `Tokyo summit talk  <http://www.slideshare.net/gampel/openstack-tokyo-talk-application-data-protection-service>`_
