@@ -36,6 +36,7 @@ class ScheduledOperationState(base.SmaugPersistentObject, base.SmaugObject,
         'operation_id': fields.UUIDField(),
         'service_id': fields.IntegerField(),
         'state': fields.StringField(),
+        'end_time_for_run': fields.DateTimeField(nullable=True),
 
         'operation': fields.ObjectField("ScheduledOperation")
     }

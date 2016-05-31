@@ -136,6 +136,6 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
             'service_id': service_id,
             'state': 'triggered',
         }
-        state = objects.ScheduledOperationState(self, **state_info)
+        state = objects.ScheduledOperationState(self.context, **state_info)
         state.create()
         return state

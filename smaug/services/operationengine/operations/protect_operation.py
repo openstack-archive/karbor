@@ -27,7 +27,13 @@ class ProtectOperation(operations.Operation):
             raise exception.InvalidOperationDefinition(reason=reason)
 
     @classmethod
-    def execute(self, project_id, operation_definition):
+    def _execute(self, project_id, operation_definition, param):
+        # plan_id = operation_definition.get("plan_id")
+        # TODO(chenzeng): invoke create checkpoint interface
+        pass
+
+    @classmethod
+    def _resume(self, project_id, operation_definition, param):
         # plan_id = operation_definition.get("plan_id")
         # TODO(chenzeng): invoke create checkpoint interface
         pass

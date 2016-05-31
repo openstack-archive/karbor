@@ -77,3 +77,9 @@ class ScheduledOperationLog(base.SmaugPersistentObject, base.SmaugObject,
     def destroy(self):
         if self.id is not None:
             db.scheduled_operation_log_delete(self._context, self.id)
+
+    @base.remotable_classmethod
+    def destroy_oldest(cls, context, operation_id,
+                       retained_num, excepted_states=[]):
+        db.scheduled_operation_log_delete_oldest(
+            context, operation_id, retained_num, excepted_states)

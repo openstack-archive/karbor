@@ -31,6 +31,7 @@ from oslo_utils import timeutils
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import RelationshipProperty
+from sqlalchemy.sql import expression
 from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.sql import func
 
@@ -644,6 +645,36 @@ def scheduled_operation_log_delete(context, log_id):
                                                session=session)
         session.delete(log_ref)
         session.flush()
+
+
+def scheduled_operation_log_delete_oldest(context, operation_id,
+                                          retained_num, excepted_states):
+    table = models.ScheduledOperationLog
+    session = get_session()
+    with session.begin():
+        result = model_query(context, table, session=session).filter_by(
+            operation_id=operation_id).order_by(
+            expression.desc(table.created_at)).limit(retained_num).all()
+
+        if not result or len(result) < retained_num:
+            return
+        oldest_create_time = result[-1]['created_at']
+
+        if excepted_states and isinstance(excepted_states, list):
+            filters = expression.and_(
+                table.operation_id == operation_id,
+                table.created_at < oldest_create_time,
+                table.state.notin_(excepted_states))
+        else:
+            filters = expression.and_(
+                table.operation_id == operation_id,
+                table.created_at < oldest_create_time)
+
+        model_query(context, table, session=session).filter(
+            filters).delete(synchronize_session=False)
+
+
+###################
 
 
 def _resource_refs(resource_list, meta_class):

@@ -13,6 +13,7 @@
 """
 Manage all triggers.
 """
+from stevedore import driver as import_driver
 
 from smaug import exception
 from smaug.i18n import _
@@ -34,8 +35,10 @@ class TriggerManager(object):
         # }
         self._trigger_obj_map = {}
 
-        # TODO(zengchen) create executor
-        self._executor = None
+        executor_cls = import_driver.DriverManager(
+            'smaug.operationengine.engine.executor',
+            'executor').driver
+        self._executor = executor_cls()
 
     def shutdown(self):
 
