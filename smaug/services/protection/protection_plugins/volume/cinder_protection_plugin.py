@@ -53,13 +53,13 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
     def get_supported_resources_types(self):
         return self._SUPPORT_RESOURCE_TYPES
 
-    def get_options_schema(self):
+    def get_options_schema(self, resources_type):
         return cinder_schemas.OPTIONS_SCHEMA
 
-    def get_restore_schema(self):
+    def get_restore_schema(self, resources_type):
         return cinder_schemas.RESTORE_SCHEMA
 
-    def get_saved_info_schema(self):
+    def get_saved_info_schema(self, resources_type):
         return cinder_schemas.SAVED_INFO_SCHEMA
 
     def get_saved_info(self, metadata_store, resource):
