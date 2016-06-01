@@ -164,6 +164,7 @@ class ScheduledOperationTestCase(base.TestCase):
             'id': '0354ca9ddcd046b693340d78759fd274',
             'name': 'protect vm',
             'operation_type': 'protect',
+            'user_id': self.ctxt.user_id,
             'project_id': self.ctxt.tenant,
             'trigger_id': '0354ca9ddcd046b693340d78759fd275',
             'operation_definition': '{}'

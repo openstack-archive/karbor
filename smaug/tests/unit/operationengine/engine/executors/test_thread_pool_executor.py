@@ -133,6 +133,7 @@ class ThreadPoolExecutorTestCase(base.TestCase):
         operation_info = {
             'name': 'protect vm',
             'operation_type': 'protect',
+            'user_id': '123',
             'project_id': '123',
             'trigger_id': trigger_id,
             'operation_definition': {}
