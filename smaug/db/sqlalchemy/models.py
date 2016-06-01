@@ -109,6 +109,7 @@ class ScheduledOperationState(BASE, SmaugBase):
                           index=True, unique=True,
                           nullable=False)
     service_id = Column(Integer, ForeignKey('services.id'), nullable=False)
+    trust_id = Column(String(64), nullable=False)
     state = Column(String(32), nullable=False)
     end_time_for_run = Column(DateTime)
 

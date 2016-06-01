@@ -143,6 +143,7 @@ def define_tables(meta):
                index=True, unique=True, nullable=False),
         Column('service_id', Integer, ForeignKey('services.id'),
                nullable=False),
+        Column('trust_id', String(length=64), nullable=False),
         Column('state', String(length=32), nullable=False),
         Column('end_time_for_run', DateTime),
         mysql_engine='InnoDB'

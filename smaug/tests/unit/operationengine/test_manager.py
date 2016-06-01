@@ -118,6 +118,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         state_info = {
             "operation_id": operation_id,
             "service_id": self.manager._service_id,
+            'trust_id': '123',
             "state": constants.OPERATION_STATE_REGISTERED
         }
         operation_state = objects.ScheduledOperationState(context,

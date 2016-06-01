@@ -114,6 +114,7 @@ class OperationEngineManager(manager.Manager):
         state_info = {
             "operation_id": operation_id,
             "service_id": self._service_id,
+            "trust_id": "",
             "state": constants.OPERATION_STATE_REGISTERED
         }
         operation_state = objects.ScheduledOperationState(
