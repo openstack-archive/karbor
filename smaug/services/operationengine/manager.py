@@ -18,12 +18,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from smaug import context
+from smaug.common import constants
+from smaug import context as smaug_context
 from smaug import exception
 from smaug import manager
 from smaug import objects
 from smaug.services.operationengine.engine import trigger_manager
-from smaug.services.operationengine import scheduled_operation_state
 
 
 CONF = cfg.CONF
@@ -60,7 +60,7 @@ class OperationEngineManager(manager.Manager):
         limit = 100
         marker = None
         filters = {}
-        ctxt = context.get_admin_context()
+        ctxt = smaug_context.get_admin_context()
         while True:
             triggers = objects.TriggerList.get_by_filters(
                 ctxt, filters, limit, marker)
@@ -78,13 +78,13 @@ class OperationEngineManager(manager.Manager):
         limit = 100
         marker = None
         filters = {"service_id": self._service_id,
-                   "state": [scheduled_operation_state.REGISTERED,
-                             scheduled_operation_state.TRIGGERED,
-                             scheduled_operation_state.RUNNING]}
+                   "state": [constants.OPERATION_STATE_REGISTERED,
+                             constants.OPERATION_STATE_TRIGGERED,
+                             constants.OPERATION_STATE_RUNNING]}
         columns_to_join = ['operation']
-        ctxt = context.get_admin_context()
-        resume_states = [scheduled_operation_state.TRIGGERED,
-                         scheduled_operation_state.RUNNING]
+        ctxt = smaug_context.get_admin_context()
+        resume_states = [constants.OPERATION_STATE_TRIGGERED,
+                         constants.OPERATION_STATE_RUNNING]
         while True:
             states = objects.ScheduledOperationStateList.get_by_filters(
                 ctxt, filters, limit, marker, columns_to_join=columns_to_join)
@@ -114,7 +114,7 @@ class OperationEngineManager(manager.Manager):
         state_info = {
             "operation_id": operation_id,
             "service_id": self._service_id,
-            "state": scheduled_operation_state.REGISTERED
+            "state": constants.OPERATION_STATE_REGISTERED
         }
         operation_state = objects.ScheduledOperationState(
             context, **state_info)
@@ -132,8 +132,8 @@ class OperationEngineManager(manager.Manager):
 
         operation_state = objects.ScheduledOperationState.\
             get_by_operation_id(context, operation_id)
-        if scheduled_operation_state.DELETED != operation_state.state:
-            operation_state.state = scheduled_operation_state.DELETED
+        if constants.OPERATION_STATE_DELETED != operation_state.state:
+            operation_state.state = constants.OPERATION_STATE_DELETED
             operation_state.save()
 
         self._trigger_manager.unregister_operation(trigger_id, operation_id)

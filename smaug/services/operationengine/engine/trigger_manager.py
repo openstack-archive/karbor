@@ -79,7 +79,7 @@ class TriggerManager(object):
         if trigger.has_operations():
             raise exception.DeleteTriggerNotAllowed(trigger_id=trigger_id)
 
-        trigger.shoutdown()
+        trigger.shutdown()
         del self._trigger_obj_map[trigger_id]
 
     def update_trigger(self, trigger_id, trigger_property):
