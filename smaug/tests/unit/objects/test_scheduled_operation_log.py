@@ -88,3 +88,27 @@ class TestScheduledOperationLog(test_objects.BaseObjectsTestCase):
                                              self.db_log)
         log.destroy()
         log_delete.assert_called_once_with(self.context, log.id)
+
+
+class TestScheduledOperationLogList(test_objects.BaseObjectsTestCase):
+
+    def setUp(self):
+        super(TestScheduledOperationLogList, self).setUp()
+
+    def test_get_by_filters(self):
+        log = self._create_operation_log('123')
+
+        logs = objects.ScheduledOperationLogList.get_by_filters(
+            self.context, {'state': ['in_progress']})
+        self.assertEqual(1, len(logs.objects))
+        log1 = logs.objects[0]
+        self.assertEqual(log.id, log1.id)
+
+    def _create_operation_log(self, operation_id):
+        log_info = {
+            'operation_id': operation_id,
+            'state': 'in_progress',
+        }
+        log = objects.ScheduledOperationLog(self.context, **log_info)
+        log.create()
+        return log

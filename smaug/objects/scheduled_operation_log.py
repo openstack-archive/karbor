@@ -83,3 +83,23 @@ class ScheduledOperationLog(base.SmaugPersistentObject, base.SmaugObject,
                        retained_num, excepted_states=[]):
         db.scheduled_operation_log_delete_oldest(
             context, operation_id, retained_num, excepted_states)
+
+
+@base.SmaugObjectRegistry.register
+class ScheduledOperationLogList(base.ObjectListBase, base.SmaugObject):
+    VERSION = '1.0'
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ScheduledOperationLog'),
+    }
+
+    @base.remotable_classmethod
+    def get_by_filters(cls, context, filters, limit=None, marker=None,
+                       sort_keys=None, sort_dirs=None):
+
+        db_log_list = db.scheduled_operation_log_get_all_by_filters_sort(
+            context, filters, limit=limit, marker=marker, sort_keys=sort_keys,
+            sort_dirs=sort_dirs)
+
+        return base.obj_make_list(
+            context, cls(context), ScheduledOperationLog, db_log_list)
