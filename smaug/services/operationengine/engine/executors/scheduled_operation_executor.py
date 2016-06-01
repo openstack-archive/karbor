@@ -103,8 +103,11 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                 return
 
             try:
+                param['user_id'] = operation.user_id
+                param['project_id'] = operation.project_id
+
                 self._operation_manager.run_operation(
-                    operation.operation_type, operation.project_id,
+                    operation.operation_type,
                     operation.operation_definition,
                     param=param)
             except Exception:

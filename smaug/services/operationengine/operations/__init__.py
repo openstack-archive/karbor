@@ -14,59 +14,14 @@
 Operation classes
 """
 
-from abc import ABCMeta
-import six
-
-from smaug.common import constants
 from smaug import loadables
-
-
-@six.add_metaclass(ABCMeta)
-class Operation(object):
-
-    OPERATION_TYPE = ""
-
-    @classmethod
-    def check_operation_definition(self, operation_definition):
-        """Check operation definition
-
-        :param operation_definition: the definition of operation
-        """
-        pass
-
-    @classmethod
-    def run_operation(cls, project_id, operation_definition, **kwargs):
-        param = kwargs.get('param')
-        if constants.OPERATION_RUN_TYPE_EXECUTE == param['run_type']:
-            cls._execute(project_id, operation_definition, param)
-        else:
-            cls._resume(project_id, operation_definition, param)
-
-    @classmethod
-    def _execute(self, project_id, operation_definition, param):
-        """Execute operation.
-
-        :param project_id: the id of tenant
-        :param operation_definition: the definition of operation
-        :param param: dict, other parameters
-        """
-        pass
-
-    @classmethod
-    def _resume(self, project_id, operation_definition, param):
-        """Resume operation.
-
-        :param project_id: the id of tenant
-        :param operation_definition: the definition of operation
-        :param param: dict, other parameters
-        """
-        pass
+from smaug.services.operationengine.operations import base
 
 
 class OperationHandler(loadables.BaseLoader):
 
     def __init__(self):
-        super(OperationHandler, self).__init__(Operation)
+        super(OperationHandler, self).__init__(base.Operation)
 
 
 def all_operations():

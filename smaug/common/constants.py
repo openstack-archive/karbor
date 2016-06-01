@@ -65,3 +65,9 @@ OPERATION_STATE_DELETED = 'deleted'
 # scheduled operation run type
 OPERATION_RUN_TYPE_EXECUTE = 'execute'
 OPERATION_RUN_TYPE_RESUME = 'resume'
+
+# scheduled operation execution state
+OPERATION_EXE_STATE_IN_PROGRESS = 'in_progress'
+OPERATION_EXE_STATE_SUCCESS = 'success'
+OPERATION_EXE_STATE_FAILED = 'failed'
+OPERATION_EXE_STATE_DROPPED_OUT_OF_WINDOW = 'dropped_out_of_window'

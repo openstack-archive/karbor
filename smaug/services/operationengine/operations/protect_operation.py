@@ -12,28 +12,28 @@
 
 from smaug import exception
 from smaug.i18n import _
-from smaug.services.operationengine import operations
+from smaug.services.operationengine.operations import base
 
 
-class ProtectOperation(operations.Operation):
+class ProtectOperation(base.Operation):
     """Protect operation."""
 
     OPERATION_TYPE = "protect"
 
     @classmethod
-    def check_operation_definition(self, operation_definition):
+    def check_operation_definition(cls, operation_definition):
         if "plan_id" not in operation_definition:
             reason = _("Plan_id is not exist")
             raise exception.InvalidOperationDefinition(reason=reason)
 
     @classmethod
-    def _execute(self, project_id, operation_definition, param):
+    def _execute(cls, operation_definition, param):
         # plan_id = operation_definition.get("plan_id")
         # TODO(chenzeng): invoke create checkpoint interface
         pass
 
     @classmethod
-    def _resume(self, project_id, operation_definition, param):
+    def _resume(cls, operation_definition, param, log_ref):
         # plan_id = operation_definition.get("plan_id")
         # TODO(chenzeng): invoke create checkpoint interface
         pass
