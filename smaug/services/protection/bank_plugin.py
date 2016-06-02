@@ -60,7 +60,8 @@ class BankPlugin(object):
         return
 
     @abc.abstractmethod
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         return
 
     @abc.abstractmethod
@@ -100,7 +101,8 @@ class Bank(object):
     def get_object(self, key):
         return self._plugin.get_object(self._normalize_key(key))
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         if not prefix:
             prefix = "/"
 
@@ -108,6 +110,7 @@ class Bank(object):
             prefix=self._normalize_key(prefix) + "/",
             limit=limit,
             marker=marker,
+            sort_dir=sort_dir
         )
 
     def delete_object(self, key):
@@ -190,7 +193,8 @@ class BankSection(object):
             self._prepend_prefix(key),
         )
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         if not prefix:
             prefix = self._prefix
         else:
@@ -204,6 +208,7 @@ class BankSection(object):
                     prefix,
                     limit,
                     marker,
+                    sort_dir
                     )
                 ]
 

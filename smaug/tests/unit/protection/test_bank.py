@@ -37,7 +37,8 @@ class _InMemoryBankPlugin(BankPlugin):
     def get_object(self, key):
         return deepcopy(self._data[key])
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         marker_found = marker is None
         for key in six.iterkeys(self._data):
             if marker is not True and key != marker:
