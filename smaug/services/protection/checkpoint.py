@@ -128,20 +128,10 @@ class Checkpoint(object):
                           checkpoint_id)
 
     def commit(self):
-        if self._bank_lease is not None:
-            if self._bank_lease.check_lease_validity():
-                self._bank_section.create_object(
-                    key=self._index_file_path,
-                    value=self._md_cache,
-                )
-            else:
-                raise RuntimeError("Could not commit: lease isn't valid "
-                                   "for enough commit time")
-        else:
-            self._bank_section.create_object(
-                key=self._index_file_path,
-                value=self._md_cache,
-            )
+        self._bank_section.create_object(
+            key=self._index_file_path,
+            value=self._md_cache,
+        )
 
     def purge(self):
         """Purge the index file of the checkpoint.

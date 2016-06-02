@@ -43,21 +43,33 @@ class BaseProtectionPlugin(ProtectionPlugin):
     def on_resource_start(self, context):
         task = None
         kwargs = {}
-        plan = context.plan
+        inject = {}
+        requires = []
+        # context_parameters = context.parameters
+        # if context_parameters is None:
+        #     context_parameters = {}
         resource = context.node.value
+        context_parameters = {}
         if context.is_first_visited is True:
-            parameters = plan.parameters[resource.type].copy()
+            # TODO(wangliuan): Need add parameters handler
+            context_parameters[resource.type] = \
+                {'backup_name': 'test_protect',
+                 'restore_name': 'test_restore'}
+            parameters = context_parameters[resource.type].copy()
             parameters['node'] = context.node
             parameters['cntxt'] = context.cntxt
-            inject = parameters
-            requires = parameters.keys()
-            requires.append('checkpoint')
 
             kwargs['name'] = resource.id
             operation = context.operation
-            if operation == constants.OPERATION_RESTORE:
-                requires.append("heat_template")
-                inject["heat_template"] = context.heat_template
+            if operation == constants.OPERATION_PROTECT:
+                inject = parameters
+                requires = parameters.keys()
+                requires.append('checkpoint')
+            elif operation == constants.OPERATION_RESTORE:
+                parameters['checkpoint'] = context.checkpoint
+                parameters['heat_template'] = context.heat_template
+                inject = parameters
+                requires = parameters.keys()
 
             task_callback = self.task_callback_map.get(operation, None)
             if task_callback is not None:
