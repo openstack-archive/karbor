@@ -97,6 +97,7 @@ class Checkpoint(object):
 
     @classmethod
     def get_by_section(cls, bank_section, bank_lease, checkpoint_id):
+        # TODO(yuvalbr) add validation that the checkpoint exists
         checkpoint_section = bank_section.get_sub_section(checkpoint_id)
         return Checkpoint(checkpoint_section, bank_lease, checkpoint_id)
 

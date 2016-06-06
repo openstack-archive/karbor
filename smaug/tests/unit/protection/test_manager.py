@@ -14,8 +14,8 @@ import mock
 
 from oslo_config import cfg
 from oslo_log import log as logging
+import oslo_messaging
 
-from smaug import exception
 from smaug.resource import Resource
 from smaug.services.protection.flows import worker as flow_manager
 from smaug.services.protection import manager
@@ -127,7 +127,7 @@ class ProtectionServiceTest(base.TestCase):
     @mock.patch.object(flow_manager.Worker, 'get_flow')
     def test_protect_in_error(self, mock_flow):
         mock_flow.side_effect = Exception()
-        self.assertRaises(exception.SmaugException,
+        self.assertRaises(oslo_messaging.ExpectedException,
                           self.pro_manager.protect,
                           None,
                           fakes.fake_protection_plan())

@@ -66,7 +66,9 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         LOG.info(_LI("Starting protection service"))
 
-    # TODO(wangliuan) use flow_engine to implement protect function
+    @messaging.expected_exceptions(exception.InvalidPlan,
+                                   exception.ProviderNotFound,
+                                   exception.FlowError)
     def protect(self, context, plan):
         """create protection for the given plan
 
@@ -74,8 +76,7 @@ class ProtectionManager(manager.Manager):
         """
 
         LOG.info(_LI("Starting protection service:protect action"))
-        LOG.debug('protecting  :%s tpye:%s', plan,
-                  type(plan))
+        LOG.debug("protecting: %s type: %s", plan, type(plan))
 
         if not plan:
             raise exception.InvalidPlan(reason='the protection plan is None')
@@ -90,21 +91,28 @@ class ProtectionManager(manager.Manager):
                                                    plan=plan,
                                                    provider=provider)
         except Exception:
-            LOG.exception(_LE("Failed to create protection flow,plan:%s"),
+            LOG.exception(_LE("Failed to create protection flow, plan: %s"),
                           plan_id)
-            raise exception.SmaugException(_(
-                "Failed to create protection flow"
-            ))
+            raise exception.FlowError(
+                flow="protect",
+                error=_("Failed to create flow"))
         try:
             self.worker.run_flow(protection_flow)
         except Exception:
-            LOG.exception(_LE("Failed to run protection flow"))
-            raise
+            LOG.exception(_LE("Failed to run protection flow, plan: %s"),
+                          plan_id)
+
+            raise exception.FlowError(
+                flow="protect",
+                error=_("Failed to run flow"))
         finally:
             checkpoint = self.worker.flow_outputs(protection_flow,
                                                   target='checkpoint')
             return {'checkpoint_id': checkpoint.id}
 
+    @messaging.expected_exceptions(exception.InvalidInput,
+                                   exception.CheckpointNotAvailable,
+                                   exception.FlowError)
     def restore(self, context, restore=None):
         LOG.info(_LI("Starting restore service:restore action"))
 
@@ -115,10 +123,9 @@ class ProtectionManager(manager.Manager):
             checkpoint_collection = provider.get_checkpoint_collection()
             checkpoint = checkpoint_collection.get(checkpoint_id)
         except Exception:
-            LOG.error(_LE("get checkpoint failed, checkpoint_id:%s"),
-                      checkpoint_id)
+            LOG.error(_LE("Invalid checkpoint id: %s"), checkpoint_id)
             raise exception.InvalidInput(
-                reason="Invalid checkpoint_id or provider_id")
+                reason=_("Invalid checkpoint id"))
 
         if checkpoint.status in [constants.CHECKPOINT_STATUS_ERROR,
                                  constants.CHECKPOINT_STATUS_PROTECTING]:
@@ -131,21 +138,24 @@ class ProtectionManager(manager.Manager):
                 constants.OPERATION_RESTORE,
                 checkpoint,
                 provider,
-                restore
-            )
+                restore)
         except Exception:
             LOG.exception(
-                _LE("Failed to create restoration flow, checkpoint:%s"),
+                _LE("Failed to create restoration flow checkpoint: %s"),
                 checkpoint_id)
-            raise exception.SmaugException(_(
-                "Failed to create restoration flow"
-            ))
+            raise exception.FlowError(
+                flow="restore",
+                error=_("Failed to create flow"))
         try:
             self.worker.run_flow(restoration_flow)
             return True
         except Exception:
-            LOG.exception(_LE("Failed to run restoration flow"))
-            raise
+            LOG.exception(
+                _LE("Failed to run restoration flow checkpoint: %s"),
+                checkpoint_id)
+            raise exception.FlowError(
+                flow="restore",
+                error=_("Failed to run flow"))
 
     def delete(self, context, provider_id, checkpoint_id):
         # TODO(wangliuan)
@@ -233,6 +243,7 @@ class ProtectionManager(manager.Manager):
         LOG.info(_LI("Start to list protectable types."))
         return self.protectable_registry.list_resource_types()
 
+    @messaging.expected_exceptions(exception.ProtectableTypeNotFound)
     def show_protectable_type(self, context, protectable_type):
         LOG.info(_LI("Start to show protectable type %s"),
                  protectable_type)
@@ -257,6 +268,7 @@ class ProtectionManager(manager.Manager):
             "dependent_types": dependents
         }
 
+    @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_instances(self, context, protectable_type):
         LOG.info(_LI("Start to list protectable instances of type: %s"),
                  protectable_type)
@@ -276,6 +288,7 @@ class ProtectionManager(manager.Manager):
 
         return result
 
+    @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def show_protectable_instance(self, context, protectable_type,
                                   protectable_id):
         LOG.info(_LI("Start to show protectable instance of type: %s"),
@@ -297,6 +310,7 @@ class ProtectionManager(manager.Manager):
         return dict(id=resource_instance.id, name=resource_instance.name,
                     type=resource_instance.type)
 
+    @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_dependents(self, context,
                                     protectable_id,
                                     protectable_type):
@@ -334,6 +348,7 @@ class ProtectionManager(manager.Manager):
                                                      sort_dirs=sort_dirs,
                                                      filters=filters)
 
+    @messaging.expected_exceptions(exception.ProviderNotFound)
     def show_provider(self, context, provider_id):
         provider = self.provider_registry.show_provider(provider_id)
         if isinstance(provider, PluggableProtectionProvider):

@@ -275,6 +275,10 @@ class GetBackupFailed(SmaugException):
                 " type=%(resource_type)s")
 
 
+class FlowError(SmaugException):
+    message = _("Flow: %(flow)s, Error: %(error)s")
+
+
 class CheckpointNotFound(NotFound):
     message = _("Checkpoint %(checkpoint_id)s could"
                 " not be found.")
