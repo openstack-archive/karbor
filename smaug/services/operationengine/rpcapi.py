@@ -17,6 +17,7 @@ Client side of the OperationEngine manager RPC API.
 from oslo_config import cfg
 import oslo_messaging as messaging
 
+from smaug.objects import base as objects_base
 from smaug import rpc
 
 
@@ -37,7 +38,10 @@ class OperationEngineAPI(object):
         super(OperationEngineAPI, self).__init__()
         target = messaging.Target(topic=CONF.operationengine_topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap=None)
+        serializer = objects_base.SmaugObjectSerializer()
+
+        self.client = rpc.get_client(target, version_cap=None,
+                                     serializer=serializer)
 
     def create_scheduled_operation(self, ctxt, operation_id, trigger_id):
         cctxt = self.client.prepare(version='1.0')

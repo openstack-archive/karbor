@@ -12,10 +12,10 @@
 
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
+from smaug.common import constants
 from smaug import context
 from smaug import objects
 from smaug.services.operationengine import manager as service_manager
-from smaug.services.operationengine import scheduled_operation_state
 from smaug.tests import base
 
 
@@ -83,7 +83,7 @@ class OperationEngineManagerTestCase(base.TestCase):
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.ctxt, self._operation.id)
-        self.assertEqual(scheduled_operation_state.DELETED, state.state)
+        self.assertEqual(constants.OPERATION_STATE_DELETED, state.state)
 
     def _create_one_trigger(self):
         trigger_info = {
@@ -117,7 +117,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         state_info = {
             "operation_id": operation_id,
             "service_id": self.manager._service_id,
-            "state": scheduled_operation_state.REGISTERED
+            "state": constants.OPERATION_STATE_REGISTERED
         }
         operation_state = objects.ScheduledOperationState(context,
                                                           **state_info)
