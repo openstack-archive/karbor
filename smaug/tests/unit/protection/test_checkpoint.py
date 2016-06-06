@@ -12,7 +12,7 @@
 
 from smaug.resource import Resource
 from smaug.services.protection import bank_plugin
-from smaug.services.protection.checkpoint import Checkpoint
+from smaug.services.protection import checkpoint
 from smaug.services.protection import graph
 
 from smaug.tests import base
@@ -45,13 +45,13 @@ class CheckpointTest(base.TestCase):
         bank_section = bank_plugin.BankSection(bank, "/checkpoints")
         owner_id = bank.get_owner_id()
         plan = fake_protection_plan()
-        checkpoint = Checkpoint.create_in_section(bank_section=bank_section,
-                                                  bank_lease=bank_lease,
-                                                  owner_id=owner_id,
-                                                  plan=plan)
+        cp = checkpoint.Checkpoint.create_in_section(bank_section=bank_section,
+                                                     bank_lease=bank_lease,
+                                                     owner_id=owner_id,
+                                                     plan=plan)
         checkpoint_data = {
-            "version": Checkpoint.VERSION,
-            "id": checkpoint.id,
+            "version": checkpoint.Checkpoint.VERSION,
+            "id": cp.id,
             "status": "protecting",
             "owner_id": owner_id,
             "protection_plan": {
@@ -63,11 +63,12 @@ class CheckpointTest(base.TestCase):
         self.assertEqual(
             checkpoint_data,
             bank._plugin.get_object(
-                "/checkpoints%s" % checkpoint._index_file_path
+                "/checkpoints/%s/%s" % (checkpoint_data['id'],
+                                        checkpoint._INDEX_FILE_NAME)
             )
         )
-        self.assertEqual(owner_id, checkpoint.owner_id)
-        self.assertEqual("protecting", checkpoint.status)
+        self.assertEqual(owner_id, cp.owner_id)
+        self.assertEqual("protecting", cp.status)
 
     def test_resource_graph(self):
         bank = bank_plugin.Bank(_InMemoryBankPlugin())
@@ -75,18 +76,18 @@ class CheckpointTest(base.TestCase):
         bank_section = bank_plugin.BankSection(bank, "/checkpoints")
         owner_id = bank.get_owner_id()
         plan = fake_protection_plan()
-        checkpoint = Checkpoint.create_in_section(bank_section=bank_section,
-                                                  bank_lease=bank_lease,
-                                                  owner_id=owner_id,
-                                                  plan=plan)
+        cp = checkpoint.Checkpoint.create_in_section(bank_section=bank_section,
+                                                     bank_lease=bank_lease,
+                                                     owner_id=owner_id,
+                                                     plan=plan)
 
         resource_graph = graph.build_graph([A, B, C, D],
                                            resource_map.__getitem__)
-        checkpoint.resource_graph = resource_graph
-        checkpoint.commit()
+        cp.resource_graph = resource_graph
+        cp.commit()
         checkpoint_data = {
-            "version": Checkpoint.VERSION,
-            "id": checkpoint.id,
+            "version": checkpoint.Checkpoint.VERSION,
+            "id": cp.id,
             "status": "protecting",
             "owner_id": owner_id,
             "protection_plan": {
@@ -100,9 +101,10 @@ class CheckpointTest(base.TestCase):
         self.assertEqual(
             checkpoint_data,
             bank._plugin.get_object(
-                "/checkpoints%s" % checkpoint._index_file_path
+                "/checkpoints/%s/%s" % (checkpoint_data["id"],
+                                        checkpoint._INDEX_FILE_NAME)
             )
         )
-        self.assertEqual(len(resource_graph), len(checkpoint.resource_graph))
+        self.assertEqual(len(resource_graph), len(cp.resource_graph))
         for start_node in resource_graph:
-            self.assertEqual(True, start_node in checkpoint.resource_graph)
+            self.assertEqual(True, start_node in cp.resource_graph)

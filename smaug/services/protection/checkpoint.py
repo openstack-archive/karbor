@@ -9,33 +9,27 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from uuid import uuid4 as uuid
 
 from oslo_config import cfg
 from oslo_log import log as logging
-
-from smaug.services.protection.bank_plugin import BankSection
+from oslo_utils import uuidutils
 from smaug.services.protection import graph
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
-_INDEX_FILE_SUFFIX = ".index.json"
-
-
-def _checkpoint_id_to_index_file(checkpoint_id):
-    return "/%s%s" % (checkpoint_id, _INDEX_FILE_SUFFIX)
+_INDEX_FILE_NAME = "index.json"
+_UUID_STR_LEN = 36
 
 
 class Checkpoint(object):
     VERSION = "0.9"
     SUPPORTED_VERSIONS = ["0.9"]
 
-    def __init__(self, bank_section, bank_lease, checkpoint_id):
+    def __init__(self, checkpoint_section, bank_lease, checkpoint_id):
         self._id = checkpoint_id
-        self._index_file_path = _checkpoint_id_to_index_file(checkpoint_id)
-        self._bank_section = bank_section
+        self._checkpoint_section = checkpoint_section
         self._bank_lease = bank_lease
         self.reload_meta_data()
 
@@ -88,29 +82,31 @@ class Checkpoint(object):
         if new_md["version"] not in self.SUPPORTED_VERSIONS:
             # Something bad happend invalidate the object
             self._md_cache = None
-            self._bank_section = None
+            self._checkpoint_section = None
             raise RuntimeError(
                 "Checkpoint was created in an unsupported version")
 
     def reload_meta_data(self):
-        new_md = self._bank_section.get_object(self._index_file_path)
+        new_md = self._checkpoint_section.get_object(_INDEX_FILE_NAME)
         self._assert_supported_version(new_md)
         self._md_cache = new_md
 
     @classmethod
     def _generate_id(self):
-        return str(uuid())
+        return uuidutils.generate_uuid()
 
     @classmethod
     def get_by_section(cls, bank_section, bank_lease, checkpoint_id):
-        return Checkpoint(bank_section, bank_lease, checkpoint_id)
+        checkpoint_section = bank_section.get_sub_section(checkpoint_id)
+        return Checkpoint(checkpoint_section, bank_lease, checkpoint_id)
 
     @classmethod
     def create_in_section(cls, bank_section, bank_lease, owner_id,
                           plan, checkpoint_id=None):
         checkpoint_id = checkpoint_id or cls._generate_id()
-        bank_section.create_object(
-            key=_checkpoint_id_to_index_file(checkpoint_id),
+        checkpoint_section = bank_section.get_sub_section(checkpoint_id)
+        checkpoint_section.create_object(
+            key=_INDEX_FILE_NAME,
             value={
                 "version": cls.VERSION,
                 "id": checkpoint_id,
@@ -123,13 +119,13 @@ class Checkpoint(object):
                 }
             }
         )
-        return Checkpoint(bank_section,
+        return Checkpoint(checkpoint_section,
                           bank_lease,
                           checkpoint_id)
 
     def commit(self):
-        self._bank_section.create_object(
-            key=self._index_file_path,
+        self._checkpoint_section.create_object(
+            key=_INDEX_FILE_NAME,
             value=self._md_cache,
         )
 
@@ -139,18 +135,18 @@ class Checkpoint(object):
         Can only be done if the checkpoint has no other files apart from the
         index.
         """
-        all_objects = self._bank_section.list_objects(prefix=self.id)
+        all_objects = self._checkpoint_section.list_objects(prefix=self.id)
         if (
             len(all_objects) == 1
-            and all_objects[0] == self._index_file_path
+            and all_objects[0] == _INDEX_FILE_NAME
         ) or len(all_objects) == 0:
-            self._bank_section.delete_object(self._index_file_path)
+            self._checkpoint_section.delete_object(_INDEX_FILE_NAME)
         else:
             raise RuntimeError("Could not delete: Checkpoint is not empty")
 
     def get_resource_bank_section(self, resource_id):
         prefix = "/resource-data/%s/%s/" % (self._id, resource_id)
-        return BankSection(self._bank_section.bank, prefix)
+        return self._checkpoint_section.get_sub_section(prefix)
 
 
 class CheckpointCollection(object):
@@ -159,16 +155,17 @@ class CheckpointCollection(object):
         super(CheckpointCollection, self).__init__()
         self._bank = bank
         self._bank_lease = bank_lease
-        self._checkpoints_section = BankSection(bank, "/checkpoints")
+        self._checkpoints_section = bank.get_sub_section("/checkpoints")
 
     def list_ids(self, limit=None, marker=None):
-        if marker is not None:
-            marker = _checkpoint_id_to_index_file(marker)
+        checkpoint_ids = {key[:_UUID_STR_LEN]
+                          for key in self._checkpoints_section.list_objects(
+                              limit=limit,
+                              marker=marker)
+                          }
 
-        return [key[:-len(_INDEX_FILE_SUFFIX)]
-                for key in self._checkpoints_section.list_objects(
-                    limit=limit,
-                    marker=marker)
+        return [checkpoint_id for checkpoint_id in checkpoint_ids
+                if uuidutils.is_uuid_like(checkpoint_id)
                 ]
 
     def get(self, checkpoint_id):
