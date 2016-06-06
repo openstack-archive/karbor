@@ -127,6 +127,7 @@ def get_bool_param(param_string, params):
 
 def load_plugin(namespace, plugin_name, *args, **kwargs):
     try:
+        LOG.debug('Start load plugin %s. ', plugin_name)
         # Try to resolve plugin by name
         mgr = driver.DriverManager(namespace, plugin_name)
         plugin_class = mgr.driver

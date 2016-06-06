@@ -71,16 +71,6 @@ global_opts = [
                choices=['noauth', 'keystone'],
                help='The strategy to use for auth. Supports noauth or '
                     'keystone.'),
-    cfg.IntOpt('lease_renew_window',
-               default=120,
-               help='period for bank lease, in seconds, '
-                    'between bank lease client renew the lease'),
-    cfg.IntOpt('lease_expire_window',
-               default=600,
-               help='expired_window for bank lease, in seconds'),
-    cfg.IntOpt('lease_validity_window',
-               default=100,
-               help='validity_window for bank lease, in seconds'),
 ]
 
 CONF.register_opts(global_opts)
