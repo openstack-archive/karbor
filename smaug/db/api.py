@@ -499,3 +499,51 @@ def restore_get_all_by_project(context, project_id, marker, limit,
                                            sort_dirs=sort_dirs,
                                            filters=filters,
                                            offset=offset)
+
+
+def operation_log_get(context, operation_log_id):
+    """Get a operation log or raise if it does not exist."""
+    return IMPL.operation_log_get(context, operation_log_id)
+
+
+def operation_log_create(context, values):
+    """Create a operation log from the values dictionary."""
+    return IMPL.operation_log_create(context, values)
+
+
+def operation_log_update(context, operation_log_id, values):
+    """Set the given properties on a operation log and update it.
+
+    Raises NotFound if plan does not exist.
+
+    """
+    return IMPL.operation_log_update(context, operation_log_id, values)
+
+
+def operation_log_destroy(context, operation_log_id):
+    """Destroy the operation log or raise if it does not exist."""
+    return IMPL.operation_log_destroy(context, operation_log_id)
+
+
+def operation_log_get_all(context, marker, limit, sort_keys=None,
+                          sort_dirs=None,
+                          filters=None, offset=None):
+    """Get all operation logs."""
+    return IMPL.operation_log_get_all(context, marker, limit,
+                                      sort_keys=sort_keys,
+                                      sort_dirs=sort_dirs,
+                                      filters=filters,
+                                      offset=offset)
+
+
+def operation_log_get_all_by_project(context, project_id, marker, limit,
+                                     sort_keys=None, sort_dirs=None,
+                                     filters=None,
+                                     offset=None):
+    """Get all operation logs belonging to a project."""
+    return IMPL.operation_log_get_all_by_project(context, project_id,
+                                                 marker, limit,
+                                                 sort_keys=sort_keys,
+                                                 sort_dirs=sort_dirs,
+                                                 filters=filters,
+                                                 offset=offset)
