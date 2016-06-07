@@ -99,15 +99,18 @@ class CinderProtectionPluginTest(base.TestCase):
         self.assertEqual(status, constants.RESOURCE_STATUS_AVAILABLE)
 
     def test_get_options_schema(self):
-        options_schema = self.plugin.get_options_schema()
+        options_schema = self.plugin.get_options_schema(
+            'OS::Cinder::Volume')
         self.assertEqual(options_schema, cinder_schemas.OPTIONS_SCHEMA)
 
     def test_get_restore_schema(self):
-        options_schema = self.plugin.get_restore_schema()
+        options_schema = self.plugin.get_restore_schema(
+            'OS::Cinder::Volume')
         self.assertEqual(options_schema, cinder_schemas.RESTORE_SCHEMA)
 
     def test_get_saved_info_schema(self):
-        options_schema = self.plugin.get_saved_info_schema()
+        options_schema = self.plugin.get_saved_info_schema(
+            'OS::Cinder::Volume')
         self.assertEqual(options_schema,
                          cinder_schemas.SAVED_INFO_SCHEMA)
 
