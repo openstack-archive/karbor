@@ -37,11 +37,11 @@ class ClientFactory(object):
                 yield '%s.clients.%s' % (__package__, name)
 
     @classmethod
-    def create_client(cls, service, context, conf=cfg.CONF):
+    def create_client(cls, service, context, conf=cfg.CONF, **kwargs):
         if not cls._factory:
             cls._factory = {}
             for module in cls._list_clients():
                 module = importutils.import_module(module)
                 cls._factory[module.SERVICE] = module
 
-        return cls._factory[service].create(context, conf)
+        return cls._factory[service].create(context, conf, **kwargs)

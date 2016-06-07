@@ -24,10 +24,10 @@ KEYSTONECLIENT_VERSION = (3, 0)
 HEATCLIENT_VERSION = '1'
 
 
-def create(context, conf):
-    auth_url = conf.auth_url
-    username = conf.username
-    password = conf.password
+def create(context, conf, **kwargs):
+    auth_url = kwargs["auth_url"]
+    username = kwargs["username"]
+    password = kwargs["password"]
     tenant_name = context.project_name
     LOG.info(_LI('Creating heat client with url %s.'), auth_url)
     try:
