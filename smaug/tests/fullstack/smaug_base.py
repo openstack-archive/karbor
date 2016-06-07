@@ -11,11 +11,13 @@
 # under the License.
 
 from cinderclient.v2 import client as cinder_client
+from novaclient.v2 import client as nova_client
 from smaugclient.v1 import client as smaug_client
 
 import os_client_config
 
 from oslotest import base
+from time import sleep
 
 
 def _get_cloud_config(cloud='devstack-admin'):
@@ -87,6 +89,31 @@ def _get_cinder_client_from_creds():
     return client
 
 
+def _get_nova_client_from_creds():
+    api_version = ""
+    cloud_config = _get_cloud_config()
+    keystone_session = cloud_config.get_session_client("compute")
+    keystone_auth = cloud_config.get_auth()
+    region_name = cloud_config.get_region_name()
+    service_type = "compute"
+    endpoint_type = "publicURL"
+    endpoint = keystone_auth.get_endpoint(
+        keystone_session,
+        service_type=service_type,
+        region_name=region_name)
+
+    kwargs = {
+        'session': keystone_session,
+        'auth': keystone_auth,
+        'service_type': service_type,
+        'endpoint_type': endpoint_type,
+        'region_name': region_name,
+    }
+
+    client = nova_client.Client(api_version, endpoint, **kwargs)
+    return client
+
+
 class SmaugBaseTest(base.BaseTestCase):
     """Basic class for Smaug fullstack testing
 
@@ -96,5 +123,41 @@ class SmaugBaseTest(base.BaseTestCase):
     """
     def setUp(self):
         super(SmaugBaseTest, self).setUp()
-        self.smaug_client = _get_smaug_client_from_creds()
         self.cinder_client = _get_cinder_client_from_creds()
+        self.nova_client = _get_nova_client_from_creds()
+        self.smaug_client = _get_smaug_client_from_creds()
+
+    def tearDown(self):
+        self.cleanup_plans()
+        self.cleanup_volumes()
+        self.cleanup_backup_volumes()
+        super(SmaugBaseTest, self).tearDown()
+
+    def provider_list(self):
+        return self.smaug_client.providers.list()
+
+    def create_volume(self, size, name=None):
+        volume = self.cinder_client.volumes.create(size, name=name)
+        sleep(10)
+        return volume
+
+    def delete_volume(self, volume_id):
+        self.cinder_client.volumes.delete(volume_id)
+        sleep(30)
+
+    def cleanup_plans(self):
+        plans = self.smaug_client.plans.list()
+        for plan in plans:
+            self.smaug_client.plans.delete(plan.get("id"))
+
+    def cleanup_volumes(self):
+        volumes = self.cinder_client.volumes.list()
+        for volume in volumes:
+            self.cinder_client.volumes.delete(volume.id)
+            sleep(18)
+
+    def cleanup_backup_volumes(self):
+        backups = self.cinder_client.backups.list()
+        for backup in backups:
+            self.cinder_client.backups.delete(backup.id)
+            sleep(18)
