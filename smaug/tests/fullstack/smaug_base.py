@@ -11,7 +11,7 @@
 # under the License.
 
 from cinderclient.v2 import client as cinder_client
-from novaclient.v2 import client as nova_client
+from novaclient import client as nova_client
 from smaugclient.v1 import client as smaug_client
 
 import os_client_config
@@ -90,7 +90,7 @@ def _get_cinder_client_from_creds():
 
 
 def _get_nova_client_from_creds():
-    api_version = ""
+    api_version = "2.29"
     cloud_config = _get_cloud_config()
     keystone_session = cloud_config.get_session_client("compute")
     keystone_auth = cloud_config.get_auth()
@@ -148,16 +148,18 @@ class SmaugBaseTest(base.BaseTestCase):
     def cleanup_plans(self):
         plans = self.smaug_client.plans.list()
         for plan in plans:
-            self.smaug_client.plans.delete(plan.get("id"))
+            self.smaug_client.plans.delete(plan.id)
 
     def cleanup_volumes(self):
         volumes = self.cinder_client.volumes.list()
         for volume in volumes:
-            self.cinder_client.volumes.delete(volume.id)
-            sleep(18)
+            if "available" == volume.status:
+                self.cinder_client.volumes.delete(volume.id)
+                sleep(18)
 
     def cleanup_backup_volumes(self):
         backups = self.cinder_client.backups.list()
         for backup in backups:
-            self.cinder_client.backups.delete(backup.id)
-            sleep(18)
+            if "available" == backup.status:
+                self.cinder_client.backups.delete(backup.id)
+                sleep(18)
