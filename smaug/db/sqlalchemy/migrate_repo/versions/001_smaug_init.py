@@ -121,6 +121,7 @@ def define_tables(meta):
         Column('id', String(length=36), primary_key=True, nullable=False),
         Column('name', String(length=255), nullable=False),
         Column('operation_type', String(length=64), nullable=False),
+        Column('user_id', String(length=64), nullable=False),
         Column('project_id', String(length=255), nullable=False),
         Column('trigger_id', String(length=36), ForeignKey('triggers.id'),
                index=True, nullable=False),

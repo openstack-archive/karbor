@@ -124,6 +124,7 @@ class ScheduledOperationController(wsgi.Controller):
         operation_obj = {
             'name': operation_info.get('name', None),
             'operation_type': operation_type,
+            'user_id': context.user_id,
             'project_id': context.project_id,
             'trigger_id': trigger_id,
             'operation_definition': operation_definition,

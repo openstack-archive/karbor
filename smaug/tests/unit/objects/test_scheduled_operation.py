@@ -29,6 +29,7 @@ Fake_Operation = {
     'id': Operation_ID,
     'name': 'protect vm',
     'operation_type': 'protect',
+    'user_id': '123',
     'project_id': '123',
     'trigger_id': '0354ca9ddcd046b693340d78759fd275',
     'operation_definition': '{}'
