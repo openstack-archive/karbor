@@ -75,7 +75,8 @@ class ResourceGraphWalkerListener(GraphWalkerListener):
         # do something in protection_plugin
         protection_plugin.on_resource_start(context)
 
-        if self.context.operation == constants.OPERATION_PROTECT:
+        if self.context.operation == constants.OPERATION_PROTECT \
+                or self.context.operation == constants.OPERATION_DELETE:
             if not already_visited:
                 self.context.status_getters.append(
                     {"resource_id": resource.id,

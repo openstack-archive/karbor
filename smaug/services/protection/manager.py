@@ -158,12 +158,47 @@ class ProtectionManager(manager.Manager):
                 error=_("Failed to run flow"))
 
     def delete(self, context, provider_id, checkpoint_id):
-        # TODO(wangliuan)
         LOG.info(_LI("Starting protection service:delete action"))
         LOG.debug('provider_id :%s checkpoint_id:%s', provider_id,
                   checkpoint_id)
+        provider = self.provider_registry.show_provider(provider_id)
+        try:
+            checkpoint_collection = provider.get_checkpoint_collection()
+            checkpoint = checkpoint_collection.get(checkpoint_id)
+        except Exception:
+            LOG.error(_LE("get checkpoint failed, checkpoint_id:%s"),
+                      checkpoint_id)
+            raise exception.InvalidInput(
+                reason="Invalid checkpoint_id or provider_id")
 
-        return True
+        if checkpoint.status in [
+            constants.CHECKPOINT_STATUS_ERROR,
+            constants.CHECKPOINT_STATUS_PROTECTING
+        ]:
+            raise exception.CheckpointNotBeDeleted(
+                checkpoint_id=checkpoint_id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_DELETING
+        checkpoint.commit()
+
+        try:
+            delete_checkpoint_flow = self.worker.get_delete_checkpoint_flow(
+                context,
+                constants.OPERATION_DELETE,
+                checkpoint,
+                provider)
+        except Exception:
+            LOG.exception(
+                _LE("Failed to create delete checkpoint flow, checkpoint:%s."),
+                checkpoint_id)
+            raise exception.SmaugException(_(
+                "Failed to create delete checkpoint flow."
+            ))
+        try:
+            self.worker.run_flow(delete_checkpoint_flow)
+            return True
+        except Exception:
+            LOG.exception(_LE("Failed to run delete checkpoint flow"))
+            raise
 
     def start(self, plan):
         # TODO(wangliuan)
@@ -180,7 +215,7 @@ class ProtectionManager(manager.Manager):
 
         return_stub = [
             {
-                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+                "id": "b42503e6-8e9c-4e4f-94e8-745d4eabdc51",
                 "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
                 "status": "comitted",
                 "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
@@ -213,7 +248,7 @@ class ProtectionManager(manager.Manager):
         LOG.info(_LI("checkpoint_id:%s"), checkpoint_id)
 
         return_stub = {
-            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+            "id": "6f193601-39f8-4a81-993b-4d847393a0ee",
             "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
             "status": "committed",
             "protection_plan": {
@@ -231,7 +266,7 @@ class ProtectionManager(manager.Manager):
                     }
                 ]
             },
-            "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+            "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9"
         }
         return return_stub
 

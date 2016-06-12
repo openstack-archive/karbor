@@ -13,6 +13,7 @@
 import six
 from uuid import uuid4
 
+from cinderclient.exceptions import NotFound
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -113,7 +114,6 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
 
         bank_section = checkpoint.get_resource_bank_section(resource_id)
         cinder_client = self._cinder_client(cntxt)
-
         LOG.info(_("deleting volume backup, volume_id: %s."), resource_id)
         try:
             bank_section.update_object("status",
@@ -121,7 +121,7 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
             resource_definition = bank_section.get_object("metadata")
             backup_id = resource_definition["backup_id"]
             cinder_client.backups.delete(backup_id)
-            bank_section.delete_object("metadata", resource_definition)
+            bank_section.delete_object("metadata")
             self.protection_resource_map[resource_id] = {
                 "bank_section": bank_section,
                 "backup_id": backup_id,
@@ -145,6 +145,7 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
             backup_id = resource_info["backup_id"]
             bank_section = resource_info["bank_section"]
             cinder_client = resource_info["cinder_client"]
+            operation = resource_info["operation"]
             try:
                 backup = cinder_client.backups.get(backup_id)
                 if backup.status == "available":
@@ -157,8 +158,16 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                     self.protection_resource_map.pop(resource_id)
                 else:
                     continue
-            except Exception:
-                LOG.info(_("deleting volume backup finished."))
+            except Exception as exc:
+                if operation == "delete" and type(exc) == NotFound:
+                    bank_section.update_object(
+                        "status",
+                        constants.RESOURCE_STATUS_DELETED)
+                    LOG.info(_("deleting volume backup finished."
+                               "backup id: %s"), backup_id)
+                else:
+                    LOG.error(_LE("deleting volume backup error.exc:%s."),
+                              six.text_type(exc))
                 self.protection_resource_map.pop(resource_id)
 
     def restore_backup(self, cntxt, checkpoint, **kwargs):

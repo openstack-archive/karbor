@@ -190,6 +190,19 @@ class PluggableProtectionProvider(object):
                 parameters=parameters,
                 heat_template=heat_template
             )
+        if operation == constants.OPERATION_DELETE:
+            checkpoint = ctx['checkpoint']
+            task_flow = workflow_engine.build_flow(
+                flow_name=checkpoint.id)
+            resource_graph = checkpoint.resource_graph
+            resource_context = ResourceGraphContext(
+                cntxt=cntxt,
+                checkpoint=checkpoint,
+                operation=operation,
+                workflow_engine=workflow_engine,
+                task_flow=task_flow,
+                plugin_map=self._plugin_map
+            )
 
         # TODO(luobin): for other type operations
 
@@ -204,6 +217,10 @@ class PluggableProtectionProvider(object):
                     "resource_graph": resource_graph}
         if operation == constants.OPERATION_RESTORE:
             return {"task_flow": walker_listener.context.task_flow}
+        if operation == constants.OPERATION_DELETE:
+            return {"task_flow": walker_listener.context.task_flow,
+                    "status_getters": walker_listener.context.status_getters
+                    }
 
         # TODO(luobin): for other type operations
 

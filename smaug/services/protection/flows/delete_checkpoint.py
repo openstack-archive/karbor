@@ -16,7 +16,6 @@ from oslo_service import loopingcall
 from smaug.common import constants
 from smaug.i18n import _
 from taskflow import task
-from taskflow.utils import misc
 
 sync_status_opts = [
     cfg.IntOpt('sync_status_interval',
@@ -30,39 +29,17 @@ CONF.register_opts(sync_status_opts)
 LOG = logging.getLogger(__name__)
 
 
-class CreateCheckpointTask(task.Task):
-    def __init__(self, plan, provider, resource_graph):
-        provides = 'checkpoint'
-        super(CreateCheckpointTask, self).__init__(provides=provides)
-        self._plan = plan
-        self._provider = provider
-        self._resource_graph = resource_graph
+class SyncCheckpointStatusTask(task.Task):
+    def __init__(self, checkpoint, status_getters):
+        super(SyncCheckpointStatusTask, self).__init__()
+        self._status_getters = status_getters
+        self._checkpoint = checkpoint
 
     def execute(self):
-        checkpoint_collection = self._provider.get_checkpoint_collection()
-        checkpoint = checkpoint_collection.create(self._plan)
-        checkpoint.resource_graph = self._resource_graph
-        checkpoint.commit()
-        return checkpoint
-
-    def revert(self, result, **kwargs):
-        if isinstance(result, misc.Failure):
-            return
-        checkpoint = result
-        checkpoint.purge()
-
-
-class SyncCheckpointStatusTask(task.Task):
-    def __init__(self, status_getters):
-        requires = ['checkpoint']
-        super(SyncCheckpointStatusTask, self).__init__(requires=requires)
-        self._status_getters = status_getters
-
-    def execute(self, checkpoint):
         LOG.info(_("Start sync checkpoint status,checkpoint_id:%s"),
-                 checkpoint.id)
+                 self._checkpoint.id)
         sync_status = loopingcall.FixedIntervalLoopingCall(
-            self._sync_status, checkpoint, self._status_getters)
+            self._sync_status, self._checkpoint, self._status_getters)
         sync_status.start(interval=CONF.sync_status_interval)
 
     def _sync_status(self, checkpoint, status_getters):
@@ -72,17 +49,17 @@ class SyncCheckpointStatusTask(task.Task):
             get_resource_stats = s.get('get_resource_stats')
             status[resource_id] = get_resource_stats(checkpoint,
                                                      resource_id)
-        if constants.RESOURCE_STATUS_ERROR in status.values():
-            checkpoint.status = constants.CHECKPOINT_STATUS_ERROR
+        list_status = list(set(status.values()))
+        LOG.info(_("Start sync checkpoint status,checkpoint_id:"
+                   "%(checkpoint_id)s, resource_status:"
+                   "%(resource_status)s") %
+                 {"checkpoint_id": checkpoint.id,
+                  "resource_status": status})
+        if constants.RESOURCE_STATUS_ERROR in list_status:
+            checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
             checkpoint.commit()
-        elif constants.RESOURCE_STATUS_PROTECTING in status.values():
-            checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
-            checkpoint.commit()
-        elif constants.RESOURCE_STATUS_UNDEFINED in status.values():
-            checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
-            checkpoint.commit()
-        else:
-            checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE
+        elif [constants.RESOURCE_STATUS_DELETED] == list_status:
+            checkpoint.status = constants.CHECKPOINT_STATUS_DELETED
             checkpoint.commit()
             LOG.info(_("Stop sync checkpoint status,checkpoint_id:"
                        "%(checkpoint_id)s,checkpoint status:"
@@ -92,21 +69,23 @@ class SyncCheckpointStatusTask(task.Task):
             raise loopingcall.LoopingCallDone()
 
 
-def get_flow(context, workflow_engine, operation_type, plan, provider):
+def get_flow(context, workflow_engine, operation_type, checkpoint, provider):
+
     ctx = {'context': context,
-           'plan': plan,
+           'checkpoint': checkpoint,
            'workflow_engine': workflow_engine,
-           'operation_type': operation_type}
-    flow_name = "create_protection_" + plan.get('id')
-    protection_flow = workflow_engine.build_flow(flow_name, 'linear')
+           'operation_type': operation_type,
+           }
+    LOG.info(_("Start get checkpoint flow,checkpoint_id:%s"),
+             checkpoint.id)
+    flow_name = "delete_checkpoint_" + checkpoint.id
+    delete_flow = workflow_engine.build_flow(flow_name, 'linear')
     result = provider.build_task_flow(ctx)
     status_getters = result.get('status_getters')
     resource_flow = result.get('task_flow')
-    resource_graph = result.get('resource_graph')
-    workflow_engine.add_tasks(protection_flow,
-                              CreateCheckpointTask(plan, provider,
-                                                   resource_graph),
+    workflow_engine.add_tasks(delete_flow,
                               resource_flow,
-                              SyncCheckpointStatusTask(status_getters))
-    flow_engine = workflow_engine.get_engine(protection_flow)
+                              SyncCheckpointStatusTask(checkpoint,
+                                                       status_getters))
+    flow_engine = workflow_engine.get_engine(delete_flow)
     return flow_engine
