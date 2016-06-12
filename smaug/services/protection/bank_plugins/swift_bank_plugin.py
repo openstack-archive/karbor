@@ -152,20 +152,23 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             raise exception.BankGetObjectFailed(reason=err,
                                                 key=key)
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
-        object_names = []
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         try:
-            body = self._get_container(container=self.bank_object_container,
-                                       prefix=prefix,
-                                       limit=limit,
-                                       marker=marker)
+            if sort_dir == "desc":
+                body = self._get_container(
+                    container=self.bank_object_container,
+                    prefix=prefix, end_marker=marker)
+                limit_objects = body[-limit:] if limit is not None else body
+                return [obj.get("name") for obj in limit_objects]
+            else:
+                body = self._get_container(
+                    container=self.bank_object_container,
+                    prefix=prefix, limit=limit, marker=marker)
+                return [obj.get("name") for obj in body]
         except SwiftConnectionFailed as err:
             LOG.error(_LE("list objects failed, err: %s."), err)
             raise exception.BankListObjectsFailed(reason=err)
-        for obj in body:
-            if obj.get("name"):
-                object_names.append(obj.get("name"))
-        return object_names
 
     def acquire_lease(self):
         container = self.bank_leases_container
@@ -243,13 +246,15 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         except ClientException as err:
             raise SwiftConnectionFailed(reason=err)
 
-    def _get_container(self, container, prefix=None, limit=None, marker=None):
+    def _get_container(self, container, prefix=None, limit=None, marker=None,
+                       end_marker=None):
         try:
             (_resp, body) = self.connection.get_container(
                 container=container,
                 prefix=prefix,
                 limit=limit,
-                marker=marker)
+                marker=marker,
+                end_marker=end_marker)
             return body
         except ClientException as err:
             raise SwiftConnectionFailed(reason=err)
