@@ -15,27 +15,27 @@ Application Data Protection as a Service for OpenStack
 Mission Statement
 *****************
 
-* Formalize Application Data Protection in OpenStack (APIs, Services, Plugins, …)
-* Be able to protect Any Resource in OpenStack(as well as their dependencies)
-* Allow Diversity of vendor solutions, capabilities and implementations
-  without compromising usability
+To protect the Data and Metadata that comprises an OpenStack-deployed
+Application against loss/damage (e.g. backup, replication) by providing a
+standard framework of APIs and services that allows vendors to provide plugins
+through a unified interface
 
 Open Architecture
 """""""""""""""""
 
 Design for multiple perspectives:
 
-* User : Protect App Deployment
+* User: Protect App Deployment
 
   * Configure and manage custom protection plans on the deployed resources
     (topology, VMs, volumes, images, …)
 
-* Admin : Define Protectable Resources
+* Admin: Define Protectable Resources
 
   * Decide what plugins protect which resources, what is available for the user
   * Decide where users can protect their resources
 
-* Vendors : Standard API for protection products
+* Vendors: Standard API for protection products
 
   * Create plugins that implement Protection mechanisms for different OpenStack 
     resources

@@ -1,54 +1,54 @@
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/Smaug.png
-    :alt: Smaug
-    :align: center
+
+============
+Introduction
+============
+
+.. contents:: :depth: 2
 
 What is Smaug?
 ==============
 
-Smaug is an OpenStack project that provides a framework for Application
-Data Protection as a Service.
+Smaug is an OpenStack project that provides a pluggable framework for
+protecting and restoring Data and Metadata that comprises an OpenStack-deployed
+application - Application Data Protection as a Service.
 
-It is named after the famous dragon from J.R.R. Tolkien's The "Hobbit",
-which was known to hoard and guard the treasures of the people.
+.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/Smaug.png
+    :alt: Smaug
+    :align: center
+    :height: 150px
 
-Mission & Scope
-===============
+It is named after the famous dragon from J.R.R. Tolkien's The "Hobbit", which
+was known to hoard and guard the treasures of the people.
 
-Formalize Application Data Protection and Disaster recovery in OpenStack
-(APIs, Services, Plugins ...)
+Mission Statement
+~~~~~~~~~~~~~~~~~
+To protect the Data and Metadata that comprises an OpenStack-deployed
+Application against loss/damage (e.g. backup, replication) by providing a
+standard framework of APIs and services that allows vendors to provide plugins
+through a unified interface
 
-Be able to protect Any Resource in OpenStack(as well as their
-dependencies)
-
-Allow Diversity of vendor solutions, capabilities and implementations
-without compromising usability.
 
 Typical Use Case: 3-Tier Cloud App
 ==================================
 
 3-Tier Cloud App Web/App/DB
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
-    3-tirApp.png
+.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/3-tirApp.png
     :alt: 3-Tier Cloud App
     :width: 600
-    :height: 455
     :align: center
 
-In order to provide full Protection for this typical use case, we would
-have to protect many resources, which have some dependency between them.
-The following diagram demonstrates how this dependency looks, in the
-form of a tree:
+In order to provide full Protection for this typical use case, we would have to
+protect many resources, which have some dependency between them. The following
+diagram demonstrates how this dependency looks, in the form of a tree:
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
-    resource_tree_architecture.png
+.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/resource_tree_architecture.png
     :alt: Resource Tree
     :width: 600
-    :height: 455
     :align: center
 
-These resources can be divided into groups, each of which will be
-handled by a different  plugin in Smaug:
+These resources can be divided into groups, each of which will be handled by a
+different plugin in Smaug:
 
 -  Volume
 -  VM
@@ -64,6 +64,7 @@ Protection Providers
 
 .. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
     protection_provider.png
+    :width: 600
 
 Protection providers are defined by the administrator for each tenant. The
 encapsulate every aspect of the protection procedure, namely, where to place
@@ -73,14 +74,14 @@ back up data, and restore data.
 
 Since there could be many protection providers with varied features and options
 each protection provider exposes what options it provides for each protectable.
-This allows the UI to dynamically adapt to each provider and show the user
-what options are available, what they mean and what values are supported.
+This allows the UI to dynamically adapt to each provider and show the user what
+options are available, what they mean and what values are supported.
 
 This allows us to extend the providers without updates to Smaug and allow
 provider implementation to easily add specialize options.
 
 Example
-=======
+~~~~~~~
 
 Let’s take the OpenStack::Cinder::Volume resource *Protect* action.
 
@@ -151,7 +152,6 @@ High Level Architecture
     high_level_architecture.png
     :alt: Solution Overview
     :width: 600
-    :height: 455
     :align: center
 
 The system is built from independent services and a scalable *Workflow
@@ -162,33 +162,37 @@ Smaug API Service
 
 .. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
     smaug-api.png
+    :width: 600
 
-These top-level north-bound APIs expose Application Data Protection
-services to the Smaug user.
+These top-level north-bound APIs expose Application Data Protection services to
+the Smaug user.
 
-The purpose of the services is to maximize flexibility and accommodate
-for (hopefully) any kind of protection for any type of resource, whether
-it is a basic OpenStack resource (such as a VM, Volume, Image, etc.) or
-some ancillary resource within an application system that is not managed
-in OpenStack (such as a hardware device, an external database, etc.).
+The purpose of the services is to maximize flexibility and accommodate for
+(hopefully) any kind of protection for any type of resource, whether it is a
+basic OpenStack resource (such as a VM, Volume, Image, etc.) or some ancillary
+resource within an application system that is not managed in OpenStack (such as
+a hardware device, an external database, etc.).
 
 
 Resource (Protectable) API
 ---------------------------
 
-Enables the Smaug user to access information about which resource types are protectable (i.e. can be protected by Smaug).
-In addition, enables the user to get  additional information on each resource type, such as a list of actual instances and their dependencies.
+Enables the Smaug user to access information about which resource types are
+protectable (i.e. can be protected by Smaug).  In addition, enables the user to
+get  additional information on each resource type, such as a list of actual
+instances and their dependencies.
 
 Provider API
 ---------------
 
-Enables the Smaug user to list available providers and get parameters and result schema super-set for all plugins of a specific Provider.
+Enables the Smaug user to list available providers and get parameters and
+result schema super-set for all plugins of a specific Provider.
 
 Plan API
 --------
 
-This API enables the Smaug user to access the protection Plan registry
-and do the following operations:
+This API enables the Smaug user to access the protection Plan registry and do
+the following operations:
 
 -  Plan CRUD.
 -  List Plans.
@@ -206,8 +210,8 @@ This API enables the Smaug user to manage protection Operations:
 Checkpoint API
 ---------------
 
-This API enables the Smaug user to access and manage the checkpoints stored
-in the protection provider:
+This API enables the Smaug user to access and manage the checkpoints stored in
+the protection provider:
 
 -  List all checkpoints given a Bank ID.
 -  Show Information on a given checkpoint ID.
@@ -224,17 +228,17 @@ This API enables the Smaug user restore a checkpoint on to a restore target:
 Smaug Schedule Service
 ======================
 
-This subsystem is responsible for scheduling and orchestrating the
-execution of *Protection Plans*.
+This subsystem is responsible for scheduling and orchestrating the execution of
+*Protection Plans*.
 
-The implementation can be replaced by any other external solution since it
-uses only functions that are available through the north-bound API.
+The implementation can be replaced by any other external solution since it uses
+only functions that are available through the north-bound API.
 
 Once an entity is created it can be tracked through the north-bound API as well
 so that monitoring the operations is independent from the scheduler.
 
-It will be responsible for executing the automatic operations to specific
-tasks and tracking  them.
+It will be responsible for executing the automatic operations to specific tasks
+and tracking  them.
 
 Automatic Operation
 -------------------
@@ -250,11 +254,10 @@ Trigger Engine
 This sub-component of the Schedule Service is responsible for generating
 triggers to begin the execution of the Plan Orchestration.
 
-It can be done based on a Timer or an Event Collector - Open to
-implementation.
+It can be done based on a Timer or an Event Collector - Open to implementation.
 
-In the first version of Smaug reference implementation, it will only
-provide time-based triggering.
+In the first version of Smaug reference implementation, it will only provide
+time-based triggering.
 
 Scheduled Operation
 -------------------
@@ -273,27 +276,26 @@ This subsystem is responsible for handling the following tasks:
 WorkFlow Engine
 ---------------
 
-This pluggable component is responsible for executing and orchestrating
-the flow of the plan across all protection providers.
+This pluggable component is responsible for executing and orchestrating the
+flow of the plan across all protection providers.
 
 Communication and Meetings
 ==========================
 
-Smaug Launchpad Link\ https://launchpad.net/smaug
-
-Smaug Code Review\ https://review.openstack.org/#/q/smaug+status:open,n,z
-
-Smaug Code Repository\ https://github.com/openstack/smaug
-
-Smaug daily IRC Channel: #openstack-smaug
-
-Smaug bi-weekly IRC Meeting on (even) Tuesday at 1400 UTC in #openstack-meeting
-at freenode:\ http://eavesdrop.openstack.org/#Smaug_Project_Meetingtion(s).
-
-Smaug Trello Board\ https://trello.com/b/Sudr4fKT/smaug
+- Smaug Launchpad Link: \ https://launchpad.net/smaug
+- Smaug Code Review: \ https://review.openstack.org/#/q/smaug+status:open,n,z
+- Smaug Code Repository: \ https://github.com/openstack/smaug
+- Smaug daily IRC Channel: #openstack-smaug
+- Smaug weekly IRC Meeting on **even** Tuesday at 1500 UTC
+  and on **odd** Tuesday at 0900 UTC in
+  #openstack-meeting at freenode: \
+  https://wiki.openstack.org/wiki/Meetings/smaug
+- Smaug Trello Board: \ https://trello.com/b/Sudr4fKT/smaug
 
 Additional references
------------------------
-`Tokyo summit talk  <http://www.slideshare.net/gampel/openstack-tokyo-talk-application-data-protection-service>`_
-`Smaug overview slide <https://docs.google.com/presentation/d/1JYO1VIlTkGTF6lvKEMcsHkaST3mYFxuarpcNTJ3HBhk/edit?usp=sharing>`_
-`Smaug Overview blog  <http://blog.gampel.net/2015/12/smaug-application-data-protection-for.html>`_
+=====================
+
+- `OpenStack Tokyo Summit 2015 talk <http://www.slideshare.net/gampel/openstack-tokyo-talk-application-data-protection-service>`_
+- `OpenStack Austin Summit 2016 talk <https://www.youtube.com/watch?v=_tVYuW_YMB8>`_
+- `Smaug overview slide <https://docs.google.com/presentation/d/1JYO1VIlTkGTF6lvKEMcsHkaST3mYFxuarpcNTJ3HBhk/edit?usp=sharing>`_
+- `Smaug overview blog  <http://blog.gampel.net/2015/12/smaug-application-data-protection-for.html>`_
