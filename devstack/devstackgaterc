@@ -1,0 +1,39 @@
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+#
+# This script is executed in the OpenStack CI job that runs DevStack + tempest.
+# It is also used by the rally job. You can find the CI job configuration here:
+#
+# http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/jobs/smaug.yaml
+#
+
+s=rabbit,mysql,key
+s+=,n-cpu,n-api,n-crt,n-cond,n-sch,n-cauth
+# n-obj has been removed from mitaka
+if [[ "stable/kilo stable/liberty" =~ $ZUUL_BRANCH ]]; then
+    s+=,n-obj
+fi
+s+=,neutron,q-svc,q-agt,q-dhcp,q-meta
+s+=,cinder,g-api,g-reg
+s+=,c-api,c-vol,c-sch,c-bak,horizon
+s+=,s-proxy,s-object,s-container,s-account
+s+=,h-eng,h-api,h-api-cfn,h-api-cw
+s+=,smaug,smaug-api,smaug-operationengine,smaug-protection
+OVERRIDE_ENABLED_SERVICES=s
+export OVERRIDE_ENABLED_SERVICES
+
+DEVSTACK_LOCAL_CONFIG="enable_plugin smaug git://git.openstack.org/openstack/smaug"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_REPLICAS=1"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_DATA_DIR=$DEST/data"
+export DEVSTACK_LOCAL_CONFIG
