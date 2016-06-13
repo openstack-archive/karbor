@@ -674,6 +674,36 @@ def scheduled_operation_log_delete_oldest(context, operation_id,
             filters).delete(synchronize_session=False)
 
 
+def _scheduled_operation_log_list_query(context, session, **kwargs):
+    query = model_query(context, models.ScheduledOperationLog,
+                        session=session)
+    return query
+
+
+def _scheduled_operation_log_list_process_filters(query, filters):
+    exact_match_filter_names = ['operation_id', 'state']
+    query = _list_common_process_exact_filter(
+        models.ScheduledOperationLog, query, filters,
+        exact_match_filter_names)
+
+    return query
+
+
+def scheduled_operation_log_get_all_by_filters_sort(
+        context, filters, limit=None, marker=None,
+        sort_keys=None, sort_dirs=None):
+
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(
+            context, session, marker, limit,
+            sort_keys, sort_dirs, filters,
+            paginate_type=models.ScheduledOperationLog,
+            use_model=True)
+
+        return query.all() if query else []
+
+
 ###################
 
 
@@ -1366,13 +1396,20 @@ PAGINATION_HELPERS = {
     models.ScheduledOperation: (_scheduled_operation_list_query,
                                 _scheduled_operation_list_process_filters,
                                 _scheduled_operation_get),
+
     models.ScheduledOperationState: (
         _scheduled_operation_state_list_query,
         _scheduled_operation_state_list_process_filters,
         _scheduled_operation_state_get),
+
     models.OperationLog: (_operation_log_get_query,
                           _process_operation_log_filters,
-                          _operation_log_get)
+                          _operation_log_get),
+
+    models.ScheduledOperationLog: (
+        _scheduled_operation_log_list_query,
+        _scheduled_operation_log_list_process_filters,
+        _scheduled_operation_log_get),
 }
 
 
