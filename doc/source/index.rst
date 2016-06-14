@@ -1,15 +1,24 @@
-.. smaug documentation master file, created by
-   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+==================================
+Smaug: Application Data Protection
+==================================
 
-Welcome to smaug's documentation!
-========================================================
+Introduction
+============
+Smaug is an OpenStack project that provides a pluggable framework for
+protecting and restoring Data and Metadata that comprises an OpenStack-deployed
+application - Application Data Protection as a Service.
 
-Contents:
+Mission Statement
+~~~~~~~~~~~~~~~~~
+To protect the Data and Metadata that comprises an OpenStack-deployed
+Application against loss/damage (e.g. backup, replication) by providing a
+standard framework of APIs and services that allows vendors to provide plugins
+through a unified interface
 
+Using Smaug
+===========
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    readme
    installation
@@ -18,8 +27,7 @@ Contents:
    releasenotes
 
 Smaug Specs
-=================
-
+===========
 .. toctree::
    :maxdepth: 1
 
