@@ -142,6 +142,9 @@ class PluggableProtectionProvider(object):
     def get_checkpoint_collection(self):
         return self.checkpoint_collection
 
+    def get_checkpoint(self, checkpoint_id):
+        return self.get_checkpoint_collection().get(checkpoint_id)
+
     def build_task_flow(self, ctx):
         cntxt = ctx["context"]
         workflow_engine = ctx["workflow_engine"]

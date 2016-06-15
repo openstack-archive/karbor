@@ -23,6 +23,7 @@ from smaug.services.protection.bank_plugin import Bank
 from smaug.services.protection.bank_plugin import BankPlugin
 from smaug.services.protection.bank_plugin import BankSection
 from smaug.services.protection.graph import build_graph
+from smaug.services.protection import provider
 
 from taskflow import engines
 from taskflow.patterns import graph_flow
@@ -183,12 +184,12 @@ class FakeCheckpointCollection(object):
         return FakeCheckpoint()
 
 
-class FakeProvider(object):
+class FakeProvider(provider.PluggableProtectionProvider):
     def __init__(self):
-        self.id = 'test'
-        self.name = 'provider'
-        self.description = 'fake_provider'
-        self.extend_info_schema = {}
+        self._id = 'test'
+        self._name = 'provider'
+        self._description = 'fake_provider'
+        self._extend_info_schema = {}
 
     def build_task_flow(self, plan):
         status_getters = []

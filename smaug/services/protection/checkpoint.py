@@ -13,6 +13,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
+from smaug import exception
 from smaug.services.protection import graph
 
 CONF = cfg.CONF
@@ -87,7 +88,10 @@ class Checkpoint(object):
                 "Checkpoint was created in an unsupported version")
 
     def reload_meta_data(self):
-        new_md = self._checkpoint_section.get_object(_INDEX_FILE_NAME)
+        try:
+            new_md = self._checkpoint_section.get_object(_INDEX_FILE_NAME)
+        except exception.BankGetObjectFailed:
+            raise exception.CheckpointNotFound()
         self._assert_supported_version(new_md)
         self._md_cache = new_md
 
@@ -97,7 +101,6 @@ class Checkpoint(object):
 
     @classmethod
     def get_by_section(cls, bank_section, bank_lease, checkpoint_id):
-        # TODO(yuvalbr) add validation that the checkpoint exists
         checkpoint_section = bank_section.get_sub_section(checkpoint_id)
         return Checkpoint(checkpoint_section, bank_lease, checkpoint_id)
 
