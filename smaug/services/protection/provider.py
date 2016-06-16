@@ -255,7 +255,8 @@ class ProviderRegistry(object):
                        sort_dirs=None, filters=None):
         # TODO(wangliuan) How to use the list option
         return [dict(id=provider.id, name=provider.name,
-                     description=provider.description)
+                     description=provider.description,
+                     extended_info_schema=provider.extended_info_schema)
                 for provider in self.providers.values()]
 
     def show_provider(self, provider_id):
