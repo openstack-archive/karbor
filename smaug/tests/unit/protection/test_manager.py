@@ -16,6 +16,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging
 
+from smaug import exception
 from smaug.resource import Resource
 from smaug.services.protection.flows import worker as flow_manager
 from smaug.services.protection import manager
@@ -131,6 +132,27 @@ class ProtectionServiceTest(base.TestCase):
                           self.pro_manager.protect,
                           None,
                           fakes.fake_protection_plan())
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_show_checkpoint(self, mock_provider):
+        mock_provider.return_value = fakes.FakeProvider()
+        context = mock.MagicMock()
+        cp = self.pro_manager.show_checkpoint(context, 'provider1',
+                                              'fake_checkpoint')
+        self.assertEqual(cp.id, 'fake_checkpoint')
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    @mock.patch.object(fakes.FakeCheckpointCollection, 'get')
+    def test_show_checkpoint_not_found(self, mock_provider,
+                                       mock_cp_collection_get):
+        mock_provider.return_value = fakes.FakeProvider()
+        context = mock.MagicMock()
+        mock_cp_collection_get.side_effect = exception.CheckpointNotFound()
+        self.assertRaises(oslo_messaging.ExpectedException,
+                          self.pro_manager.show_checkpoint,
+                          context,
+                          'provider1',
+                          'non_existent_checkpoint')
 
     def tearDown(self):
         flow_manager.Worker._load_engine = self.load_engine

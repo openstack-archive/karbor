@@ -241,38 +241,14 @@ class ProtectionManager(manager.Manager):
         ]
         return return_stub
 
+    @messaging.expected_exceptions(exception.ProviderNotFound,
+                                   exception.CheckpointNotFound)
     def show_checkpoint(self, context, provider_id, checkpoint_id):
-        # TODO(wangliuan)
-        LOG.info(_LI("Starting show checkpoints. "
-                     "provider_id:%s"), provider_id)
-        LOG.info(_LI("checkpoint_id:%s"), checkpoint_id)
+        provider = self.provider_registry.show_provider(provider_id)
+        if provider is None:
+            raise exception.ProviderNotFound(provider_id=provider_id)
 
-        return_stub = {
-            "id": "6f193601-39f8-4a81-993b-4d847393a0ee",
-            "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-            "status": "committed",
-            "protection_plan": {
-                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                "name": "My 3 tier application",
-                "resources": [
-                    {
-                        "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
-                        "type": "OS::Nova::Server",
-                        "extended_info": {
-                            "name": "VM1",
-                            "backup status": "done",
-                            "available_memory": 512
-                        }
-                    }
-                ]
-            },
-            "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9"
-        }
-        return return_stub
-
-    def delete_checkpoint(self, checkpoint_id):
-        # TODO(wangliuan)
-        pass
+        return provider.get_checkpoint(checkpoint_id)
 
     def list_protectable_types(self, context):
         LOG.info(_LI("Start to list protectable types."))
