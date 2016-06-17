@@ -68,9 +68,6 @@ class ProtectionProvider {
     name: string
     description: string
     extended_info_schema: [ResourceType]JSONSchema
-    options_schema: [ResourceType]JSONSchema
-    restore_options: [ResourceType]JSONSchema
-    checkpoints: []Checkpoint
 }
 
 ProtectionProvider o-> Checkpoint: lists
