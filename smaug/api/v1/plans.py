@@ -246,12 +246,13 @@ class PlansController(wsgi.Controller):
                     "a plan.")
             raise exception.InvalidInput(reason=msg)
 
-        if not plan.get("parameters"):
+        parameters = plan.get("parameters", None)
+
+        if parameters is None:
             msg = _("parameters must be provided when creating "
                     "a plan.")
             raise exception.InvalidInput(reason=msg)
 
-        parameters = plan.get("parameters")
         if not isinstance(parameters, dict):
             msg = _("parameters must be a dict when creating a plan.")
             raise exception.InvalidInput(reason=msg)
