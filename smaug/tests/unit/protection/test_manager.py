@@ -139,7 +139,7 @@ class ProtectionServiceTest(base.TestCase):
         context = mock.MagicMock()
         cp = self.pro_manager.show_checkpoint(context, 'provider1',
                                               'fake_checkpoint')
-        self.assertEqual(cp.id, 'fake_checkpoint')
+        self.assertEqual(cp['id'], 'fake_checkpoint')
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     @mock.patch.object(fakes.FakeCheckpointCollection, 'get')

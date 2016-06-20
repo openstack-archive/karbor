@@ -16,7 +16,6 @@ from oslo_service import loopingcall
 from smaug.common import constants
 from smaug.i18n import _
 from taskflow import task
-from taskflow.utils import misc
 
 sync_status_opts = [
     cfg.IntOpt('sync_status_interval',
@@ -44,12 +43,6 @@ class CreateCheckpointTask(task.Task):
         checkpoint.resource_graph = self._resource_graph
         checkpoint.commit()
         return checkpoint
-
-    def revert(self, result, **kwargs):
-        if isinstance(result, misc.Failure):
-            return
-        checkpoint = result
-        checkpoint.purge()
 
 
 class SyncCheckpointStatusTask(task.Task):

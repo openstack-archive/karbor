@@ -248,7 +248,8 @@ class ProtectionManager(manager.Manager):
         if provider is None:
             raise exception.ProviderNotFound(provider_id=provider_id)
 
-        return provider.get_checkpoint(checkpoint_id)
+        checkpoint = provider.get_checkpoint(checkpoint_id)
+        return checkpoint.to_dict()
 
     def list_protectable_types(self, context):
         LOG.info(_LI("Start to list protectable types."))

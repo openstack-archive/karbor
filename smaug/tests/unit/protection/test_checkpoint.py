@@ -54,6 +54,8 @@ class CheckpointTest(base.TestCase):
             "id": cp.id,
             "status": "protecting",
             "owner_id": owner_id,
+            "provider_id": "fake_id",
+            "project_id": None,
             "protection_plan": {
                 "id": plan.get("id"),
                 "name": plan.get("name"),
@@ -90,6 +92,8 @@ class CheckpointTest(base.TestCase):
             "id": cp.id,
             "status": "protecting",
             "owner_id": owner_id,
+            "provider_id": "fake_id",
+            "project_id": None,
             "protection_plan": {
                 "id": plan.get("id"),
                 "name": plan.get("name"),
