@@ -124,6 +124,12 @@ class PlanApiTest(base.TestCase):
         self.controller.index(req)
         self.assertTrue(moak_get_all.called)
 
+    def test_plan_create_empty_dict(self):
+        plan = self._plan_in_request_body(parameters={})
+        body = {"plan": plan}
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.controller.create(req, body)
+
     @mock.patch(
         'smaug.api.v1.plans.PlansController._plan_get')
     def test_plan_show(self, moak_plan_get):
