@@ -10,62 +10,54 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from smaug.common import constants
 from smaug.tests.fullstack import smaug_base
+from smaug.tests.fullstack import smaug_objects as objects
 
 
 class CheckpointsTest(smaug_base.SmaugBaseTest):
     """Test Checkpoints operation """
-
-    def test_checkpoint_create(self):
+    def setUp(self):
+        super(CheckpointsTest, self).setUp()
         providers = self.provider_list()
         self.assertTrue(len(providers))
-        provider_id = providers[0].id
+        self.provider_id = providers[0].id
 
-        volume = self.create_volume(1, "Volume1")
-        plan = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                provider_id,
-                                volume,
-                                smaug_base.PLAN_NORMAL_PARAM)
-        plan_id = plan.get("id")
+    def test_checkpoint_create(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ])
 
         backups = self.cinder_client.backups.list()
         before_num = len(backups)
 
-        checkpoint = self.create_checkpoint(provider_id, plan_id, volume.id)
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan.id)
 
-        backups_ = self.cinder_client.backups.list()
-        after_num = len(backups_)
+        backups = self.cinder_client.backups.list()
+        after_num = len(backups)
         self.assertEqual(1, after_num - before_num)
 
-        # cleanup
-        self.delete_checkpoint(provider_id, checkpoint["id"])
-        self.smaug_client.plans.delete(plan_id)
-        self.delete_volume(volume.id)
-
     def test_checkpoint_delete(self):
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        provider_id = providers[0].id
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ])
 
-        volume = self.create_volume(1, "Volume1")
-        plan = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                provider_id,
-                                volume,
-                                smaug_base.PLAN_NORMAL_PARAM)
-        plan_id = plan.get("id")
+        checkpoints = self.smaug_client.checkpoints.list(self.provider_id)
+        before_num = len(checkpoints)
 
-        backups = self.smaug_client.checkpoints.list(provider_id)
-        before_num = len(backups)
+        checkpoint = objects.Checkpoint()
+        checkpoint.create(self.provider_id, plan.id)
 
-        checkpoint = self.create_checkpoint(provider_id, plan_id, volume.id)
-        # checkpoint_ = self.smaug_client.checkpoints.get(provider_id,
-        #                                                 checkpoint['id'])
-        # self.assertEqual("committed", checkpoint_.status)
-        self.delete_checkpoint(provider_id, checkpoint["id"])
-        backups_ = self.smaug_client.checkpoints.list(provider_id)
-        after_num = len(backups_)
+        # sanity
+        checkpoint_item = self.smaug_client.checkpoints.get(self.provider_id,
+                                                            checkpoint.id)
+        self.assertEqual(constants.CHECKPOINT_STATUS_AVAILABLE,
+                         checkpoint_item.status)
+
+        checkpoint.close()
+        checkpoints = self.smaug_client.checkpoints.list(self.provider_id)
+        after_num = len(checkpoints)
         self.assertEqual(before_num, after_num)
-
-        # cleanup
-        self.smaug_client.plans.delete(plan_id)
-        self.delete_volume(volume.id)

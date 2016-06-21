@@ -10,135 +10,76 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from smaug.common import constants
 from smaug.tests.fullstack import smaug_base
+from smaug.tests.fullstack import smaug_objects as objects
 
 
 class PlansTest(smaug_base.SmaugBaseTest):
     """Test Plans operation"""
-
-    def test_plans_create(self):
+    def setUp(self):
+        super(PlansTest, self).setUp()
         providers = self.provider_list()
         self.assertTrue(len(providers))
-        provider_id = providers[0].id
-
-        plans = self.smaug_client.plans.list()
-        before_num = len(plans)
-
-        volume = self.create_volume(1)
-        plan1 = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-        plan2 = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-
-        plans_ = self.smaug_client.plans.list()
-        after_num = len(plans_)
-        self.assertEqual(2, after_num - before_num)
-
-        # cleanup
-        self.smaug_client.plans.delete(plan1.get("id"))
-        self.smaug_client.plans.delete(plan2.get("id"))
-        self.delete_volume(volume.id)
+        self.provider_id = providers[0].id
 
     def test_plans_list(self):
-        self.cleanup_plans()
+        nplans_before = len(self.smaug_client.plans.list())
+        # create plan
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan1 = self.store(objects.Plan())
+        plan2 = self.store(objects.Plan())
+        plan1.create(self.provider_id, [volume, ])
+        plan2.create(self.provider_id, [volume, ])
 
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        provider_id = providers[0].id
-
-        volume = self.create_volume(1)
-        plan1 = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-        plan2 = self.create_plan(smaug_base.PLAN_NORMAL_NAME,
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-
-        plan_item = self.smaug_client.plans.list()
-        self.assertEqual(2, len(plan_item))
-
-        # cleanup
-        self.smaug_client.plans.delete(plan1.get("id"))
-        self.smaug_client.plans.delete(plan2.get("id"))
-        self.delete_volume(volume.id)
+        # list plans after creating
+        nplans_after = len(self.smaug_client.plans.list())
+        self.assertEqual(2, nplans_after - nplans_before)
 
     def test_plans_get(self):
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        provider_id = providers[0].id
+        plan_name = "Fullstack Test Get"
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ], name=plan_name)
 
-        volume = self.create_volume(1)
-        plan1 = self.create_plan("My plan app1",
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-        plan2 = self.create_plan("My plan app2",
-                                 provider_id,
-                                 volume,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-
-        plan_item1 = self.smaug_client.plans.get(plan1.get("id"))
-        self.assertEqual("My plan app1", plan_item1.name)
-        plan_item2 = self.smaug_client.plans.get(plan2.get("id"))
-        self.assertEqual("My plan app2", plan_item2.name)
-
-        # cleanup
-        self.smaug_client.plans.delete(plan1.get("id"))
-        self.smaug_client.plans.delete(plan2.get("id"))
-        self.delete_volume(volume.id)
+        plan_item = self.smaug_client.plans.get(plan.id)
+        self.assertEqual(plan_name, plan_item.name)
 
     def test_plans_update(self):
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        provider_id = providers[0].id
+        plan_initial_name = "Fullstack Plan Pre-Update"
+        plan_updated_name = "Fullstack Plan Post-Update"
+        volume1_name = "Fullstack Plan Update Volume1"
+        volume2_name = "Fullstack Plan Update Volume2"
+        volume1 = self.store(objects.Volume())
+        volume1.create(1, name=volume1_name)
+        volume2 = self.store(objects.Volume())
+        volume2.create(1, name=volume2_name)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume1, ], name=plan_initial_name)
 
-        volume1 = self.create_volume(1, "Volume1")
-        volume2 = self.create_volume(1, "Volume2")
-        plan1 = self.create_plan("My plan app1",
-                                 provider_id,
-                                 volume1,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-        plan2 = self.create_plan("My plan app2",
-                                 provider_id,
-                                 volume2,
-                                 smaug_base.PLAN_NORMAL_PARAM)
-
-        plan_old = self.smaug_client.plans.get(plan1.get("id"))
-        self.assertEqual("My plan app1", plan_old.name)
-        self.assertEqual("suspended", plan_old.status)
+        # sanity
+        plan_item = self.smaug_client.plans.get(plan.id)
+        self.assertEqual(plan_initial_name, plan_item.name)
+        self.assertEqual("suspended", plan_item.status)
         self.assertEqual([{"id": volume1.id,
-                           "type": "OS::Cinder::Volume",
-                           "name": volume1.name}],
-                         plan_old.resources)
+                           "type": constants.VOLUME_RESOURCE_TYPE,
+                           "name": volume1_name}],
+                         plan_item.resources)
 
         # update name
-        data = {"name": "fake_plan"}
-        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
-        self.assertEqual("fake_plan", plan_item.name)
+        data = {"name": plan_updated_name}
+        plan_item = self.smaug_client.plans.update(plan.id, data)
+        self.assertEqual(plan_updated_name, plan_item.name)
 
         # update resources
-        data = {"resources": [{"id": volume2.id,
-                               "type": "OS::Cinder::Volume",
-                               "name": volume2.name}]}
-        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
-        self.assertEqual([{"id": volume2.id,
-                           "type": "OS::Cinder::Volume",
-                           "name": volume2.name}],
+        data = {"resources": [volume2.to_dict(), ]}
+        plan_item = self.smaug_client.plans.update(plan.id, data)
+        self.assertEqual([volume2.to_dict(), ],
                          plan_item.resources)
 
         # update status
         data = {"status": "started"}
-        plan_item = self.smaug_client.plans.update(plan1.get("id"), data)
+        plan_item = self.smaug_client.plans.update(plan.id, data)
         self.assertEqual("started", plan_item.status)
-
-        # cleanup
-        self.smaug_client.plans.delete(plan1.get("id"))
-        self.smaug_client.plans.delete(plan2.get("id"))
-        self.delete_volume(volume1.id)
-        self.delete_volume(volume2.id)

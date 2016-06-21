@@ -12,50 +12,38 @@
 
 
 from smaug.tests.fullstack import smaug_base
+from smaug.tests.fullstack import smaug_objects as objects
 
 
 class TriggersTest(smaug_base.SmaugBaseTest):
     """Test Triggers operation
 
     """
-    def create_triggers(self):
-        trigger1 = self.smaug_client.triggers.create(
-            "My 1 Trigger", "time",
-            {"pattern": "0 20 * * 2", "format": "crontab"})
-        trigger2 = self.smaug_client.triggers.create(
-            "My 2 Trigger", "time",
-            {"pattern": "0 10 * * *", "format": "crontab"})
-        return trigger1, trigger2
-
-    def test_triggers_create(self):
-        trigger1, trigger2 = self.create_triggers()
-        trigger_item1 = self.smaug_client.triggers.get(trigger1.get("id"))
-        trigger_item2 = self.smaug_client.triggers.get(trigger2.get("id"))
-        trigger1_id = trigger_item1.id
-        trigger2_id = trigger_item2.id
-        self.assertEqual(trigger1_id, trigger1.get("id"))
-        self.assertEqual(trigger2_id, trigger2.get("id"))
-        self.smaug_client.triggers.delete(trigger1.get("id"))
-        self.smaug_client.triggers.delete(trigger2.get("id"))
-
     def test_triggers_list(self):
-        trigger1, trigger2 = self.create_triggers()
-        triggers_item = self.smaug_client.triggers.list()
-        self.assertEqual(2, len(triggers_item))
-        self.smaug_client.triggers.delete(trigger1.get("id"))
-        self.smaug_client.triggers.delete(trigger2.get("id"))
+        trigger_items = self.smaug_client.triggers.list()
+        before_num = len(trigger_items)
+        trigger1 = self.store(objects.Trigger())
+        trigger1.create('time', {'pattern': '0 20 * * 2', 'format': 'crontab'})
+        trigger2 = self.store(objects.Trigger())
+        trigger2.create('time', {'pattern': '0 10 * * *', 'format': 'crontab'})
+        trigger_items = self.smaug_client.triggers.list()
+        after_num = len(trigger_items)
+        self.assertEqual(2, after_num - before_num)
 
     def test_triggers_get(self):
-        trigger1, trigger2 = self.create_triggers()
-        trigger = self.smaug_client.triggers.get(trigger1.get("id"))
-        self.assertEqual("My 1 Trigger", trigger.name)
-        self.smaug_client.triggers.delete(trigger1.get("id"))
-        self.smaug_client.triggers.delete(trigger2.get("id"))
+        trigger_name = "FullStack Trigger Test Get"
+        trigger = self.store(objects.Trigger())
+        trigger.create('time', {'pattern': '0 15 * * 2', 'format': 'crontab'},
+                       name=trigger_name)
+        trigger = self.smaug_client.triggers.get(trigger.id)
+        self.assertEqual(trigger_name, trigger.name)
 
     def test_triggers_delete(self):
-        trigger1, trigger2 = self.create_triggers()
-        trigger1_id = trigger1.get("id")
-        self.smaug_client.triggers.delete(trigger1_id)
-        triggers_item = self.smaug_client.triggers.list()
-        self.assertEqual(1, len(triggers_item))
-        self.smaug_client.triggers.delete(trigger2.get("id"))
+        trigger = objects.Trigger()
+        trigger_items = self.smaug_client.triggers.list()
+        before_num = len(trigger_items)
+        trigger.create('time', {'pattern': '0 12 * * 2', 'format': 'crontab'})
+        self.smaug_client.triggers.delete(trigger.id)
+        trigger_items = self.smaug_client.triggers.list()
+        after_num = len(trigger_items)
+        self.assertEqual(0, after_num - before_num)

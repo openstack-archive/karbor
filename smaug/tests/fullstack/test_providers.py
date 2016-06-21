@@ -22,7 +22,7 @@ class ProvidersTest(smaug_base.SmaugBaseTest):
         self.assertTrue(len(provider_res))
 
     def test_provider_get(self):
-        providers = self.provider_list()
+        providers = self.smaug_client.providers.list()
         for provider in providers:
             provider_res = self.smaug_client.providers.get(provider.id)
             self.assertEqual(provider.name, provider_res.name)

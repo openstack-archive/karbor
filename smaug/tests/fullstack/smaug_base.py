@@ -17,11 +17,6 @@ from smaugclient.v1 import client as smaug_client
 import os_client_config
 
 from oslotest import base
-from time import sleep
-import utils
-
-PLAN_NORMAL_NAME = "My plan1"
-PLAN_NORMAL_PARAM = {"OS::Nova::Server": {"consistency": "os"}}
 
 
 def _get_cloud_config(cloud='devstack-admin'):
@@ -180,92 +175,8 @@ class SmaugBaseTest(base.BaseTestCase):
         return self._testcase_store.store(obj, close_func)
 
     def tearDown(self):
-        self.cleanup_plans()
-        self.cleanup_volumes()
-        self.cleanup_backup_volumes()
-        self.cleanup_novas()
         self._testcase_store.close()
         super(SmaugBaseTest, self).tearDown()
 
     def provider_list(self):
         return self.smaug_client.providers.list()
-
-    def create_volume(self, size, name=None):
-        volume = self.cinder_client.volumes.create(size, name=name)
-        sleep(10)
-        return volume
-
-    def delete_volume(self, volume_id):
-        self.cinder_client.volumes.delete(volume_id)
-        sleep(30)
-
-    def create_plan(self, plan_name, provider_id, volume, parameters):
-        resources = [{"id": volume.id,
-                      "type": "OS::Cinder::Volume",
-                      "name": volume.name}]
-        plan = self.smaug_client.plans.create(plan_name, provider_id,
-                                              resources, parameters)
-        return plan
-
-    def check_volume_status(self, volume_id):
-        volume = self.cinder_client.volumes.get(volume_id)
-        if hasattr(volume, "status"):
-            if "available" == volume.status:
-                return True
-            else:
-                return False
-        else:
-            return False
-
-    def create_checkpoint(self, provider_id, plan_id, volume_id):
-        checkpoint = self.smaug_client.checkpoints.create(provider_id, plan_id)
-        sleep(15)
-        utils.wait_until_true(
-            lambda: self.check_volume_status(volume_id),
-            timeout=320,
-            sleep=30,
-            exception=Exception("Create Checkpoint Failed.")
-        )
-        # wait for sync
-        sleep(120)
-        return checkpoint
-
-    def delete_checkpoint(self, provider_id, checkpoint_id):
-        self.smaug_client.checkpoints.delete(provider_id, checkpoint_id)
-        sleep(60)
-
-    def create_restore(self, provider_id, checkpoint_id,
-                       restore_target, parameters):
-        restore = self.smaug_client.restores.create(provider_id,
-                                                    checkpoint_id,
-                                                    restore_target,
-                                                    parameters)
-        # wait for sync
-        sleep(190)
-        return restore
-
-    def cleanup_plans(self):
-        plans = self.smaug_client.plans.list()
-        for plan in plans:
-            self.smaug_client.plans.delete(plan.id)
-
-    def cleanup_volumes(self):
-        volumes = self.cinder_client.volumes.list()
-        for volume in volumes:
-            if "available" == volume.status:
-                self.cinder_client.volumes.delete(volume.id)
-                sleep(18)
-
-    def cleanup_backup_volumes(self):
-        backups = self.cinder_client.backups.list()
-        for backup in backups:
-            if "available" == backup.status:
-                self.cinder_client.backups.delete(backup.id)
-                sleep(18)
-
-    def cleanup_novas(self):
-        novas = self.nova_client.servers.list()
-        for nova in novas:
-            if "available" == nova.status:
-                self.nova_client.servers.delete(nova.id)
-                sleep(20)
