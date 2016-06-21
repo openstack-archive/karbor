@@ -14,6 +14,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
 from smaug import exception
+from smaug.i18n import _LE
 from smaug.services.protection import graph
 
 CONF = cfg.CONF
@@ -34,6 +35,14 @@ class Checkpoint(object):
         self._bank_lease = bank_lease
         self.reload_meta_data()
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "status": self.status,
+            "protection_plan": self.protection_plan,
+            "project_id": self.project_id,
+        }
+
     @property
     def bank_section(self):
         return self._bank_section
@@ -46,6 +55,10 @@ class Checkpoint(object):
     def status(self):
         # TODO(saggi): check for valid values and transitions
         return self._md_cache["status"]
+
+    @property
+    def project_id(self):
+        return self._md_cache["project_id"]
 
     @property
     def owner_id(self):
@@ -91,7 +104,9 @@ class Checkpoint(object):
         try:
             new_md = self._checkpoint_section.get_object(_INDEX_FILE_NAME)
         except exception.BankGetObjectFailed:
-            raise exception.CheckpointNotFound()
+            LOG.error(_LE("unable to reload metadata for checkpoint id: %s"),
+                      self.id)
+            raise exception.CheckpointNotFound(checkpoint_id=self.id)
         self._assert_supported_version(new_md)
         self._md_cache = new_md
 
@@ -116,6 +131,8 @@ class Checkpoint(object):
                 "id": checkpoint_id,
                 "status": "protecting",
                 "owner_id": owner_id,
+                "provider_id": plan.get("provider_id"),
+                "project_id": plan.get("project_id"),
                 "protection_plan": {
                     "id": plan.get("id"),
                     "name": plan.get("name"),

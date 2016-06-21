@@ -175,6 +175,15 @@ class FakeCheckpoint(object):
         bank = Bank(FakeBankPlugin())
         return BankSection(bank, resource_id)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "status": self.status,
+            "resource_graph": self.resource_graph,
+            "protection_plan": None,
+            "project_id": None
+        }
+
 
 class FakeCheckpointCollection(object):
     def create(self, plan):
