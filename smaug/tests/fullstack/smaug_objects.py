@@ -48,7 +48,7 @@ class Checkpoint(object):
         self._provider_id = provider_id
         checkpoint = self.smaug_client.checkpoints.create(provider_id,
                                                           plan_id)
-        self.id = checkpoint['id']
+        self.id = checkpoint.id
         utils.wait_until_true(partial(self._checkpoint_status,
                                       constants.CHECKPOINT_STATUS_AVAILABLE),
                               timeout=timeout, sleep=LONG_SLEEP)
@@ -86,7 +86,7 @@ class Plan(object):
         resources = map(_transform_resource, resources)
         plan = self.smaug_client.plans.create(name, provider_id, resources,
                                               parameters)
-        self.id = plan['id']
+        self.id = plan.id
         return self.id
 
     def update(self, data):
@@ -121,7 +121,7 @@ class Restore(object):
                                                     checkpoint_id,
                                                     target,
                                                     parameters)
-        self.id = restore['id']
+        self.id = restore.id
         utils.wait_until_true(partial(self._restore_status, 'success'),
                               timeout=timeout, sleep=LONG_SLEEP)
         return self.id
@@ -143,7 +143,7 @@ class Trigger(object):
             self._name_id += 1
 
         trigger = self.smaug_client.triggers.create(name, type, properties)
-        self.id = trigger['id']
+        self.id = trigger.id
         return self.id
 
     def close(self):
