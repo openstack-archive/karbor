@@ -209,7 +209,8 @@ class ProtectionManager(manager.Manager):
         # TODO(wangliuan)
         pass
 
-    @messaging.expected_exceptions(exception.ProviderNotFound)
+    @messaging.expected_exceptions(exception.ProviderNotFound,
+                                   exception.CheckpointNotFound)
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
                          sort_keys=None, sort_dirs=None, filters=None):
         LOG.info(_LI("Starting list checkpoints. "
@@ -232,7 +233,8 @@ class ProtectionManager(manager.Manager):
             start_date=start_date, end_date=end_date, sort_dir=sort_dir)
         checkpoints = []
         for checkpoint_id in checkpoint_ids:
-            checkpoints.append(provider.get_checkpoint(checkpoint_id))
+            checkpoint = provider.get_checkpoint(checkpoint_id)
+            checkpoints.append(checkpoint.to_dict())
         return checkpoints
 
     @messaging.expected_exceptions(exception.ProviderNotFound,
