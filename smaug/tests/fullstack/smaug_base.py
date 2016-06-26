@@ -131,8 +131,37 @@ def _get_keystone_endpoint_from_creds():
     return endpoint
 
 
+class ObjectStore(object):
+    """Stores objects for later closing.
+
+    ObjectStore can be used to aggregate objects and close them.
+
+    Example:
+
+        with closing(ObjectStore()) as obj_store:
+            obj = obj_store.store(SomeObject())
+
+    or:
+
+        obj_store = ObjectStore()
+        obj_store.store(SomeObject())
+        obj_store.close()
+    """
+
+    def __init__(self):
+        self._close_funcs = []
+
+    def store(self, obj, close_func=None):
+        self._close_funcs.append(close_func if close_func else obj.close)
+        return obj
+
+    def close(self):
+        for close_func in reversed(self._close_funcs):
+            close_func()
+
+
 class SmaugBaseTest(base.BaseTestCase):
-    """Basic class for Smaug fullstack testing
+    """Basic class for Smaug fullstack testing.
 
     This class has common code shared for Smaug fullstack testing
     including the various clients (smaug) and common
@@ -145,12 +174,17 @@ class SmaugBaseTest(base.BaseTestCase):
         self.nova_client = _get_nova_client_from_creds()
         self.smaug_client = _get_smaug_client_from_creds()
         self.keystone_endpoint = _get_keystone_endpoint_from_creds()
+        self._testcase_store = ObjectStore()
+
+    def store(self, obj, close_func=None):
+        return self._testcase_store.store(obj, close_func)
 
     def tearDown(self):
         self.cleanup_plans()
         self.cleanup_volumes()
         self.cleanup_backup_volumes()
         self.cleanup_novas()
+        self._testcase_store.close()
         super(SmaugBaseTest, self).tearDown()
 
     def provider_list(self):
