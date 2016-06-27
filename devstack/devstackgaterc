@@ -29,10 +29,10 @@ s+=,c-api,c-vol,c-sch,c-bak,horizon
 s+=,s-proxy,s-object,s-container,s-account
 s+=,h-eng,h-api,h-api-cfn,h-api-cw
 s+=,smaug,smaug-api,smaug-operationengine,smaug-protection
-OVERRIDE_ENABLED_SERVICES=s
-export OVERRIDE_ENABLED_SERVICES
+ENABLED_SERVICES=$s
+export ENABLED_SERVICES
 
-DEVSTACK_LOCAL_CONFIG="enable_plugin smaug git://git.openstack.org/openstack/smaug"
+DEVSTACK_LOCAL_CONFIG+="enable_plugin smaug git://git.openstack.org/openstack/smaug"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_REPLICAS=1"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_DATA_DIR=$DEST/data"
