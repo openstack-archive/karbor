@@ -67,10 +67,9 @@ class ProtectionServiceTest(base.TestCase):
 
         result = self.pro_manager.show_protectable_type(None,
                                                         "OS::Nova::Server")
-        self.assertEqual({
-            "name": "OS::Nova::Server",
-            "dependent_types": ["OS::Cinder::Volume"]},
-            result)
+        self.assertEqual("OS::Nova::Server", result["name"])
+        self.assertEqual({"OS::Cinder::Volume", "OS::Glance::Image"},
+                         set(result["dependent_types"]))
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
                        'show_resource')

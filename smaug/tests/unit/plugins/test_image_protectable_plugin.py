@@ -108,14 +108,18 @@ class ImageProtectablePluginTest(base.TestCase):
                          resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                            id='123', name='name123'))
 
+    @mock.patch.object(images.Controller, 'get')
     @mock.patch.object(servers.ServerManager, 'get')
-    def test_get_server_dependent_resources(self, mock_server_get):
+    def test_get_server_dependent_resources(self, mock_server_get,
+                                            mock_image_get):
         vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,
                          name='nameserver1',
                          image=dict(id='123', name='name123'))
+        image = image_info(id='123', name='name123', owner='abcd')
         plugin = ImageProtectablePlugin(self._context)
         mock_server_get.return_value = vm
+        mock_image_get.return_value = image
         self.assertEqual(plugin.get_dependent_resources(self._context, vm),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='123', name='name123')])
