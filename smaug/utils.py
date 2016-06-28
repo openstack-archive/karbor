@@ -14,6 +14,7 @@
 import ast
 import os
 
+from keystoneclient import discover as ks_discover
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
@@ -140,3 +141,18 @@ def load_plugin(namespace, plugin_name, *args, **kwargs):
             LOG.exception(_LE("Error loading plugin by class, %s"), e2)
             raise ImportError(_("Class not found."))
     return plugin_class(*args, **kwargs)
+
+
+def get_auth_uri(v3=True):
+    # Look for the keystone auth_uri in the configuration. First we
+    # check the [clients_keystone] section, and if it is not set we
+    # look in [keystone_authtoken]
+    if cfg.CONF.clients_keystone.auth_uri:
+        discover = ks_discover.Discover(
+            auth_url=cfg.CONF.clients_keystone.auth_uri)
+        return discover.url_for('3.0')
+    else:
+        # Import auth_token to have keystone_authtoken settings setup.
+        importutils.import_module('keystonemiddleware.auth_token')
+        auth_uri = cfg.CONF.keystone_authtoken.auth_uri
+        return auth_uri.replace('v2.0', 'v3') if auth_uri and v3 else auth_uri

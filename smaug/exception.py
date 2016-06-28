@@ -145,6 +145,10 @@ class PolicyNotAuthorized(NotAuthorized):
     message = _("Policy doesn't allow %(action)s to be performed.")
 
 
+class AuthorizationFailure(NotAuthorized):
+    message = _("Authorization for %(obj)s is failed ")
+
+
 class Invalid(SmaugException):
     message = _("Unacceptable parameters.")
     code = 400

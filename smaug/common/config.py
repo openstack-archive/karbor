@@ -74,3 +74,18 @@ global_opts = [
 ]
 
 CONF.register_opts(global_opts)
+
+
+keystone_client_opts = [
+    cfg.StrOpt('auth_uri',
+               default='',
+               help='Unversioned keystone url in format like '
+                    'http://0.0.0.0:5000.')]
+
+
+def list_opts():
+    yield 'clients_keystone', keystone_client_opts
+
+
+for group, opts in list_opts():
+    CONF.register_opts(opts, group=group)
