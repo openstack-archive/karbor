@@ -67,10 +67,20 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
-        else:
-            return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=server.image['id'],
-                                      name=server.image['name'])]
+
+        if not server.image:
+            return []
+        try:
+            image = self._glance_client(context).images.get(server.image['id'])
+        except Exception as e:
+            LOG.exception(_LE("Getting image from glance failed."))
+            raise exception.ListProtectableResourceFailed(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                reason=six.text_type(e))
+
+        return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
+                                  id=server.image['id'],
+                                  name=image.name)]
 
     def _get_dependent_resources_by_project(self,
                                             context,
