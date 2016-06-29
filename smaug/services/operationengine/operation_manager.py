@@ -56,14 +56,12 @@ class OperationManager(object):
         cls = self._get_operation_cls(operation_type)
         cls.check_operation_definition(operation_definition)
 
-    def run_operation(self, operation_type, project_id,
-                      operation_definition, **kwargs):
+    def run_operation(self, operation_type, operation_definition, **kwargs):
         """Run operation.
 
         :param operation_type: the type of operation
-        :param project_id: the id of tenant
         :param operation_definition: the definition of operation
         :raise InvalidInput if the operation_type is invalid.
         """
         cls = self._get_operation_cls(operation_type)
-        cls.run_operation(project_id, operation_definition, **kwargs)
+        cls.run(operation_definition, **kwargs)
