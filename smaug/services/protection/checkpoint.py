@@ -157,6 +157,7 @@ class Checkpoint(object):
                 "protection_plan": {
                     "id": plan.get("id"),
                     "name": plan.get("name"),
+                    "provider_id": plan.get("provider_id"),
                     "resources": plan.get("resources")
                 },
                 "created_at": created_at,
