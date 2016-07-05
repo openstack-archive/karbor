@@ -119,7 +119,7 @@ This example will show protecting volume.
 
 #. Execute a protect operation automatically with a scheduler::
 
-    smaug trigger-create 'My Trigger' 'time' "pattern"="0 20 * * 2";"format"="crontab"
+    smaug trigger-create 'My Trigger' 'time' "pattern"="0 20 * * 2":"format"="crontab"
     smaug scheduledoperation-create 'Protect with My Trigger'  'protect' <trigger_id> "plan_id"="b5969bb9-c571-4538-b827-3746d11aa7a2"
 
 
