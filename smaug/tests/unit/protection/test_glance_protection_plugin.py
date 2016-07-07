@@ -99,15 +99,18 @@ class GlanceProtectionPluginTest(base.TestCase):
         self.assertEqual(status, constants.RESOURCE_STATUS_PROTECTING)
 
     def test_get_options_schema(self):
-        options_schema = self.plugin.get_options_schema()
+        options_schema = self.plugin.get_options_schema(
+            constants.IMAGE_RESOURCE_TYPE)
         self.assertEqual(options_schema, image_plugin_schemas.OPTIONS_SCHEMA)
 
     def test_get_restore_schema(self):
-        options_schema = self.plugin.get_restore_schema()
+        options_schema = self.plugin.get_restore_schema(
+            constants.IMAGE_RESOURCE_TYPE)
         self.assertEqual(options_schema, image_plugin_schemas.RESTORE_SCHEMA)
 
     def test_get_saved_info_schema(self):
-        options_schema = self.plugin.get_saved_info_schema()
+        options_schema = self.plugin.get_saved_info_schema(
+            constants.IMAGE_RESOURCE_TYPE)
         self.assertEqual(options_schema,
                          image_plugin_schemas.SAVED_INFO_SCHEMA)
 
