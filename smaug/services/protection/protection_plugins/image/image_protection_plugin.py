@@ -40,8 +40,8 @@ LOG = logging.getLogger(__name__)
 class GlanceProtectionPlugin(BaseProtectionPlugin):
     _SUPPORT_RESOURCE_TYPES = [constants.IMAGE_RESOURCE_TYPE]
 
-    def __init__(self):
-        super(GlanceProtectionPlugin, self).__init__()
+    def __init__(self, config=None):
+        super(GlanceProtectionPlugin, self).__init__(config)
         self._tp = eventlet.GreenPool()
         self.data_block_size_bytes = CONF.backup_image_object_size
 
@@ -57,13 +57,13 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         except Exception:
             return "undefined"
 
-    def get_options_schema(self):
+    def get_options_schema(self, resources_type):
         return image_schemas.OPTIONS_SCHEMA
 
-    def get_restore_schema(self):
+    def get_restore_schema(self, resources_type):
         return image_schemas.RESTORE_SCHEMA
 
-    def get_saved_info_schema(self):
+    def get_saved_info_schema(self, resources_type):
         return image_schemas.SAVED_INFO_SCHEMA
 
     def get_saved_info(self, metadata_store, resource):
