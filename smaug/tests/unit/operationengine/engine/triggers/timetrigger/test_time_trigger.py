@@ -99,10 +99,9 @@ class TimeTriggerTestCase(base.TestCase):
                                 self._trigger.register_operation,
                                 operation_id)
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger.* is not active",
-                                self._trigger.register_operation,
-                                "2")
+        self.assertRaises(exception.TriggerIsInvalid,
+                          self._trigger.register_operation,
+                          "2")
 
     def test_unregister_operation(self):
         operation_id = "2"

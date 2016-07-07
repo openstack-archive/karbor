@@ -10,8 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
 from webob import exc
 
+from smaug.api.v1 import plans as plan_api
 from smaug.api.v1 import scheduled_operations as operation_api
 from smaug.api.v1 import triggers as trigger_api
 from smaug import context
@@ -48,12 +50,14 @@ class ScheduledOperationApiTest(base.TestCase):
         self.req = fakes.HTTPRequest.blank('/v1/scheduled_operations')
 
         trigger = self._create_trigger()
+        self._plan = self._create_plan(str(uuid.uuid4()))
         self.default_create_operation_param = {
             "name": "123",
             "operation_type": "protect",
             "trigger_id": trigger['trigger_info']['id'],
             "operation_definition": {
-                "plan_id": ""
+                "plan_id": self._plan['id'],
+                "provider_id": self._plan['provider_id']
             },
         }
 
@@ -86,7 +90,7 @@ class ScheduledOperationApiTest(base.TestCase):
 
     def test_create_operation_invalid_operation_definition(self):
         param = self.default_create_operation_param.copy()
-        del param['operation_definition']['plan_id']
+        param['operation_definition']['plan_id'] = ""
         body = self._get_create_operation_request_body(param)
         self.assertRaises(exc.HTTPBadRequest,
                           self.controller.create,
@@ -196,3 +200,19 @@ class ScheduledOperationApiTest(base.TestCase):
             FakeRemoteOperationApi()
         req = fakes.HTTPRequest.blank('/v1/triggers')
         return controller.create(req, create_trigger_param)
+
+    def _create_plan(self, provider_id):
+        create_plan_param = {
+            'plan': {
+                'name': '123',
+                'provider_id': provider_id,
+                'resources': [
+                    {'id': '123', 'type': '123', 'name': '123'}
+                ],
+                'parameters': {"OS::Nova::Server": {"consistency": "os"}},
+            }
+        }
+        controller = plan_api.PlansController()
+        req = fakes.HTTPRequest.blank('/v1/triggers')
+        plan = controller.create(req, create_plan_param)
+        return plan['plan']
