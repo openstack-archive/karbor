@@ -103,6 +103,7 @@ class ThreadPoolExecutorTestCase(base.TestCase):
         state_info = {
             'operation_id': operation_id,
             'service_id': service_id,
+            'trust_id': '123',
             'state': constants.OPERATION_STATE_INIT,
         }
         state = objects.ScheduledOperationState(self.context, **state_info)

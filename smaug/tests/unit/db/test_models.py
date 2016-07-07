@@ -243,6 +243,7 @@ class ScheduledOperationStateTestCase(base.TestCase):
         values = {
             'operation_id': '0354ca9ddcd046b693340d78759fd274',
             'service_id': 1,
+            'trust_id': '123',
             'state': 'init',
         }
         return db.scheduled_operation_state_create(self.ctxt, values)

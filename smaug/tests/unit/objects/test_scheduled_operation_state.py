@@ -29,6 +29,7 @@ Fake_State = {
     'id': 1,
     'operation_id': Operation_ID,
     'service_id': 2,
+    'trust_id': '123',
     'state': 'triggered',
 }
 
@@ -135,6 +136,7 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
         state_info = {
             'operation_id': operation_id,
             'service_id': service_id,
+            'trust_id': '123',
             'state': 'triggered',
         }
         state = objects.ScheduledOperationState(self.context, **state_info)
