@@ -1,4 +1,4 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
@@ -13,7 +13,7 @@
 import eventlet
 import os
 
-from io import StringIO
+from io import BytesIO
 from oslo_config import cfg
 from oslo_log import log as logging
 from smaug.common import constants
@@ -29,7 +29,9 @@ from time import sleep
 protection_opts = [
     cfg.IntOpt('backup_image_object_size',
                default=52428800,
-               help='The size in bytes of instance image objects')
+               help='The size in bytes of instance image objects'),
+    cfg.IntOpt('retry_attempts',
+               default=10)
 ]
 
 CONF = cfg.CONF
@@ -110,8 +112,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         try:
             image_info = glance_client.images.get(image_id)
 
-            # TODO(hurong): config retry_attempts
-            retry_attempts = 10
+            retry_attempts = CONF.retry_attempts
             while image_info.status != "active" and retry_attempts != 0:
                 sleep(60)
                 image_info = glance_client.images.get(image_id)
@@ -121,7 +122,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
                 raise Exception
 
             image_response = glance_client.images.data(image_id)
-            image_response_data = StringIO.StringIO()
+            image_response_data = BytesIO()
             for chunk in image_response:
                 image_response_data.write(chunk)
             image_response_data.seek(0, os.SEEK_SET)
@@ -150,8 +151,55 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
 
     def restore_backup(self, cntxt, checkpoint, **kwargs):
-        # TODO(hurong):
-        pass
+        resource_node = kwargs.get('node')
+        original_image_id = resource_node.value.id
+        heat_template = kwargs.get("heat_template")
+
+        name = kwargs.get("restore_name", "smaug-restore-image")
+        LOG.info(_("restoring image backup, image_id: %s."),
+                 original_image_id)
+
+        glance_client = self._glance_client(cntxt)
+        bank_section = checkpoint.get_resource_bank_section(original_image_id)
+        try:
+            resource_definition = bank_section.get_object('metadata')
+            image_metadata = resource_definition['image_metadata']
+            objects = [key.split("/")[-1] for key in
+                       bank_section.list_objects()]
+
+            # get image_data
+            image_data = BytesIO()
+            for obj in objects:
+                if obj.find("data_") == 0:
+                    data = bank_section.get_object(obj)
+                    image_data.write(data)
+            image_data.seek(0, os.SEEK_SET)
+            disk_format = image_metadata["disk_format"]
+            container_format = image_metadata["container_format"]
+            image = glance_client.images.create(
+                disk_format=disk_format,
+                container_format=container_format,
+                name=name)
+            glance_client.images.upload(image.id, image_data)
+
+            image_info = glance_client.images.get(image.id)
+            retry_attempts = CONF.retry_attempts
+            while image_info.status != "active" and retry_attempts != 0:
+                sleep(60)
+                image_info = glance_client.images.get(image.id)
+                retry_attempts -= 1
+            if retry_attempts == 0:
+                raise Exception
+
+            heat_template.put_parameter(original_image_id, image.id)
+        except Exception as e:
+            LOG.error(_LE("restore image backup failed, image_id: %s."),
+                      original_image_id)
+            raise exception.RestoreBackupFailed(
+                reason=e,
+                resource_id=original_image_id,
+                resource_type=constants.IMAGE_RESOURCE_TYPE
+            )
 
     def delete_backup(self, cntxt, checkpoint, **kwargs):
         resource_node = kwargs.get("node")
