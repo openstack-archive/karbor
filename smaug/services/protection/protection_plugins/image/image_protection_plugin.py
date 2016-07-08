@@ -211,10 +211,13 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETING)
-            chunk_names = bank_section.list_objects(prefix="data_")
-            for chunk_name in chunk_names:
-                bank_section.delete_object("data_" + chunk_name)
-            bank_section.delete_object("metadata")
+            objects = bank_section.list_objects()
+            for obj in objects:
+                if obj == "status":
+                    continue
+                bank_section.delete_object(obj)
+            bank_section.update_object("status",
+                                       constants.RESOURCE_STATUS_DELETED)
         except Exception as err:
             LOG.error(_LE("delete image backup failed, image_id: %s."),
                       image_id)
