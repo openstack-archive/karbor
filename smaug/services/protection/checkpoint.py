@@ -47,6 +47,7 @@ class Checkpoint(object):
             "status": self.status,
             "protection_plan": self.protection_plan,
             "project_id": self.project_id,
+            "resource_graph": self._md_cache.get("resource_graph", None)
         }
 
     @property
