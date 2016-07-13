@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import access
+from keystoneauth1.identity import access as access_plugin
 from keystoneauth1 import loading
 from keystoneauth1 import session as keystone_session
 from keystoneclient.v3 import client as kc_v3
@@ -42,12 +44,14 @@ class SmaugKeystonePlugin(object):
        to offer the following functions:
 
        1. get the endpoint of service, such as nova, cinder
+       2. create trust to smaug
     """
 
     def __init__(self):
 
         self._client = None
         self._auth_uri = ""
+        self._smaug_user_id = ""
 
         self._do_init()
 
@@ -58,6 +62,10 @@ class SmaugKeystonePlugin(object):
         auth_plugin._project_domain_id = "default"
 
         self._client = self._get_keystone_client(auth_plugin)
+
+        lcfg = CONF[TRUSTEE_CONF_GROUP]
+        self._smaug_user_id = self._get_service_user(
+            lcfg.username, lcfg.user_domain_id)
 
         try:
             self._auth_uri = utils.get_auth_uri()
@@ -83,6 +91,49 @@ class SmaugKeystonePlugin(object):
 
         except Exception:
             msg = ('get service(%s) endpoint failed' % service_name)
+            raise exception.AuthorizationFailure(obj=msg)
+
+    def create_trust_to_smaug(self, context):
+        if not context.auth_token_info:
+            msg = ("user=%s, project=%s" % (context.user_id,
+                                            context.project_id))
+            raise exception.AuthorizationFailure(obj=msg)
+
+        auth_ref = access.create(body=context.auth_token_info,
+                                 auth_token=context.auth_token)
+        user_auth_plugin = access_plugin.AccessInfoPlugin(
+            auth_url=self._auth_uri, auth_ref=auth_ref)
+        l_kc_v3 = self._get_keystone_client(user_auth_plugin)
+        try:
+            trust = l_kc_v3.trusts.create(trustor_user=context.user_id,
+                                          trustee_user=self._smaug_user_id,
+                                          project=context.project_id,
+                                          impersonation=True,
+                                          role_names=context.roles)
+            return trust.id
+
+        except Exception as e:
+            raise exception.AuthorizationFailure(obj=str(e))
+
+    def delete_trust_to_smaug(self, trust_id):
+        auth_plugin = self._get_smaug_auth_plugin(trust_id)
+        client = self._get_keystone_client(auth_plugin)
+        client.trusts.delete(trust_id)
+
+    def create_trust_session(self, trust_id):
+        auth_plugin = self._get_smaug_auth_plugin(trust_id)
+        return keystone_session.Session(auth=auth_plugin)
+
+    def _get_service_user(self, user_name, user_domain_id):
+        try:
+            users = self._client.users.list(
+                name=user_name,
+                domain=user_domain_id)
+
+            return users[0].id if users else None
+
+        except Exception:
+            msg = ("get service's user(%s) endpoint failed" % user_name)
             raise exception.AuthorizationFailure(obj=msg)
 
     def _get_smaug_auth_plugin(self, trust_id=None):

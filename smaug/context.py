@@ -73,6 +73,7 @@ class RequestContext(context.RequestContext):
             timestamp = timeutils.parse_isotime(timestamp)
         self.timestamp = timestamp
         self.quota_class = quota_class
+        self._auth_token_info = kwargs.get('auth_token_info')
 
         if service_catalog:
             # Only include required parts of service_catalog
@@ -120,6 +121,7 @@ class RequestContext(context.RequestContext):
         result['quota_class'] = self.quota_class
         result['service_catalog'] = self.service_catalog
         result['request_id'] = self.request_id
+        result['auth_token_info'] = self._auth_token_info
         return result
 
     @classmethod
@@ -157,6 +159,10 @@ class RequestContext(context.RequestContext):
     @user_id.setter
     def user_id(self, value):
         self.user = value
+
+    @property
+    def auth_token_info(self):
+        return self._auth_token_info
 
 
 def get_admin_context(read_deleted="no"):
