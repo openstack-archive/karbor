@@ -248,7 +248,9 @@ class ScheduledOperationController(wsgi.Controller):
                 exception.TriggerIsInvalid) as ex:
             raise exc.HTTPBadRequest(explanation=ex.msg)
 
-        except (exception.TriggerNotFound, Exception) as ex:
+        except (exception.TriggerNotFound,
+                exception.AuthorizationFailure,
+                Exception) as ex:
             self._raise_unknown_exception(ex)
 
     def _raise_unknown_exception(self, exception_instance):
