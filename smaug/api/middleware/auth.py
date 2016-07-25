@@ -75,42 +75,46 @@ class SmaugKeystoneContext(base_wsgi.Middleware):
 
     @webob.dec.wsgify(RequestClass=base_wsgi.Request)
     def __call__(self, req):
-        user_id = req.headers.get('X_USER')
-        user_id = req.headers.get('X_USER_ID', user_id)
+        headers = req.headers
+        environ = req.environ
+
+        user_id = headers.get('X_USER_ID') or headers.get('X_USER')
         if user_id is None:
             LOG.debug("Neither X_USER_ID nor X_USER found in request")
             return webob.exc.HTTPUnauthorized()
         # get the roles
-        roles = [r.strip() for r in req.headers.get('X_ROLE', '').split(',')]
-        if 'X_TENANT_ID' in req.headers:
+        roles = [r.strip() for r in headers.get('X_ROLE', '').split(',')]
+        if 'X_TENANT_ID' in headers:
             # This is the new header since Keystone went to ID/Name
-            project_id = req.headers['X_TENANT_ID']
+            project_id = headers['X_TENANT_ID']
         else:
             # This is for legacy compatibility
-            project_id = req.headers['X_TENANT']
+            project_id = headers['X_TENANT']
 
-        project_name = req.headers.get('X_TENANT_NAME')
+        project_name = headers.get('X_TENANT_NAME')
 
-        req_id = req.environ.get(request_id.ENV_REQUEST_ID)
+        req_id = environ.get(request_id.ENV_REQUEST_ID)
 
         # Get the auth token
-        auth_token = req.headers.get('X_AUTH_TOKEN',
-                                     req.headers.get('X_STORAGE_TOKEN'))
+        auth_token = headers.get('X_AUTH_TOKEN',
+                                 headers.get('X_STORAGE_TOKEN'))
 
         # Build a context, including the auth_token...
         remote_address = req.remote_addr
 
+        auth_token_info = environ.get('keystone.token_info')
+
         service_catalog = None
-        if req.headers.get('X_SERVICE_CATALOG') is not None:
+        if headers.get('X_SERVICE_CATALOG') is not None:
             try:
-                catalog_header = req.headers.get('X_SERVICE_CATALOG')
+                catalog_header = headers.get('X_SERVICE_CATALOG')
                 service_catalog = jsonutils.loads(catalog_header)
             except ValueError:
                 raise webob.exc.HTTPInternalServerError(
                     explanation=_('Invalid service catalog json.'))
 
         if CONF.use_forwarded_for:
-            remote_address = req.headers.get('X-Forwarded-For', remote_address)
+            remote_address = headers.get('X-Forwarded-For', remote_address)
         ctx = context.RequestContext(user_id,
                                      project_id,
                                      project_name=project_name,
@@ -118,9 +122,10 @@ class SmaugKeystoneContext(base_wsgi.Middleware):
                                      auth_token=auth_token,
                                      remote_address=remote_address,
                                      service_catalog=service_catalog,
-                                     request_id=req_id)
+                                     request_id=req_id,
+                                     auth_token_info=auth_token_info)
 
-        req.environ['smaug.context'] = ctx
+        environ['smaug.context'] = ctx
         return self.application
 
 
