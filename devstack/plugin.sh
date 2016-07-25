@@ -24,7 +24,7 @@ function create_smaug_accounts {
 
     if is_service_enabled smaug-api; then
 
-        create_service_user "smaug"
+        create_service_user "smaug" "admin"
 
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
 
@@ -62,6 +62,16 @@ function configure_smaug_api {
             # Configure auth token middleware
             configure_auth_token_middleware $SMAUG_API_CONF smaug \
                 $SMAUG_AUTH_CACHE_DIR
+
+            # Configure for trustee
+            iniset $SMAUG_API_CONF trustee auth_type password
+            iniset $SMAUG_API_CONF trustee auth_url $KEYSTONE_AUTH_URI
+            iniset $SMAUG_API_CONF trustee username smaug
+            iniset $SMAUG_API_CONF trustee password $SERVICE_PASSWORD
+            iniset $SMAUG_API_CONF trustee user_domain_id default
+
+            # Configure for clients_keystone
+            iniset $SMAUG_API_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
 
         else
             iniset $SMAUG_API_CONF DEFAULT auth_strategy noauth
