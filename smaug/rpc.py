@@ -21,7 +21,6 @@ __all__ = [
     'get_client',
     'get_server',
     'get_notifier',
-    'TRANSPORT_ALIASES',
 ]
 
 from oslo_config import cfg
@@ -40,8 +39,6 @@ ALLOWED_EXMODS = [
 ]
 EXTRA_EXMODS = []
 
-TRANSPORT_ALIASES = {}
-
 
 def init(conf):
     if initialized():
@@ -50,8 +47,7 @@ def init(conf):
     global TRANSPORT, NOTIFIER
     exmods = get_allowed_exmods()
     TRANSPORT = messaging.get_transport(conf,
-                                        allowed_remote_exmods=exmods,
-                                        aliases=TRANSPORT_ALIASES)
+                                        allowed_remote_exmods=exmods)
 
     serializer = RequestContextSerializer(JsonPayloadSerializer())
     NOTIFIER = messaging.Notifier(TRANSPORT, serializer=serializer)
