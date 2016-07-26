@@ -107,7 +107,7 @@ The lease client won't update its expire_time in memory.
 check_lease_validity
 --------------------
 This function is used by the checkpoint owner to check whether there is enough time to execute an
-update operation to one checkpoint (or anything else garded by the lease) before the lease expiring.
+update operation to one checkpoint (or anything else guarded by the lease) before the lease expiring.
 
 We use validity_window to represent the time window inside which an update operation to a checkpoint
 should complete.  This window is configurable and should be estimated by admin.

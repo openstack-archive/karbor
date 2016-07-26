@@ -81,7 +81,7 @@ CheckpointCollection
 
 Entity to manage checkpoints, which provides CRUD interfaces to handle
 checkpoint. As checkpoint is a smaug internal entity, one checkpoint operation
-is actually composed by combination of serveral BankPlugin atomic operations.
+is actually composed by combination of several BankPlugin atomic operations.
 
 Take create_checkpoint as example, it will first acquire write lease (there
 will be detailed **lease** design doc) to avoid conflict with GC deletion, then

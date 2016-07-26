@@ -41,8 +41,8 @@ Plugin*, which is used for operations related to any appropriate resource.
 There are 3 resource operations a *Protection Provider* supports, and any
 *Protection Plugin* needs to implement. These operations usually act on
 numerous resources, and the *Protection Provider* infrastructure is responsible
-for using the corresponding *Protection Plugin* implemenation, for each
-resource. The *Protection Provider* is reponsible for initiating a DFS traverse
+for using the corresponding *Protection Plugin* implementation, for each
+resource. The *Protection Provider* is responsible for initiating a DFS traverse
 of the resource graph, building tasks for each of the resources, and linking
 them in respect of the execution order and dependency.
 
@@ -183,7 +183,7 @@ Notes:
     resource PostActivity
 
 This scheme decouples the tree structure from the task execution. A plugin that
-handles multiple resources or that aggregates mutiple resources to one task can
+handles multiple resources or that aggregates multiple resources to one task can
 use this mechanism to only return tasks when appropriate for it's scheme.
 
 .. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/pluggable_protection_provider.svg
