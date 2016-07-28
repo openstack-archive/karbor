@@ -13,7 +13,7 @@ we defined a simplified object store interface that we believe most backends wil
 to support without much work.
 
 But the simplified interface doesn't describe how Smaug will do it's higher
-level operations and how the higher level logic will be layed out in the object
+level operations and how the higher level logic will be laid out in the object
 store. This is why we need higher level logic defined explicitly so that later
 we could use higher level bank functions knowing they are correct, safe and atomic.
 
