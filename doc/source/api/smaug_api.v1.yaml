@@ -15,7 +15,7 @@ paths:
       summary: Providers
       description: |
         The Providers endpoint returns information about the providers
-        offered at a given service. All providers need to be configuered
+        offered at a given service. All providers need to be configured
         first by the admin.
       parameters:
         - $ref: '#/parameters/projectParam'
@@ -122,7 +122,7 @@ paths:
               {
                 "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
                 "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-                "status": "comitted",
+                "status": "committed",
                 "protection_plan": {
                   "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
                   "name": "My 3 tier application",
@@ -1350,7 +1350,7 @@ definitions:
           Trigger properties. Supply parameters for the trigger type.
   TimeTrigger:
     description: |
-      Trigger definition for time tigger.
+      Trigger definition for time trigger.
     allOf:
     - $ref: '#/definitions/Trigger'
     - type: object

@@ -5,7 +5,7 @@ title Smaug Protectables
 hide circle
 
 legend top
-This file contains the dependecy between protectables in the default
+This file contains the dependency between protectables in the default
 distribution of Smaug. The arrows, similar to inheritance point to the parent
 since Protectables define what types they depend on so this reflects who is
 responsible for the connection.
