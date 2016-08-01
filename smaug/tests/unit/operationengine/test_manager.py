@@ -35,6 +35,17 @@ class FakeTriggerManager(object):
         self._trigger[trigger_id] = []
 
 
+class FakeUserTrustManager(object):
+    def add_operation(self, context, operation_id):
+        return "123"
+
+    def delete_operation(self, context, operation_id):
+        pass
+
+    def resume_operation(self, operation_id, user_id, project_id, trust_id):
+        pass
+
+
 class OperationEngineManagerTestCase(base.TestCase):
     """Test cases for OperationEngineManager class."""
 
@@ -44,6 +55,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         self.manager = service_manager.OperationEngineManager()
         self.manager._service_id = 0
         self.manager._trigger_manager = FakeTriggerManager()
+        self.manager._user_trust_manager = FakeUserTrustManager()
 
         self.ctxt = context.get_admin_context()
         self._trigger = self._create_one_trigger()
@@ -103,7 +115,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         operation_info = {
             "name": "123",
             "operation_type": "protect",
-            "user_id": '123',
+            'user_id': '123',
             "project_id": "123",
             "trigger_id": trigger_id,
             "operation_definition": {

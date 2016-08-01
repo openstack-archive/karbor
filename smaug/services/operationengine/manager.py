@@ -24,6 +24,7 @@ from smaug import exception
 from smaug import manager
 from smaug import objects
 from smaug.services.operationengine.engine import trigger_manager
+from smaug.services.operationengine import user_trust_manager
 
 
 CONF = cfg.CONF
@@ -43,10 +44,12 @@ class OperationEngineManager(manager.Manager):
         super(OperationEngineManager, self).__init__(*args, **kwargs)
         self._service_id = None
         self._trigger_manager = None
+        self._user_trust_manager = None
 
     def init_host(self, **kwargs):
         self._trigger_manager = trigger_manager.TriggerManager()
         self._service_id = kwargs.get("service_id")
+        self._user_trust_manager = user_trust_manager.UserTrustManager()
         self._restore()
 
     def cleanup_host(self):
@@ -93,28 +96,35 @@ class OperationEngineManager(manager.Manager):
 
             for state in states:
                 resume = (state.state in resume_states)
+                operation = state.operation
                 self._trigger_manager.register_operation(
-                    state.operation.trigger_id, state.operation.id,
+                    operation.trigger_id, operation.id,
                     resume=resume, end_time_for_run=state.end_time_for_run)
 
+                self._user_trust_manager.resume_operation(
+                    operation.id, operation.user_id,
+                    operation.project_id, state.trust_id)
             if len(states) < limit:
                 break
             marker = states[-1].id
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput,
-                                   exception.TriggerIsInvalid)
+                                   exception.TriggerIsInvalid,
+                                   exception.AuthorizationFailure)
     def create_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Create scheduled operation.")
 
         # register operation
         self._trigger_manager.register_operation(trigger_id, operation_id)
+        trust_id = self._user_trust_manager.add_operation(
+            context, operation_id)
 
         # create ScheduledOperationState record
         state_info = {
             "operation_id": operation_id,
             "service_id": self._service_id,
-            "trust_id": "",
+            "trust_id": trust_id,
             "state": constants.OPERATION_STATE_REGISTERED
         }
         operation_state = objects.ScheduledOperationState(
@@ -138,6 +148,7 @@ class OperationEngineManager(manager.Manager):
             operation_state.save()
 
         self._trigger_manager.unregister_operation(trigger_id, operation_id)
+        self._user_trust_manager.delete_operation(context, operation_id)
 
     @messaging.expected_exceptions(exception.InvalidInput)
     def create_trigger(self, context, trigger):
