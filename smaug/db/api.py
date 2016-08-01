@@ -265,11 +265,12 @@ def scheduled_operation_get_all_by_filters_sort(
 ###################
 
 
-def scheduled_operation_state_get(context, operation_id):
+def scheduled_operation_state_get(context, operation_id, columns_to_join=[]):
     """Get a scheduled operation state by its id.
 
     :param context: The security context
     :param operation_id: Operation_id of the scheduled operation state
+    :columns_to_join: columns which will be joined
 
     :returns: Dictionary-like object containing properties of the scheduled
      operation state
@@ -277,7 +278,8 @@ def scheduled_operation_state_get(context, operation_id):
     Raises ScheduledOperationStateNotFound if scheduled operation state with
      the given ID doesn't exist.
     """
-    return IMPL.scheduled_operation_state_get(context, operation_id)
+    return IMPL.scheduled_operation_state_get(context, operation_id,
+                                              columns_to_join)
 
 
 def scheduled_operation_state_create(context, values):

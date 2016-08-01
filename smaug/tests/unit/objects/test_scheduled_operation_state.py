@@ -44,7 +44,7 @@ class TestScheduledOperationState(test_objects.BaseObjectsTestCase):
         state = self.State_Class.get_by_operation_id(self.context,
                                                      Operation_ID)
         self._compare(self, db_state, state)
-        state_get.assert_called_once_with(self.context, Operation_ID)
+        state_get.assert_called_once_with(self.context, Operation_ID, [])
 
     @mock.patch('smaug.db.scheduled_operation_state_create')
     def test_create(self, state_create):
@@ -78,6 +78,15 @@ class TestScheduledOperationState(test_objects.BaseObjectsTestCase):
         state_delete.assert_called_once_with(self.context,
                                              state.operation_id)
 
+    def test_get_state_and_operation(self):
+        ctx = context.get_admin_context()
+        service, trigger, operation, state = FakeEnv(ctx).do_init()
+
+        state_obj = self.State_Class.get_by_operation_id(
+            self.context, operation.id, ['operation'])
+
+        self.assertEqual(operation.id, state_obj.operation.id)
+
 
 class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
 
@@ -86,11 +95,7 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
         self.context = context.get_admin_context()
 
     def test_get_by_filters(self):
-        service = self._create_service()
-        trigger = self._create_trigger()
-        operation = self._create_operation(trigger.id)
-        state = self._create_operation_state(operation.id, service.id)
-
+        service, trigger, operation, state = FakeEnv(self.context).do_init()
         states = objects.ScheduledOperationStateList.get_by_filters(
             self.context, {'service_id': service.id},
             columns_to_join=['operation'])
@@ -98,6 +103,19 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
         state1 = states.objects[0]
         self.assertEqual(state.id, state1.id)
         self.assertEqual(operation.id, state1.operation.id)
+
+
+class FakeEnv(object):
+
+    def __init__(self, ctx):
+        self.context = ctx
+
+    def do_init(self):
+        service = self._create_service()
+        trigger = self._create_trigger()
+        operation = self._create_operation(trigger.id)
+        state = self._create_operation_state(operation.id, service.id)
+        return service, trigger, operation, state
 
     def _create_service(self):
         service_info = {
