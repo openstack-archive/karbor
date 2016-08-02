@@ -103,7 +103,7 @@ class TimeTrigger(triggers.BaseTrigger):
     def register_operation(self, operation_id, **kwargs):
         if operation_id in self._operation_ids:
             msg = (_("The operation_id(%s) is exist") % operation_id)
-            raise exception.InvalidInput(msg)
+            raise exception.ScheduledOperationExist(msg)
 
         if self._greenthread and not self._greenthread.running:
             raise exception.TriggerIsInvalid(trigger_id=self._id)

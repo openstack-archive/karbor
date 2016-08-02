@@ -40,27 +40,35 @@ class OperationEngineAPI(object):
                                   version=self.RPC_API_VERSION)
         serializer = objects_base.KarborObjectSerializer()
 
-        self.client = rpc.get_client(target, version_cap=None,
-                                     serializer=serializer)
+        client = rpc.get_client(target, version_cap=None,
+                                serializer=serializer)
+        self._client = client.prepare(version='1.0')
 
     def create_scheduled_operation(self, ctxt, operation_id, trigger_id):
-        cctxt = self.client.prepare(version='1.0')
-        return cctxt.call(ctxt, 'create_scheduled_operation',
-                          operation_id=operation_id, trigger_id=trigger_id)
+        return self._client.call(ctxt, 'create_scheduled_operation',
+                                 operation_id=operation_id,
+                                 trigger_id=trigger_id)
 
     def delete_scheduled_operation(self, ctxt, operation_id, trigger_id):
-        cctxt = self.client.prepare(version='1.0')
-        return cctxt.call(ctxt, 'delete_scheduled_operation',
-                          operation_id=operation_id, trigger_id=trigger_id)
+        return self._client.call(ctxt, 'delete_scheduled_operation',
+                                 operation_id=operation_id,
+                                 trigger_id=trigger_id)
+
+    def suspend_scheduled_operation(self, ctxt, operation_id, trigger_id):
+        return self._client.call(ctxt, 'suspend_scheduled_operation',
+                                 operation_id=operation_id,
+                                 trigger_id=trigger_id)
+
+    def resume_scheduled_operation(self, ctxt, operation_id, trigger_id):
+        return self._client.call(ctxt, 'resume_scheduled_operation',
+                                 operation_id=operation_id,
+                                 trigger_id=trigger_id)
 
     def create_trigger(self, ctxt, trigger):
-        cctxt = self.client.prepare(version='1.0')
-        return cctxt.call(ctxt, 'create_trigger', trigger=trigger)
+        return self._client.call(ctxt, 'create_trigger', trigger=trigger)
 
     def delete_trigger(self, ctxt, trigger_id):
-        cctxt = self.client.prepare(version='1.0')
-        return cctxt.call(ctxt, 'delete_trigger', trigger_id=trigger_id)
+        return self._client.call(ctxt, 'delete_trigger', trigger_id=trigger_id)
 
     def update_trigger(self, ctxt, trigger):
-        cctxt = self.client.prepare(version='1.0')
-        return cctxt.call(ctxt, 'update_trigger', trigger=trigger)
+        return self._client.call(ctxt, 'update_trigger', trigger=trigger)

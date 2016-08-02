@@ -94,7 +94,7 @@ class TimeTriggerTestCase(base.TestCase):
         operation_id = "1"
         self._register_operation(operation_id)
 
-        self.assertRaisesRegexp(exception.InvalidInput,
+        self.assertRaisesRegexp(exception.ScheduledOperationExist,
                                 "The operation_id.* is exist",
                                 self._trigger.register_operation,
                                 operation_id)

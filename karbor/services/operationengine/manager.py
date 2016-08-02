@@ -95,8 +95,11 @@ class OperationEngineManager(manager.Manager):
                 break
 
             for state in states:
-                resume = (state.state in resume_states)
                 operation = state.operation
+                if not operation.enabled:
+                    continue
+
+                resume = (state.state in resume_states)
                 self._trigger_manager.register_operation(
                     operation.trigger_id, operation.id,
                     resume=resume, end_time_for_run=state.end_time_for_run)
@@ -111,7 +114,8 @@ class OperationEngineManager(manager.Manager):
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput,
                                    exception.TriggerIsInvalid,
-                                   exception.AuthorizationFailure)
+                                   exception.AuthorizationFailure,
+                                   exception.ScheduledOperationExist)
     def create_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Create scheduled operation.")
 
@@ -149,6 +153,24 @@ class OperationEngineManager(manager.Manager):
 
         self._trigger_manager.unregister_operation(trigger_id, operation_id)
         self._user_trust_manager.delete_operation(context, operation_id)
+
+    @messaging.expected_exceptions(exception.TriggerNotFound)
+    def suspend_scheduled_operation(self, context, operation_id, trigger_id):
+        LOG.debug("Suspend scheduled operation.")
+        self._trigger_manager.unregister_operation(trigger_id, operation_id)
+
+    @messaging.expected_exceptions(exception.TriggerNotFound,
+                                   exception.TriggerIsInvalid)
+    def resume_scheduled_operation(self, context, operation_id, trigger_id):
+        LOG.debug("Resume scheduled operation.")
+
+        try:
+            self._trigger_manager.register_operation(
+                trigger_id, operation_id)
+        except exception.ScheduledOperationExist:
+            pass
+        except Exception:
+            raise
 
     @messaging.expected_exceptions(exception.InvalidInput)
     def create_trigger(self, context, trigger):

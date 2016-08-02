@@ -41,6 +41,14 @@ class API(base.Base):
         self.operationengine_rpcapi.delete_scheduled_operation(
             context, operation_id, trigger_id)
 
+    def suspend_scheduled_operation(self, context, operation_id, trigger_id):
+        self.operationengine_rpcapi.suspend_scheduled_operation(
+            context, operation_id, trigger_id)
+
+    def resume_scheduled_operation(self, context, operation_id, trigger_id):
+        self.operationengine_rpcapi.resume_scheduled_operation(
+            context, operation_id, trigger_id)
+
     def create_trigger(self, context, trigger):
         self.operationengine_rpcapi.create_trigger(context, trigger)
 
