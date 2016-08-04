@@ -14,6 +14,7 @@ import eventlet
 from io import BytesIO
 import os
 from time import sleep
+from uuid import uuid4
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -25,6 +26,7 @@ from smaug.services.protection.protection_plugins.base_protection_plugin \
     import BaseProtectionPlugin
 from smaug.services.protection.protection_plugins.server \
     import server_plugin_schemas
+from smaug.services.protection.restore_heat import HeatResource
 
 protection_opts = [
     cfg.IntOpt('backup_image_object_size',
@@ -35,6 +37,9 @@ protection_opts = [
 CONF = cfg.CONF
 CONF.register_opts(protection_opts)
 LOG = logging.getLogger(__name__)
+
+VOLUME_ATTACHMENT_RESOURCE = 'OS::Cinder::VolumeAttachment'
+FLOATING_IP_ASSOCIATION = 'OS::Nova::FloatingIPAssociation'
 
 
 class NovaProtectionPlugin(BaseProtectionPlugin):
@@ -273,8 +278,187 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                 resource_type=constants.SERVER_RESOURCE_TYPE)
 
     def restore_backup(self, cntxt, checkpoint, **kwargs):
-        # TODO(luobin): use heat template to execute restore
-        pass
+        resource_node = kwargs.get("node")
+        original_server_id = resource_node.value.id
+        heat_template = kwargs.get("heat_template")
+
+        restore_name = kwargs.get("restore_name", "smaug-restore-server")
+
+        LOG.info(_("restoring server backup, server_id: %s."),
+                 original_server_id)
+
+        bank_section = checkpoint.get_resource_bank_section(original_server_id)
+        try:
+            resource_definition = bank_section.get_object("metadata")
+
+            # restore server snapshot
+            image_id = self._restore_server_snapshot(
+                bank_section, checkpoint, cntxt,
+                original_server_id, resource_definition)
+
+            # restore server instance
+            self._heat_restore_server_instance(
+                heat_template, image_id, original_server_id,
+                restore_name, resource_definition)
+
+            # restore volume attachment
+            self._heat_restore_volume_attachment(
+                heat_template, original_server_id, resource_definition)
+
+            # restore floating ip association
+            self._heat_restore_floating_association(
+                heat_template, original_server_id, resource_definition)
+
+        except Exception as e:
+            LOG.error(_LE("restore server backup failed, server_id: %s."),
+                      original_server_id)
+            raise exception.RestoreBackupFailed(
+                reason=e,
+                resource_id=original_server_id,
+                resource_type=constants.SERVER_RESOURCE_TYPE
+            )
+
+    def _restore_server_snapshot(self, bank_section, checkpoint, cntxt,
+                                 original_id, resource_definition):
+        snapshot_metadata = resource_definition["snapshot_metadata"]
+
+        glance_client = self._glance_client(cntxt)
+        objects = [key.split("/")[-1] for key in
+                   bank_section.list_objects()]
+
+        # restore kernel if needed
+        kernel_id = None
+        if snapshot_metadata.get("kernel_metadata") is not None:
+            kernel_id = self._restore_image(
+                bank_section, checkpoint, glance_client, "kernel",
+                snapshot_metadata["kernel_metadata"], objects,
+                original_id)
+
+        # restore ramdisk if needed
+        ramdisk_id = None
+        if snapshot_metadata.get("ramdisk_metadata") is not None:
+            ramdisk_id = self._restore_image(
+                bank_section, checkpoint, glance_client, "ramdisk",
+                snapshot_metadata["ramdisk_metadata"], objects,
+                original_id)
+
+        # restore image
+        image_id = self._restore_image(
+            bank_section, checkpoint, glance_client, "snapshot",
+            snapshot_metadata, objects, original_id,
+            kernel_id=kernel_id, ramdisk_id=ramdisk_id)
+
+        image_info = glance_client.images.get(image_id)
+        retry_attempts = 10
+        while image_info.status != "active" and retry_attempts != 0:
+            sleep(60)
+            image_info = glance_client.images.get(image_id)
+            retry_attempts -= 1
+        if retry_attempts == 0:
+            raise Exception
+        return image_id
+
+    def _restore_image(self, bank_section, checkpoint, glance_client,
+                       image_format, image_metadata, objects, original_id,
+                       **kwargs):
+        if image_metadata.get("name") is None:
+            name = "%s_%s@%s" % (image_format, checkpoint.id,
+                                 original_id)
+        else:
+            name = image_metadata["name"]
+        disk_format = image_metadata["disk_format"]
+        container_format = image_metadata["container_format"]
+        image_data = BytesIO()
+        for obj in objects:
+            if obj.find("%s_" % image_format) == 0:
+                data = bank_section.get_object(obj)
+                image_data.write(data)
+        image_data.seek(0, os.SEEK_SET)
+        image = glance_client.images.create(
+            disk_format=disk_format,
+            container_format=container_format,
+            name=name,
+            kernel_id=kwargs.get("kernel_id"),
+            ramdisk_id=kwargs.get("ramdisk_id"))
+        image_id = image.id
+        glance_client.images.upload(image_id, image_data)
+        return image_id
+
+    def _heat_restore_server_instance(self, heat_template, image_id,
+                                      original_id, restore_name,
+                                      resource_definition):
+        server_metadata = resource_definition["server_metadata"]
+        properties = {
+            "availability_zone": server_metadata["availability_zone"],
+            "flavor": server_metadata["flavor"],
+            "image": image_id,
+            "name": restore_name,
+        }
+
+        if server_metadata["key_name"] is not None:
+            properties["key_name"] = server_metadata["key_name"]
+
+        if server_metadata["security_groups"] is not None:
+            security_groups = []
+            for security_group in server_metadata["security_groups"]:
+                security_groups.append(security_group["name"])
+            properties["security_groups"] = security_groups
+
+        networks = []
+        for network in server_metadata["networks"]:
+            networks.append({"network": network})
+        properties["networks"] = networks
+
+        heat_resource_id = str(uuid4())
+        heat_server_resource = HeatResource(heat_resource_id,
+                                            constants.SERVER_RESOURCE_TYPE)
+        for key, value in properties.items():
+            heat_server_resource.set_property(key, value)
+
+        heat_template.put_resource(original_id,
+                                   heat_server_resource)
+
+    def _heat_restore_volume_attachment(self, heat_template,
+                                        original_server_id,
+                                        resource_definition):
+        attach_metadata = resource_definition["attach_metadata"]
+        for original_volume_id, device in attach_metadata.items():
+            instance_uuid = heat_template.get_resource_reference(
+                original_server_id)
+            volume_id = heat_template.get_resource_reference(
+                original_volume_id)
+            properties = {"mountpoint": device,
+                          "instance_uuid": instance_uuid,
+                          "volume_id": volume_id}
+
+            heat_resource_id = str(uuid4())
+            heat_attachment_resource = HeatResource(
+                heat_resource_id,
+                VOLUME_ATTACHMENT_RESOURCE)
+            for key, value in properties.items():
+                heat_attachment_resource.set_property(key, value)
+            heat_template.put_resource(
+                "%s_%s" % (original_server_id, original_volume_id),
+                heat_attachment_resource)
+
+    def _heat_restore_floating_association(self, heat_template,
+                                           original_server_id,
+                                           resource_definition):
+        server_metadata = resource_definition["server_metadata"]
+        for floating_ip in server_metadata["floating_ips"]:
+            instance_uuid = heat_template.get_resource_reference(
+                original_server_id)
+            properties = {"instance_uuid": instance_uuid,
+                          "floating_ip": floating_ip}
+            heat_resource_id = str(uuid4())
+            heat_floating_resource = HeatResource(
+                heat_resource_id, FLOATING_IP_ASSOCIATION)
+
+            for key, value in properties.items():
+                heat_floating_resource.set_property(key, value)
+            heat_template.put_resource(
+                "%s_%s" % (original_server_id, floating_ip),
+                heat_floating_resource)
 
     def delete_backup(self, cntxt, checkpoint, **kwargs):
         resource_node = kwargs.get("node")
