@@ -114,6 +114,7 @@ class OperationEngineManagerTestCase(base.TestCase):
     def _create_scheduled_operation(self, trigger_id):
         operation_info = {
             "name": "123",
+            'description': '123',
             "operation_type": "protect",
             'user_id': '123',
             "project_id": "123",

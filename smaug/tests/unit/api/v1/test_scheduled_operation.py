@@ -53,6 +53,7 @@ class ScheduledOperationApiTest(base.TestCase):
         self._plan = self._create_plan(str(uuid.uuid4()))
         self.default_create_operation_param = {
             "name": "123",
+            "description": "123",
             "operation_type": "protect",
             "trigger_id": trigger['trigger_info']['id'],
             "operation_definition": {

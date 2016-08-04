@@ -163,6 +163,7 @@ class ScheduledOperationTestCase(base.TestCase):
         values = {
             'id': '0354ca9ddcd046b693340d78759fd274',
             'name': 'protect vm',
+            'description': 'protect vm resource',
             'operation_type': 'protect',
             'user_id': self.ctxt.user_id,
             'project_id': self.ctxt.tenant,

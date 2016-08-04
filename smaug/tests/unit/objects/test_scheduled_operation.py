@@ -28,6 +28,7 @@ Fake_Operation = {
     'deleted': False,
     'id': Operation_ID,
     'name': 'protect vm',
+    'description': 'protect vm resource',
     'operation_type': 'protect',
     'user_id': '123',
     'project_id': '123',

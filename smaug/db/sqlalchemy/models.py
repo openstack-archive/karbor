@@ -81,6 +81,7 @@ class ScheduledOperation(BASE, SmaugBase):
 
     id = Column(String(36), primary_key=True, nullable=False)
     name = Column(String(255), nullable=False)
+    description = Column(String(255))
     operation_type = Column(String(64), nullable=False)
     user_id = Column(String(64), nullable=False)
     project_id = Column(String(255), nullable=False)

@@ -89,6 +89,7 @@ class ThreadPoolExecutorTestCase(base.TestCase):
     def _create_operation(self, trigger_id='123'):
         operation_info = {
             'name': 'protect vm',
+            'description': 'protect vm resource',
             'operation_type': 'protect',
             'user_id': '123',
             'project_id': '123',

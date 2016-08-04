@@ -48,6 +48,7 @@ class ScheduledOperationViewBuilder(common.ViewBuilder):
             'scheduled_operation': {
                 'id': operation.get('id'),
                 'name': operation.get('name'),
+                'description': operation.get('description'),
                 'operation_type': operation.get('operation_type'),
                 'project_id': operation.get('project_id'),
                 'trigger_id': operation.get('trigger_id'),
@@ -123,6 +124,7 @@ class ScheduledOperationController(wsgi.Controller):
 
         operation_obj = {
             'name': operation_info.get('name', None),
+            'description': operation_info.get('description', None),
             'operation_type': operation_type,
             'user_id': context.user_id,
             'project_id': context.project_id,

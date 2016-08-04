@@ -122,6 +122,7 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
     def _create_operation(self, trigger_id):
         operation_info = {
             'name': 'protect vm',
+            'description': 'protect vm resource',
             'operation_type': 'protect',
             'user_id': '123',
             'project_id': '123',

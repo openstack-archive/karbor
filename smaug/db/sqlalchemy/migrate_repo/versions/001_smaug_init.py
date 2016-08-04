@@ -120,6 +120,7 @@ def define_tables(meta):
         Column('deleted', Boolean, nullable=False),
         Column('id', String(length=36), primary_key=True, nullable=False),
         Column('name', String(length=255), nullable=False),
+        Column('description', String(length=255)),
         Column('operation_type', String(length=64), nullable=False),
         Column('user_id', String(length=64), nullable=False),
         Column('project_id', String(length=255), nullable=False),
