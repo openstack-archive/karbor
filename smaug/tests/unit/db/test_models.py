@@ -238,7 +238,8 @@ class ScheduledOperationStateTestCase(base.TestCase):
 
     def setUp(self):
         super(ScheduledOperationStateTestCase, self).setUp()
-        self.ctxt = context.get_admin_context()
+        self.ctxt = context.RequestContext(user_id='user_id',
+                                           project_id='project_id')
 
     def _create_scheduled_operation_state(self):
         values = {
@@ -289,6 +290,27 @@ class ScheduledOperationStateTestCase(base.TestCase):
         state_ref = db.scheduled_operation_state_get(self.ctxt,
                                                      state_ref['operation_id'])
         self.assertEqual('init', state_ref['state'])
+
+    def test_scheduled_operation_state_get_join_operation(self):
+        def _create_scheduled_operation():
+            values = {
+                'id': '0354ca9ddcd046b693340d78759fd274',
+                'name': 'protect vm',
+                'operation_type': 'protect',
+                'user_id': self.ctxt.user_id,
+                'project_id': self.ctxt.tenant,
+                'trigger_id': '0354ca9ddcd046b693340d78759fd275',
+                'operation_definition': '{}'
+            }
+            return db.scheduled_operation_create(self.ctxt, values)
+
+        operation_ref = _create_scheduled_operation()
+        self._create_scheduled_operation_state()
+        state_ref = db.scheduled_operation_state_get(
+            self.ctxt,
+            operation_ref['id'],
+            ['operation'])
+        self.assertEqual(operation_ref['id'], state_ref.operation['id'])
 
 
 class ScheduledOperationLogTestCase(base.TestCase):

@@ -65,10 +65,15 @@ class ScheduledOperationState(base.SmaugPersistentObject, base.SmaugObject,
         return state
 
     @base.remotable_classmethod
-    def get_by_operation_id(cls, context, operation_id):
-        db_state = db.scheduled_operation_state_get(context, operation_id)
+    def get_by_operation_id(cls, context, operation_id, expected_attrs=[]):
+        columns_to_join = [col for col in expected_attrs
+                           if col in cls.INSTANCE_OPTIONAL_JOINED_FIELDS]
+
+        db_state = db.scheduled_operation_state_get(
+            context, operation_id, columns_to_join)
         if db_state:
-            return cls._from_db_object(context, cls(), db_state)
+            return cls._from_db_object(context, cls(),
+                                       db_state, columns_to_join)
 
     @base.remotable
     def create(self):

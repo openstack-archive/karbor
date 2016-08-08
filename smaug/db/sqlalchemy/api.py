@@ -517,17 +517,22 @@ def scheduled_operation_get_all_by_filters_sort(
 ###################
 
 
-def scheduled_operation_state_get(context, operation_id):
-    return _scheduled_operation_state_get(context, operation_id)
+def scheduled_operation_state_get(context, operation_id, columns_to_join=[]):
+    return _scheduled_operation_state_get(context, operation_id,
+                                          columns_to_join=columns_to_join)
 
 
-def _scheduled_operation_state_get(context, operation_id, session=None):
-    result = model_query(context, models.ScheduledOperationState,
-                         session=session).filter_by(operation_id=operation_id)
-    result = result.first()
+def _scheduled_operation_state_get(context, operation_id,
+                                   columns_to_join=[], session=None):
+    query = model_query(context, models.ScheduledOperationState,
+                        session=session).filter_by(operation_id=operation_id)
+
+    if columns_to_join and 'operation' in columns_to_join:
+        query = query.options(joinedload('operation'))
+
+    result = query.first()
     if not result:
         raise exception.ScheduledOperationStateNotFound(op_id=operation_id)
-
     return result
 
 
