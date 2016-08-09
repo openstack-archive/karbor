@@ -74,9 +74,9 @@ class SyncStackStatusTask(task.Task):
                 return
 
             raise loopingcall.LoopingCallDone()
-        except Exception as err:
+        except Exception:
             LOG.info(_("stop sync stack status, stack_id:%s"), stack_id)
-            raise err
+            raise
 
 
 def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
