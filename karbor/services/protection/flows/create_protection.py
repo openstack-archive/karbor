@@ -11,7 +11,7 @@
 # under the License.
 
 from karbor.common import constants
-from karbor.i18n import _
+from karbor.i18n import _LI
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -52,7 +52,7 @@ class SyncCheckpointStatusTask(task.Task):
         self._status_getters = status_getters
 
     def execute(self, checkpoint):
-        LOG.info(_("Start sync checkpoint status,checkpoint_id:%s"),
+        LOG.info(_LI("Start sync checkpoint status,checkpoint_id: %s"),
                  checkpoint.id)
         sync_status = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, checkpoint, self._status_getters)
@@ -76,9 +76,9 @@ class SyncCheckpointStatusTask(task.Task):
         else:
             checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE
             checkpoint.commit()
-            LOG.info(_("Stop sync checkpoint status,checkpoint_id:"
-                       "%(checkpoint_id)s,checkpoint status:"
-                       "%(checkpoint_status)s") %
+            LOG.info(_LI("Stop sync checkpoint status,checkpoint_id: "
+                         "%(checkpoint_id)s,checkpoint status: "
+                         "%(checkpoint_status)s"),
                      {"checkpoint_id": checkpoint.id,
                       "checkpoint_status": checkpoint.status})
             raise loopingcall.LoopingCallDone()

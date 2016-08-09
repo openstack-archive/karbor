@@ -16,7 +16,7 @@ from uuid import uuid4
 from cinderclient.exceptions import NotFound
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection.protection_plugins.base_protection_plugin \
     import BaseProtectionPlugin
@@ -82,7 +82,7 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
         resource_definition = {"volume_id": volume_id}
         cinder_client = self._cinder_client(cntxt)
 
-        LOG.info(_("creating volume backup, volume_id: %s."), volume_id)
+        LOG.info(_LI("creating volume backup, volume_id: %s."), volume_id)
         try:
             bank_section.create_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
@@ -115,7 +115,7 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
 
         bank_section = checkpoint.get_resource_bank_section(resource_id)
         cinder_client = self._cinder_client(cntxt)
-        LOG.info(_("deleting volume backup, volume_id: %s."), resource_id)
+        LOG.info(_LI("deleting volume backup, volume_id: %s."), resource_id)
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETING)
@@ -164,10 +164,10 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                     bank_section.update_object(
                         "status",
                         constants.RESOURCE_STATUS_DELETED)
-                    LOG.info(_("deleting volume backup finished."
-                               "backup id: %s"), backup_id)
+                    LOG.info(_LI("deleting volume backup finished, "
+                                 "backup id: %s"), backup_id)
                 else:
-                    LOG.error(_LE("deleting volume backup error.exc:%s."),
+                    LOG.error(_LE("deleting volume backup error.exc: %s"),
                               six.text_type(exc))
                 self.protection_resource_map.pop(resource_id)
 

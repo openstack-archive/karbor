@@ -11,7 +11,7 @@
 # under the License.
 
 from karbor.common import constants
-from karbor.i18n import _
+from karbor.i18n import _LI
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -36,7 +36,7 @@ class SyncCheckpointStatusTask(task.Task):
         self._checkpoint = checkpoint
 
     def execute(self):
-        LOG.info(_("Start sync checkpoint status,checkpoint_id:%s"),
+        LOG.info(_LI("Start sync checkpoint status,checkpoint_id:%s"),
                  self._checkpoint.id)
         sync_status = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, self._checkpoint, self._status_getters)
@@ -48,9 +48,9 @@ class SyncCheckpointStatusTask(task.Task):
             resource_id = s.get('resource_id')
             get_resource_stats = s.get('get_resource_stats')
             statuses.add(get_resource_stats(checkpoint, resource_id))
-        LOG.info(_("Start sync checkpoint status,checkpoint_id:"
-                   "%(checkpoint_id)s, resource_status:"
-                   "%(resource_status)s") %
+        LOG.info(_LI("Start sync checkpoint status,checkpoint_id:"
+                     "%(checkpoint_id)s, resource_status:"
+                     "%(resource_status)s") %
                  {"checkpoint_id": checkpoint.id,
                   "resource_status": statuses})
         if constants.RESOURCE_STATUS_ERROR in statuses:
@@ -59,9 +59,9 @@ class SyncCheckpointStatusTask(task.Task):
             raise loopingcall.LoopingCallDone()
         elif statuses == {constants.RESOURCE_STATUS_DELETED, }:
             checkpoint.delete()
-            LOG.info(_("Stop sync checkpoint status,checkpoint_id:"
-                       "%(checkpoint_id)s,checkpoint status:"
-                       "%(checkpoint_status)s") %
+            LOG.info(_LI("Stop sync checkpoint status,checkpoint_id: "
+                         "%(checkpoint_id)s,checkpoint status: "
+                         "%(checkpoint_status)s"),
                      {"checkpoint_id": checkpoint.id,
                       "checkpoint_status": checkpoint.status})
             raise loopingcall.LoopingCallDone()
@@ -74,7 +74,7 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider):
            'workflow_engine': workflow_engine,
            'operation_type': operation_type,
            }
-    LOG.info(_("Start get checkpoint flow,checkpoint_id:%s"),
+    LOG.info(_LI("Start get checkpoint flow,checkpoint_id: %s"),
              checkpoint.id)
     flow_name = "delete_checkpoint_" + checkpoint.id
     delete_flow = workflow_engine.build_flow(flow_name, 'linear')

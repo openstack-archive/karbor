@@ -16,7 +16,7 @@ import os
 from io import BytesIO
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection.protection_plugins.base_protection_plugin \
     import BaseProtectionPlugin
@@ -82,7 +82,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         resource_definition = {"resource_id": image_id}
         glance_client = self._glance_client(cntxt)
 
-        LOG.info(_("creating image backup, image_id: %s."), image_id)
+        LOG.info(_LI("creating image backup, image_id: %s."), image_id)
         try:
             bank_section.create_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
@@ -138,7 +138,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
             # update resource_definition backup_status
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_AVAILABLE)
-            LOG.info(_("finish backup image, image_id: %s."), image_id)
+            LOG.info(_LI("finish backup image, image_id: %s."), image_id)
         except Exception as err:
             # update resource_definition backup_status
             LOG.error(_LE("create image backup failed, image_id: %s."),
@@ -156,7 +156,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         heat_template = kwargs.get("heat_template")
 
         name = kwargs.get("restore_name", "karbor-restore-image")
-        LOG.info(_("restoring image backup, image_id: %s."),
+        LOG.info(_LI("restoring image backup, image_id: %s."),
                  original_image_id)
 
         glance_client = self._glance_client(cntxt)
