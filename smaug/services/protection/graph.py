@@ -194,8 +194,9 @@ def unpack_graph(packed_graph):
 
     for (parent_sid, children_sids) in adjacency_list:
         if parent_sid in graph_nodes_dict:
-            raise exception.InvalidInput(reason="PackedGraph adjacency list "
-                                         "must be topologically ordered")
+            raise exception.InvalidInput(
+                reason=_("PackedGraph adjacency list must be topologically "
+                         "ordered"))
         children = []
         for child_sid in children_sids:
             if child_sid not in graph_nodes_dict:

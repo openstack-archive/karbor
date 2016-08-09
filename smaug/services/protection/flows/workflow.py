@@ -16,7 +16,7 @@ import six
 
 from oslo_log import log as logging
 from smaug import exception
-from smaug.i18n import _LE
+from smaug.i18n import _, _LE
 
 from taskflow import engines
 from taskflow.patterns import graph_flow
@@ -96,12 +96,13 @@ class TaskFlowEngine(WorkFlowEngine):
         elif flow_type == 'graph':
             return graph_flow.Flow(flow_name)
         else:
-            raise ValueError(_LE("unsupported flow type:%s") % flow_type)
+            raise ValueError(_("unsupported flow type: %s") % flow_type)
 
     def get_engine(self, flow, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None,build it first"))
-            raise exception.InvalidTaskFlowObject(reason="The flow is None")
+            LOG.error(_LE("The flow is None, build it first"))
+            raise exception.InvalidTaskFlowObject(
+                reason=_("The flow is None"))
         executor = kwargs.get('executor', None)
         engine = kwargs.get('engine', None)
         store = kwargs.get('store', None)
@@ -118,15 +119,15 @@ class TaskFlowEngine(WorkFlowEngine):
     def run_engine(self, flow_engine):
         if flow_engine is None:
             LOG.error(_LE("Flow engine is None,get it first"))
-            raise exception.InvalidTaskFlowObject(reason="The flow_engine"
-                                                         " is None")
+            raise exception.InvalidTaskFlowObject(
+                reason=_("The flow_engine is None"))
         flow_engine.run()
 
     def output(self, flow_engine, target=None):
         if flow_engine is None:
             LOG.error(_LE("Flow engine is None,return nothing"))
-            raise exception.InvalidTaskFlowObject(reason="The flow_engine"
-                                                         " is None")
+            raise exception.InvalidTaskFlowObject(
+                reason=_("The flow_engine is None"))
         if target:
             return flow_engine.storage.fetch(target)
         return flow_engine.storage.fetch_all()
@@ -151,15 +152,17 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def link_task(self, flow, u, v):
         if flow is None:
-            LOG.error(_LE("The flow is None,build it first"))
-            raise exception.InvalidTaskFlowObject(reason="The flow is None")
+            LOG.error(_LE("The flow is None, build it first"))
+            raise exception.InvalidTaskFlowObject(
+                reason=_("The flow is None"))
         if u and v:
             flow.link(u, v)
 
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None,get it first"))
-            raise exception.InvalidTaskFlowObject(reason="The flow is None")
+            LOG.error(_LE("The flow is None, get it first"))
+            raise exception.InvalidTaskFlowObject(
+                reason=_("The flow is None"))
         flow.add(*nodes, **kwargs)
 
     def search_task(self, flow, task_id):

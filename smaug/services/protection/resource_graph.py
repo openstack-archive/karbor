@@ -102,4 +102,4 @@ class ResourceGraphWalkerListener(GraphWalkerListener):
                     return plugin
         LOG.error(_LE("no plugin support this resource_type:%s"),
                   resource_type)
-        raise Exception("no plugin support this resource_type")
+        raise Exception(_("No plugin support this resource_type"))

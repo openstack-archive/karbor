@@ -18,7 +18,7 @@ from oslo_utils import timeutils
 from oslo_utils import uuidutils
 from smaug.common import constants
 from smaug import exception
-from smaug.i18n import _LE
+from smaug.i18n import _, _LE
 from smaug.services.protection import graph
 
 CONF = cfg.CONF
@@ -113,7 +113,7 @@ class Checkpoint(object):
             self._md_cache = None
             self._checkpoint_section = None
             raise RuntimeError(
-                "Checkpoint was created in an unsupported version")
+                _("Checkpoint was created in an unsupported version"))
 
     def reload_meta_data(self):
         try:
@@ -213,7 +213,7 @@ class Checkpoint(object):
 
             self._checkpoint_section.delete_object(_INDEX_FILE_NAME)
         else:
-            raise RuntimeError("Could not delete: Checkpoint is not empty")
+            raise RuntimeError(_("Could not delete: Checkpoint is not empty"))
 
     def delete(self):
         self.status = constants.CHECKPOINT_STATUS_DELETED

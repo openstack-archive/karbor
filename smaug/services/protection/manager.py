@@ -80,7 +80,8 @@ class ProtectionManager(manager.Manager):
         LOG.debug("protecting: %s type: %s", plan, type(plan))
 
         if not plan:
-            raise exception.InvalidPlan(reason='the protection plan is None')
+            raise exception.InvalidPlan(
+                reason=_('the protection plan is None'))
         provider_id = plan.get('provider_id', None)
         plan_id = plan.get('id', None)
         provider = self.provider_registry.show_provider(provider_id)
@@ -170,7 +171,7 @@ class ProtectionManager(manager.Manager):
             LOG.error(_LE("get checkpoint failed, checkpoint_id:%s"),
                       checkpoint_id)
             raise exception.InvalidInput(
-                reason="Invalid checkpoint_id or provider_id")
+                reason=_("Invalid checkpoint_id or provider_id"))
 
         if checkpoint.status in [
             constants.CHECKPOINT_STATUS_ERROR,
