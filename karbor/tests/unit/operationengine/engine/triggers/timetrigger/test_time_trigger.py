@@ -17,24 +17,23 @@ import mock
 from oslo_config import cfg
 
 from karbor import exception
-from karbor.services.operationengine.engine.triggers.timetrigger import \
-    time_format_manager
 from karbor.services.operationengine.engine.triggers.timetrigger.time_trigger \
     import TimeTrigger
 from karbor.tests import base
 
 
 class FakeTimeFormat(object):
+    def __init__(self, start_time, pattern):
+        pass
+
     @classmethod
     def check_time_format(cls, pattern):
         pass
 
-    @classmethod
-    def compute_next_time(cls, pattern, current_time):
+    def compute_next_time(self, current_time):
         return current_time + timedelta(seconds=0.5)
 
-    @classmethod
-    def get_interval(cls, pattern):
+    def get_min_interval(self):
         return cfg.CONF.min_interval
 
 
@@ -44,7 +43,6 @@ class FakeExecutor(object):
 
     def execute_operation(self, operation_id, triggered_time,
                           expect_start_time, window):
-
         if operation_id not in self._ops:
             self._ops[operation_id] = 0
         self._ops[operation_id] += 1
@@ -63,7 +61,7 @@ class TimeTriggerTestCase(base.TestCase):
 
         mock_obj = mock.Mock()
         mock_obj.return_value = FakeTimeFormat
-        time_format_manager.TimeFormatManager._get_timeformat_cls = mock_obj
+        TimeTrigger._get_time_format_class = mock_obj
 
         self._default_executor = FakeExecutor()
 
@@ -97,9 +95,9 @@ class TimeTriggerTestCase(base.TestCase):
                                 TimeTrigger.check_trigger_definition,
                                 trigger_property)
 
-    @mock.patch.object(FakeTimeFormat, 'get_interval')
-    def test_check_trigger_property_interval(self, get_interval):
-        get_interval.return_value = 0
+    @mock.patch.object(FakeTimeFormat, 'get_min_interval')
+    def test_check_trigger_property_interval(self, get_min_interval):
+        get_min_interval.return_value = 0
 
         trigger_property = {
             "start_time": '2016-8-18 01:03:04'
@@ -171,7 +169,6 @@ class TimeTriggerTestCase(base.TestCase):
         trigger = self._generate_trigger()
 
         trigger_property = {
-            "format": "",
             "pattern": "",
             "window": 15,
             "start_time": datetime.utcnow(),
@@ -198,7 +195,6 @@ class TimeTriggerTestCase(base.TestCase):
         eventlet.sleep(0.2)
 
         trigger_property = {
-            "format": "",
             "pattern": "",
             "window": 15,
             "start_time": datetime.utcnow(),
@@ -217,7 +213,6 @@ class TimeTriggerTestCase(base.TestCase):
             end_time = datetime.utcnow() + timedelta(seconds=1)
 
         trigger_property = {
-            "format": "",
             "pattern": "",
             "window": 15,
             "start_time": datetime.utcnow(),

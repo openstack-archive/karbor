@@ -11,53 +11,45 @@
 #    under the License.
 
 """
-Operation classes
+time format base class
 """
 
-from abc import ABCMeta
+import abc
 import six
 
-from karbor import loadables
 
-
-@six.add_metaclass(ABCMeta)
+@six.add_metaclass(abc.ABCMeta)
 class TimeFormat(object):
 
-    FORMAT_TYPE = ""
+    def __init__(self, start_time, pattern):
+        """Initiate time format
+
+        :param start_time: The time points after the start_time are valid
+        :param pattern: The pattern of the time
+
+        When the start_time and pattern are specified, the time points
+        can be calculated and are immutable.
+        """
+        pass
 
     @classmethod
+    @abc.abstractmethod
     def check_time_format(cls, pattern):
         """Check time format
 
-        Only supports absolute time format, like crontab.
         :param pattern: The pattern of the time
         """
         pass
 
-    @classmethod
-    def compute_next_time(cls, pattern, start_time):
+    @abc.abstractmethod
+    def compute_next_time(self, current_time):
         """Compute next time
 
-        :param pattern: The pattern of time
-        :param start_time: the start time for computing
+        :param current_time: the time before the next time
         """
         pass
 
-    @classmethod
-    def get_interval(cls, pattern):
-        """Get interval of two adjacent time points
-
-        :param pattern: The pattern of the time
-        """
+    @abc.abstractmethod
+    def get_min_interval(self):
+        """Get minimum interval of two adjacent time points"""
         pass
-
-
-class TimeFormatHandler(loadables.BaseLoader):
-
-    def __init__(self):
-        super(TimeFormatHandler, self).__init__(TimeFormat)
-
-
-def all_time_formats():
-    """Get all trigger time format classes."""
-    return TimeFormatHandler().get_all_classes()

@@ -24,7 +24,7 @@ class CrontabTimeTestCase(base.TestCase):
     def setUp(self):
         super(CrontabTimeTestCase, self).setUp()
 
-        self._time_format = crontab_time.Crontab()
+        self._time_format = crontab_time.Crontab
 
     def test_none_pattern(self):
         self.assertRaisesRegexp(exception.InvalidInput,
@@ -40,9 +40,11 @@ class CrontabTimeTestCase(base.TestCase):
 
     def test_compute_next_time(self):
         now = datetime(2016, 1, 20, 15, 11, 0, 0)
-        time1 = self._time_format.compute_next_time("* * * * *", now)
+        obj = self._time_format(now, "* * * * *")
+        time1 = obj.compute_next_time(now)
         time2 = now + timedelta(minutes=1)
         self.assertEqual(time2, time1)
 
     def test_get_interval(self):
-        self.assertEqual(60, self._time_format.get_interval("* * * * *"))
+        obj = self._time_format(datetime.now(), "* * * * *")
+        self.assertEqual(60, obj.get_min_interval())

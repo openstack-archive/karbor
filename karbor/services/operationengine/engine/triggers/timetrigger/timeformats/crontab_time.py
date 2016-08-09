@@ -21,9 +21,10 @@ from karbor.services.operationengine.engine.triggers.timetrigger import\
 
 
 class Crontab(timeformats.TimeFormat):
-    """Crontab."""
 
-    FORMAT_TYPE = "crontab"
+    def __init__(self, start_time, pattern):
+        self._start_time = start_time
+        self._pattern = pattern
 
     @classmethod
     def check_time_format(cls, pattern):
@@ -37,12 +38,15 @@ class Crontab(timeformats.TimeFormat):
             msg = (_("The trigger pattern(%s) is invalid") % pattern)
             raise exception.InvalidInput(msg)
 
-    @classmethod
-    def compute_next_time(cls, pattern, start_time):
-        return croniter(pattern, start_time).get_next(datetime)
+    def compute_next_time(self, current_time):
+        time = current_time if current_time >= self._start_time else (
+            self._start_time)
+        return croniter(self._pattern, time).get_next(datetime)
 
-    @classmethod
-    def get_interval(cls, pattern):
-        t1 = cls.compute_next_time(pattern, datetime.now())
-        t2 = cls.compute_next_time(pattern, t1)
-        return timeutils.delta_seconds(t1, t2)
+    def get_min_interval(self):
+        try:
+            t1 = self.compute_next_time(datetime.now())
+            t2 = self.compute_next_time(t1)
+            return timeutils.delta_seconds(t1, t2)
+        except Exception:
+            return None

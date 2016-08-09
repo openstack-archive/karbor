@@ -18,12 +18,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
+from stevedore import driver as import_driver
 
 from karbor import exception
 from karbor.i18n import _, _LE
 from karbor.services.operationengine.engine import triggers
-from karbor.services.operationengine.engine.triggers.timetrigger import\
-    time_format_manager
 
 time_trigger_opts = [
     cfg.IntOpt('min_interval',
@@ -38,6 +37,10 @@ time_trigger_opts = [
     cfg.IntOpt('max_window_time',
                default=1800,
                help='The maximum window time'),
+
+    cfg.StrOpt('time_format',
+               default='crontab',
+               help='The type of time format which is used to compute time')
 ]
 
 CONF = cfg.CONF
@@ -100,8 +103,6 @@ class TriggerOperationGreenThread(object):
 class TimeTrigger(triggers.BaseTrigger):
     TRIGGER_TYPE = "time"
 
-    TIME_FORMAT_MANAGER = time_format_manager.TimeFormatManager()
-
     def __init__(self, trigger_id, trigger_property, executor):
         super(TimeTrigger, self).__init__(
             trigger_id, trigger_property, executor)
@@ -141,7 +142,7 @@ class TimeTrigger(triggers.BaseTrigger):
         if valid_trigger_property == self._trigger_property:
             return
 
-        first_run_time = self._get_first_run_time(
+        timer, first_run_time = self._get_timer_and_first_run_time(
             valid_trigger_property)
         if not first_run_time:
             msg = (_("The new trigger property is invalid, "
@@ -164,36 +165,34 @@ class TimeTrigger(triggers.BaseTrigger):
         if len(self._operation_ids) > 0:
             # Restart greenthread to take the change of trigger property
             # effect immediately
-            self._restart_greenthread()
+            self._kill_greenthread()
+            self._create_green_thread(first_run_time, timer)
 
     def _kill_greenthread(self):
         if self._greenthread:
             self._greenthread.kill()
             self._greenthread = None
 
-    def _restart_greenthread(self):
-        self._kill_greenthread()
-        self._start_greenthread()
-
     def _start_greenthread(self):
         # Find the first time.
         # We don't known when using this trigger first time.
-        first_run_time = self._get_first_run_time(
+        timer, first_run_time = self._get_timer_and_first_run_time(
             self._trigger_property)
         if not first_run_time:
             raise exception.TriggerIsInvalid(trigger_id=self._id)
 
-        self._create_green_thread(first_run_time)
+        self._create_green_thread(first_run_time, timer)
 
-    def _create_green_thread(self, first_run_time):
+    def _create_green_thread(self, first_run_time, timer):
         func = functools.partial(
             self._trigger_operations,
-            trigger_property=self._trigger_property.copy())
+            trigger_property=self._trigger_property.copy(),
+            timer=timer)
 
         self._greenthread = TriggerOperationGreenThread(
             first_run_time, func)
 
-    def _trigger_operations(self, expect_run_time, trigger_property):
+    def _trigger_operations(self, expect_run_time, trigger_property, timer):
         """Trigger operations once
 
         returns: wait time for next run
@@ -234,9 +233,7 @@ class TimeTrigger(triggers.BaseTrigger):
                     pass
 
         next_time = self._compute_next_run_time(
-            expect_run_time, trigger_property['end_time'],
-            trigger_property['format'],
-            trigger_property['pattern'])
+            expect_run_time, trigger_property['end_time'], timer)
         now = datetime.utcnow()
         if next_time and next_time <= now:
             LOG.error(_LE("Next run time:%(next_time)s <= now:%(now)s. Maybe "
@@ -254,11 +251,10 @@ class TimeTrigger(triggers.BaseTrigger):
         All the time instances of trigger_definition are in UTC,
         including start_time, end_time
         """
+        tf_cls = cls._get_time_format_class()
 
-        trigger_format = trigger_definition.get("format", None)
         pattern = trigger_definition.get("pattern", None)
-        cls.TIME_FORMAT_MANAGER.check_time_format(
-            trigger_format, pattern)
+        tf_cls.check_time_format(pattern)
 
         start_time = trigger_definition.get("start_time", None)
         if not start_time:
@@ -266,8 +262,7 @@ class TimeTrigger(triggers.BaseTrigger):
             raise exception.InvalidInput(msg)
         start_time = cls._check_and_get_datetime(start_time, "start_time")
 
-        interval = int(cls.TIME_FORMAT_MANAGER.get_interval(
-            trigger_format, pattern))
+        interval = tf_cls(start_time, pattern).get_min_interval()
         if interval is not None and interval < CONF.min_interval:
             msg = (_("The interval of two adjacent time points "
                      "is less than %d") % CONF.min_interval)
@@ -321,27 +316,28 @@ class TimeTrigger(triggers.BaseTrigger):
         return time
 
     @classmethod
-    def _compute_next_run_time(cls, start_time, end_time,
-                               trigger_format, trigger_pattern):
-
-        next_time = cls.TIME_FORMAT_MANAGER.compute_next_time(
-            trigger_format, trigger_pattern, start_time)
+    def _compute_next_run_time(cls, start_time, end_time, timer):
+        next_time = timer.compute_next_time(start_time)
 
         if next_time and (not end_time or next_time <= end_time):
             return next_time
         return None
 
     @classmethod
-    def _get_first_run_time(cls, trigger_property):
-        now = datetime.utcnow()
-        tmp_time = trigger_property['start_time']
-        if tmp_time < now:
-            tmp_time = now
-        return cls._compute_next_run_time(
-            tmp_time,
-            trigger_property['end_time'],
-            trigger_property['format'],
-            trigger_property['pattern'])
+    def _get_time_format_class(cls):
+        return import_driver.DriverManager(
+            'karbor.operationengine.engine.timetrigger.time_format',
+            CONF.time_format).driver
+
+    @classmethod
+    def _get_timer_and_first_run_time(cls, trigger_property):
+        tf_cls = cls._get_time_format_class()
+        timer = tf_cls(trigger_property['start_time'],
+                       trigger_property['pattern'])
+        first_run_time = cls._compute_next_run_time(
+            datetime.utcnow(), trigger_property['end_time'], timer)
+
+        return timer, first_run_time
 
     @classmethod
     def check_configuration(cls):
