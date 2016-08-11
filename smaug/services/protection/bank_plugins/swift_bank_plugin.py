@@ -86,9 +86,9 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         # acquire lease
         try:
             self.acquire_lease()
-        except exception.AcquireLeaseFailed as err:
+        except exception.AcquireLeaseFailed:
             LOG.error(_LE("bank plugin acquire lease failed."))
-            raise err
+            raise
 
         # start renew lease
         renew_lease_loop = loopingcall.FixedIntervalLoopingCall(
