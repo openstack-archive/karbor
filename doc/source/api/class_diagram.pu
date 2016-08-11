@@ -1,6 +1,6 @@
 @startuml
 
-title "Smaug API model"
+title "Karbor API model"
 
 class Protectable {
     name: string

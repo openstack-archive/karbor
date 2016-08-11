@@ -7,7 +7,7 @@
 =================
 Bank Plugin Basic
 =================
-Bank Plugin is a component of smaug (an openstack project working as a service for data protection),
+Bank Plugin is a component of karbor (an openstack project working as a service for data protection),
 which is responsible for execute CRUD actions in Bank.
 
 The bank is a backend (such as swift) which is used to store the metadata/data of protection plan.
@@ -19,7 +19,7 @@ leases
 Smuag will create a checkpoint when protecting a protection plan. This checkpoint is maintained with
 status, which is a enum type: protecting, available, restoring, deleted, etc.
 
-The status is used for smaug API layer to control access to one checkpoint from users.
+The status is used for karbor API layer to control access to one checkpoint from users.
 
 With the 'protecting' status, there're two cases which we can't tell the difference:
 

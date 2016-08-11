@@ -4,18 +4,18 @@ Installation
 
 Single-node Devstack Installation
 =================================
-In order to install Smaug using Devstack on a single node, add the following to
+In order to install Karbor using Devstack on a single node, add the following to
 your local.conf, under [[local|localrc]]:
 
 .. code-block:: none
 
-        enable_plugin smaug http://git.openstack.org/openstack/smaug master
-        enable_plugin smaug-dashboard http://git.openstack.org/openstack/smaug-dashboard master
-        enable_service smaug-api
-        enable_service smaug-operationengine
-        enable_service smaug-protection
-        # Smaug Dashboard depends on Horizon
-        enable_service smaug-dashboard
+        enable_plugin karbor http://git.openstack.org/openstack/karbor master
+        enable_plugin karbor-dashboard http://git.openstack.org/openstack/karbor-dashboard master
+        enable_service karbor-api
+        enable_service karbor-operationengine
+        enable_service karbor-protection
+        # Karbor Dashboard depends on Horizon
+        enable_service karbor-dashboard
 
 Depenencies
 ===========

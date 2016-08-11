@@ -10,7 +10,7 @@ Example Spec - The title of your RFE
 
 Include the URL of your launchpad RFE:
 
-https://bugs.launchpad.net/smaug/+bug/example-id
+https://bugs.launchpad.net/karbor/+bug/example-id
 
 Introduction paragraph -- why are we doing this feature? A single paragraph of
 prose that **deployers, and developers, and operators** can understand.
@@ -44,7 +44,7 @@ design at the same time as use cases, if desired.  Note that by high-level,
 we mean the "view from orbit" rough cut at how things will happen.
 
 This section should 'scope' the effort from a feature standpoint: how is the
-'Smaug end-to-end system' going to look like after this change? What Smaug
+'Karbor end-to-end system' going to look like after this change? What Karbor
 areas do you intend to touch and how do you intend to work on them?
 
 
@@ -143,7 +143,7 @@ but we're mostly trying to understand the timeline for implementation.
 Dependencies
 ============
 
-* Include specific references to specs and/or blueprints in Smaug, or in other
+* Include specific references to specs and/or blueprints in Karbor, or in other
   projects, that this one either depends on or is related to.
 
 * If this requires functionality of another project that is not currently used

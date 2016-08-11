@@ -1,6 +1,6 @@
 include AUTHORS
 include ChangeLog
-recursive-include smaug *.cfg
+recursive-include karbor *.cfg
 
 exclude .gitignore
 exclude .gitreview
