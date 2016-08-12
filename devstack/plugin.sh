@@ -1,147 +1,147 @@
-# Devstack extras script to install Smaug
+# Devstack extras script to install Karbor
 
-# Test if any smaug services are enabled
-# is_smaug_enabled
-function is_smaug_enabled {
-    echo "Checking if Smaug is Enabled"
-    [[ ,${ENABLED_SERVICES} =~ ,"smaug-" ]] &&  Q_ENABLE_SMAUG="False"
-    Q_ENABLE_SMAUG="True"
+# Test if any karbor services are enabled
+# is_karbor_enabled
+function is_karbor_enabled {
+    echo "Checking if Karbor is Enabled"
+    [[ ,${ENABLED_SERVICES} =~ ,"karbor-" ]] &&  Q_ENABLE_KARBOR="False"
+    Q_ENABLE_KARBOR="True"
 }
 
-function _create_smaug_conf_dir {
+function _create_karbor_conf_dir {
 
-    # Put config files in ``SMAUG_CONF_DIR`` for everyone to find
+    # Put config files in ``KARBOR_CONF_DIR`` for everyone to find
 
-    sudo install -d -o $STACK_USER $SMAUG_CONF_DIR
+    sudo install -d -o $STACK_USER $KARBOR_CONF_DIR
 
 }
 
-# create_smaug_accounts() - Set up common required smaug accounts
+# create_karbor_accounts() - Set up common required karbor accounts
 # Tenant               User       Roles
 # ------------------------------------------------------------------
-# service              smaug      service
-function create_smaug_accounts {
+# service              karbor      service
+function create_karbor_accounts {
 
-    if is_service_enabled smaug-api; then
+    if is_service_enabled karbor-api; then
 
-        create_service_user "smaug" "admin"
+        create_service_user "karbor" "admin"
 
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
 
-            get_or_create_service "smaug" "data-protect" "Application Data Protection Service"
+            get_or_create_service "karbor" "data-protect" "Application Data Protection Service"
             get_or_create_endpoint "data-protect" "$REGION_NAME" \
-                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s" \
-                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s" \
-                "$SMAUG_API_PROTOCOL://$SMAUG_API_HOST:$SMAUG_API_PORT/v1/\$(tenant_id)s"
+                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
+                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
+                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s"
         fi
     fi
 }
 
-function configure_smaug_api {
-    if is_service_enabled smaug-api ; then
-        echo "Configuring Smaug API"
+function configure_karbor_api {
+    if is_service_enabled karbor-api ; then
+        echo "Configuring Karbor API"
 
-        cp $SMAUG_DIR/etc/smaug.conf $SMAUG_API_CONF
-        cp $SMAUG_DIR/etc/api-paste.ini $SMAUG_CONF_DIR
-        cp $SMAUG_DIR/etc/policy.json $SMAUG_CONF_DIR
-        cp -R $SMAUG_DIR/etc/providers.d $SMAUG_CONF_DIR
+        cp $KARBOR_DIR/etc/karbor.conf $KARBOR_API_CONF
+        cp $KARBOR_DIR/etc/api-paste.ini $KARBOR_CONF_DIR
+        cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR
+        cp -R $KARBOR_DIR/etc/providers.d $KARBOR_CONF_DIR
 
-        iniset $SMAUG_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
-        iniset $SMAUG_API_CONF DEFAULT use_syslog $SYSLOG
-        echo "Configuring Smaug API Database"
-        iniset $SMAUG_API_CONF database connection `database_connection_url smaug`
-        iniset_rpc_backend smaug $SMAUG_API_CONF
+        iniset $KARBOR_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+        iniset $KARBOR_API_CONF DEFAULT use_syslog $SYSLOG
+        echo "Configuring Karbor API Database"
+        iniset $KARBOR_API_CONF database connection `database_connection_url karbor`
+        iniset_rpc_backend karbor $KARBOR_API_CONF
 
-        setup_colorized_logging $SMAUG_API_CONF DEFAULT
-        echo "Configuring Smaug API colorized"
+        setup_colorized_logging $KARBOR_API_CONF DEFAULT
+        echo "Configuring Karbor API colorized"
         if is_service_enabled keystone; then
 
-            echo "Configuring Smaug keystone Auth"
-            create_smaug_cache_dir
+            echo "Configuring Karbor keystone Auth"
+            create_karbor_cache_dir
 
             # Configure auth token middleware
-            configure_auth_token_middleware $SMAUG_API_CONF smaug \
-                $SMAUG_AUTH_CACHE_DIR
+            configure_auth_token_middleware $KARBOR_API_CONF karbor \
+                $KARBOR_AUTH_CACHE_DIR
 
             # Configure for trustee
-            iniset $SMAUG_API_CONF trustee auth_type password
-            iniset $SMAUG_API_CONF trustee auth_url $KEYSTONE_AUTH_URI
-            iniset $SMAUG_API_CONF trustee username smaug
-            iniset $SMAUG_API_CONF trustee password $SERVICE_PASSWORD
-            iniset $SMAUG_API_CONF trustee user_domain_id default
+            iniset $KARBOR_API_CONF trustee auth_type password
+            iniset $KARBOR_API_CONF trustee auth_url $KEYSTONE_AUTH_URI
+            iniset $KARBOR_API_CONF trustee username karbor
+            iniset $KARBOR_API_CONF trustee password $SERVICE_PASSWORD
+            iniset $KARBOR_API_CONF trustee user_domain_id default
 
             # Configure for clients_keystone
-            iniset $SMAUG_API_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
+            iniset $KARBOR_API_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
 
         else
-            iniset $SMAUG_API_CONF DEFAULT auth_strategy noauth
+            iniset $KARBOR_API_CONF DEFAULT auth_strategy noauth
         fi
     fi
 }
 
-function create_smaug_cache_dir {
+function create_karbor_cache_dir {
 
     # Delete existing dir
-    sudo rm -rf $SMAUG_AUTH_CACHE_DIR
-    sudo mkdir -p $SMAUG_AUTH_CACHE_DIR
-    sudo chown `whoami` $SMAUG_AUTH_CACHE_DIR
+    sudo rm -rf $KARBOR_AUTH_CACHE_DIR
+    sudo mkdir -p $KARBOR_AUTH_CACHE_DIR
+    sudo chown `whoami` $KARBOR_AUTH_CACHE_DIR
 
 }
 
-is_smaug_enabled
+is_karbor_enabled
 
-if [[ "$Q_ENABLE_SMAUG" == "True" ]]; then
+if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
     if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
-        echo summary "Smaug pre-install"
+        echo summary "Karbor pre-install"
     elif [[ "$1" == "stack" && "$2" == "install" ]]; then
-        echo_summary "Installing Smaug"
+        echo_summary "Installing Karbor"
 
-        setup_package $SMAUG_DIR -e
-        _create_smaug_conf_dir
+        setup_package $KARBOR_DIR -e
+        _create_karbor_conf_dir
 
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
-        echo_summary "Configuring Smaug"
+        echo_summary "Configuring Karbor"
 
-        configure_smaug_api
+        configure_karbor_api
 
-        echo export PYTHONPATH=\$PYTHONPATH:$SMAUG_DIR >> $RC_DIR/.localrc.auto
+        echo export PYTHONPATH=\$PYTHONPATH:$KARBOR_DIR >> $RC_DIR/.localrc.auto
 
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
 
-        echo_summary "Creating Smaug entities for auth service"
-        create_smaug_accounts
+        echo_summary "Creating Karbor entities for auth service"
+        create_karbor_accounts
 
-        echo_summary "Initializing Smaug Service"
-        SMAUG_BIN_DIR=$(get_python_exec_prefix)
+        echo_summary "Initializing Karbor Service"
+        KARBOR_BIN_DIR=$(get_python_exec_prefix)
 
         if is_service_enabled $DATABASE_BACKENDS; then
-            # (re)create smaug database
-            recreate_database smaug utf8
+            # (re)create karbor database
+            recreate_database karbor utf8
 
-            # Migrate smaug database
-            $SMAUG_BIN_DIR/smaug-manage db sync
+            # Migrate karbor database
+            $KARBOR_BIN_DIR/karbor-manage db sync
         fi
-        if is_service_enabled smaug-api; then
-            run_process smaug-api "$SMAUG_BIN_DIR/smaug-api --config-file $SMAUG_API_CONF"
+        if is_service_enabled karbor-api; then
+            run_process karbor-api "$KARBOR_BIN_DIR/karbor-api --config-file $KARBOR_API_CONF"
         fi
-        if is_service_enabled smaug-operationengine; then
-           run_process smaug-operationengine "$SMAUG_BIN_DIR/smaug-operationengine --config-file $SMAUG_API_CONF"
+        if is_service_enabled karbor-operationengine; then
+           run_process karbor-operationengine "$KARBOR_BIN_DIR/karbor-operationengine --config-file $KARBOR_API_CONF"
         fi
-        if is_service_enabled smaug-protection; then
-           run_process smaug-protection "$SMAUG_BIN_DIR/smaug-protection --config-file $SMAUG_API_CONF"
+        if is_service_enabled karbor-protection; then
+           run_process karbor-protection "$KARBOR_BIN_DIR/karbor-protection --config-file $KARBOR_API_CONF"
         fi
     fi
 
     if [[ "$1" == "unstack" ]]; then
 
-        if is_service_enabled smaug-api; then
-           stop_process smaug-api
+        if is_service_enabled karbor-api; then
+           stop_process karbor-api
         fi
-        if is_service_enabled smaug-operationengine; then
-           stop_process smaug-operationengine
+        if is_service_enabled karbor-operationengine; then
+           stop_process karbor-operationengine
         fi
-        if is_service_enabled smaug-protection; then
-           stop_process smaug-protection
+        if is_service_enabled karbor-protection; then
+           stop_process karbor-protection
         fi
     fi
 fi

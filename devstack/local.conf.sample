@@ -7,8 +7,8 @@ SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 ADMIN_PASSWORD=password
 
-enable_plugin smaug http://git.openstack.org/openstack/smaug master
-enable_plugin smaug-dashboard http://git.openstack.org/openstack/smaug-dashboard master
+enable_plugin karbor http://git.openstack.org/openstack/smaug master
+enable_plugin karbor-dashboard http://git.openstack.org/openstack/smaug-dashboard master
 
 #run the services you want to use
 ENABLED_SERVICES=rabbit,mysql,key
@@ -18,13 +18,13 @@ ENABLED_SERVICES+=,cinder,g-api,g-reg
 ENABLED_SERVICES+=,c-api,c-vol,c-sch,c-bak,horizon
 ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
 
-#Add the smaug services
-enable_service smaug-api
-enable_service smaug-operationengine
-enable_service smaug-protection
+#Add the karbor services
+enable_service karbor-api
+enable_service karbor-operationengine
+enable_service karbor-protection
 
-#Add the smaug-dashboard services
-enable_service smaug-dashboard
+#Add the karbor-dashboard services
+enable_service karbor-dashboard
 
 #disable the default services you don't want to use
 disable_service n-net
