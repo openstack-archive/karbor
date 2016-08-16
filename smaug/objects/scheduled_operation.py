@@ -35,7 +35,7 @@ class ScheduledOperation(base.SmaugPersistentObject, base.SmaugObject,
     fields = {
         'id': fields.UUIDField(),
         'name': fields.StringField(),
-        'description': fields.StringField(),
+        'description': fields.StringField(nullable=True),
         'operation_type': fields.StringField(),
         'user_id': fields.StringField(),
         'project_id': fields.StringField(),
