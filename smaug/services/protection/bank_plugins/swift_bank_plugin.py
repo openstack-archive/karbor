@@ -113,7 +113,9 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self._put_object(container=self.bank_object_container,
                              obj=key,
                              contents=value,
-                             headers={'x-object-meta-serialized': serialized})
+                             headers={
+                                 'x-object-meta-serialized': str(serialized)
+                             })
         except SwiftConnectionFailed as err:
             LOG.error(_LE("create object failed, err: %s."), err)
             raise exception.BankCreateObjectFailed(reason=err,
@@ -128,7 +130,9 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self._put_object(container=self.bank_object_container,
                              obj=key,
                              contents=value,
-                             headers={'x-object-meta-serialized': serialized})
+                             headers={
+                                 'x-object-meta-serialized': str(serialized)
+                             })
         except SwiftConnectionFailed as err:
             LOG.error(_LE("update object failed, err: %s."), err)
             raise exception.BankUpdateObjectFailed(reason=err,
@@ -174,7 +178,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         container = self.bank_leases_container
         obj = self.owner_id
         contents = self.owner_id
-        headers = {'X-Delete-After': self.lease_expire_window}
+        headers = {'X-Delete-After': str(self.lease_expire_window)}
         try:
             self._put_object(container=container,
                              obj=obj,
@@ -189,7 +193,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
     def renew_lease(self):
         container = self.bank_leases_container
         obj = self.owner_id
-        headers = {'X-Delete-After': self.lease_expire_window}
+        headers = {'X-Delete-After': str(self.lease_expire_window)}
         try:
             self._post_object(container=container,
                               obj=obj,
