@@ -204,4 +204,4 @@ class SmaugObjectSerializer(base.VersionedObjectSerializer):
 
 
 class DictOfDictOfStringsField(fields.AutoTypedField):
-    AUTO_TYPE = fields.Dict(fields.Dict(fields.String()))
+    AUTO_TYPE = fields.Dict(fields.Dict(fields.String(), nullable=True))
