@@ -2,7 +2,7 @@
 
 title create_checkpoint - API RPC call Sequence Diagram
 
-Smaug_API_Service ->> ProtectionManager :create_checkpoint(backup_plan, protect)
+Karbor_API_Service ->> ProtectionManager :create_checkpoint(backup_plan, protect)
 ProtectionManager -> WorkflowEngine:built task flow
 ProtectionManager -> WorkflowEngine: execute task flow
 WorkflowEngine -> CreateCheckpointTask:execute()

@@ -5,15 +5,15 @@ Introduction
 
 .. contents:: :depth: 2
 
-What is Smaug?
+What is Karbor?
 ==============
 
-Smaug is an OpenStack project that provides a pluggable framework for
+Karbor is an OpenStack project that provides a pluggable framework for
 protecting and restoring Data and Metadata that comprises an OpenStack-deployed
 application - Application Data Protection as a Service.
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/Smaug.png
-    :alt: Smaug
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/Karbor.png
+    :alt: Karbor
     :align: center
     :height: 150px
 
@@ -33,7 +33,7 @@ Typical Use Case: 3-Tier Cloud App
 
 3-Tier Cloud App Web/App/DB
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/3-tirApp.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/3-tirApp.png
     :alt: 3-Tier Cloud App
     :width: 600
     :align: center
@@ -42,13 +42,13 @@ In order to provide full Protection for this typical use case, we would have to
 protect many resources, which have some dependency between them. The following
 diagram demonstrates how this dependency looks, in the form of a tree:
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/resource_tree_architecture.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/resource_tree_architecture.png
     :alt: Resource Tree
     :width: 600
     :align: center
 
 These resources can be divided into groups, each of which will be handled by a
-different plugin in Smaug:
+different plugin in Karbor:
 
 -  Volume
 -  VM
@@ -62,7 +62,7 @@ Main Concepts
 Protection Providers
 -----------------------
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/
     protection_provider.png
     :width: 600
 
@@ -77,7 +77,7 @@ each protection provider exposes what options it provides for each protectable.
 This allows the UI to dynamically adapt to each provider and show the user what
 options are available, what they mean and what values are supported.
 
-This allows us to extend the providers without updates to Smaug and allow
+This allows us to extend the providers without updates to Karbor and allow
 provider implementation to easily add specialize options.
 
 Example
@@ -112,12 +112,12 @@ provider.
 There are two main aspect to protection plan. The first is the continuous
 aspect. When a plans is started it becomes enabled and continues protection
 processes are started and monitored (eg. replication). As long as the plan is
-active Smaug will try and make sure the continuous aspects are active and valid.
+active Karbor will try and make sure the continuous aspects are active and valid.
 
-The other aspect is point in time protection or, as we call them in Smaug,
+The other aspect is point in time protection or, as we call them in Karbor,
 checkpoints. Checkpoints are saved in the protection provider paired with the
 plan and, as stated, represent a restorable point in time for the plan. When a
-checkpoint is created Smaug will store in the protection provider all the
+checkpoint is created Karbor will store in the protection provider all the
 information required to successfully restore the project covered by the plan
 to how it was at that specific point in time.
 
@@ -139,16 +139,16 @@ complex retention plan to automate the creation and deletion of checkpoints.
 
 Protectables
 ------------
-Protectabes are any class or type of entity that can be protected by Smaug.
-Since setups might have different entities they would like to protect Smaug
+Protectabes are any class or type of entity that can be protected by Karbor.
+Since setups might have different entities they would like to protect Karbor
 doesn't bind the API to specific entity types. The admin can even add new
 protectables during set up as long as the protection provider can handle those
-entities. This flexibility means that Smaug is agnostic to the relationship
+entities. This flexibility means that Karbor is agnostic to the relationship
 between the resources being backed up.
 
 High Level Architecture
 =======================
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/
     high_level_architecture.png
     :alt: Solution Overview
     :width: 600
@@ -157,15 +157,15 @@ High Level Architecture
 The system is built from independent services and a scalable *Workflow
 engine* that ties them together:
 
-Smaug API Service
+Karbor API Service
 =================
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/
-    smaug-api.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/
+    karbor-api.png
     :width: 600
 
 These top-level north-bound APIs expose Application Data Protection services to
-the Smaug user.
+the Karbor user.
 
 The purpose of the services is to maximize flexibility and accommodate for
 (hopefully) any kind of protection for any type of resource, whether it is a
@@ -177,21 +177,21 @@ a hardware device, an external database, etc.).
 Resource (Protectable) API
 ---------------------------
 
-Enables the Smaug user to access information about which resource types are
-protectable (i.e. can be protected by Smaug).  In addition, enables the user to
+Enables the Karbor user to access information about which resource types are
+protectable (i.e. can be protected by Karbor).  In addition, enables the user to
 get  additional information on each resource type, such as a list of actual
 instances and their dependencies.
 
 Provider API
 ---------------
 
-Enables the Smaug user to list available providers and get parameters and
+Enables the Karbor user to list available providers and get parameters and
 result schema super-set for all plugins of a specific Provider.
 
 Plan API
 --------
 
-This API enables the Smaug user to access the protection Plan registry and do
+This API enables the Karbor user to access the protection Plan registry and do
 the following operations:
 
 -  Plan CRUD.
@@ -201,7 +201,7 @@ the following operations:
 Automatic Operation API
 --------------------------
 
-This API enables the Smaug user to manage protection Operations:
+This API enables the Karbor user to manage protection Operations:
 
 -  Create a checkpoint for a given Protection Plan.
 -  Delete unneeded checkpoints from the provider.
@@ -210,7 +210,7 @@ This API enables the Smaug user to manage protection Operations:
 Checkpoint API
 ---------------
 
-This API enables the Smaug user to access and manage the checkpoints stored in
+This API enables the Karbor user to access and manage the checkpoints stored in
 the protection provider:
 
 -  List all checkpoints given a Bank ID.
@@ -221,11 +221,11 @@ the protection provider:
 Restore API
 ---------------
 
-This API enables the Smaug user restore a checkpoint on to a restore target:
+This API enables the Karbor user restore a checkpoint on to a restore target:
 
 -  Create restored system from a checkpoint.
 
-Smaug Schedule Service
+Karbor Schedule Service
 ======================
 
 This subsystem is responsible for scheduling and orchestrating the execution of
@@ -256,7 +256,7 @@ triggers to begin the execution of the Plan Orchestration.
 
 It can be done based on a Timer or an Event Collector - Open to implementation.
 
-In the first version of Smaug reference implementation, it will only provide
+In the first version of Karbor reference implementation, it will only provide
 time-based triggering.
 
 Scheduled Operation
@@ -265,7 +265,7 @@ Scheduled Operation
 The sub-component of the Schedule Service is responsible for holding the
 mapping between a Trigger and Operation(s).
 
-Smaug Protection Service
+Karbor Protection Service
 ========================
 
 This subsystem is responsible for handling the following tasks:
@@ -282,20 +282,20 @@ flow of the plan across all protection providers.
 Communication and Meetings
 ==========================
 
-- Smaug Launchpad Link: \ https://launchpad.net/smaug
-- Smaug Code Review: \ https://review.openstack.org/#/q/smaug+status:open,n,z
-- Smaug Code Repository: \ https://github.com/openstack/smaug
-- Smaug daily IRC Channel: #openstack-smaug
-- Smaug weekly IRC Meeting on **even** Tuesday at 1500 UTC
+- Karbor Launchpad Link: \ https://launchpad.net/karbor
+- Karbor Code Review: \ https://review.openstack.org/#/q/karbor+status:open,n,z
+- Karbor Code Repository: \ https://github.com/openstack/karbor
+- Karbor daily IRC Channel: #openstack-karbor
+- Karbor weekly IRC Meeting on **even** Tuesday at 1500 UTC
   and on **odd** Tuesday at 0900 UTC in
   #openstack-meeting at freenode: \
-  https://wiki.openstack.org/wiki/Meetings/smaug
-- Smaug Trello Board: \ https://trello.com/b/Sudr4fKT/smaug
+  https://wiki.openstack.org/wiki/Meetings/karbor
+- Karbor Trello Board: \ https://trello.com/b/Sudr4fKT/karbor
 
 Additional references
 =====================
 
 - `OpenStack Tokyo Summit 2015 talk <http://www.slideshare.net/gampel/openstack-tokyo-talk-application-data-protection-service>`_
 - `OpenStack Austin Summit 2016 talk <https://www.youtube.com/watch?v=_tVYuW_YMB8>`_
-- `Smaug overview slide <https://docs.google.com/presentation/d/1JYO1VIlTkGTF6lvKEMcsHkaST3mYFxuarpcNTJ3HBhk/edit?usp=sharing>`_
-- `Smaug overview blog  <http://blog.gampel.net/2015/12/smaug-application-data-protection-for.html>`_
+- `Karbor overview slide <https://docs.google.com/presentation/d/1JYO1VIlTkGTF6lvKEMcsHkaST3mYFxuarpcNTJ3HBhk/edit?usp=sharing>`_
+- `Karbor overview blog  <http://blog.gampel.net/2015/12/karbor-application-data-protection-for.html>`_

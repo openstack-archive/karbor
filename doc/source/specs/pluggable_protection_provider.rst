@@ -22,7 +22,7 @@
 Pluggable Protection Provider
 ==========================================
 
-https://blueprints.launchpad.net/smaug/+spec/protection-plugin-is-design
+https://blueprints.launchpad.net/karbor/+spec/protection-plugin-is-design
 
 Protection Provider
 ===================
@@ -63,7 +63,7 @@ Protection Provider Configuration
 
 Protection Providers are loaded from configuration files, placed in the
 directory specified by the ``provider_config_dir`` configuration option (by
-default: ``/etc/smaug/providers.d``). Each provider configuration file must
+default: ``/etc/karbor/providers.d``). Each provider configuration file must
 bear the ``.conf`` suffix and contain a ``[provider]`` section. This section
 specifies the following configuration:
 
@@ -85,11 +85,11 @@ For example::
   name = Foo
   id = 2e0c8826-81d6-44f5-bbe5-8f46a98c5845
   description = Example Protection Provider
-  bank = smaug.protections.smaug-swift-bank-plugin
-  plugin = smaug.protections.smaug-volume-protection-plugin
-  plugin = smaug.protections.smaug-image-protection-plugin
-  plugin = smaug.protections.smaug-server-protection-plugin
-  plugin = smaug.protections.smaug-project-protection-plugin
+  bank = karbor.protections.karbor-swift-bank-plugin
+  plugin = karbor.protections.karbor-volume-protection-plugin
+  plugin = karbor.protections.karbor-image-protection-plugin
+  plugin = karbor.protections.karbor-server-protection-plugin
+  plugin = karbor.protections.karbor-project-protection-plugin
 
   [swift_client]
   bank_swift_auth_url = http://10.0.0.10:5000
@@ -166,7 +166,7 @@ Notes:
           else:
               yield
 
-.. figure:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/activities-links.png
+.. figure:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/activities-links.png
     :alt: Activities Links
     :align: center
 
@@ -186,11 +186,11 @@ This scheme decouples the tree structure from the task execution. A plugin that
 handles multiple resources or that aggregates multiple resources to one task can
 use this mechanism to only return tasks when appropriate for it's scheme.
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/pluggable_protection_provider.svg
-    :alt: Smaug
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/pluggable_protection_provider.svg
+    :alt: Karbor
     :align: center
 
 References
 ==========
-1. `Class Diagram Source <http://raw.githubusercontent.com/openstack/smaug/master/doc/images/specs/pluggable_protection_provider.pu>`_
+1. `Class Diagram Source <http://raw.githubusercontent.com/openstack/karbor/master/doc/images/specs/pluggable_protection_provider.pu>`_
 2. `Dependency graph building algorithm <https://docs.google.com/document/d/1Mkd9RgUVdiRL6iei8Nqzzx4xteKIcd-yjMLEkV4Jc9s/edit#>`_

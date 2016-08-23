@@ -10,7 +10,7 @@ API Service
 
 https://review.openstack.org/#/c/266338/
 
-The APIs expose Application Data Protection services to the Smaug user.
+The APIs expose Application Data Protection services to the Karbor user.
 
 The purpose of the services is to maximize flexibility and accommodate
 for (hopefully) any kind of protection for any type of resource, whether
@@ -27,35 +27,35 @@ WSGI Resources Controller
 The WSGI Controller handles incoming web requests that are dispatched
 from the WSGI application APIRouter.
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/api-service-class-diagram.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/api-service-class-diagram.png
 
 From the module class graph, api service basically have following
 resources Controller:
 
 Provider Controller
 ---------------------------
-Enables the Smaug user to list available providers and get parameters and
+Enables the Karbor user to list available providers and get parameters and
 result schema super-set for all plugins of a specific Provider.
 
 
 Checkpoint Controller
 ---------------------------
-Enables the Smaug user to access and manage the checkpoints stored
+Enables the Karbor user to access and manage the checkpoints stored
 in the protection provider.
 
 
 Protectable Controller
 ---------------------------
 
-Enables the Smaug user to access information about which resource types
-are protectable (i.e. can be protected by Smaug).
+Enables the Karbor user to access information about which resource types
+are protectable (i.e. can be protected by Karbor).
 In addition, enables the user to get  additional information on each
 resource type, such as a list of actual instances and their dependencies.
 
 Plan Controller
 ---------------------------
 
-This API enables the Smaug user to access the protection Plan registry
+This API enables the Karbor user to access the protection Plan registry
 and do the following operations:
 -  Plan CRUD.
 -  List Plans.
@@ -65,7 +65,7 @@ and do the following operations:
 Scheduled Operation Controller
 --------------------------
 
-This API enables the Smaug user to manage Scheduled Operations:
+This API enables the Karbor user to manage Scheduled Operations:
 
 -  Operation CRUD.
 -  List Operations.
@@ -73,7 +73,7 @@ This API enables the Smaug user to manage Scheduled Operations:
 Trigger Controller
 --------------------------
 
-This API enables the Smaug user to manage Triggers:
+This API enables the Karbor user to manage Triggers:
 A trigger only can be deleted when it isn't used in any of the
 scheduled operation.
 -  Trigger CRUD.
@@ -83,7 +83,7 @@ scheduled operation.
 Restore Controller
 ---------------------------
 
-This API enables the Smaug user restore a checkpoint on to a restore target:
+This API enables the Karbor user restore a checkpoint on to a restore target:
 
 -  Create restored system from a checkpoint.
 

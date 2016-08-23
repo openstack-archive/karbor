@@ -8,9 +8,9 @@
 Operation Engine
 ================
 
-https://blueprints.launchpad.net/smaug/+spec/operation-engine-design
+https://blueprints.launchpad.net/karbor/+spec/operation-engine-design
 
-Operation Engine is one of components in Smaug, which is responsible for
+Operation Engine is one of components in Karbor, which is responsible for
 triggering the operations to execute when the time is up or event happens.
 
 Problem description

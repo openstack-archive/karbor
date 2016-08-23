@@ -17,7 +17,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Installation script for Smaug's development virtualenv."""
+"""Installation script for karbor's development virtualenv."""
 
 from __future__ import print_function
 
@@ -29,12 +29,12 @@ import install_venv_common as install_venv
 
 def print_help():
     help = """
-    Smaug development environment setup is complete.
+    Karbor development environment setup is complete.
 
-    Smaug development uses virtualenv to track and manage Python dependencies
+    Karbor development uses virtualenv to track and manage Python dependencies
     while in development and testing.
 
-    To activate the Smaug virtualenv for the extent of your current shell
+    To activate the Karbor virtualenv for the extent of your current shell
     session you can run:
 
     $ source .venv/bin/activate
@@ -56,7 +56,7 @@ def main(argv):
         venv = os.environ['venv']
     pip_requires = os.path.join(root, 'requirements.txt')
     test_requires = os.path.join(root, 'test-requirements.txt')
-    project = 'Smaug'
+    project = 'Karbor'
     py_version = "python%s.%s" % (sys.version_info[0], sys.version_info[1])
     install = install_venv.InstallVenv(root, venv, pip_requires, test_requires,
                                        py_version, project)

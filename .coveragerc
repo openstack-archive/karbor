@@ -1,7 +1,7 @@
 [run]
 branch = True
-source = smaug
-omit = smaug/tests/*,smaug/openstack/*
+source = karbor
+omit = karbor/tests/*,karbor/openstack/*
 
 [report]
 ignore_errors = True

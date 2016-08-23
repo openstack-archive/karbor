@@ -2,17 +2,17 @@
 
 *** :exclamation: This is still a work in progress ***
 
-This document will describe the layout and algorithms used by Smaug using the
+This document will describe the layout and algorithms used by Karbor using the
 default bank implementation. Providers can use their own algorithms to manage
 metdata but there might be issues when using default plugins.
 
 ## Abstract
 
-Since Smaug want's to be able to store metadata in many locations (swift, mongodb, etc.)
+Since Karbor want's to be able to store metadata in many locations (swift, mongodb, etc.)
 we defined a simplified object store interface that we believe most backends will be able
 to support without much work.
 
-But the simplified interface doesn't describe how Smaug will do it's higher
+But the simplified interface doesn't describe how Karbor will do it's higher
 level operations and how the higher level logic will be laid out in the object
 store. This is why we need higher level logic defined explicitly so that later
 we could use higher level bank functions knowing they are correct, safe and atomic.
@@ -80,7 +80,7 @@ Create new Checkpoint with id <CHECKPOINT-ID>;
  * buffer:
    ```json
    {
-       "smaug_version": "1.0.0",
+       "karbor_version": "1.0.0",
        "status": "in_progress",
        "plugins": {}
    }
@@ -92,7 +92,7 @@ Create new Checkpoint with id <CHECKPOINT-ID>;
  * buffer:
    ```json
    {
-       "smaug_version": "1.0.0",
+       "karbor_version": "1.0.0",
        "status": "creating_indices",
        "plugins": {}
    }
@@ -120,7 +120,7 @@ Create new Checkpoint with id <CHECKPOINT-ID>;
  * buffer:
    ```json
    {
-       "smaug_version": "1.0.0",
+       "karbor_version": "1.0.0",
        "status": "deleting",
        "plugins": {}
    }
@@ -131,7 +131,7 @@ or returned by the provider.
 ## GC
 
 When deleting a checkpoint the checkpoint is only marked as deleted. On of the
-Smaug server will have to run a GC collection run and make sure all the actual
+Karbor server will have to run a GC collection run and make sure all the actual
 data is free. This is done to unify all the cleanup to one flow and make sure
 the deletion has been propagated to all sites before actually deleting the data.
 

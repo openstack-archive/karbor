@@ -1,8 +1,8 @@
-Smaug Specs
+Karbor Specs
 ===========
 
 This section contains detailed specification documents for
-different features inside Smaug.
+different features inside Karbor.
 
 Contents:
 

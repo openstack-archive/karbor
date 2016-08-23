@@ -1,10 +1,10 @@
 ==================================
-Smaug: Application Data Protection
+Karbor: Application Data Protection
 ==================================
 
 Introduction
 ============
-Smaug is an OpenStack project that provides a pluggable framework for
+Karbor is an OpenStack project that provides a pluggable framework for
 protecting and restoring Data and Metadata that comprises an OpenStack-deployed
 application - Application Data Protection as a Service.
 
@@ -15,7 +15,7 @@ Application against loss/damage (e.g. backup, replication) by providing a
 standard framework of APIs and services that allows vendors to provide plugins
 through a unified interface
 
-Using Smaug
+Using Karbor
 ===========
 .. toctree::
    :maxdepth: 1
@@ -26,7 +26,7 @@ Using Smaug
    contributing
    releasenotes
 
-Smaug Specs
+Karbor Specs
 ===========
 .. toctree::
    :maxdepth: 1

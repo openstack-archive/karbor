@@ -1,11 +1,11 @@
 =====
-Smaug
+Karbor
 =====
 
 Application Data Protection as a Service for OpenStack
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/Smaug.png
-    :alt: Smaug
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/Karbor.png
+    :alt: Karbor
     :width: 300
     :height: 525
     :align: center
@@ -45,12 +45,12 @@ Links
 *****
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/smaug
-* Source: http://git.openstack.org/cgit/openstack/smaug
-* Bugs: http://bugs.launchpad.net/smaug
+* Documentation: http://docs.openstack.org/developer/karbor
+* Source: http://git.openstack.org/cgit/openstack/karbor
+* Bugs: http://bugs.launchpad.net/karbor
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/SmaugInPieces.png
-    :alt: Smaug
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/KarborInPieces.png
+    :alt: Karbor
     :width: 200
     :height: 525
     :align: center

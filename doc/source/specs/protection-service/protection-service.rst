@@ -8,13 +8,13 @@
 Protection Service Basics
 ====================================
 
-https://bugs.launchpad.net/smaug/+bug/1529199
+https://bugs.launchpad.net/karbor/+bug/1529199
 
-Protection Service is a component of smaug (an openstack project working as a
+Protection Service is a component of karbor (an openstack project working as a
 service for data protection), which is responsible to execute
 protect/restore/other actions on operations (triggered plans).
 
-Architecturally, it acts as a RPC server role for smaug API service to actually
+Architecturally, it acts as a RPC server role for karbor API service to actually
 execute the actions on triggered operations.
 
 It's also the role who actually cooperates with protection plugins provided by
@@ -29,7 +29,7 @@ the graph task flow.
 RPC interfaces
 ================================================
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/protection-architecture.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/protection-architecture.png
 
 From the module graph, protection service basically provide following RPC
 calls:
@@ -56,7 +56,7 @@ Checkpoint RPC:
 
 Main Concept
 ============
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/class-diagram.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/class-diagram.png
 
 
 Protection Manager
@@ -80,7 +80,7 @@ CheckpointCollection
 --------------------
 
 Entity to manage checkpoints, which provides CRUD interfaces to handle
-checkpoint. As checkpoint is a smaug internal entity, one checkpoint operation
+checkpoint. As checkpoint is a karbor internal entity, one checkpoint operation
 is actually composed by combination of several BankPlugin atomic operations.
 
 Take create_checkpoint as example, it will first acquire write lease (there
@@ -96,9 +96,9 @@ call to Protection Service.
 Let's take action protect as the example and analyze the sequence together with
 the class graph:
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/protect-rpc-call-seq-diagram.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/protect-rpc-call-seq-diagram.png
 
-1. Smaug **Operation Engine**
+1. Karbor **Operation Engine**
 ------------------------------
 who is responsible for triggering operation according to time schedule or
 events, will call RPC call of Protection Service:
