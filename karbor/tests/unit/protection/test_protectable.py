@@ -38,6 +38,13 @@ class _FakeProtectablePlugin(ProtectablePlugin):
     def list_resources(self, context):
         return self.graph.values()
 
+    def show_resource(self, context, resource_id):
+        return [Resource(type=_FAKE_TYPE,
+                         id=resource.id,
+                         name=resource.name)
+                for resource in self.graph
+                if resource.id == resource_id]
+
     def get_dependent_resources(self, context, parent_resource):
         return self.graph[parent_resource]
 

@@ -51,6 +51,13 @@ class ProtectablePlugin(object):
         pass
 
     @abc.abstractmethod
+    def show_resource(self, context, resource_id):
+        """Show resource detail information.
+
+        """
+        pass
+
+    @abc.abstractmethod
     def get_dependent_resources(self, context, parent_resource):
         """List dependent resource instances.
 
