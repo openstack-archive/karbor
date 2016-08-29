@@ -53,6 +53,7 @@ class ScheduledOperationViewBuilder(common.ViewBuilder):
                 'project_id': operation.get('project_id'),
                 'trigger_id': operation.get('trigger_id'),
                 'operation_definition': operation.get('operation_definition'),
+                'enabled': operation.get('enabled'),
             }
         }
         return operation_ref

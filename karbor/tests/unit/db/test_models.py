@@ -175,6 +175,7 @@ class ScheduledOperationTestCase(base.TestCase):
     def test_scheduled_operation_create(self):
         operation_ref = self._create_scheduled_operation()
         self.assertEqual('protect', operation_ref['operation_type'])
+        self.assertEqual(True, operation_ref['enabled'])
 
     def test_scheduled_operation_delete(self):
         operation_ref = self._create_scheduled_operation()

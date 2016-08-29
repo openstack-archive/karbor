@@ -88,6 +88,7 @@ class ScheduledOperation(BASE, KarborBase):
     trigger_id = Column(String(36), ForeignKey('triggers.id'),
                         index=True, nullable=False)
     operation_definition = Column(Text, nullable=False)
+    enabled = Column(Boolean, default=True)
 
     trigger = orm.relationship(
         Trigger,

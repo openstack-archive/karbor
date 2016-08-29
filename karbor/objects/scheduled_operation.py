@@ -41,6 +41,7 @@ class ScheduledOperation(base.KarborPersistentObject, base.KarborObject,
         'project_id': fields.StringField(),
         'trigger_id': fields.UUIDField(),
         'operation_definition': fields.DictOfStringsField(),
+        'enabled': fields.BooleanField(default=True),
 
         'trigger': fields.ObjectField("Trigger")
     }

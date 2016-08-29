@@ -127,6 +127,7 @@ def define_tables(meta):
         Column('trigger_id', String(length=36), ForeignKey('triggers.id'),
                index=True, nullable=False),
         Column('operation_definition', Text, nullable=False),
+        Column('enabled', Boolean, nullable=False, default=True),
         mysql_engine='InnoDB'
     )
 
