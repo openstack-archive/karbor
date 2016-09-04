@@ -1,6 +1,6 @@
 # Git information
-KARBOR_REPO=${KARBOR_REPO:-https://git.openstack.org/cgit/openstack/smaug/}
-KARBOR_DIR=$DEST/smaug
+KARBOR_REPO=${KARBOR_REPO:-https://git.openstack.org/cgit/openstack/karbor/}
+KARBOR_DIR=$DEST/karbor
 KARBOR_BRANCH=${KARBOR_BRANCH:-master}
 
 # common variables

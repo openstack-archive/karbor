@@ -2,7 +2,7 @@
 
 set -xe
 
-KARBOR_DIR="$BASE/new/smaug"
+KARBOR_DIR="$BASE/new/karbor"
 TEMPEST_DIR="$BASE/new/tempest"
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
 
