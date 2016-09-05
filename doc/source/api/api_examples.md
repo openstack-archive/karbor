@@ -267,45 +267,55 @@ None
 > **get** : /v1/{project_id}/scheduled_operations
 #### Response JSON ####
 ```json
-[
-  {
-    "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-    "name": "My scheduled operation",
-    "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-    "operation_type": "protect",
-    "operation_definition": {
-      "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
-    }
-  },
-]
+{"operations": [
+    {"scheduled_operation": {
+       "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+       "name": "My scheduled operation",
+       "description": "It will run everyday",
+       "operation_type": "protect",
+       "trigger_id": "23902b02-5666-4ee6-8dfe-962ac09c3995",
+       "operation_definition": {
+         "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+         "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+         },
+       "enabled": 1
+      }
+    },
+  ],
+  "operations_links": ""
+}
 ```
 
 ### Create Scheduled Operation ###
 > **post** : /v1/{project_id}/scheduled_operations
 #### Request JSON ####
 ```json
-{
-  "name": "My scheduled operation",
-  "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-  "operation_type": "protect",
-  "operation_definition": {
-    "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+{"scheduled_operation": {
+    "name": "My scheduled operation",
+    "description": "It will run everyday",
+    "operation_type": "protect",
+    "trigger_id": "23902b02-5666-4ee6-8dfe-962ac09c3995",
+    "operation_definition": {
+      "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+    }
   }
 }
 ```
 
 #### Response JSON ####
 ```json
-{
-  "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-  "name": "My scheduled operation",
-  "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-  "operation_type": "protect",
-  "operation_definition": {
-    "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+{"scheduled_operation": {
+    "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+    "name": "My scheduled operation",
+    "description": "It will run everyday",
+    "operation_type": "protect",
+    "trigger_id": "23902b02-5666-4ee6-8dfe-962ac09c3995",
+    "operation_definition": {
+      "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+    },
+    "enabled": 1
   }
 }
 ```
@@ -314,16 +324,18 @@ None
 > **get** : /v1/{project_id}/scheduled_operations/{scheduled_operation_id}
 #### Response JSON ####
 ```json
-{
-  "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-  "name": "My scheduled operation",
-  "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-  "operation_type": "protect",
-  "operation_definition": {
-    "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
-  },
-  "next_schedule_time": "2016-1-5T08:30:00"
+{"scheduled_operation": {
+    "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+    "name": "My scheduled operation",
+    "description": "It will run everyday",
+    "operation_type": "protect",
+    "trigger_id": "23902b02-5666-4ee6-8dfe-962ac09c3995",
+    "operation_definition": {
+      "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+    },
+    "enabled": 1
+  }
 }
 ```
 

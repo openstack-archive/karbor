@@ -613,6 +613,9 @@ paths:
       parameters:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/nameFilterParam'
+        - $ref: '#/parameters/scheduled_operation_typeFilterParam'
+        - $ref: '#/parameters/trigger_idParam'
+        - $ref: '#/parameters/scheduled_operation_defFilterParam'
         - $ref: '#/parameters/sortParam'
         - $ref: '#/parameters/limitParam'
         - $ref: '#/parameters/markerParam'
@@ -627,18 +630,24 @@ paths:
             items:
               $ref: '#/definitions/ScheduledOperation'
           examples:
-            application/json: [
-              {
-                "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-                "name": "My scheduled operation",
-                "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-                "operation_type": "protect",
-                "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                "operation_definition": {
-                  "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
-                }
-              },
-            ]
+            application/json: {
+              "operations": [ {
+                "scheduled_operation": {
+                  "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+                  "name": "My scheduled operation",
+                  "description": "It will run everyday",
+                  "operation_type": "protect",
+                  "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                  "operation_definition": {
+                    "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+                    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+                    },
+                  "enabled": 1  
+                  }
+                },
+              ],
+              "operations_links": ""
+            }
         default:
           description: Unexpected error
           schema:
@@ -656,7 +665,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/ScheduledOperation'
+            $ref: '#/definitions/ScheduledOperationCreateBody'
       responses:
         '200':
           description: The new scheduled operation
@@ -664,15 +673,19 @@ paths:
             $ref: '#/definitions/ScheduledOperation'
           examples:
             application/json: {
-              "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-              "name": "My scheduled operation",
-              "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-              "operation_type": "protect",
-              "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "operation_definition": {
-                "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+              "scheduled_operation": {
+                "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+                "name": "My scheduled operation",
+                "description": "It will run everyday",
+                "operation_type": "protect",
+                "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "operation_definition": {
+                  "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+                  "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                  },
+                "enabled": 1  
+                }
               }
-            }
         default:
           description: Unexpected error
           schema:
@@ -695,15 +708,19 @@ paths:
             $ref: '#/definitions/ScheduledOperation'
           examples:
             application/json: {
-              "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-              "name": "My scheduled operation",
-              "project_id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-              "operation_type": "protect",
-              "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "operation_definition": {
-                "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+              "scheduled_operation": {
+                "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+                "name": "My scheduled operation",
+                "description": "It will run everyday",
+                "operation_type": "protect",
+                "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "operation_definition": {
+                  "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+                  "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+                  },
+                "enabled": 1  
+                }
               }
-            }
         default:
           description: Unexpected error
           schema:
@@ -1316,19 +1333,38 @@ definitions:
       name:
         type: string
         description: Display name of scheduled operation.
-      project_id:
-        type: string
-        format: UUID
-      operation_type:
-        type: string
       description:
         type: string
         description: Description about the scheduled operation.
+      operation_type:
+        type: string
       trigger_id:
         type: string
         format: UUID
       operation_definition:
-        $ref: '#/definitions/OperationDefinition'
+        type: object
+        description: |
+          Supply parameters for the operation type.
+      enabled:
+        type: integer
+  ScheduledOperationCreateBody:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Display name of scheduled operation.
+      description:
+        type: string
+        description: Description about the scheduled operation.
+      operation_type:
+        type: string
+      trigger_id:
+        type: string
+        format: UUID
+      operation_definition:
+        type: object
+        description: |
+          Supply parameters for the operation type.
   OperationStatus:
     type: object
     properties:
@@ -1587,6 +1623,19 @@ parameters:
     required: true
     in: path
     description: id of the scheduled operation.
+  scheduled_operation_typeFilterParam:
+    name: operation_type
+    in: query
+    description: type of the scheduled operation.
+    required: false
+    type: string
+  scheduled_operation_defFilterParam:
+    name: operation_definition
+    in: query
+    format: regex
+    description: definition of the scheduled operation. Could be a regex pattern.
+    required: false
+    type: string
   operation_log_idParam:
     name: operation_log_id
     type: string
