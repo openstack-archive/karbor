@@ -138,9 +138,8 @@ class TriggersController(wsgi.Controller):
             self._raise_unknown_exception(ex)
 
         if operations:
-            msg = _("There are more than one scheduled operations binded "
-                    "with this trigger, please delete them first")
-            raise exc.HTTPMethodNotAllowed(explanation=msg)
+            msg = _("Trigger is being used by one or more operations")
+            raise exc.HTTPFailedDependency(explanation=msg)
 
         try:
             self.operationengine_api.delete_trigger(context, id)
