@@ -23,7 +23,7 @@ OPTIONS_SCHEMA = {
             "type": "string",
             "title": "Backup Mode",
             "description": "The backup mode.",
-            "eumn": ["full", "incremental", "auto"],
+            "enum": ["full", "incremental", "auto"],
             "default": "auto"
         },
         "container": {
@@ -91,7 +91,7 @@ SAVED_INFO_SCHEMA = {
             "type": "string",
             "title": "Status",
             "description": "The backup status, such as available.",
-            "eumn": ['creating', 'available',
+            "enum": ['creating', 'available',
                                  'deleting', 'error',
                                  'restoring', 'error_restoring'],
         },
