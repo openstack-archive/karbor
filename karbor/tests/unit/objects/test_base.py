@@ -42,39 +42,39 @@ class TestKarborObject(test_objects.BaseObjectsTestCase):
         self.obj.obj_reset_changes()
 
     def test_karbor_obj_get_changes_no_changes(self):
-        self.assertDictEqual({}, self.obj.karbor_obj_get_changes())
+        self.assertEqual({}, self.obj.karbor_obj_get_changes())
 
     def test_karbor_obj_get_changes_other_changes(self):
         self.obj.text = 'text2'
-        self.assertDictEqual({'text': 'text2'},
-                             self.obj.karbor_obj_get_changes())
+        self.assertEqual({'text': 'text2'},
+                         self.obj.karbor_obj_get_changes())
 
     def test_karbor_obj_get_changes_datetime_no_tz(self):
         now = datetime.datetime.utcnow()
         self.obj.scheduled_at = now
-        self.assertDictEqual({'scheduled_at': now},
-                             self.obj.karbor_obj_get_changes())
+        self.assertEqual({'scheduled_at': now},
+                         self.obj.karbor_obj_get_changes())
 
     def test_karbor_obj_get_changes_datetime_tz_utc(self):
         now_tz = iso8601.parse_date('2015-06-26T22:00:01Z')
         now = now_tz.replace(tzinfo=None)
         self.obj.scheduled_at = now_tz
-        self.assertDictEqual({'scheduled_at': now},
-                             self.obj.karbor_obj_get_changes())
+        self.assertEqual({'scheduled_at': now},
+                         self.obj.karbor_obj_get_changes())
 
     def test_karbor_obj_get_changes_datetime_tz_non_utc_positive(self):
         now_tz = iso8601.parse_date('2015-06-26T22:00:01+01')
         now = now_tz.replace(tzinfo=None) - datetime.timedelta(hours=1)
         self.obj.scheduled_at = now_tz
-        self.assertDictEqual({'scheduled_at': now},
-                             self.obj.karbor_obj_get_changes())
+        self.assertEqual({'scheduled_at': now},
+                         self.obj.karbor_obj_get_changes())
 
     def test_karbor_obj_get_changes_datetime_tz_non_utc_negative(self):
         now_tz = iso8601.parse_date('2015-06-26T10:00:01-05')
         now = now_tz.replace(tzinfo=None) + datetime.timedelta(hours=5)
         self.obj.scheduled_at = now_tz
-        self.assertDictEqual({'scheduled_at': now},
-                             self.obj.karbor_obj_get_changes())
+        self.assertEqual({'scheduled_at': now},
+                         self.obj.karbor_obj_get_changes())
 
     def test_refresh(self):
         @objects.base.KarborObjectRegistry.register_if(False)
