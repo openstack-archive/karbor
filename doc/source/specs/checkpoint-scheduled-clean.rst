@@ -8,15 +8,15 @@
 Checkpoint scheduled clean
 ==========================================
 
-https://blueprints.launchpad.net/smaug/+spec/checkpoint-scheduled-clean
+https://blueprints.launchpad.net/karbor/+spec/checkpoint-scheduled-clean
 
 Problem description
 ===================
 
-Smaug provides Operation Engine Service to support the scheduled operation for
+Karbor provides Operation Engine Service to support the scheduled operation for
 a protection plan. The scheduled operations will create lots of checkpoints as
 the triggers define the rules. The checkpoints will be created every day or
-every week or every month. Currently Smaug has no automatic clean feature and
+every week or every month. Currently Karbor has no automatic clean feature and
 policy for the end user.
 
 Use Cases
@@ -30,8 +30,8 @@ necessary to satisfy the end user's requirement.
 Proposed change
 ===============
 
-Smaug provides the end users some settings including ``max_backups`` and
-``retention_duration`` for the scheduled operation. Smaug could clean the
+Karbor provides the end users some settings including ``max_backups`` and
+``retention_duration`` for the scheduled operation. Karbor could clean the
 deprecated checkpoints which are created by the scheduled operation
 automatically as the end users define.
 
@@ -40,8 +40,8 @@ automatically as the end users define.
 #. **retention_duration**: the retention time of checkpoints which are created
    by the scheduled operation. e.g. 20 weeks.
 
-Smaug provides the default values for these two settings. The default value is
--1, which means Smaug will not clean the checkpoints by default. When the end
+Karbor provides the default values for these two settings. The default value is
+-1, which means Karbor will not clean the checkpoints by default. When the end
 users launch a scheduled operation, they can input the values of these two
 settings and invoke the scheduled operation RESTful API.
 
@@ -136,7 +136,7 @@ None
 Other end user impact
 ---------------------
 
-The new API will be exposed to users via the python-smaugclient.
+The new API will be exposed to users via the python-karborclient.
 
 Performance Impact
 ------------------
@@ -166,7 +166,7 @@ Work Items
 ----------
 
 * Write API
-* Add to Smaug client
+* Add to Karbor client
 * Write tests
 * Add documentation
 
@@ -179,7 +179,7 @@ None
 Testing
 =======
 
-Unit tests in Smaug and the python-smaugclient.
+Unit tests in Karbor and the python-karborclient.
 
 
 Documentation Impact
