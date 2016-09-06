@@ -308,18 +308,18 @@ paths:
                   "name": "My 3 tier application",
                   "resources": [
                     {
-                      "type": "OS::Nova::Server",
                       "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                      "type": "OS::Nova::Server",
                       "name": "App server"
                     },
                     {
-                      "type": "OS::Cinder::Volume",
                       "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                      "type": "OS::Cinder::Volume",
                       "name": "System volume"
                     },
                     {
-                      "type": "OS::Cinder::Volume",
                       "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                      "type": "OS::Cinder::Volume",
                       "name": "Data volume"
                     }
                   ],
@@ -379,18 +379,18 @@ paths:
                 "name": "My 3 tier application",
                 "resources": [
                   {
-                    "type": "OS::Nova::Server",
                     "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "type": "OS::Nova::Server",
                     "name": "App server"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "type": "OS::Cinder::Volume",
                     "name": "System volume"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "type": "OS::Cinder::Volume",
                     "name": "Data volume"
                   }
                 ],
@@ -439,18 +439,18 @@ paths:
                 "name": "My 3 tier application",
                 "resources": [
                   {
-                    "type": "OS::Nova::Server",
                     "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "type": "OS::Nova::Server",
                     "name": "App server"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "type": "OS::Cinder::Volume",
                     "name": "System volume"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "type": "OS::Cinder::Volume",
                     "name": "Data volume"
                   }
                 ],
@@ -502,18 +502,18 @@ paths:
                 "name": "My 1 tier application",
                 "resources": [
                   {
-                    "type": "OS::Nova::Server",
                     "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "type": "OS::Nova::Server",
                     "name": "App server"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "type": "OS::Cinder::Volume",
                     "name": "System volume"
                   },
                   {
-                    "type": "OS::Cinder::Volume",
                     "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "type": "OS::Cinder::Volume",
                     "name": "Data volume"
                   }
                 ],
@@ -710,7 +710,7 @@ paths:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/nameFilterParam'
         - $ref: '#/parameters/scheduled_operation_typeFilterParam'
-        - $ref: '#/parameters/trigger_idParam'
+        - $ref: '#/parameters/trigger_idFilterParam'
         - $ref: '#/parameters/scheduled_operation_defFilterParam'
         - $ref: '#/parameters/sortParam'
         - $ref: '#/parameters/limitParam'
@@ -908,23 +908,22 @@ paths:
           schema:
               $ref: '#/definitions/OperationLog'
           examples:
-            application/json: |
-              {
-                "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
-                "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
-                "started_at": "2015-08-27T09:50:58-05:00",
-                "state": "running"
-                "entries": [
-                  {
-                    "timestamp": "2015-08-27T09:50:58-05:00",
-                    "message": "Operation started"
-                  },
-                  {
-                    "timestamp": "2015-08-27T09:50:51-05:00",
-                    "message": "Doing things"
-                  }
-                ]
-              },
+            application/json: {
+              "id": "23902b02-5666-4ee6-8dfe-962ac09c3994",
+              "scheduled_operation_id": "23902b02-5666-4ee6-8dfe-962ac09c3991",
+              "started_at": "2015-08-27T09:50:58-05:00",
+              "state": "running",
+              "entries": [
+                {
+                  "timestamp": "2015-08-27T09:50:58-05:00",
+                  "message": "Operation started"
+                },
+                {
+                  "timestamp": "2015-08-27T09:50:51-05:00",
+                  "message": "Doing things"
+                }
+              ]
+            }
         default:
           description: Unexpected error
           schema:
@@ -1120,7 +1119,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /{project_id}/triggers/{trigger_id}:
-    post:
+    put:
       summary: Trigger
       description: |
         Update the specified trigger created by a given project.
@@ -1268,18 +1267,20 @@ definitions:
       status:
         readOnly: true
         type: string
+
   Resource:
     type: object
     properties:
-      type:
-        $ref: '#/definitions/ProtectableType'
-        readOnly: true
       id:
         readOnly: true
         type: string
+      type:
+        $ref: '#/definitions/ProtectableType'
+        readOnly: true
       name:
         readOnly: true
         type: string
+
   ProtectionPlan:
     type: object
     required: [ name, provider_id, resources ]
@@ -1350,6 +1351,7 @@ definitions:
           "OS::Nova::Server" has "OS::Cinder::Volume" as a dependent type.
         items:
           $ref: '#/definitions/ProtectableType'
+
   OperationDefinition:
     type: object
     discriminator: type
@@ -1365,6 +1367,7 @@ definitions:
         description: |
           Type of the operation. This defines what kind of operation this
           object defines the arguments for.
+
   ProtectOperationDefinition:
     description: |
       Operation definition for protect operation.
@@ -1379,6 +1382,7 @@ definitions:
           type: object
           format: dict
       required: [ protection_plan_id ]
+
   DeleteOperationDefinition:
     description: |
       Operation definition for delete operation.
@@ -1392,6 +1396,7 @@ definitions:
           type: string
           format: UUID
       required: [ checkpoint_path, provider_id ]
+
   StartOperationDefinition:
     description: |
       Operation definition for start operation.
@@ -1403,6 +1408,7 @@ definitions:
           type: string
           format: UUID
       required: [ protection_plan_id ]
+
   SuspendOperationDefinition:
     description: |
       Operation definition for suspend operation.
@@ -1414,6 +1420,7 @@ definitions:
           type: string
           format: UUID
       required: [ protection_plan_id ]
+
   RestoreOperationDefinition:
     description: |
       Operation definition for restore operation.
@@ -1434,6 +1441,7 @@ definitions:
           type: object
           format: dict
       required: [ checkpoint_id, provider_id ]
+
   ScheduledOperation:
     type: object
     properties:
@@ -1663,16 +1671,16 @@ parameters:
     in: path
     description: |
       Specifies the ID of the project that owns this entity
+    required: true
     type: string
     format: uuid
-    required: true
   nameFilterParam:
     name: name
     in: query
-    format: regex
     description: name of the entity. Could be a regex pattern.
     required: false
     type: string
+    format: regex
   typeFilterParam:
     name: type
     in: query
@@ -1688,83 +1696,91 @@ parameters:
   propertiesFilterParam:
     name: properties
     in: query
-    format: regex
     description: property of the entity. Could be a regex pattern.
     required: false
     type: string
+    format: regex
   provider_idParam:
     name: provider_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the provider.
+    required: true
+    type: string
+    format: uuid
   plan_idParam:
     name: plan_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the plan.
+    required: true
+    type: string
+    format: uuid
   checkpoint_idParam:
     name: checkpoint_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the checkpoint.
+    required: true
+    type: string
+    format: uuid
   trigger_idParam:
     name: trigger_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the trigger.
+    required: true
+    type: string
+    format: uuid
   resource_idParam:
     name: resource_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the resource.
+    required: true
+    type: string
+    format: uuid
   restore_idParam:
     name: restore_id
-    type: string
-    format: uuid
-    required: true
     in: path
     description: id of the restore.
-  scheduled_operation_idParam:
-    name: scheduled_operation_id
+    required: true
     type: string
     format: uuid
-    required: true
+  scheduled_operation_idParam:
+    name: scheduled_operation_id
     in: path
     description: id of the scheduled operation.
+    required: true
+    type: string
+    format: uuid
   scheduled_operation_typeFilterParam:
     name: operation_type
     in: query
     description: type of the scheduled operation.
     required: false
     type: string
+    format: regex
   scheduled_operation_defFilterParam:
     name: operation_definition
     in: query
-    format: regex
     description: definition of the scheduled operation. Could be a regex pattern.
     required: false
     type: string
-  operation_log_idParam:
-    name: operation_log_id
+    format: regex
+  trigger_idFilterParam:
+    name: trigger_id
+    in: query
+    description: id of the trigger.
+    required: false
     type: string
     format: uuid
-    required: true
+  operation_log_idParam:
+    name: operation_log_id
     in: path
     description: id of the operation log.
+    required: true
+    type: string
+    format: uuid
   protectable_typeParam:
     name: protectable_type
-    type: string
-    format: Heat Type String
-    required: true
     in: path
     description: the resource type.
+    required: true
+    type: string
+    format: Heat Type String
