@@ -107,7 +107,7 @@ class TestCase(base.BaseTestCase):
 
     def override_config(self, name, override, group=None):
         """Cleanly override CONF variables."""
-        CONF.set_override(name, override, group)
+        CONF.set_override(name, override, group, enforce_type=True)
         self.addCleanup(CONF.clear_override, name, group)
 
     def flags(self, **kw):
