@@ -399,29 +399,88 @@ None
 > **get** : /v1/{project_id}/triggers
 #### Response JSON ####
 ```json
-[
-  {
-    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-    "name": "My backup trigger",
-    "type": "TimeTrigger",
-    "description": "The time trigger for backup weekly"
-  },
-]
+{"triggers": [
+    {"trigger_info": {
+      "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+      "name": "My backup trigger",
+      "type": "time",
+      "properties": {
+        "format": "crontab",
+        "pattern": "0 9 * * *",
+        "start_time": "2015-12-17T08:30:00",
+        "end_time": "2016-03-17T08:30:00",
+        "window": "3600",
+        }
+      }
+    },
+  ],
+ "triggers_links": ""  
+}
 ```
 
 ### Create Trigger ###
 > **post** : /v1/{project_id}/triggers
+#### Request JSON ####
+```json
+{"trigger_info": {
+   "name": "My backup trigger",
+   "type": "time",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 9 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
+    }
+  }
+}
+```
+
 #### Response JSON ####
 ```json
-{
-  "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-  "name": "My backup trigger",
-  "type": "TimeTrigger",
-  "properties": {
-    "trigger_window": "60",
-    "recurrence": {
-      "start": "2015-12-17T08:30:00",
-      "frequency": "weekly"
+{"trigger_info": {
+   "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+   "name": "My backup trigger",
+   "type": "time",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 9 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
+    }
+  }
+}
+```
+
+### Update Trigger ###
+> **post** : /v1/{project_id}/triggers/{trigger_id}
+#### Request JSON ####
+```json
+{"trigger_info": {
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 10 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
+    }
+  }
+}
+```
+
+#### Response JSON ####
+```json
+{"trigger_info": {
+   "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+   "name": "My backup trigger",
+   "type": "time",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 10 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
     }
   }
 }
@@ -431,15 +490,16 @@ None
 > **get** : /v1/{project_id}/triggers/{trigger_id}
 #### Response JSON ####
 ```json
-{
-  "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-  "name": "My backup trigger",
-  "type": "TimeTrigger",
-  "properties": {
-    "trigger_window": "60",
-    "recurrence": {
-      "start": "2015-12-17T08:30:00",
-      "frequency": "weekly"
+{"trigger_info": {
+   "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+   "name": "My backup trigger",
+   "type": "time",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 9 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
     }
   }
 }

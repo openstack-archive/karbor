@@ -95,7 +95,7 @@ class TriggerApiTest(base.TestCase):
         trigger_id = trigger['trigger_info']['id']
         self._create_scheduled_operation(trigger_id)
 
-        self.assertRaises(exc.HTTPMethodNotAllowed,
+        self.assertRaises(exc.HTTPFailedDependency,
                           self.controller.delete,
                           self.req,
                           trigger_id)

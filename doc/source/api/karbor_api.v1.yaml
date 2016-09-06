@@ -929,6 +929,8 @@ paths:
       parameters:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/nameFilterParam'
+        - $ref: '#/parameters/typeFilterParam'
+        - $ref: '#/parameters/propertiesFilterParam'
         - $ref: '#/parameters/sortParam'
         - $ref: '#/parameters/limitParam'
         - $ref: '#/parameters/markerParam'
@@ -943,18 +945,24 @@ paths:
             items:
               $ref: '#/definitions/Trigger'
           examples:
-            application/json: [
-              {
-                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                "name": "My backup trigger",
-                "type": "time",
-                "properties": {
-                  "start_time": "2015-12-17",
-                  "trigger_window": "60",
-                  "recurrence": ""
-                }
-              }
-            ]
+            application/json: {
+              "triggers": [{
+                  "trigger_info": {
+                    "id": "cc1a-4516-9435-0ebb13caa398",
+                    "name": "My backup trigger",
+                    "type": "time",
+                    "properties": {
+                      "format": "crontab",
+                      "pattern": "0 9 * * *",
+                      "start_time": "2015-12-17T08:30:00",
+                      "end_time": "2016-03-17T08:30:00",
+                      "window": "60",
+                    }
+                  }
+                },
+              ],
+              "triggers_links": ""
+            }
         default:
           description: Unexpected error
           schema:
@@ -972,7 +980,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Trigger'
+            $ref: '#/definitions/TriggerCreateBody'
       responses:
         '200':
           description: The new created trigger
@@ -980,13 +988,17 @@ paths:
             $ref: '#/definitions/Trigger'
           examples:
             application/json: {
-              "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "name": "My backup trigger",
-              "type": "time",
-              "properties": {
-                "start_time": "2015-12-17",
-                "trigger_window": "60",
-                "recurrence": ""
+              "trigger_info": {
+                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "name": "My backup trigger",
+                "type": "time",
+                "properties": {
+                  "format": "crontab",
+                  "pattern": "0 9 * * *",
+                  "start_time": "2015-12-17T08:30:00",
+                  "end_time": "2016-03-17T08:30:00",
+                  "window": "60",
+                }
               }
             }
         default:
@@ -994,6 +1006,45 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /{project_id}/triggers/{trigger_id}:
+    post:
+      summary: Trigger
+      description: |
+        Update the specified trigger created by a given project.
+      tags:
+        - Project API
+        - Trigger
+      parameters:
+        - $ref: '#/parameters/projectParam'
+        - $ref: '#/parameters/trigger_idParam'
+        - name: trigger_info
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TriggerUpdateBody'
+      responses:
+        '200':
+          description: The updated trigger
+          schema:
+            $ref: '#/definitions/Trigger'
+          examples:
+            application/json: {
+              "trigger_info": {
+                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "name": "My backup trigger",
+                "type": "time",
+                "properties": {
+                  "format": "crontab",
+                  "pattern": "0 10 * * *",
+                  "start_time": "2015-12-17T08:30:00",
+                  "end_time": "2016-03-17T08:30:00",
+                  "window": "60",
+                }
+              }
+            }
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
     get:
       summary: Triggers
       description: |
@@ -1011,13 +1062,17 @@ paths:
             $ref: '#/definitions/Trigger'
           examples:
             application/json: {
-              "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "name": "My backup trigger",
-              "type": "time",
-              "properties": {
-                "start_time": "2015-12-17",
-                "trigger_window": "60",
-                "recurrence": ""
+              "trigger_info": {
+                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                "name": "My backup trigger",
+                "type": "time",
+                "properties": {
+                  "format": "crontab",
+                  "pattern": "0 9 * * *",
+                  "start_time": "2015-12-17T08:30:00",
+                  "end_time": "2016-03-17T08:30:00",
+                  "window": "60",
+                }
               }
             }
         default:
@@ -1044,10 +1099,7 @@ paths:
           examples:
             application/json: {
               "code": 424,
-              "message": "Trigger is being used by an operation",
-              "fields": {
-                "operation_id": "92c63d05-11b3-439c-96e4-6d640606e0ae"
-              }
+              "message": "Trigger is being used by one or more operations",
             }
         default:
           description: Unexpected error
@@ -1336,9 +1388,6 @@ definitions:
       name:
         type: string
         description: Display name of trigger.
-      description:
-        type: string
-        description: Description of trigger.
       type:
         type: string
         description: |
@@ -1367,6 +1416,35 @@ definitions:
             trigger_window:
               type: string
               format: xsd:duration
+  TriggerCreateBody:
+    type: object
+    discriminator: type
+    required: [ type ]
+    properties:
+      name:
+        type: string
+        description: Display name of trigger.
+      type:
+        type: string
+        description: |
+          Type of the trigger. This defines what kind of trigger this
+          object defines the arguments for.
+      properties:
+        type: object
+        description: |
+          Trigger properties. Supply parameters for the trigger type.
+  TriggerUpdateBody:
+    type: object
+    discriminator: type
+    required: [ type ]
+    properties:
+      name:
+        type: string
+        description: Display name of trigger.
+      properties:
+        type: object
+        description: |
+          Trigger properties. Supply parameters for the trigger type.
   Restore:
     type: object
     properties:
@@ -1445,6 +1523,19 @@ parameters:
     in: query
     format: regex
     description: name of the entity. Could be a regex pattern.
+    required: false
+    type: string
+  typeFilterParam:
+    name: type
+    in: query
+    description: type of the entity.
+    required: false
+    type: string
+  propertiesFilterParam:
+    name: properties
+    in: query
+    format: regex
+    description: property of the entity. Could be a regex pattern.
     required: false
     type: string
   provider_idParam:
