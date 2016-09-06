@@ -39,8 +39,8 @@ This field must be a map in the format of::
         }
 
 Keys and values *must* both be strings. Keys that are officially recognized
-will be in the format of ``smaug-<key-name>`` for example
-``smaug-created-by``.
+will be in the format of ``karbor-<key-name>`` for example
+``karbor-created-by``.
 
 Anything that is not officially defined *should* use the
 prefix: ``x-<application>--<key-name>``.
@@ -66,7 +66,7 @@ New optional body attribute when creating a new checkpoint::
     {
         ...
         "extra-info": {
-                "smaug-created-by": "operation-engine"
+                "karbor-created-by": "operation-engine"
         }
     }
 
@@ -84,7 +84,7 @@ None
 Other end user impact
 ---------------------
 
-The new API will be exposed to users via the python-smaugclient.
+The new API will be exposed to users via the python-karborclient.
 
 Performance Impact
 ------------------
@@ -114,7 +114,7 @@ Work Items
 ----------
 
 * Write API
-* Add to Smaug client
+* Add to Karbor client
 * Write tests
 * Add documentation
 
@@ -127,7 +127,7 @@ None
 Testing
 =======
 
-Unit tests in Smaug and the python-smaugclient.
+Unit tests in Karbor and the python-karborclient.
 
 
 Documentation Impact
