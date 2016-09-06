@@ -138,42 +138,138 @@ None
 > **get** : /v1/{project_id}/plans
 #### Response JSON ####
 ```json
-[
-  {
-    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-    "name": "My 3 tier application",
-    "description": "The protection plan for my application"
-  },
-]
+{
+  "plans": [
+    {
+      "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+      "name": "My 3 tier application",
+      "resources": [
+        {
+          "type": "OS::Nova::Server",
+          "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+          "name": "App server"
+        },
+        {
+          "type": "OS::Cinder::Volume",
+          "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+          "name": "System volume"
+        },
+        {
+          "type": "OS::Cinder::Volume",
+          "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+          "name": "Data volume"
+        }
+      ],
+      "status": "suspended",
+      "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+      "parameters": {
+        "OS::Nova::Server": {
+          "backup_name": "os"
+        },
+        "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+          "backup_name": "crash"
+        },
+        "OS::Cinder::Volume": {
+          "backup_name": "os"
+        },
+        "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+          "backup_name": "crash"
+        }
+      }
+    }
+  ],
+  "plans_links": [
+    {
+      "href": "/v1/{project_id}/plans?limit={limit_num}&marker=9e5475d2-6425-4986-9136-a4f09642297f",
+      "rel": "next"
+    }
+  ]
+}
 ```
 
 ### Create Plan ###
 > **post** : /v1/{project_id}/plans
+#### Request JSON ####
+```json
+{
+  "plan": {
+    "name": "My 3 tier application",
+    "resources": [
+      {
+        "type": "OS::Nova::Server",
+        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "name": "App server"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "name": "System volume"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "name": "Data volume"
+      }
+    ],
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "parameters": {
+      "OS::Nova::Server": {
+        "backup_name": "os"
+      },
+      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+        "backup_name": "crash"
+      },
+      "OS::Cinder::Volume": {
+        "backup_name": "os"
+      },
+      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+        "backup_name": "crash"
+      }
+    }
+  }
+}
+```
+
 #### Response JSON ####
 ```json
 {
-  "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-  "name": "My 3 tier application",
-  "resources": [
-    {
-      "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Nova::Server"
-    },
-    {
-      "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Cinder::Volume"
-    },
-    {
-      "id": "62e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Cinder::Volume"
+  "plan": {
+    "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+    "name": "My 3 tier application",
+    "resources": [
+      {
+        "type": "OS::Nova::Server",
+        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "name": "App server"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "name": "System volume"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "name": "Data volume"
+      }
+    ],
+    "status": "suspended",
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "parameters": {
+      "OS::Nova::Server": {
+        "backup_name": "os"
+      },
+      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+        "backup_name": "crash"
+      },
+      "OS::Cinder::Volume": {
+        "backup_name": "os"
+      },
+      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+        "backup_name": "crash"
+      }
     }
-  ],
-  "parameters": {
-    "OS::Nova::Server": {
-      "consistency": "os"
-    }
-  },
-  "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+  }
 }
 ```
 
@@ -182,28 +278,98 @@ None
 #### Response JSON ####
 ```json
 {
-  "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-  "name": "My 3 tier application",
-  "resources": [
-    {
-      "id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Nova::Server"
-    },
-    {
-      "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Cinder::Volume"
-    },
-    {
-      "id": "62e51e85-4f31-441f-9a5d-6e93e3196628",
-      "type": "OS::Cinder::Volume"
+  "plan": {
+    "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+    "name": "My 3 tier application",
+    "resources": [
+      {
+        "type": "OS::Nova::Server",
+        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "name": "App server"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "name": "System volume"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "name": "Data volume"
+      }
+    ],
+    "status": "suspended",
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "parameters": {
+      "OS::Nova::Server": {
+        "backup_name": "os"
+      },
+      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+        "backup_name": "crash"
+      },
+      "OS::Cinder::Volume": {
+        "backup_name": "os"
+      },
+      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+        "backup_name": "crash"
+      }
     }
-  ],
-  "parameters": {
-    "OS::Nova::Server": {
-      "consistency": "crash"
+  }
+}
+```
+
+### Update Plan ###
+> **put** : /v1/{project_id}/plans/{plan_id}
+#### Request JSON ####
+```json
+{
+  "plan":{
+    "status": "started",
+    "name": "My 1 tier application"
+  }
+}
+```
+
+#### Response JSON ####
+```json
+{
+  "plan": {
+    "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+    "name": "My 1 tier application",
+    "resources": [
+      {
+        "type": "OS::Nova::Server",
+        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "name": "App server"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "name": "System volume"
+      },
+      {
+        "type": "OS::Cinder::Volume",
+        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "name": "Data volume"
+      }
+    ],
+    "status": "started",
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "parameters": {
+      "OS::Nova::Server": {
+        "backup_name": "os"
+      },
+      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+        "backup_name": "crash"
+      },
+      "OS::Cinder::Volume": {
+        "backup_name": "os"
+      },
+      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+        "backup_name": "crash"
+      }
     }
-  },
-  "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+  }
 }
 ```
 
