@@ -723,35 +723,62 @@ None
 > **get** : /v1/{project_id}/restores
 #### Response JSON ####
 ```json
-[
-  {
-	"id": "36ea41b2-c358-48a7-9117-70cb7617410a",
-	"project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
-	"provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-	"checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
-	"restore_target": "192.168.1.2:35357/v2.0",
-	"parameters": {
-	  "username": "admin"
-	},
-	"status": "SUCCESS"
-  },
-]
+{
+  "restores": [
+    {
+      "id": "22b82aa7-9179-4c71-bba2-caf5c0e68db7",
+      "project_id": "e486a2f49695423ca9c47e589b948108",
+      "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+      "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+      "restore_target": "http://192.168.1.2:35357/v2.0/",
+      "parameters": {
+        "username": "admin",
+        "password": "***"
+      },
+      "status": "success"
+    }
+  ],
+  "restores_links": [
+    {
+      "href": "/v1/{project_id}/restores?limit={limit_num}&marker=22b82aa7-9179-4c71-bba2-caf5c0e68db7",
+      "rel": "next"
+    }
+  ]
+}
 ```
 
 ### Create Restore ###
 > **post** : /v1/{project_id}/restores
+#### Request JSON ####
+```json
+{
+  "restore": {
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "parameters": {
+      "username": "admin",
+      "password": "secretadmin"
+    }
+  }
+}
+```
+
 #### Response JSON ####
 ```json
 {
-  "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
-  "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
-  "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-  "checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
-  "restore_target": "192.168.1.2:35357/v2.0",
-  "parameters": {
-    "username": "admin"
-  },
-  "status": "IN PROGRESS"
+  "restore": {
+    "id": "22b82aa7-9179-4c71-bba2-caf5c0e68db7",
+    "project_id": "e486a2f49695423ca9c47e589b948108",
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "parameters": {
+      "username": "admin",
+      "password": "***"
+    },
+    "status": "success"
+  }
 }
 ```
 
@@ -760,15 +787,18 @@ None
 #### Response JSON ####
 ```json
 {
-  "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
-  "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
-  "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-  "checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
-  "restore_target": "192.168.1.2:35357/v2.0",
-  "parameters": {
-    "username": "admin"
-  },
-  "status": "IN PROGRESS"
+  "restore": {
+    "id": "22b82aa7-9179-4c71-bba2-caf5c0e68db7",
+    "project_id": "e486a2f49695423ca9c47e589b948108",
+    "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "parameters": {
+      "username": "admin",
+      "password": "***"
+    },
+    "status": "success"
+  }
 }
 ```
 
