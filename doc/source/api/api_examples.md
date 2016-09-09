@@ -145,18 +145,18 @@ None
       "name": "My 3 tier application",
       "resources": [
         {
-          "type": "OS::Nova::Server",
           "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+          "type": "OS::Nova::Server",
           "name": "App server"
         },
         {
-          "type": "OS::Cinder::Volume",
           "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+          "type": "OS::Cinder::Volume",
           "name": "System volume"
         },
         {
-          "type": "OS::Cinder::Volume",
           "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+          "type": "OS::Cinder::Volume",
           "name": "Data volume"
         }
       ],
@@ -196,18 +196,18 @@ None
     "name": "My 3 tier application",
     "resources": [
       {
-        "type": "OS::Nova::Server",
         "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
     ],
@@ -238,18 +238,18 @@ None
     "name": "My 3 tier application",
     "resources": [
       {
-        "type": "OS::Nova::Server",
         "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
     ],
@@ -283,18 +283,18 @@ None
     "name": "My 3 tier application",
     "resources": [
       {
-        "type": "OS::Nova::Server",
         "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
     ],
@@ -338,18 +338,18 @@ None
     "name": "My 1 tier application",
     "resources": [
       {
-        "type": "OS::Nova::Server",
         "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "type": "OS::Cinder::Volume",
         "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
     ],
@@ -617,8 +617,8 @@ None
 {"triggers": [
     {"trigger_info": {
       "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-      "name": "My backup trigger",
       "type": "time",
+      "name": "My backup trigger",
       "properties": {
         "format": "crontab",
         "pattern": "0 9 * * *",
@@ -655,8 +655,8 @@ None
 ```json
 {"trigger_info": {
    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-   "name": "My backup trigger",
    "type": "time",
+   "name": "My backup trigger",
    "properties": {
      "format": "crontab",
      "pattern": "0 9 * * *",
@@ -688,8 +688,8 @@ None
 ```json
 {"trigger_info": {
    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-   "name": "My backup trigger",
    "type": "time",
+   "name": "My backup trigger",
    "properties": {
      "format": "crontab",
      "pattern": "0 10 * * *",
@@ -707,8 +707,8 @@ None
 ```json
 {"trigger_info": {
    "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-   "name": "My backup trigger",
    "type": "time",
+   "name": "My backup trigger",
    "properties": {
      "format": "crontab",
      "pattern": "0 9 * * *",
