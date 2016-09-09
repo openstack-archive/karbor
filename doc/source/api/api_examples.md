@@ -151,61 +151,149 @@
 ## Checkpoint ##
 
 ### List Checkpoints ###
-> **get** : /v1/providers/{provider_id}/checkpoints
-#### Response JSON ####
-```json
-[
-  {
-    "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-    "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-    "status": "committed",
-    "plan": {
-        "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-        "name": "My 3 tier application",
-        "description": "The protection plan for my application"
-    },
-    "provider_id":  "efc6a88b-9096-4bb6-8634-cda182a6e12a"
-  },
-]
-```
-
-### Create Checkpoint ###
-> **post** : /v1/providers/{provider_id}/checkpoints
+> **get** : /v1/{project_id}/providers/{provider_id}/checkpoints
 #### Response JSON ####
 ```json
 {
-  "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-  "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-  "status": "committed",
-  "plan": {
-    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
-  },
-  "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+  "checkpoints": [
+    {
+      "id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+      "project_id": "e486a2f49695423ca9c47e589b948108",
+      "status": "available",
+      "protection_plan": {
+        "id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb",
+        "name": "My 3 tier application",
+        "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+        "resources": [
+          {
+            "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+            "type": "OS::Glance::Image",
+            "name": "cirros-0.3.4-x86_64-uec"
+          },
+          {
+            "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+            "type": "OS::Nova::Server",
+            "name": "App server"
+          },
+          {
+            "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
+            "type": "OS::Cinder::Volume",
+            "name": "System volume"
+          },
+          {
+            "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+            "type": "OS::Cinder::Volume",
+            "name": "Data volume"
+          }
+        ]
+      },
+      "resource_graph": "[{'0x3': ['OS::Cinder::Volume', '33b6bb0b-1157-4e66-8553-1c9e14b1c7ba', 'Data volume'], '0x2': ['OS::Cinder::Volume', '25336116-f38e-4c22-81ad-e9b7bd71ba51', 'System volume'], '0x1': ['OS::Nova::Server', 'cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01', 'App server'], '0x0': ['OS::Glance::Image', '99777fdd-8a5b-45ab-ba2c-52420008103f', 'cirros-0.3.4-x86_64-uec']}, [['0x1', ['0x0']]]]"
+    }
+  ],
+  "checkpoints_links": [
+    {
+      "href": "/v1/{project_id}/checkpoints?limit={limit_num}&marker=dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+      "rel": "next"
+    }
+  ]
+}
+```
+
+### Create Checkpoint ###
+> **post** : /v1/{project_id}/providers/{provider_id}/checkpoints
+#### Request JSON ####
+```json
+{
+  "checkpoint": {
+    "plan_id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb"
+  }
+}
+```
+#### Response JSON ####
+```json
+{
+  "checkpoint": {
+    "id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+    "project_id": "e486a2f49695423ca9c47e589b948108",
+    "status": "available",
+    "protection_plan": {
+      "id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb",
+      "name": "My 3 tier application",
+      "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+      "resources": [
+        {
+          "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+          "type": "OS::Glance::Image",
+          "name": "cirros-0.3.4-x86_64-uec"
+        },
+        {
+          "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+          "type": "OS::Nova::Server",
+          "name": "App server"
+        },
+        {
+          "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
+          "type": "OS::Cinder::Volume",
+          "name": "System volume"
+        },
+        {
+          "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+          "type": "OS::Cinder::Volume",
+          "name": "Data volume"
+        }
+      ]
+    },
+    "resource_graph": "[{'0x3': ['OS::Cinder::Volume', '33b6bb0b-1157-4e66-8553-1c9e14b1c7ba', 'Data volume'], '0x2': ['OS::Cinder::Volume', '25336116-f38e-4c22-81ad-e9b7bd71ba51', 'System volume'], '0x1': ['OS::Nova::Server', 'cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01', 'App server'], '0x0': ['OS::Glance::Image', '99777fdd-8a5b-45ab-ba2c-52420008103f', 'cirros-0.3.4-x86_64-uec']}, [['0x1', ['0x0']]]]"
+  }
 }
 ```
 
 ### Show Checkpoint ###
-> **get** : /v1/providers/{provider_id}/checkpoints/{checkpoint_id}
+> **get** : /v1/{project_id}/providers/{provider_id}/checkpoints/{checkpoint_id}
 #### Response JSON ####
 ```json
 {
-  "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-  "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
-  "status": "committed",
-  "plan": {
-      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+  "checkpoint": {
+    "id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+    "project_id": "e486a2f49695423ca9c47e589b948108",
+    "status": "available",
+    "protection_plan": {
+      "id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb",
       "name": "My 3 tier application",
-      "description": "The protection plan for my application"
-  },
-  "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+      "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+      "resources": [
+        {
+          "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+          "type": "OS::Glance::Image",
+          "name": "cirros-0.3.4-x86_64-uec"
+        },
+        {
+          "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+          "type": "OS::Nova::Server",
+          "name": "App server"
+        },
+        {
+          "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
+          "type": "OS::Cinder::Volume",
+          "name": "System volume"
+        },
+        {
+          "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+          "type": "OS::Cinder::Volume",
+          "name": "Data volume"
+        }
+      ]
+    },
+    "resource_graph": "[{'0x3': ['OS::Cinder::Volume', '33b6bb0b-1157-4e66-8553-1c9e14b1c7ba', 'Data volume'], '0x2': ['OS::Cinder::Volume', '25336116-f38e-4c22-81ad-e9b7bd71ba51', 'System volume'], '0x1': ['OS::Nova::Server', 'cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01', 'App server'], '0x0': ['OS::Glance::Image', '99777fdd-8a5b-45ab-ba2c-52420008103f', 'cirros-0.3.4-x86_64-uec']}, [['0x1', ['0x0']]]]"
+  }
 }
 ```
 
 ### Delete Checkpoint ###
-> **delete** : /v1/providers/{provider_id}/checkpoints/{checkpoint_id}
+> **delete** : /v1/{project_id}/providers/{provider_id}/checkpoints/{checkpoint_id}
 #### Response JSON ####
 ```json
-None
+{}
 ```
 
 ----------
