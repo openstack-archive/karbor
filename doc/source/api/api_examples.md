@@ -385,44 +385,81 @@ None
 ## Protectable ##
 
 ### List Protectable Types ###
-> **get** : /v1/protectables
-#### Response JSON ####
-```json
-[
-  "OS::Nova::Server",
-  "OS::Cinder::Volume"
-]
-```
-
-### Show Protectable Type ###
-> **get** : /v1/protectables/{protectable_type}
+> **get** : /v1/{project_id}/protectables
 #### Response JSON ####
 ```json
 {
-  "name": "OS::Nova::Server",
-  "dependent_types": [
+  "protectable_type": [
+    "OS::Keystone::Project",
     "OS::Cinder::Volume",
+    "OS::Cinder::ConsistencyGroup",
     "OS::Glance::Image",
+    "OS::Nova::Server"
   ]
 }
 ```
 
-### List Protectable Instances ###
-> **get** : /v1/protectables/{protectable_type}/instances
+### Show Protectable Type ###
+> **get** : /v1/{project_id}/protectables/{protectable_type}
 #### Response JSON ####
 ```json
-[
-  {
-    "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
+{
+  "protectable_type": {
+    "name": "OS::Nova::Server",
+    "dependent_types": [
+      "OS::Cinder::Volume",
+      "OS::Glance::Image"
+    ]
+  }
+}
+```
+
+### List Protectable Instances ###
+> **get** : /v1/{project_id}/protectables/{protectable_type}/instances
+#### Response JSON ####
+```json
+{
+  "instances": [
+    {
+      "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+      "type": "OS::Nova::Server",
+      "name": "My VM",
+      "dependent_resources": [
+        {
+          "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+          "type": "OS::Glance::Image",
+          "name": "cirros-0.3.4-x86_64-uec"
+        }
+      ]
+    }
+  ],
+  "instances_links": [
+    {
+      "href": "/v1/{project_id}/instances?limit=1&marker=6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+      "rel": "next"
+    }
+  ]
+}
+```
+
+### Show Protectable Instance ###
+> **get** : /v1/{project_id}/protectables/{protectable_type}/instances/{resource_id}
+#### Response JSON ####
+```json
+{
+  "instance": {
+    "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
     "type": "OS::Nova::Server",
+    "name": "My VM",
     "dependent_resources": [
       {
-        "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
-        "type": "OS::Cinder::Volume"
+        "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
       }
     ]
-  },
-]
+  }
+}
 ```
 
 ----------

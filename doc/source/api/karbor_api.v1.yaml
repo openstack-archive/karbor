@@ -556,16 +556,13 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /protectables:
+  /{project_id}/protectables:
     get:
       summary: Protectables
       description: |
         Return all the available protectable types.
       parameters:
-        - $ref: '#/parameters/nameFilterParam'
-        - $ref: '#/parameters/sortParam'
-        - $ref: '#/parameters/limitParam'
-        - $ref: '#/parameters/markerParam'
+        - $ref: '#/parameters/projectParam'
       tags:
         - Protectable
       responses:
@@ -576,20 +573,26 @@ paths:
             items:
               $ref: '#/definitions/ProtectableType'
           examples:
-            application/json: [
-              "OS::Nova::Server",
-              "OS::Cinder::Volume"
-            ]
+            application/json: {
+              "protectable_type":[
+                "OS::Keystone::Project",
+                "OS::Cinder::Volume",
+                "OS::Cinder::ConsistencyGroup",
+                "OS::Glance::Image",
+                "OS::Nova::Server"
+              ]
+            }
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /protectables/{protectable_type}:
+  /{project_id}/protectables/{protectable_type}:
     get:
       summary: Protectables
       description: |
         Return the information of a given protectable type.
       parameters:
+        - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/protectable_typeParam'
       tags:
         - Protectable
@@ -600,22 +603,25 @@ paths:
             $ref: '#/definitions/ProtectableInfo'
           examples:
             application/json: {
-              "name": "OS::Nova::Server",
-              "dependent_types": [
-                "OS::Cinder::Volume",
-                "OS::Glance::Image"
-              ]
+              "protectable_type": {
+                "name": "OS::Nova::Server",
+                "dependent_types": [
+                    "OS::Cinder::Volume",
+                    "OS::Glance::Image"
+                  ]
+              }
             }
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /protectables/{protectable_type}/instances:
+  /{project_id}/protectables/{protectable_type}/instances:
     get:
       summary: Resource Instances
       description: |
         Return all the available instances for the given protectable type.
       parameters:
+        - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/protectable_typeParam'
         - $ref: '#/parameters/nameFilterParam'
         - $ref: '#/parameters/sortParam'
@@ -632,29 +638,39 @@ paths:
             items:
               $ref: '#/definitions/Resource'
           examples:
-            application/json: [
-              {
-                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
-                "type": "OS::Nova::Server",
-                "name": "My VM",
-                "dependent_resources": [
-                  {
-                    "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
-                    "type": "OS::Cinder::Volume"
-                  }
-                ]
-              }
-            ]
+            application/json: {
+              "instances": [
+                {
+                  "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                  "type": "OS::Nova::Server",
+                  "name": "My VM",
+                  "dependent_resources": [
+                    {
+                      "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+                      "type": "OS::Glance::Image",
+                      "name": "cirros-0.3.4-x86_64-uec"
+                    }
+                  ]
+                }
+              ],
+              "instances_links": [
+                {
+                  "href": "/v1/{project_id}/instances?limit=1&marker=6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                  "rel": "next"
+                }
+              ]
+            }
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /protectables/{protectable_type}/instances/{resource_id}:
+  /{project_id}/protectables/{protectable_type}/instances/{resource_id}:
     get:
       summary: Resource Instance
       description: |
         Return information about a specific instance and it's immediate dependencies.
       parameters:
+        - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/protectable_typeParam'
         - $ref: '#/parameters/resource_idParam'
       tags:
@@ -666,19 +682,20 @@ paths:
           schema:
             $ref: '#/definitions/Resource'
           examples:
-            application/json:
-              {
-                "id": "557d0cd2-fd8d-4279-91a5-24763ebc6cbc",
+            application/json: {
+              "instance": {
+                "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
                 "type": "OS::Nova::Server",
                 "name": "My VM",
                 "dependent_resources": [
                   {
-                    "id": "5fad94de-2926-486b-ae73-ff5d3477f80d",
-                    "type": "OS::Cinder::Volume",
-                    "name": "My Volume"
+                    "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+                    "type": "OS::Glance::Image",
+                    "name": "cirros-0.3.4-x86_64-uec"
                   }
                 ]
               }
+            }
         default:
           description: Unexpected error
           schema:
@@ -710,18 +727,19 @@ paths:
               $ref: '#/definitions/ScheduledOperation'
           examples:
             application/json: {
-              "operations": [ {
-                "scheduled_operation": {
-                  "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
-                  "name": "My scheduled operation",
-                  "description": "It will run everyday",
-                  "operation_type": "protect",
-                  "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                  "operation_definition": {
-                    "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
-                    "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
-                    },
-                  "enabled": 1  
+              "operations": [
+                {
+                  "scheduled_operation": {
+                    "id": "1a2c0c3d-f402-4cd8-b5db-82e85cb51fad",
+                    "name": "My scheduled operation",
+                    "description": "It will run everyday",
+                    "operation_type": "protect",
+                    "trigger_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                    "operation_definition": {
+                      "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
+                      "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
+                      },
+                    "enabled": 1
                   }
                 },
               ],
@@ -797,7 +815,7 @@ paths:
                   "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
                   "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398"
                   },
-                "enabled": 1  
+                "enabled": 1
                 }
               }
         default:
