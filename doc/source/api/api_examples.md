@@ -6,65 +6,143 @@
 
 ### List Protection Providers ###
 
-> **get** : /v1/providers
+> **get** : /v1/{project_id}/providers
 
-#### Response JSON ####
-```json
-[
-  {
-    "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-    "name": "OS Infra Provider",
-    "description": "This provider uses OpenStack's own services (swift, cinder) as storage"
-  },
-]
-```
-
-### Show Protection Provider ###
-> **get** : /v1/providers/{provider_id}
 #### Response JSON ####
 ```json
 {
+  "providers": [
+    {
+      "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+      "name": "OS Infra Provider",
+      "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
+      "extended_info_schema": {
+        "options_schema": {
+          "OS::Cinder::Volume": {
+            "required": [
+              "backup_mode"
+            ],
+            "type": "object",
+            "properties": {
+              "backup_mode": {
+                "default": "auto",
+                "enum": [
+                  "full",
+                  "incremental",
+                  "auto"
+                ],
+                "type": "string",
+                "description": "The backup mode.",
+                "title": "Backup Mode"
+              }
+            },
+            "title": "Cinder Protection Options"
+          }
+        },
+        "saved_info_schema": {
+          "OS::Cinder::Volume": {
+            "required": [
+              "name"
+            ],
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for this backup.",
+                "title": "Name"
+              }
+            },
+            "title": "Cinder Protection Saved Info"
+          }
+        },
+        "restore_schema": {
+          "OS::Cinder::Volume": {
+            "type": "object",
+            "properties": {
+              "restore_name": {
+                "type": "string",
+                "description": "The name of the restored volume.",
+                "title": "Restore Name"
+              }
+            },
+            "title": "Cinder Protection Restore"
+          }
+        }
+      }
+    }
+  ],
+  "providers_links": [
+    {
+      "href": "/v1/{project_id}/providers?limit={limit_num}&marker=cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+      "rel": "next"
+    }
+  ]
+}
+```
+
+### Show Protection Provider ###
+> **get** : /v1/{project_id}/providers/{provider_id}
+#### Response JSON ####
+```json
+{
+  "provider": {
     "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
     "name": "OS Infra Provider",
-    "description": "This provider uses OpenStack's own services (swift, cinder) as storage",  "saved_info_schema": {
+    "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
+    "extended_info_schema": {
+      "options_schema": {
         "OS::Cinder::Volume": {
-            "title": "Nova Server Info Schema",
-            "type": "object",
-            "properties": {
-                "backup_id": {
-                    "type": "string",
-                    "title": "Backup ID",
-                    "description": "The backup volume id"
-                }
+          "required": [
+            "backup_mode"
+          ],
+          "type": "object",
+          "properties": {
+            "backup_mode": {
+              "default": "auto",
+              "enum": [
+                "full",
+                "incremental",
+                "auto"
+              ],
+              "type": "string",
+              "description": "The backup mode.",
+              "title": "Backup Mode"
             }
+          },
+          "title": "Cinder Protection Options"
         }
-    },
-    "options_schema": {
-        "OS::Nova::Server": {
-            "title": "Nova Server Backup Options",
-            "type": "object",
-            "properties": {
-                "consistency": {
-                    "enum": ["crash", "os", "application"],
-                    "title": "Consistency Level",
-                    "description": "The desired consistency level required"
-                }
+      },
+      "saved_info_schema": {
+        "OS::Cinder::Volume": {
+          "required": [
+            "name"
+          ],
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name for this backup.",
+              "title": "Name"
             }
+          },
+          "title": "Cinder Protection Saved Info"
         }
-    },
-    "restore_schema": {
-        "OS::Nova::Server": {
-            "title": "Nova Server Restore Options",
-            "type": "object",
-            "properties": {
-                "public_ip": {
-                    "title": "Replacement public IP",
-                    "type": "string",
-                    "description": "The public IP to use on the restore site for the VM"
-                }
+      },
+      "restore_schema": {
+        "OS::Cinder::Volume": {
+          "type": "object",
+          "properties": {
+            "restore_name": {
+              "type": "string",
+              "description": "The name of the restored volume.",
+              "title": "Restore Name"
             }
+          },
+          "title": "Cinder Protection Restore"
         }
+      }
     }
+  }
 }
 ```
 

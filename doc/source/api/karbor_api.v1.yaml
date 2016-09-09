@@ -19,10 +19,6 @@ paths:
         first by the admin.
       parameters:
         - $ref: '#/parameters/projectParam'
-        - $ref: '#/parameters/nameFilterParam'
-        - $ref: '#/parameters/sortParam'
-        - $ref: '#/parameters/limitParam'
-        - $ref: '#/parameters/markerParam'
       tags:
         - Protection Provider
       responses:
@@ -33,25 +29,74 @@ paths:
             items:
               $ref: '#/definitions/Provider'
           examples:
-            application/json: [
-              {
-                "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
-                "name": "OS Infra Provider",
-                "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
-                "extended_info_schema": {
-                  "OS::Nova::Cinder": {
-                    "type": "object",
-                    "properties": {
-                      "use_cbt": {
-                        "type": "boolean",
-                        "title": "Use CBT",
-                        "description": "Use Changed Block Tracking when backin up this volume"
+            application/json: {
+              "providers": [
+                {
+                  "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+                  "name": "OS Infra Provider",
+                  "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
+                  "extended_info_schema": {
+                    "options_schema": {
+                      "OS::Cinder::Volume": {
+                        "required": [
+                          "backup_mode"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "backup_mode": {
+                            "default": "auto",
+                            "enum": [
+                              "full",
+                              "incremental",
+                              "auto"
+                            ],
+                            "type": "string",
+                            "description": "The backup mode.",
+                            "title": "Backup Mode"
+                          }
+                        },
+                        "title": "Cinder Protection Options"
+                      }
+                    },
+                    "saved_info_schema": {
+                      "OS::Cinder::Volume": {
+                        "required": [
+                          "name"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "The name for this backup.",
+                            "title": "Name"
+                          }
+                        },
+                        "title": "Cinder Protection Saved Info"
+                      }
+                    },
+                    "restore_schema": {
+                      "OS::Cinder::Volume": {
+                        "type": "object",
+                        "properties": {
+                          "restore_name": {
+                            "type": "string",
+                            "description": "The name of the restored volume.",
+                            "title": "Restore Name"
+                          }
+                        },
+                        "title": "Cinder Protection Restore"
                       }
                     }
                   }
                 }
-              }
-            ]
+              ],
+              "providers_links": [
+                {
+                  "href": "/v1/{project_id}/providers?limit={limit_num}&marker=cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+                  "rel": "next"
+                }
+              ]
+            }
         default:
           description: Unexpected error
           schema:
@@ -72,24 +117,66 @@ paths:
           schema:
             $ref: '#/definitions/Provider'
           examples:
-            application/json:
-              {
+            application/json: {
+              "provider": {
                 "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
                 "name": "OS Infra Provider",
                 "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
                 "extended_info_schema": {
-                  "OS::Nova::Cinder": {
-                    "type": "object",
-                    "properties": {
-                      "use_cbt": {
-                        "type": "boolean",
-                        "title": "Use CBT",
-                        "description": "Use Changed Block Tracking when backing up this volume"
-                      }
+                  "options_schema": {
+                    "OS::Cinder::Volume": {
+                      "required": [
+                        "backup_mode"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "backup_mode": {
+                          "default": "auto",
+                          "enum": [
+                            "full",
+                            "incremental",
+                            "auto"
+                          ],
+                          "type": "string",
+                          "description": "The backup mode.",
+                          "title": "Backup Mode"
+                        }
+                      },
+                      "title": "Cinder Protection Options"
+                    }
+                  },
+                  "saved_info_schema": {
+                    "OS::Cinder::Volume": {
+                      "required": [
+                        "name"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The name for this backup.",
+                          "title": "Name"
+                        }
+                      },
+                      "title": "Cinder Protection Saved Info"
+                    }
+                  },
+                  "restore_schema": {
+                    "OS::Cinder::Volume": {
+                      "type": "object",
+                      "properties": {
+                        "restore_name": {
+                          "type": "string",
+                          "description": "The name of the restored volume.",
+                          "title": "Restore Name"
+                        }
+                      },
+                      "title": "Cinder Protection Restore"
                     }
                   }
                 }
               }
+            }
         default:
           description: Unexpected error
           schema:
@@ -1230,24 +1317,31 @@ definitions:
         format: UUID
         description: |
           Unique identifier representing a specific protection provider.
-      description:
-        type: string
-        description: Description of provider.
       name:
         type: string
         description: Display name of provider.
+      description:
+        type: string
+        description: Description of provider.
+      extended_info_schema:
+        $ref: '#/definitions/ExtendedInfoSchema'
+
+  ExtendedInfoSchema:
+    type: object
+    required: [ options_schema, saved_info_schema, restore_schema ]
+    properties:
       options_schema:
         type: object
         description: |
           A mapping between a resource type and a JSON Schema that defines the options for that type.
-      restore_options_schema:
-        type: object
-        description: |
-          A mapping between a resource type and a JSON Schema that defines the restore options for that type.
       saved_info_schema:
         type: object
         description: |
           A mapping between a resource type and a JSON Schema that defines the saved info fields   for that type.
+      restore_schema:
+        type: object
+        description: |
+          A mapping between a resource type and a JSON Schema that defines the restore options for that type.
 
   Checkpoint:
     type: object
@@ -1643,7 +1737,7 @@ parameters:
     in: query
     description: |
       Comma-separated list of sort keys and optional sort directions in the
-      form of '&lt;key&gt;[&#58;&lt;direction&gt;]`. A valid direction is asc
+      form of `&lt;key&gt;[&#58;&lt;direction&gt;]`. A valid direction is asc
       (ascending) or desc (descending).
     required: false
     type: string
