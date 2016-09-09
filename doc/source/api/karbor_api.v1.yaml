@@ -140,7 +140,7 @@ paths:
                       "type": "OS::Cinder::Volume"
                     }
                   ],
-                  "protection_provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+                  "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
                 }
               }
             ]
@@ -192,7 +192,7 @@ paths:
                   }
                 ]
               },
-              "protection_provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+              "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
             }
         default:
           description: Unexpected error
@@ -252,7 +252,7 @@ paths:
                   }
                 ]
               },
-              "protection_provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
+              "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a"
             }
         default:
           description: Unexpected error
@@ -286,6 +286,7 @@ paths:
       parameters:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/nameFilterParam'
+        - $ref: '#/parameters/statusFilterParam'
         - $ref: '#/parameters/sortParam'
         - $ref: '#/parameters/limitParam'
         - $ref: '#/parameters/markerParam'
@@ -300,44 +301,53 @@ paths:
             items:
               $ref: '#/definitions/ProtectionPlan'
           examples:
-            application/json: [
-              {
-                "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                "name": "My 3 tier application",
-                "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
-                "resources": [
-                  {
-                    "id": "64e51e85-4f31-441f-9a5d-6e93e3193312",
-                    "type": "OS::Nova::Server",
-                    "name": "App server",
-                  },
-                  {
-                    "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-                    "type": "OS::Cinder::Volume",
-                    "name": "System volume",
-                  },
-                  {
-                    "id": "62e51e85-4f31-441f-9a5d-6e93e3196629",
-                    "type": "OS::Cinder::Volume",
-                    "name": "Data volume",
-                  }
-                ],
-                "parameters": {
+            application/json: {
+              "plans": [
+                {
+                  "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+                  "name": "My 3 tier application",
+                  "resources": [
+                    {
+                      "type": "OS::Nova::Server",
+                      "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                      "name": "App server"
+                    },
+                    {
+                      "type": "OS::Cinder::Volume",
+                      "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                      "name": "System volume"
+                    },
+                    {
+                      "type": "OS::Cinder::Volume",
+                      "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                      "name": "Data volume"
+                    }
+                  ],
+                  "status": "suspended",
+                  "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+                  "parameters": {
                     "OS::Nova::Server": {
-                        "backup_name": "os"
+                      "backup_name": "os"
                     },
                     "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
-                        "backup_name": "crash"
+                      "backup_name": "crash"
                     },
                     "OS::Cinder::Volume": {
-                        "backup_name": "os"
+                      "backup_name": "os"
                     },
                     "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
-                        "backup_name": "crash"
+                      "backup_name": "crash"
                     }
+                  }
                 }
-              }
-            ]
+              ],
+              "plans_links": [
+                {
+                  "href": "/v1/{project_id}/plans?limit={limit_num}&marker=9e5475d2-6425-4986-9136-a4f09642297f",
+                  "rel": "next"
+                }
+              ]
+            }
         default:
           description: Unexpected error
           schema:
@@ -364,39 +374,42 @@ paths:
             $ref: '#/definitions/ProtectionPlan'
           examples:
             application/json: {
-              "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "name": "My 3 tier application",
-              "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
-              "resources": [
-                {
-                  "id": "64e51e85-4f31-441f-9a5d-6e93e3193312",
-                  "type": "OS::Nova::Server",
-                  "name": "App server",
-                },
-                {
-                  "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-                  "type": "OS::Cinder::Volume",
-                  "name": "System volume",
-                },
-                {
-                  "id": "62e51e85-4f31-441f-9a5d-6e93e3196629",
-                  "type": "OS::Cinder::Volume",
-                  "name": "Data volume",
-                }
-              ],
-              "parameters": {
+              "plan": {
+                "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+                "name": "My 3 tier application",
+                "resources": [
+                  {
+                    "type": "OS::Nova::Server",
+                    "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "name": "App server"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "name": "System volume"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "name": "Data volume"
+                  }
+                ],
+                "status": "suspended",
+                "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+                "parameters": {
                   "OS::Nova::Server": {
-                      "backup_name": "os"
+                    "backup_name": "os"
                   },
                   "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
-                      "backup_name": "crash"
+                    "backup_name": "crash"
                   },
                   "OS::Cinder::Volume": {
-                      "backup_name": "os"
+                    "backup_name": "os"
                   },
                   "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
-                      "backup_name": "crash"
+                    "backup_name": "crash"
                   }
+                }
               }
             }
         default:
@@ -416,44 +429,110 @@ paths:
         - Protection Plan
       responses:
         '200':
-          description: the protection plan
+          description: show the protection plan
           schema:
             $ref: '#/definitions/ProtectionPlan'
           examples:
             application/json: {
-              "id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-              "name": "My 3 tier application",
-              "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
-              "resources": [
-                {
-                  "id": "64e51e85-4f31-441f-9a5d-6e93e3193312",
-                  "type": "OS::Nova::Server",
-                  "name": "App server",
-                },
-                {
-                  "id": "61e51e85-4f31-441f-9a5d-6e93e3196628",
-                  "type": "OS::Cinder::Volume",
-                  "name": "System volume",
-                },
-                {
-                  "id": "62e51e85-4f31-441f-9a5d-6e93e3196629",
-                  "type": "OS::Cinder::Volume",
-                  "name": "Data volume",
-                }
-              ],
-              "parameters": {
+              "plan": {
+                "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+                "name": "My 3 tier application",
+                "resources": [
+                  {
+                    "type": "OS::Nova::Server",
+                    "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "name": "App server"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "name": "System volume"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "name": "Data volume"
+                  }
+                ],
+                "status": "suspended",
+                "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+                "parameters": {
                   "OS::Nova::Server": {
-                      "backup_name": "os"
+                    "backup_name": "os"
                   },
                   "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
-                      "backup_name": "crash"
+                    "backup_name": "crash"
                   },
                   "OS::Cinder::Volume": {
-                      "backup_name": "os"
+                    "backup_name": "os"
                   },
                   "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
-                      "backup_name": "crash"
+                    "backup_name": "crash"
                   }
+                }
+              }
+            }
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Protection Plan
+      description: |
+        Update a specific plan.
+      parameters:
+        - $ref: '#/parameters/projectParam'
+        - $ref: '#/parameters/plan_idParam'
+        - name: plan
+          in: body
+          schema:
+            $ref: '#/definitions/ProtectionPlanUpdateBody'
+      tags:
+        - Project API
+        - Protection Plan
+      responses:
+        '200':
+          description: update the protection plan
+          schema:
+            $ref: '#/definitions/ProtectionPlan'
+          examples:
+            application/json: {
+              "plan": {
+                "id": "9e5475d2-6425-4986-9136-a4f09642297f",
+                "name": "My 1 tier application",
+                "resources": [
+                  {
+                    "type": "OS::Nova::Server",
+                    "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+                    "name": "App server"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+                    "name": "System volume"
+                  },
+                  {
+                    "type": "OS::Cinder::Volume",
+                    "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+                    "name": "Data volume"
+                  }
+                ],
+                "status": "started",
+                "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+                "parameters": {
+                  "OS::Nova::Server": {
+                    "backup_name": "os"
+                  },
+                  "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+                    "backup_name": "crash"
+                  },
+                  "OS::Cinder::Volume": {
+                    "backup_name": "os"
+                  },
+                  "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+                    "backup_name": "crash"
+                  }
+                }
               }
             }
         default:
@@ -683,7 +762,7 @@ paths:
                   "provider_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa399",
                   "plan_id": "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
                   },
-                "enabled": 1  
+                "enabled": 1
                 }
               }
         default:
@@ -1185,7 +1264,7 @@ definitions:
         type: string
   ProtectionPlan:
     type: object
-    required: [ name, protection_provider_id, resources ]
+    required: [ name, provider_id, resources ]
     properties:
       id:
         readOnly: true
@@ -1204,8 +1283,8 @@ definitions:
           $ref: '#/definitions/Resource'
       status:
         type: string
-        description: The status of the plan. It's either 'enabled' or 'disabled'.
-      protection_provider_id:
+        description: The status of the plan. It's either 'suspended' or 'started'.
+      provider_id:
         type: string
         format: UUID
         description: |
@@ -1213,7 +1292,22 @@ definitions:
           will store checkpoints for this protection plan.
       parameters:
         type: object
-        description: TODO
+        format: dict
+
+  ProtectionPlanUpdateBody:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Display name of plan.
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/Resource'
+      status:
+        type: string
+        description: The status of the plan. It's either 'suspended' or 'started'.
+
   ProtectableType:
     type: string
     format: Heat Type String
@@ -1565,6 +1659,12 @@ parameters:
     name: type
     in: query
     description: type of the entity.
+    required: false
+    type: string
+  statusFilterParam:
+    name: status
+    in: query
+    description: status of the entity.
     required: false
     type: string
   propertiesFilterParam:
