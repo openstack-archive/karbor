@@ -149,6 +149,6 @@ class TestKarborDictObject(test_objects.BaseObjectsTestCase):
         self.assertEqual('val2', obj.get('abc', 'val'))
         self.assertEqual(42, obj.get('foo'))
 
-        self.assertTrue('foo' in obj)
-        self.assertTrue('abc' in obj)
-        self.assertFalse('def' in obj)
+        self.assertIn('foo', obj)
+        self.assertIn('abc', obj)
+        self.assertNotIn('def', obj)

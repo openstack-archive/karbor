@@ -66,7 +66,7 @@ class UserTrustManagerTestCase(base.TestCase):
             self._ctx, operation_id))
 
         info = manager._get_user_trust_info(self._user_id, self._project_id)
-        self.assertTrue(operation_id in info['operation_ids'])
+        self.assertIn(operation_id, info['operation_ids'])
 
         manager.add_operation(self._ctx, operation_id)
         self.assertEqual(1,  len(info['operation_ids']))
@@ -95,7 +95,7 @@ class UserTrustManagerTestCase(base.TestCase):
                                  self._project_id, G_TRUST_ID)
 
         info = manager._get_user_trust_info(self._user_id, self._project_id)
-        self.assertTrue(operation_id in info['operation_ids'])
+        self.assertIn(operation_id, info['operation_ids'])
 
         manager.resume_operation(operation_id, self._user_id,
                                  self._project_id, G_TRUST_ID)

@@ -107,9 +107,9 @@ class TimeTriggerTestCase(base.TestCase):
         operation_id = "2"
         self._register_operation(operation_id)
 
-        self.assertTrue(operation_id in self._trigger._operation_ids)
+        self.assertIn(operation_id, self._trigger._operation_ids)
         self._trigger.unregister_operation(operation_id)
-        self.assertTrue(operation_id not in self._trigger._operation_ids)
+        self.assertNotIn(operation_id, self._trigger._operation_ids)
 
     def test_update_trigger_property(self):
         operation_id = "3"

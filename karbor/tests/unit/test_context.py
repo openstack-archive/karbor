@@ -58,8 +58,8 @@ class ContextTestCase(base.TestCase):
         admin_context = user_context.elevated()
         self.assertFalse(user_context.is_admin)
         self.assertTrue(admin_context.is_admin)
-        self.assertFalse('admin' in user_context.roles)
-        self.assertTrue('admin' in admin_context.roles)
+        self.assertNotIn('admin', user_context.roles)
+        self.assertIn('admin', admin_context.roles)
 
     def test_service_catalog_nova_and_swift(self):
         service_catalog = [

@@ -27,7 +27,7 @@ class OperationManagerTestCase(base.TestCase):
         self.assertTrue(self.om == second)
 
     def test_load_all_class(self):
-        self.assertTrue("protect" in self.om._operation_cls_map)
+        self.assertIn("protect", self.om._operation_cls_map)
 
     def test_invalid_operation_type(self):
         bingo = 0
