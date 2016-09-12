@@ -21,6 +21,7 @@ from webob import exc
 import karbor
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _, _LI
 
@@ -264,7 +265,7 @@ class PlansController(wsgi.Controller):
             'name': plan.get('name', None),
             'provider_id': plan.get('provider_id', None),
             'project_id': context.project_id,
-            'status': 'suspended',
+            'status': constants.PLAN_STATUS_SUSPENDED,
             'resources': plan.get('resources', None),
             'parameters': parameters,
         }
@@ -340,7 +341,7 @@ class PlansController(wsgi.Controller):
         return plan
 
     def _plan_update(self, context, plan, fields):
-        if plan['status'] != 'suspended':
+        if plan['status'] != constants.PLAN_STATUS_SUSPENDED:
             LOG.info(_LI("Unable to update plan, "
                          "because it is in %s state."), plan['status'])
             msg = _("The plan can be only updated in suspended status.")
