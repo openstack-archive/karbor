@@ -23,3 +23,4 @@ def register_all():
     __import__('karbor.objects.scheduled_operation_state')
     __import__('karbor.objects.restore')
     __import__('karbor.objects.operation_log')
+    __import__('karbor.objects.checkpoint_record')
