@@ -627,3 +627,89 @@ class OperationLogTestCase(base.TestCase):
         self.assertRaises(exception.OperationLogNotFound,
                           db.operation_log_update,
                           self.ctxt, 42, {})
+
+
+class CheckpointRecordTestCase(base.TestCase):
+
+    """Unit tests for karbor.db.api.checkpoint_record_*."""
+
+    fake_checkpoint_record = {
+        "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
+        "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
+        "checkpoint_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+        "checkpoint_status": "available",
+        "provider_id": "39bb894794b741e982bd26144d2949f6",
+        "plan_id": "efc6a88b-9096-4bb6-8634-cda182a6e12b",
+        "operation_id": "64e51e85-4f31-441f-9a5d-6e93e3196628",
+        "create_by": "operation-engine",
+        "extend_info": "[{"
+                       "'id': '0354ca9d-dcd0-46b6-9334-0d78759fd275',"
+                       "'type': 'OS::Nova::Server',"
+                       "'name': 'vm1'"
+                        "}]"
+    }
+
+    def _dict_from_object(self, obj, ignored_keys):
+        if ignored_keys is None:
+            ignored_keys = []
+        if isinstance(obj, dict):
+            items = obj.items()
+        else:
+            items = obj.iteritems()
+        return {k: v for k, v in items
+                if k not in ignored_keys}
+
+    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
+        obj1 = self._dict_from_object(obj1, ignored_keys)
+        obj2 = self._dict_from_object(obj2, ignored_keys)
+
+        self.assertEqual(
+            len(obj1), len(obj2),
+            "Keys mismatch: %s" % six.text_type(
+                set(obj1.keys()) ^ set(obj2.keys())))
+        for key, value in obj1.items():
+            self.assertEqual(value, obj2[key])
+
+    def setUp(self):
+        super(CheckpointRecordTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def test_checkpoint_record_create(self):
+        checkpoint_record = db.checkpoint_record_create(
+            self.ctxt,
+            self.fake_checkpoint_record)
+        self.assertTrue(uuidutils.is_uuid_like(checkpoint_record['id']))
+        self.assertEqual('available', checkpoint_record.checkpoint_status)
+
+    def test_checkpoint_record_get(self):
+        checkpoint_record = db.checkpoint_record_create(
+            self.ctxt,
+            self.fake_checkpoint_record)
+        self._assertEqualObjects(checkpoint_record, db.checkpoint_record_get(
+            self.ctxt, checkpoint_record['id']))
+
+    def test_checkpoint_record_destroy(self):
+        checkpoint_record = db.checkpoint_record_create(
+            self.ctxt,
+            self.fake_checkpoint_record)
+        db.checkpoint_record_destroy(self.ctxt, checkpoint_record['id'])
+        self.assertRaises(exception.CheckpointRecordNotFound,
+                          db.checkpoint_record_get,
+                          self.ctxt, checkpoint_record['id'])
+
+    def test_checkpoint_record_update(self):
+        checkpoint_record = db.checkpoint_record_create(
+            self.ctxt,
+            self.fake_checkpoint_record)
+        db.checkpoint_record_update(self.ctxt,
+                                    checkpoint_record['id'],
+                                    {'checkpoint_status': 'error'})
+        checkpoint_record = db.checkpoint_record_get(
+            self.ctxt,
+            checkpoint_record['id'])
+        self.assertEqual('error', checkpoint_record['checkpoint_status'])
+
+    def test_checkpoint_record_update_nonexistent(self):
+        self.assertRaises(exception.CheckpointRecordNotFound,
+                          db.checkpoint_record_update,
+                          self.ctxt, 42, {})

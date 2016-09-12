@@ -1314,6 +1314,95 @@ def _process_operation_log_filters(query, filters):
 
 
 @require_context
+def checkpoint_record_create(context, values):
+    checkpoint_record_ref = models.CheckpointRecord()
+    if not values.get('id'):
+        values['id'] = str(uuid.uuid4())
+    checkpoint_record_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        checkpoint_record_ref.save(session)
+        return checkpoint_record_ref
+
+
+@require_context
+def checkpoint_record_get(context, checkpoint_record_id):
+    return _checkpoint_record_get(context, checkpoint_record_id)
+
+
+@require_context
+def _checkpoint_record_get(context, checkpoint_record_id, session=None):
+    result = model_query(
+        context,
+        models.CheckpointRecord,
+        session=session).filter_by(
+            id=checkpoint_record_id).first()
+    if not result:
+        raise exception.CheckpointRecordNotFound(id=checkpoint_record_id)
+
+    return result
+
+
+@require_context
+def checkpoint_record_update(context, checkpoint_record_id, values):
+    session = get_session()
+    with session.begin():
+        checkpoint_record_ref = _checkpoint_record_get(context,
+                                                       checkpoint_record_id,
+                                                       session=session)
+        checkpoint_record_ref.update(values)
+        return checkpoint_record_ref
+
+
+@require_context
+@_retry_on_deadlock
+def checkpoint_record_destroy(context, checkpoint_record_id):
+    session = get_session()
+    with session.begin():
+        checkpoint_record_ref = _checkpoint_record_get(context,
+                                                       checkpoint_record_id,
+                                                       session=session)
+        checkpoint_record_ref.delete(session=session)
+
+
+def _checkpoint_record_list_query(context, session, **kwargs):
+    return model_query(context, models.CheckpointRecord, session=session)
+
+
+def _checkpoint_record_list_process_filters(query, filters):
+    exact_match_filter_names = ['project_id', 'id',
+                                'checkpoint_id', 'checkpoint_status',
+                                'plan_id', 'provider_id', 'operation_id']
+    query = _list_common_process_exact_filter(
+        models.CheckpointRecord, query, filters,
+        exact_match_filter_names)
+
+    regex_match_filter_names = ['create_by']
+    query = _list_common_process_regex_filter(
+        models.CheckpointRecord, query, filters,
+        regex_match_filter_names)
+
+    return query
+
+
+def checkpoint_record_get_all_by_filters_sort(
+        context, filters, limit=None, marker=None,
+        sort_keys=None, sort_dirs=None):
+
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(
+            context, session, marker, limit,
+            sort_keys, sort_dirs, filters,
+            paginate_type=models.CheckpointRecord,
+            use_model=True)
+
+        return query.all() if query else []
+###############################
+
+
+@require_context
 def _list_common_get_query(context, model, session=None):
     return model_query(context, model, session=session)
 
@@ -1415,6 +1504,11 @@ PAGINATION_HELPERS = {
         _scheduled_operation_log_list_query,
         _scheduled_operation_log_list_process_filters,
         _scheduled_operation_log_get),
+
+    models.CheckpointRecord: (
+        _checkpoint_record_list_query,
+        _checkpoint_record_list_process_filters,
+        _checkpoint_record_get),
 }
 
 

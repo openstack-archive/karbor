@@ -173,6 +173,25 @@ def define_tables(meta):
         mysql_engine='InnoDB'
     )
 
+    checkpoint_records = Table(
+        'checkpoint_records',
+        meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean, nullable=False),
+        Column('id', String(length=36), primary_key=True, nullable=False),
+        Column('project_id', String(length=36), nullable=False),
+        Column('checkpoint_id', String(length=36), nullable=False),
+        Column('checkpoint_status', String(length=36), nullable=False),
+        Column('provider_id', String(length=36), nullable=False),
+        Column('plan_id', String(length=36), nullable=False),
+        Column('operation_id', String(length=36)),
+        Column('create_by', String(length=36)),
+        Column('extend_info', Text),
+        mysql_engine='InnoDB'
+    )
+
     return [services,
             plans,
             resources,
@@ -181,7 +200,8 @@ def define_tables(meta):
             triggers,
             scheduled_operations,
             scheduled_operation_states,
-            scheduled_operation_logs]
+            scheduled_operation_logs,
+            checkpoint_records]
 
 
 def upgrade(migrate_engine):

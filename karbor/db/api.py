@@ -560,3 +560,43 @@ def operation_log_get_all_by_project(context, project_id, marker, limit,
                                                  sort_dirs=sort_dirs,
                                                  filters=filters,
                                                  offset=offset)
+
+
+###################
+
+
+def checkpoint_record_get(context, checkpoint_record_id):
+    """Get a checkpoint record or raise if it does not exist."""
+    return IMPL.checkpoint_record_get(context, checkpoint_record_id)
+
+
+def checkpoint_record_create(context, values):
+    """Create a checkpoint record from the values dictionary."""
+    return IMPL.checkpoint_record_create(context, values)
+
+
+def checkpoint_record_update(context, checkpoint_record_id, values):
+    """Set the given properties on a checkpoint record and update it.
+
+    Raises NotFound if checkpoint record does not exist.
+
+    """
+    return IMPL.checkpoint_record_update(context, checkpoint_record_id, values)
+
+
+def checkpoint_record_destroy(context, checkpoint_record_id):
+    """Destroy the checkpoint record or raise if it does not exist."""
+    return IMPL.checkpoint_record_destroy(context, checkpoint_record_id)
+
+
+def checkpoint_record_get_all_by_filters_sort(
+        context, filters, limit=None,
+        marker=None, sort_keys=None, sort_dirs=None):
+    """Get all checkpoint records that match all filters sorted
+
+    by multiple keys. sort_keys and sort_dirs must be a list of strings.
+
+    """
+    return IMPL.checkpoint_record_get_all_by_filters_sort(
+        context, filters, limit=limit, marker=marker,
+        sort_keys=sort_keys, sort_dirs=sort_dirs)

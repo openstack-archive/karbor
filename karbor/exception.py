@@ -267,6 +267,10 @@ class ProviderNotFound(NotFound):
                 " not be found.")
 
 
+class CheckpointRecordNotFound(NotFound):
+    message = _("CheckpointRecord %(id)s could not be found.")
+
+
 class CreateBackupFailed(KarborException):
     message = _("Create Backup failed: %(reason)s, id=%(resource_id)s,"
                 " type=%(resource_type)s")

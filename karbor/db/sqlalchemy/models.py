@@ -199,6 +199,22 @@ class OperationLog(BASE, KarborBase):
     entries = Column(Text)
 
 
+class CheckpointRecord(BASE, KarborBase):
+    """Represents a checkpoint record."""
+
+    __tablename__ = 'checkpoint_records'
+
+    id = Column(String(36), primary_key=True, nullable=False)
+    project_id = Column(String(36), nullable=False)
+    checkpoint_id = Column(String(36), nullable=False)
+    checkpoint_status = Column(String(36), nullable=False)
+    provider_id = Column(String(36), nullable=False)
+    plan_id = Column(String(36), nullable=False)
+    operation_id = Column(String(36))
+    create_by = Column(String(36))
+    extend_info = Column(Text)
+
+
 def register_models():
     """Register Models and create metadata.
 
@@ -214,7 +230,8 @@ def register_models():
               ScheduledOperation,
               ScheduledOperationState,
               ScheduledOperationLog,
-              Restore)
+              Restore,
+              CheckpointRecord)
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
