@@ -245,16 +245,12 @@ class ProvidersController(wsgi.Controller):
         if filters:
             LOG.debug("Searching by: %s.", six.text_type(filters))
 
-        if context.is_admin:
-            providers = self.protection_api.list_providers(
-                context, marker, limit,
-                sort_keys=sort_keys,
-                sort_dirs=sort_dirs,
-                filters=filters,
-                offset=offset)
-        else:
-            msg = _('user must be an administrator')
-            raise exception.InvalidInput(reason=msg)
+        providers = self.protection_api.list_providers(
+            context, marker, limit,
+            sort_keys=sort_keys,
+            sort_dirs=sort_dirs,
+            filters=filters,
+            offset=offset)
 
         LOG.info(_LI("Get all providers completed successfully."))
         return providers
