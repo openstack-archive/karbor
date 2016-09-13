@@ -247,6 +247,7 @@ class ScheduledOperationController(wsgi.Controller):
                 context, operation_id, trigger_id)
 
         except (exception.InvalidInput,
+                exception.ScheduledOperationExist,
                 exception.TriggerIsInvalid) as ex:
             raise exc.HTTPBadRequest(explanation=ex.msg)
 

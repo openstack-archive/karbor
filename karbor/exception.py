@@ -162,6 +162,10 @@ class InvalidInput(Invalid):
     message = _("Invalid input received: %(reason)s")
 
 
+class ScheduledOperationExist(Invalid):
+    message = _("Scheduled Operation%(op_id)s exists")
+
+
 class NotFound(KarborException):
     message = _("Resource could not be found.")
     code = 404

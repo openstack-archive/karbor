@@ -10,10 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 from karbor.common import constants
 from karbor import context
+from karbor import exception
 from karbor import objects
 from karbor.services.operationengine import manager as service_manager
 from karbor.tests import base
@@ -25,8 +27,13 @@ class FakeTriggerManager(object):
         self._trigger = {}
 
     def register_operation(self, trigger_id, operation_id, **kwargs):
-        if trigger_id in self._trigger:
-            self._trigger[trigger_id].append(operation_id)
+        if trigger_id not in self._trigger:
+            self._trigger[trigger_id] = []
+
+        if operation_id in self._trigger[trigger_id]:
+            raise exception.ScheduledOperationExist(op_id=operation_id)
+
+        self._trigger[trigger_id].append(operation_id)
 
     def unregister_operation(self, trigger_id, operation_id, **kwargs):
         pass
@@ -66,11 +73,16 @@ class OperationEngineManagerTestCase(base.TestCase):
         operation_id = self._operation.id
 
         self._create_operation_state(operation_id)
+
+        op = self._create_scheduled_operation(self._trigger.id, False)
+        self._create_operation_state(op.id)
+
         self.manager._restore()
 
         trigger_manager = self.manager._trigger_manager
         self.assertTrue(trigger_id in trigger_manager._trigger)
         self.assertTrue(operation_id in trigger_manager._trigger[trigger_id])
+        self.assertFalse(op.id in trigger_manager._trigger[trigger_id])
 
     def test_create_operation(self):
         operation_id = "1234"
@@ -97,6 +109,23 @@ class OperationEngineManagerTestCase(base.TestCase):
             self.ctxt, self._operation.id)
         self.assertEqual(constants.OPERATION_STATE_DELETED, state.state)
 
+    @mock.patch.object(FakeTriggerManager, 'unregister_operation')
+    def test_suspend_resume_operation(self, unregister):
+        op_id = 'suspend'
+        trigger_id = "trigger"
+
+        self.manager.resume_scheduled_operation(self.ctxt, op_id, trigger_id)
+        self.assertTrue(op_id in (
+            self.manager._trigger_manager._trigger[trigger_id]))
+
+        self.manager.resume_scheduled_operation(self.ctxt, op_id, trigger_id)
+        self.assertTrue(1 == len(
+            self.manager._trigger_manager._trigger[trigger_id]))
+
+        # resume
+        self.manager.suspend_scheduled_operation(self.ctxt, op_id, trigger_id)
+        unregister.assert_called_once_with(trigger_id, op_id)
+
     def _create_one_trigger(self):
         trigger_info = {
             'project_id': "123",
@@ -111,7 +140,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         trigger.create()
         return trigger
 
-    def _create_scheduled_operation(self, trigger_id):
+    def _create_scheduled_operation(self, trigger_id, enabled=True):
         operation_info = {
             "name": "123",
             'description': '123',
@@ -122,6 +151,7 @@ class OperationEngineManagerTestCase(base.TestCase):
             "operation_definition": {
                 "plan_id": ""
             },
+            "enabled": enabled
         }
         operation = objects.ScheduledOperation(self.ctxt, **operation_info)
         operation.create()
