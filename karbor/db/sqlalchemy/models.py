@@ -149,6 +149,7 @@ class Plan(BASE, KarborBase):
     __tablename__ = 'plans'
     id = Column(String(36), primary_key=True)
     name = Column(String(255))
+    description = Column(String(255))
     provider_id = Column(String(36))
     project_id = Column(String(255))
     status = Column(String(64))

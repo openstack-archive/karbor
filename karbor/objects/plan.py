@@ -39,6 +39,7 @@ class Plan(base.KarborPersistentObject, base.KarborObject,
     fields = {
         'id': fields.UUIDField(),
         'name': fields.StringField(),
+        'description': fields.StringField(nullable=True),
         'provider_id': fields.UUIDField(),
         'project_id': fields.UUIDField(),
         'status': fields.StringField(nullable=True),
