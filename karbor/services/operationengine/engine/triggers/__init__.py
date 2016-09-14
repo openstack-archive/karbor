@@ -23,7 +23,7 @@ class BaseTrigger(object):
 
     TRIGGER_TYPE = ""
 
-    def __init__(self, trigger_id, executor):
+    def __init__(self, trigger_id, trigger_property, executor):
         super(BaseTrigger, self).__init__()
 
         self._id = trigger_id
