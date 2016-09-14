@@ -39,6 +39,9 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                        'OS::Cinder::Volume',
                        'OS::Glance::Image',
                        )
+# plan status
+PLAN_STATUS_SUSPENDED = 'suspended'
+PLAN_STATUS_STARTED = 'started'
 
 CHECKPOINT_STATUS_ERROR = 'error'
 CHECKPOINT_STATUS_PROTECTING = 'protecting'
@@ -50,6 +53,7 @@ CHECKPOINT_STATUS_ERROR_DELETING = 'error-deleting'
 # resource status
 RESOURCE_STATUS_ERROR = 'error'
 RESOURCE_STATUS_PROTECTING = 'protecting'
+RESOURCE_STATUS_STARTED = 'started'
 RESOURCE_STATUS_AVAILABLE = 'available'
 RESOURCE_STATUS_DELETING = 'deleting'
 RESOURCE_STATUS_DELETED = 'deleted'

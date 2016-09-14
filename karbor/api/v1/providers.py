@@ -20,6 +20,7 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _, _LI
 
@@ -382,7 +383,7 @@ class ProvidersController(wsgi.Controller):
 
         checkpoint_properties = {
             'project_id': context.project_id,
-            'status': 'protecting',
+            'status': constants.CHECKPOINT_STATUS_PROTECTING,
             'provider_id': provider_id,
             "protection_plan": {
                 "id": plan.get("id"),

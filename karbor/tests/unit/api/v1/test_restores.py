@@ -16,6 +16,7 @@ from oslo_config import cfg
 from webob import exc
 
 from karbor.api.v1 import restores
+from karbor.common import constants
 from karbor import context
 from karbor import exception
 from karbor.tests import base
@@ -30,7 +31,6 @@ DEFAULT_RESTORE_TARGET = '192.168.1.2:35357/v2.0'
 DEFAULT_PARAMETERS = {
     "username": "admin"
 }
-DEFAULT_STATUS = 'started'
 
 
 class RestoreApiTest(base.TestCase):
@@ -121,7 +121,7 @@ class RestoreApiTest(base.TestCase):
             checkpoint_id=DEFAULT_CHECKPOINT_ID,
             restore_target=DEFAULT_RESTORE_TARGET,
             parameters=DEFAULT_PARAMETERS,
-            status=DEFAULT_STATUS):
+            status=constants.RESOURCE_STATUS_STARTED):
         restore_req = {
             'project_id': project_id,
             'provider_id': provider_id,

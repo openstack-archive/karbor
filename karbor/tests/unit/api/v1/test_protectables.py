@@ -40,7 +40,8 @@ class ProtectablesApiTest(base.TestCase):
         'karbor.services.protection.api.API.show_protectable_type')
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_show(self, moak_get_all, moak_show_protectable_type):
+    def test_protectables_show(
+            self, moak_get_all, moak_show_protectable_type):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         moak_get_all.return_value = ["OS::Keystone::Project"]
         self.controller.\

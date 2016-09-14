@@ -16,6 +16,7 @@ from oslo_config import cfg
 from webob import exc
 
 from karbor.api.v1 import plans
+from karbor.common import constants
 from karbor import context
 from karbor import exception
 from karbor.tests import base
@@ -25,7 +26,6 @@ CONF = cfg.CONF
 
 DEFAULT_NAME = 'My 3 tier application'
 DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
-DEFAULT_STATUS = 'suspended'
 DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
 DEFAULT_RESOURCES = [{'id': 'key1',
                       "type": "value1", "name": "name1"}]
@@ -55,22 +55,24 @@ class PlanApiTest(base.TestCase):
                           req, body)
 
     def test_plan_create_InvalidProviderId(self):
-        plan = self._plan_in_request_body(name=DEFAULT_NAME,
-                                          provider_id="",
-                                          status=DEFAULT_STATUS,
-                                          project_id=DEFAULT_PROJECT_ID,
-                                          resources=[])
+        plan = self._plan_in_request_body(
+            name=DEFAULT_NAME,
+            provider_id="",
+            status=constants.PLAN_STATUS_SUSPENDED,
+            project_id=DEFAULT_PROJECT_ID,
+            resources=[])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(exception.InvalidInput, self.controller.create,
                           req, body)
 
     def test_plan_create_InvalidResources(self):
-        plan = self._plan_in_request_body(name=DEFAULT_NAME,
-                                          provider_id=DEFAULT_PROVIDER_ID,
-                                          status=DEFAULT_STATUS,
-                                          project_id=DEFAULT_PROJECT_ID,
-                                          resources=[])
+        plan = self._plan_in_request_body(
+            name=DEFAULT_NAME,
+            provider_id=DEFAULT_PROVIDER_ID,
+            status=constants.PLAN_STATUS_SUSPENDED,
+            project_id=DEFAULT_PROJECT_ID,
+            resources=[])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(exception.InvalidInput, self.controller.create,
@@ -106,11 +108,12 @@ class PlanApiTest(base.TestCase):
             req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
 
     def test_plan_update_InvalidResources(self):
-        plan = self._plan_in_request_body(name=DEFAULT_NAME,
-                                          provider_id=DEFAULT_PROVIDER_ID,
-                                          status=DEFAULT_STATUS,
-                                          project_id=DEFAULT_PROJECT_ID,
-                                          resources=[{'key1': 'value1'}])
+        plan = self._plan_in_request_body(
+            name=DEFAULT_NAME,
+            provider_id=DEFAULT_PROVIDER_ID,
+            status=constants.PLAN_STATUS_SUSPENDED,
+            project_id=DEFAULT_PROJECT_ID,
+            resources=[{'key1': 'value1'}])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(
@@ -162,12 +165,14 @@ class PlanApiTest(base.TestCase):
         'karbor.api.v1.plans.check_policy')
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
-    def test_plan_update_InvalidStatus(self, mock_plan_get, mock_check_policy):
-        plan = self._plan_in_request_body(name=DEFAULT_NAME,
-                                          provider_id=DEFAULT_PROVIDER_ID,
-                                          status="started",
-                                          project_id=DEFAULT_PROJECT_ID,
-                                          resources=DEFAULT_RESOURCES)
+    def test_plan_update_InvalidStatus(
+            self, mock_plan_get, mock_check_policy):
+        plan = self._plan_in_request_body(
+            name=DEFAULT_NAME,
+            provider_id=DEFAULT_PROVIDER_ID,
+            status=constants.PLAN_STATUS_STARTED,
+            project_id=DEFAULT_PROJECT_ID,
+            resources=DEFAULT_RESOURCES)
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         mock_plan_get.return_value = plan
@@ -178,7 +183,7 @@ class PlanApiTest(base.TestCase):
 
     def _plan_in_request_body(self, name=DEFAULT_NAME,
                               provider_id=DEFAULT_PROVIDER_ID,
-                              status=DEFAULT_STATUS,
+                              status=constants.PLAN_STATUS_SUSPENDED,
                               project_id=DEFAULT_PROJECT_ID,
                               resources=DEFAULT_RESOURCES,
                               parameters=DEFAULT_PARAMETERS):

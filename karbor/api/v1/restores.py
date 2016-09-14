@@ -21,6 +21,7 @@ from webob import exc
 import karbor
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _, _LI
 
@@ -253,7 +254,7 @@ class RestoresController(wsgi.Controller):
             'checkpoint_id': restore.get('checkpoint_id'),
             'restore_target': restore.get('restore_target'),
             'parameters': parameters,
-            'status': 'started',
+            'status': constants.RESOURCE_STATUS_STARTED,
         }
 
         restoreobj = objects.Restore(context=context,
@@ -264,9 +265,9 @@ class RestoresController(wsgi.Controller):
         # call restore rpc API of protection service
         result = self.protection_api.restore(context, restoreobj)
         if result is True:
-            status_update = "success"
+            status_update = constants.OPERATION_EXE_STATE_SUCCESS
         else:
-            status_update = "failed"
+            status_update = constants.OPERATION_EXE_STATE_FAILED
         # update the status of restore
         update_dict = {
             "status": status_update
