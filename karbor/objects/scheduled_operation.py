@@ -104,6 +104,7 @@ class ScheduledOperation(base.KarborPersistentObject, base.KarborObject,
     def save(self):
         updates = self.karbor_obj_get_changes()
         if updates and self.id:
+            self._convert_operation_definition_to_db_format(updates)
             db.scheduled_operation_update(self._context,
                                           self.id,
                                           updates)
