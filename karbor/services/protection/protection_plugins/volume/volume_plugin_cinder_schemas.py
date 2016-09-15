@@ -64,7 +64,7 @@ RESTORE_SCHEMA = {
         },
         "restore_description": {
             "type": "string",
-            "title": "Restore Name",
+            "title": "Restore Description",
             "description": "The description of the restored volume.",
             "default": None
         }
