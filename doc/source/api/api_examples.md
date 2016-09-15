@@ -311,17 +311,22 @@
       "name": "My 3 tier application",
       "resources": [
         {
-          "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+          "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+          "type": "OS::Glance::Image",
+          "name": "cirros-0.3.4-x86_64-uec"
+        },
+        {
+          "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
           "type": "OS::Nova::Server",
           "name": "App server"
         },
         {
-          "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+          "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
           "type": "OS::Cinder::Volume",
           "name": "System volume"
         },
         {
-          "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+          "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
           "type": "OS::Cinder::Volume",
           "name": "Data volume"
         }
@@ -332,13 +337,13 @@
         "OS::Nova::Server": {
           "backup_name": "os"
         },
-        "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+        "OS::Nova::Server#cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01": {
           "backup_name": "crash"
         },
         "OS::Cinder::Volume": {
           "backup_name": "os"
         },
-        "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+        "OS::Cinder::Volume#33b6bb0b-1157-4e66-8553-1c9e14b1c7ba": {
           "backup_name": "crash"
         }
       }
@@ -362,17 +367,22 @@
     "name": "My 3 tier application",
     "resources": [
       {
-        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
+      },
+      {
+        "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
         "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
@@ -382,13 +392,13 @@
       "OS::Nova::Server": {
         "backup_name": "os"
       },
-      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+      "OS::Nova::Server#cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01": {
         "backup_name": "crash"
       },
       "OS::Cinder::Volume": {
         "backup_name": "os"
       },
-      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+      "OS::Cinder::Volume#33b6bb0b-1157-4e66-8553-1c9e14b1c7ba": {
         "backup_name": "crash"
       }
     }
@@ -404,17 +414,22 @@
     "name": "My 3 tier application",
     "resources": [
       {
-        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
+      },
+      {
+        "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
         "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
@@ -425,13 +440,13 @@
       "OS::Nova::Server": {
         "backup_name": "os"
       },
-      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+      "OS::Nova::Server#cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01": {
         "backup_name": "crash"
       },
       "OS::Cinder::Volume": {
         "backup_name": "os"
       },
-      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+      "OS::Cinder::Volume#33b6bb0b-1157-4e66-8553-1c9e14b1c7ba": {
         "backup_name": "crash"
       }
     }
@@ -449,17 +464,22 @@
     "name": "My 3 tier application",
     "resources": [
       {
-        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
+      },
+      {
+        "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
         "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
@@ -470,13 +490,13 @@
       "OS::Nova::Server": {
         "backup_name": "os"
       },
-      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+      "OS::Nova::Server#cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01": {
         "backup_name": "crash"
       },
       "OS::Cinder::Volume": {
         "backup_name": "os"
       },
-      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+      "OS::Cinder::Volume#33b6bb0b-1157-4e66-8553-1c9e14b1c7ba": {
         "backup_name": "crash"
       }
     }
@@ -504,17 +524,22 @@
     "name": "My 1 tier application",
     "resources": [
       {
-        "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
+      },
+      {
+        "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
         "type": "OS::Nova::Server",
         "name": "App server"
       },
       {
-        "id": "c8e6017d-6abc-4357-8c42-390f37984967",
+        "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
         "name": "System volume"
       },
       {
-        "id": "0041a63a-7c71-4410-adfe-999fc8287d58",
+        "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
         "name": "Data volume"
       }
@@ -525,13 +550,13 @@
       "OS::Nova::Server": {
         "backup_name": "os"
       },
-      "OS::Nova::Server#64e51e85-4f31-441f-9a5d-6e93e3193312": {
+      "OS::Nova::Server#cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01": {
         "backup_name": "crash"
       },
       "OS::Cinder::Volume": {
         "backup_name": "os"
       },
-      "OS::Cinder::Volume#61e51e85-4f31-441f-9a5d-6e93e3196628": {
+      "OS::Cinder::Volume#33b6bb0b-1157-4e66-8553-1c9e14b1c7ba": {
         "backup_name": "crash"
       }
     }
@@ -587,12 +612,12 @@ None
 {
   "instances": [
     {
-      "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+      "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
       "type": "OS::Nova::Server",
       "name": "My VM",
       "dependent_resources": [
         {
-          "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+          "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
           "type": "OS::Glance::Image",
           "name": "cirros-0.3.4-x86_64-uec"
         }
@@ -601,7 +626,7 @@ None
   ],
   "instances_links": [
     {
-      "href": "/v1/{project_id}/instances?limit=1&marker=6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+      "href": "/v1/{project_id}/instances?limit=1&marker=cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
       "rel": "next"
     }
   ]
@@ -614,12 +639,12 @@ None
 ```json
 {
   "instance": {
-    "id": "6888e66d-f63c-44f5-b3e5-7c96049d3c54",
+    "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
     "type": "OS::Nova::Server",
     "name": "My VM",
     "dependent_resources": [
       {
-        "id": "b3f85d5a-7865-4305-be0b-e6ab63a9ddba",
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
         "type": "OS::Glance::Image",
         "name": "cirros-0.3.4-x86_64-uec"
       }
