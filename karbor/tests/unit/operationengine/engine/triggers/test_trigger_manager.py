@@ -40,6 +40,10 @@ class FakeTrigger(triggers.BaseTrigger):
     def check_trigger_definition(cls, trigger_definition):
         pass
 
+    @classmethod
+    def check_configuration(cls):
+        pass
+
     def has_operations(self):
         return bool(self._ops)
 

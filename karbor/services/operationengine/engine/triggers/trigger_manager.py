@@ -14,6 +14,7 @@
 Manage all triggers.
 """
 from oslo_config import cfg
+import six
 from stevedore import driver as import_driver
 
 from karbor import exception
@@ -38,6 +39,9 @@ class TriggerManager(object):
         all_cls = all_triggers.all_triggers()
         self._trigger_cls_map = {cls.TRIGGER_TYPE:
                                  cls for cls in all_cls}
+
+        for t, cls in six.iteritems(self._trigger_cls_map):
+            cls.check_configuration()
 
         # self._trigger_obj_map = {
         #     trigger_id: trigger,
