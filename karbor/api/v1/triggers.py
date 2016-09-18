@@ -12,7 +12,7 @@
 
 """The triggers api."""
 
-
+from datetime import datetime
 from oslo_log import log as logging
 from oslo_utils import uuidutils
 import uuid
@@ -103,6 +103,8 @@ class TriggersController(wsgi.Controller):
 
         self.validate_name_and_description(trigger_info)
 
+        trigger_property.setdefault(
+            'start_time', datetime.utcnow().replace(microsecond=0))
         trigger_definition = {
             'id': str(uuid.uuid4()),
             'name': trigger_name,
@@ -170,6 +172,10 @@ class TriggersController(wsgi.Controller):
             trigger.name = trigger_name
 
         if trigger_property:
+            start_time = trigger_property.get('start_time', None)
+            if not start_time:
+                msg = (_("start_time should be supplied"))
+                raise exc.HTTPBadRequest(explanation=msg)
             try:
                 trigger.properties = trigger_property
                 self.operationengine_api.update_trigger(context, trigger)

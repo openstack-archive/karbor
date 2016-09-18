@@ -48,6 +48,7 @@ LOG = logging.getLogger(__name__)
 class TriggerOperationGreenThread(object):
     def __init__(self, first_run_time, function):
 
+        self._pre_run_time = None
         self._running = False
         self._thread = None
 
@@ -62,6 +63,10 @@ class TriggerOperationGreenThread(object):
     def running(self):
         return self._running
 
+    @property
+    def pre_run_time(self):
+        return self._pre_run_time
+
     def _start(self, first_run_time):
         self._running = True
 
@@ -74,11 +79,14 @@ class TriggerOperationGreenThread(object):
         self._thread.link(self._on_done)
 
     def _on_done(self, gt, *args, **kwargs):
+        self._pre_run_time = None
         self._running = False
         self._thread = None
 
     def _run(self, expect_run_time):
         while self._running:
+            self._pre_run_time = expect_run_time
+
             expect_run_time = self._function(expect_run_time)
             if expect_run_time is None or not self._running:
                 break
@@ -100,11 +108,6 @@ class TimeTrigger(triggers.BaseTrigger):
         self._trigger_property = self.check_trigger_definition(
             trigger_property)
 
-        # Only when creating trigger, if user doesn't specify the start_time
-        # then the next run time = now
-        now = datetime.utcnow()
-        start_time = self._trigger_property["start_time"]
-        self._next_run_time = now if not start_time else start_time
         self._greenthread = None
 
     def shutdown(self):
@@ -137,14 +140,25 @@ class TimeTrigger(triggers.BaseTrigger):
         if valid_trigger_property == self._trigger_property:
             return
 
-        start_time = valid_trigger_property["start_time"]
-        if self._next_run_time is None and start_time is None:
-            msg = (_("The start_time should not be None"))
+        first_run_time = self._get_first_run_time(
+            valid_trigger_property)
+        if not first_run_time:
+            msg = (_("The new trigger property is invalid, "
+                     "Can not find the first run time"))
             raise exception.InvalidInput(msg)
-        if start_time:
-            self._next_run_time = start_time
 
-        self._trigger_property.update(valid_trigger_property)
+        if self._greenthread is not None:
+            pre_run_time = self._greenthread.pre_run_time
+            if pre_run_time:
+                end_time = pre_run_time + timedelta(
+                    seconds=self._trigger_property['window'])
+                if first_run_time <= end_time:
+                    msg = (_("The new trigger property is invalid, "
+                             "First run time%(t1)s must be after %(t2)s") %
+                           {'t1': first_run_time, 't2': end_time})
+                    raise exception.InvalidInput(msg)
+
+        self._trigger_property = valid_trigger_property
 
         if len(self._operation_ids) > 0:
             # Restart greenthread to take the change of trigger property
@@ -161,27 +175,12 @@ class TimeTrigger(triggers.BaseTrigger):
         self._start_greenthread()
 
     def _start_greenthread(self):
-        if not self._next_run_time:
+        # Find the first time.
+        # We don't known when using this trigger first time.
+        first_run_time = self._get_first_run_time(
+            self._trigger_property)
+        if not first_run_time:
             raise exception.TriggerIsInvalid(trigger_id=self._id)
-
-        now = datetime.utcnow()
-        first_run_time = self._next_run_time
-        if first_run_time < now:
-            # Find the first time. We don't known when first use this trigger.
-            tmp_time = now - timedelta(
-                seconds=self._trigger_property['window'])
-            if tmp_time < first_run_time:
-                tmp_time = first_run_time
-            first_run_time = self._compute_next_run_time(
-                tmp_time,
-                self._trigger_property['end_time'],
-                self._trigger_property['format'],
-                self._trigger_property['pattern'])
-
-            if not first_run_time:
-                raise exception.TriggerIsInvalid(trigger_id=self._id)
-
-            self._next_run_time = first_run_time
 
         self._create_green_thread(first_run_time)
 
@@ -232,12 +231,10 @@ class TimeTrigger(triggers.BaseTrigger):
                                   operation_id)
                     pass
 
-        self._next_run_time = self._compute_next_run_time(
+        return self._compute_next_run_time(
             datetime.utcnow(), trigger_property['end_time'],
             trigger_property['format'],
             trigger_property['pattern'])
-
-        return self._next_run_time
 
     @classmethod
     def check_trigger_definition(cls, trigger_definition):
@@ -251,6 +248,12 @@ class TimeTrigger(triggers.BaseTrigger):
         pattern = trigger_definition.get("pattern", None)
         cls.TIME_FORMAT_MANAGER.check_time_format(
             trigger_format, pattern)
+
+        start_time = trigger_definition.get("start_time", None)
+        if not start_time:
+            msg = _("The trigger\'s start time is unknown")
+            raise exception.InvalidInput(msg)
+        start_time = cls._check_and_get_datetime(start_time, "start_time")
 
         interval = int(cls.TIME_FORMAT_MANAGER.get_interval(
             trigger_format, pattern))
@@ -278,9 +281,6 @@ class TimeTrigger(triggers.BaseTrigger):
         end_time = trigger_definition.get("end_time", None)
         end_time = cls._check_and_get_datetime(end_time, "end_time")
 
-        start_time = trigger_definition.get("start_time", None)
-        start_time = cls._check_and_get_datetime(start_time, "start_time")
-
         valid_trigger_property = trigger_definition.copy()
         valid_trigger_property['window'] = window
         valid_trigger_property['start_time'] = start_time
@@ -289,7 +289,10 @@ class TimeTrigger(triggers.BaseTrigger):
 
     @classmethod
     def _check_and_get_datetime(cls, time, time_name):
-        if not time or isinstance(time, datetime):
+        if not time:
+            return None
+
+        if isinstance(time, datetime):
             return time
 
         if not isinstance(time, six.string_types):
@@ -316,6 +319,18 @@ class TimeTrigger(triggers.BaseTrigger):
         if next_time and (not end_time or next_time <= end_time):
             return next_time
         return None
+
+    @classmethod
+    def _get_first_run_time(cls, trigger_property):
+        now = datetime.utcnow()
+        tmp_time = trigger_property['start_time']
+        if tmp_time < now:
+            tmp_time = now
+        return cls._compute_next_run_time(
+            tmp_time,
+            trigger_property['end_time'],
+            trigger_property['format'],
+            trigger_property['pattern'])
 
     @classmethod
     def check_configuration(cls):
