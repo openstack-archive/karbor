@@ -890,7 +890,7 @@ None
 ```
 
 ### Update Trigger ###
-> **post** : /v1/{project_id}/triggers/{trigger_id}
+> **put** : /v1/{project_id}/triggers/{trigger_id}
 #### Request JSON ####
 ```json
 {"trigger_info": {
