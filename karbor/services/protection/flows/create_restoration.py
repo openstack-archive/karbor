@@ -80,10 +80,12 @@ class SyncStackStatusTask(task.Task):
 
 
 def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
-             restore):
+             restore, restore_auth):
     target = restore['restore_target']
-    username = restore["parameters"]["username"]
-    password = restore["parameters"]["password"]
+    auth_type = restore_auth["type"]
+    if auth_type == "password":
+        username = restore_auth["username"]
+        password = restore_auth["password"]
 
     # TODO(luobin): create a heat_client
     kwargs = {"auth_url": target,

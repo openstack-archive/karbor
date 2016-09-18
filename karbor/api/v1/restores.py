@@ -247,6 +247,12 @@ class RestoresController(wsgi.Controller):
                     " a restore.")
             raise exception.InvalidInput(reason=msg)
 
+        restore_auth = restore.get("restore_auth")
+        if not isinstance(restore_auth, dict):
+            msg = _("restore_auth must be a dict when creating"
+                    " a restore.")
+            raise exception.InvalidInput(reason=msg)
+
         restore_properties = {
             'project_id': context.project_id,
             'provider_id': restore.get('provider_id'),
@@ -262,7 +268,7 @@ class RestoresController(wsgi.Controller):
         LOG.debug('call restore RPC  : restoreobj:%s', restoreobj)
 
         # call restore rpc API of protection service
-        result = self.protection_api.restore(context, restoreobj)
+        result = self.protection_api.restore(context, restoreobj, restore_auth)
         if result is True:
             status_update = "success"
         else:

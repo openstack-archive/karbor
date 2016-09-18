@@ -38,7 +38,7 @@ class Restore(base.KarborPersistentObject, base.KarborObject,
         'provider_id': fields.UUIDField(),
         'checkpoint_id': fields.UUIDField(),
         'restore_target': fields.StringField(nullable=True),
-        'parameters': fields.DictOfStringsField(nullable=True),
+        'parameters': base.DictOfDictOfStringsField(nullable=True),
         'status': fields.StringField(nullable=True),
     }
 
@@ -75,6 +75,9 @@ class Restore(base.KarborPersistentObject, base.KarborObject,
     @base.remotable
     def save(self):
         updates = self.karbor_obj_get_changes()
+        parameters = updates.pop('parameters', None)
+        if parameters is not None:
+            updates['parameters'] = jsonutils.dumps(parameters)
         if updates:
             db.restore_update(self._context, self.id, updates)
             self.obj_reset_changes()

@@ -115,7 +115,7 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.InvalidInput,
                                    exception.CheckpointNotAvailable,
                                    exception.FlowError)
-    def restore(self, context, restore=None):
+    def restore(self, context, restore, restore_auth):
         LOG.info(_LI("Starting restore service:restore action"))
 
         checkpoint_id = restore["checkpoint_id"]
@@ -140,7 +140,8 @@ class ProtectionManager(manager.Manager):
                 constants.OPERATION_RESTORE,
                 checkpoint,
                 provider,
-                restore)
+                restore,
+                restore_auth)
         except Exception:
             LOG.exception(
                 _LE("Failed to create restoration flow checkpoint: %s"),

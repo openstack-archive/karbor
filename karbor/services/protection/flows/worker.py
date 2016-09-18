@@ -61,13 +61,14 @@ class Worker(object):
         # TODO(wangliuan)implement the other operation
 
     def get_restoration_flow(self, context, operation_type, checkpoint,
-                             provider, restore):
+                             provider, restore, restore_auth):
         restoration_flow = create_restoration.get_flow(context,
                                                        self.workflow_engine,
                                                        operation_type,
                                                        checkpoint,
                                                        provider,
-                                                       restore)
+                                                       restore,
+                                                       restore_auth)
         return restoration_flow
 
     def get_delete_checkpoint_flow(self, context, operation_type, checkpoint,
