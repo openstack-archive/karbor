@@ -11,7 +11,6 @@
 #    under the License.
 
 from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_versionedobjects import fields
 
 from karbor import db
@@ -21,7 +20,6 @@ from karbor import objects
 from karbor.objects import base
 
 CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
 
 
 @base.KarborObjectRegistry.register
