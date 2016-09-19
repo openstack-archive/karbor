@@ -154,6 +154,37 @@ class Trigger(object):
             return
 
 
+class ScheduledOperation(object):
+    _name_id = 0
+
+    def __init__(self):
+        self.id = None
+        self.karbor_client = base._get_karbor_client_from_creds()
+
+    def create(self, operation_type, trigger_id,
+               operation_definition, name=None):
+        if name is None:
+            name = "KarborFullstack-Scheduled-Operation-{id}".format(
+                id=self._name_id
+            )
+            self._name_id += 1
+
+        scheduled_operation = self.karbor_client.scheduled_operations.create(
+            name,
+            operation_type,
+            trigger_id,
+            operation_definition
+        )
+        self.id = scheduled_operation.id
+        return self.id
+
+    def close(self):
+        try:
+            self.karbor_client.scheduled_operations.delete(self.id)
+        except Exception:
+            return
+
+
 class Server(object):
     _name_id = 0
 
