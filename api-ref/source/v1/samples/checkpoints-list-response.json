@@ -1,0 +1,43 @@
+{
+  "checkpoints": [
+    {
+      "id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+      "project_id": "e486a2f49695423ca9c47e589b948108",
+      "status": "available",
+      "protection_plan": {
+        "id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb",
+        "name": "My 3 tier application",
+        "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+        "resources": [
+          {
+            "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+            "type": "OS::Glance::Image",
+            "name": "cirros-0.3.4-x86_64-uec"
+          },
+          {
+            "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+            "type": "OS::Nova::Server",
+            "name": "App server"
+          },
+          {
+            "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
+            "type": "OS::Cinder::Volume",
+            "name": "System volume"
+          },
+          {
+            "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+            "type": "OS::Cinder::Volume",
+            "name": "Data volume"
+          }
+        ]
+      },
+      "resource_graph": "[{'0x3': ['OS::Cinder::Volume', '33b6bb0b-1157-4e66-8553-1c9e14b1c7ba', 'Data volume'], '0x2': ['OS::Cinder::Volume', '25336116-f38e-4c22-81ad-e9b7bd71ba51', 'System volume'], '0x1': ['OS::Nova::Server', 'cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01', 'App server'], '0x0': ['OS::Glance::Image', '99777fdd-8a5b-45ab-ba2c-52420008103f', 'cirros-0.3.4-x86_64-uec']}, [['0x1', ['0x0']]]]"
+    }
+  ],
+  "checkpoints_links": [
+    {
+      "href": "/v1/{project_id}/checkpoints?limit={limit_num}&marker=dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
+      "rel": "next"
+    }
+  ]
+}

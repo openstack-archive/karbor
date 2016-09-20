@@ -8,6 +8,18 @@ request_id:
   type: UUID
 
 # variables in path
+checkpoint_id_1:
+  description: |
+    The UUID of a checkpoint.
+  in: path
+  required: true
+  type: UUID
+provider_id_1:
+  description: |
+    The UUID of a provider.
+  in: path
+  required: true
+  type: UUID
 tenant_id:
   description: |
     The UUID of the tenant in a multi-tenancy cloud.
@@ -20,6 +32,31 @@ tenant_id:
 
 
 # variables in body
+checkpoint:
+  description: |
+    A ``checkpoint`` object.
+  in: body
+  required: true
+  type: object
+checkpoint_id:
+  description: |
+    The UUID of the checkpoint.
+  in: body
+  required: true
+  type: UUID
+checkpoint_list:
+  description: |
+    The list of ``checkpoint`` objects.
+  in: body
+  required: true
+  type: array
+checkpoint_status:
+  description: |
+    The status of checkpoint. A valid value is ``error``, ``protecting``,
+    ``available``, ``deleting``, ``deleted`` or ``error-deleting``.
+  in: body
+  required: true
+  type: string
 links:
   description: |
     Links for transfer.
@@ -80,6 +117,12 @@ provider_id:
   in: body
   required: true
   type: UUID
+resource_graph:
+  description: |
+    The resource graph of protection plan corresponding to the checkpoint.
+  in: body
+  required: true
+  type: array
 resources:
   description: |
     The list of all resources in plan.
@@ -92,3 +135,9 @@ resources_1:
   in: body
   required: false
   type: array
+tenant_id_1:
+  description: |
+    The UUID of the tenant in a multi-tenancy cloud.
+  in: body
+  required: true
+  type: string
