@@ -1,0 +1,94 @@
+# variables in header
+request_id:
+  description: |
+    A unique ID for tracking service request. The request ID associated
+    with the request by default appears in the service logs.
+  in: header
+  required: true
+  type: UUID
+
+# variables in path
+tenant_id:
+  description: |
+    The UUID of the tenant in a multi-tenancy cloud.
+  in: path
+  required: true
+  type: string
+
+
+# variables in query
+
+
+# variables in body
+links:
+  description: |
+    Links for transfer.
+  in: body
+  required: true
+  type: array
+plan:
+  description: |
+    A ``plan`` object.
+  in: body
+  required: true
+  type: object
+plan_id:
+  description: |
+    The UUID of the plan.
+  in: body
+  required: true
+  type: UUID
+plan_list:
+  description: |
+    The list of ``plan`` objects.
+  in: body
+  required: true
+  type: array
+plan_name:
+  description: |
+    The name of the plan.
+  in: body
+  required: true
+  type: string
+plan_name_1:
+  description: |
+    The name of the plan.
+  in: body
+  required: false
+  type: string
+plan_parameters:
+  description: |
+    The specified parameters for plan.
+  in: body
+  required: true
+  type: dict
+plan_status:
+  description: |
+    The status of plan. A valid value is ``started`` or ``suspended``.
+  in: body
+  required: true
+  type: string
+plan_status_1:
+  description: |
+    The status of plan. A valid value is ``started`` or ``suspended``.
+  in: body
+  required: false
+  type: string
+provider_id:
+  description: |
+    The UUID of the provider.
+  in: body
+  required: true
+  type: UUID
+resources:
+  description: |
+    The list of all resources in plan.
+  in: body
+  required: true
+  type: array
+resources_1:
+  description: |
+    The list of all resources in plan.
+  in: body
+  required: false
+  type: array
