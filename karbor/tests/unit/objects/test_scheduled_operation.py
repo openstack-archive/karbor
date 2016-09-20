@@ -93,12 +93,15 @@ class TestScheduledOperation(test_objects.BaseObjectsTestCase):
         op = self.Operation_Class._from_db_object(self.context,
                                                   self.Operation_Class(),
                                                   db_op)
+        fake_op_def = {'a': '1'}
         op.name = 'protect volume'
+        op.operation_definition = fake_op_def
         op.save()
 
-        operation_update.assert_called_once_with(self.context,
-                                                 op.id,
-                                                 {'name': 'protect volume'})
+        operation_update.assert_called_once_with(
+            self.context, op.id,
+            {'name': 'protect volume',
+             'operation_definition': jsonutils.dumps(fake_op_def)})
 
     @mock.patch('karbor.db.scheduled_operation_delete')
     def test_destroy(self, operation_delete):
