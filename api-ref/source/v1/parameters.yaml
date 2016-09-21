@@ -82,6 +82,13 @@ dependent_types:
   in: body
   required: true
   type: array
+description:
+  description: |
+    The description for this object, resource, operation and so on. May be
+    ``NULL``.
+  in: body
+  required: true
+  type: string
 links:
   description: |
     Links for transfer.
@@ -184,12 +191,30 @@ protectable_type_3:
   in: body
   required: true
   type: string
+provider:
+  description: |
+    A ``provider`` object.
+  in: body
+  required: true
+  type: object
 provider_id:
   description: |
     The UUID of the provider.
   in: body
   required: true
   type: UUID
+provider_list:
+  description: |
+    The list of ``provider`` objects.
+  in: body
+  required: true
+  type: array
+provider_name:
+  description: |
+    The name of the provider.
+  in: body
+  required: true
+  type: string
 resource_graph:
   description: |
     The resource graph of protection plan corresponding to the checkpoint.
@@ -208,6 +233,24 @@ resources_1:
   in: body
   required: false
   type: array
+schema_extended_info:
+  description: |
+    The extended info schema for provider.
+  in: body
+  required: true
+  type: dict
+schema_restore:
+  description: |
+    The restore schema for provider.
+  in: body
+  required: true
+  type: dict
+schema_saved_info:
+  description: |
+    The saved info schema for provider.
+  in: body
+  required: true
+  type: dict
 tenant_id_1:
   description: |
     The UUID of the tenant in a multi-tenancy cloud.

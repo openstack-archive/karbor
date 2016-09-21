@@ -1,0 +1,60 @@
+{
+  "provider": {
+    "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+    "name": "OS Infra Provider",
+    "description": "This provider uses OpenStack's own services (swift, cinder) as storage",
+    "extended_info_schema": {
+      "options_schema": {
+        "OS::Cinder::Volume": {
+          "required": [
+            "backup_mode"
+          ],
+          "type": "object",
+          "properties": {
+            "backup_mode": {
+              "default": "auto",
+              "enum": [
+                "full",
+                "incremental",
+                "auto"
+              ],
+              "type": "string",
+              "description": "The backup mode.",
+              "title": "Backup Mode"
+            }
+          },
+          "title": "Cinder Protection Options"
+        }
+      },
+      "saved_info_schema": {
+        "OS::Cinder::Volume": {
+          "required": [
+            "name"
+          ],
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name for this backup.",
+              "title": "Name"
+            }
+          },
+          "title": "Cinder Protection Saved Info"
+        }
+      },
+      "restore_schema": {
+        "OS::Cinder::Volume": {
+          "type": "object",
+          "properties": {
+            "restore_name": {
+              "type": "string",
+              "description": "The name of the restored volume.",
+              "title": "Restore Name"
+            }
+          },
+          "title": "Cinder Protection Restore"
+        }
+      }
+    }
+  }
+}
