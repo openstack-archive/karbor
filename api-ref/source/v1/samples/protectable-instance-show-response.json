@@ -1,0 +1,14 @@
+{
+  "instance": {
+    "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+    "type": "OS::Nova::Server",
+    "name": "My VM",
+    "dependent_resources": [
+      {
+        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+        "type": "OS::Glance::Image",
+        "name": "cirros-0.3.4-x86_64-uec"
+      }
+    ]
+  }
+}

@@ -14,9 +14,21 @@ checkpoint_id_1:
   in: path
   required: true
   type: UUID
+protectable_type_1:
+  description: |
+    The name of a specified protectable type.
+  in: path
+  required: true
+  type: string
 provider_id_1:
   description: |
     The UUID of a provider.
+  in: path
+  required: true
+  type: UUID
+resource_id:
+  description: |
+    The UUID of a resource.
   in: path
   required: true
   type: UUID
@@ -57,6 +69,19 @@ checkpoint_status:
   in: body
   required: true
   type: string
+dependent_resources:
+  description: |
+    All dependent resources for a given protectable instance, It can be an
+    empty list.
+  in: body
+  required: true
+  type: array
+dependent_types:
+  description: |
+    All dependent protectable type, It can be an empty list.
+  in: body
+  required: true
+  type: array
 links:
   description: |
     Links for transfer.
@@ -110,6 +135,54 @@ plan_status_1:
     The status of plan. A valid value is ``started`` or ``suspended``.
   in: body
   required: false
+  type: string
+protectable_instance:
+  description: |
+    A ``protectable_instance`` object.
+  in: body
+  required: true
+  type: object
+protectable_instance_id:
+  description: |
+    The UUID of a protectable instance.
+  in: body
+  required: true
+  type: UUID
+protectable_instance_list:
+  description: |
+    The list of ``protectable_instance`` objects.
+  in: body
+  required: true
+  type: array
+protectable_instance_name:
+  description: |
+    The name of a protectable instance.
+  in: body
+  required: true
+  type: string
+protectable_name:
+  description: |
+    The name of the protectable type.
+  in: body
+  required: true
+  type: string
+protectable_type:
+  description: |
+    All the available protection types.
+  in: body
+  required: true
+  type: array
+protectable_type_2:
+  description: |
+    A ``protectable_type`` object.
+  in: body
+  required: true
+  type: object
+protectable_type_3:
+  description: |
+    The name of a specified protectable type.
+  in: body
+  required: true
   type: string
 provider_id:
   description: |

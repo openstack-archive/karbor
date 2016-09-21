@@ -1,0 +1,9 @@
+{
+  "protectable_type": {
+    "name": "OS::Nova::Server",
+    "dependent_types": [
+      "OS::Cinder::Volume",
+      "OS::Glance::Image"
+    ]
+  }
+}
