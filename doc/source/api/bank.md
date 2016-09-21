@@ -4,11 +4,11 @@
 
 This document will describe the layout and algorithms used by Karbor using the
 default bank implementation. Providers can use their own algorithms to manage
-metdata but there might be issues when using default plugins.
+metadata but there might be issues when using default plugins.
 
 ## Abstract
 
-Since Karbor want's to be able to store metadata in many locations (swift, mongodb, etc.)
+Since Karbor wants to be able to store metadata in many locations (swift, mongodb, etc.)
 we defined a simplified object store interface that we believe most backends will be able
 to support without much work.
 
