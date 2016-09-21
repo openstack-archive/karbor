@@ -58,7 +58,7 @@ swift_client_opts = [
                help='Location of the CA certificate file '
                     'to use for swift client requests.'),
     cfg.BoolOpt('swift_auth_insecure',
-                default=False,
+                default=True,
                 help='Bypass verification of server certificate when '
                      'making SSL connection to Swift.'),
 ]

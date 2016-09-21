@@ -28,6 +28,14 @@ glance_client_opts = [
                'catalog. Format is: separated values of the form: '
                '<service_type>:<service_name>:<endpoint_type> - '
                'Only used if glance_endpoint is unset'),
+    cfg.StrOpt(SERVICE + '_ca_cert_file',
+               default=None,
+               help='Location of the CA certificate file '
+                    'to use for client requests in SSL connections.'),
+    cfg.BoolOpt(SERVICE + '_auth_insecure',
+                default=True,
+                help='Bypass verification of server certificate when '
+                     'making SSL connection to Glance.'),
 ]
 
 cfg.CONF.register_opts(glance_client_opts, group=SERVICE + '_client')
@@ -48,6 +56,8 @@ def create(context, conf):
     args = {
         'endpoint': url,
         'token': context.auth_token,
+        'cacert': conf.glance_client.glance_ca_cert_file,
+        'insecure': conf.glance_client.glance_auth_insecure,
     }
 
     return gc.Client(GLANCECLIENT_VERSION, **args)
