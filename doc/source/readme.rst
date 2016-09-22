@@ -6,7 +6,7 @@ Introduction
 .. contents:: :depth: 2
 
 What is Karbor?
-==============
+===============
 
 Karbor is an OpenStack project that provides a pluggable framework for
 protecting and restoring Data and Metadata that comprises an OpenStack-deployed
@@ -17,8 +17,6 @@ application - Application Data Protection as a Service.
     :align: center
     :height: 150px
 
-It is named after the famous dragon from J.R.R. Tolkien's The "Hobbit", which
-was known to hoard and guard the treasures of the people.
 
 Mission Statement
 ~~~~~~~~~~~~~~~~~
@@ -33,7 +31,7 @@ Typical Use Case: 3-Tier Cloud App
 
 3-Tier Cloud App Web/App/DB
 
-.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/3-tirApp.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/3-tier-app.png
     :alt: 3-Tier Cloud App
     :width: 600
     :align: center
