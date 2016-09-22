@@ -80,9 +80,9 @@ class OperationEngineManagerTestCase(base.TestCase):
         self.manager._restore()
 
         trigger_manager = self.manager._trigger_manager
-        self.assertTrue(trigger_id in trigger_manager._trigger)
-        self.assertTrue(operation_id in trigger_manager._trigger[trigger_id])
-        self.assertFalse(op.id in trigger_manager._trigger[trigger_id])
+        self.assertIn(trigger_id, trigger_manager._trigger)
+        self.assertIn(operation_id, trigger_manager._trigger[trigger_id])
+        self.assertNotIn(op.id, trigger_manager._trigger[trigger_id])
 
     def test_create_operation(self):
         operation_id = "1234"
