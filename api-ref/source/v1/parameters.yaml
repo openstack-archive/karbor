@@ -14,6 +14,12 @@ checkpoint_id_1:
   in: path
   required: true
   type: UUID
+operation_id_1:
+  description: |
+    The UUID of the scheduled operation.
+  in: path
+  required: true
+  type: UUID
 protectable_type_1:
   description: |
     The name of a specified protectable type.
@@ -89,12 +95,55 @@ description:
   in: body
   required: true
   type: string
+enabled:
+  description: |
+    "``1``" means ``Enable``, "``0``" means ``Disable``.
+  in: body
+  required: true
+  type: int
 links:
   description: |
     Links for transfer.
   in: body
   required: true
   type: array
+operation:
+  description: |
+    A ``scheduled operation`` object.
+  in: body
+  required: true
+  type: object
+operation_definition:
+  description: |
+    The operation definition for scheduled operation, include ``provider_id``
+    and ``plan_id`` key.
+  in: body
+  required: true
+  type: dict
+operation_id:
+  description: |
+    The UUID of the scheduled operation.
+  in: body
+  required: true
+  type: UUID
+operation_list:
+  description: |
+    The list of ``scheduled operation`` objects.
+  in: body
+  required: true
+  type: array
+operation_name:
+  description: |
+    The name of the scheduled operation.
+  in: body
+  required: true
+  type: string
+operation_type:
+  description: |
+    The type of the scheduled operation.
+  in: body
+  required: true
+  type: string
 plan:
   description: |
     A ``plan`` object.
@@ -257,3 +306,9 @@ tenant_id_1:
   in: body
   required: true
   type: string
+trigger_id:
+  description: |
+    The UUID of the trigger.
+  in: body
+  required: true
+  type: UUID
