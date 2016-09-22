@@ -38,6 +38,12 @@ resource_id:
   in: path
   required: true
   type: UUID
+restore_id_1:
+  description: |
+    The UUID of the restore.
+  in: path
+  required: true
+  type: UUID
 tenant_id:
   description: |
     The UUID of the tenant in a multi-tenancy cloud.
@@ -288,6 +294,44 @@ resources_1:
   in: body
   required: false
   type: array
+restore:
+  description: |
+    A ``restore`` object.
+  in: body
+  required: true
+  type: object
+restore_id:
+  description: |
+    The UUID of the restore.
+  in: body
+  required: true
+  type: UUID
+restore_list:
+  description: |
+    The list of ``restore`` objects.
+  in: body
+  required: true
+  type: array
+restore_parameters:
+  description: |
+    The specified parameters for restore, it may include "``username``" and
+    "``password``" for target.
+  in: body
+  required: true
+  type: dict
+restore_status:
+  description: |
+    The status of restore. A valid value is "``started``" "``success``" or
+    "``failed``".
+  in: body
+  required: true
+  type: string
+restore_target:
+  description: |
+    The target of the restore operation.
+  in: body
+  required: true
+  type: string
 schema_extended_info:
   description: |
     The extended info schema for provider.
