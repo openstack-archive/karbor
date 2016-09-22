@@ -44,6 +44,12 @@ tenant_id:
   in: path
   required: true
   type: string
+trigger_id_1:
+  description: |
+    The UUID of the trigger.
+  in: path
+  required: true
+  type: UUID
 
 
 # variables in query
@@ -306,9 +312,53 @@ tenant_id_1:
   in: body
   required: true
   type: string
+trigger:
+  description: |
+    A ``trigger`` object.
+  in: body
+  required: true
+  type: object
 trigger_id:
   description: |
     The UUID of the trigger.
   in: body
   required: true
   type: UUID
+trigger_list:
+  description: |
+    The list of ``trigger`` objects.
+  in: body
+  required: true
+  type: array
+trigger_name:
+  description: |
+    The name of the trigger.
+  in: body
+  required: true
+  type: string
+trigger_name_1:
+  description: |
+    The name of the trigger.
+  in: body
+  required: false
+  type: string
+trigger_properties:
+  description: |
+    The property list for trigger. it must include "``pattern``" and
+    "``window``", may include "``format``" "``start_time``" and "``end_time``".
+  in: body
+  required: true
+  type: dict
+trigger_properties_1:
+  description: |
+    The property list for trigger. it must include "``pattern``" and
+    "``window``", may include "``format``" "``start_time``" and "``end_time``".
+  in: body
+  required: false
+  type: dict
+trigger_type:
+  description: |
+    The type of the trigger.
+  in: body
+  required: true
+  type: string

@@ -1,0 +1,12 @@
+{"trigger_info": {
+   "name": "My backup trigger",
+   "type": "time",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 9 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
+    }
+  }
+}

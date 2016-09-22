@@ -1,0 +1,11 @@
+{"trigger_info": {
+   "name": "Trigger for backup",
+   "properties": {
+     "format": "crontab",
+     "pattern": "0 10 * * *",
+     "start_time": "2015-12-17T08:30:00",
+     "end_time": "2016-03-17T08:30:00",
+     "window": "3600",
+    }
+  }
+}
