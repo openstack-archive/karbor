@@ -17,6 +17,7 @@ from karbor.common import constants
 from karbor import context
 from karbor import exception
 from karbor import objects
+from karbor.services.operationengine.operations import base as base_operation
 from karbor.services.operationengine.operations import protect_operation
 from karbor.tests import base
 
@@ -49,7 +50,7 @@ class ProtectOperationTestCase(base.TestCase):
                           self._operation_class.check_operation_definition,
                           {})
 
-    @mock.patch('karbor.services.operationengine.karbor_client.client')
+    @mock.patch.object(base_operation.Operation, '_create_karbor_client')
     def test_execute(self, client):
         client.return_value = self._fake_karbor_client
         now = datetime.utcnow()
@@ -75,7 +76,7 @@ class ProtectOperationTestCase(base.TestCase):
         log = logs.objects[0]
         self.assertTrue(now, log.triggered_time)
 
-    @mock.patch('karbor.services.operationengine.karbor_client.client')
+    @mock.patch.object(base_operation.Operation, '_create_karbor_client')
     def test_resume(self, client):
         log = self._create_operation_log(self._operation_db.id)
         client.return_value = self._fake_karbor_client

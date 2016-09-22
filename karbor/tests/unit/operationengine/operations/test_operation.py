@@ -10,13 +10,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+
 from datetime import datetime
 from datetime import timedelta
 
 from karbor.common import constants
+from karbor.common import karbor_keystone_plugin
 from karbor import context
 from karbor import objects
 from karbor.services.operationengine.operations import base as base_operation
+from karbor.services.operationengine import user_trust_manager
 from karbor.tests import base
 
 
@@ -76,6 +80,19 @@ class OperationTestCase(base.TestCase):
         self.assertTrue(logs is not None)
         log1 = logs.objects[0]
         self.assertTrue(log.id, log1.id)
+
+    def test_create_karbor_client(self):
+        self._operation_class.KARBOR_ENDPOINT = 'http://127.0.0.0'
+        cls = user_trust_manager.UserTrustManager
+        cls1 = karbor_keystone_plugin.KarborKeystonePlugin
+        with mock.patch.object(cls1, '_do_init'):
+            with mock.patch.object(cls, 'get_token') as get_token:
+                get_token.return_value = 'abc'
+                with mock.patch('karbor.services.operationengine.'
+                                'karbor_client.create') as create:
+                    self._operation_class._create_karbor_client(
+                        'abc', 'def')
+                    create.assert_called_once()
 
     def _create_operation(self):
         operation_info = {
