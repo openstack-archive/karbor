@@ -387,7 +387,6 @@ paths:
       responses:
         '200':
           description: Checkpoint deleted
-          schema: empty dict
           examples:
             application/json: {}
         default:
@@ -478,7 +477,7 @@ paths:
     post:
       summary: Create a plan
       description: |
-        Create a new plan. The update will create a new revision for
+        Create a new plan. The operation will create a new revision for
         the plan.
       tags:
         - Project API
@@ -807,7 +806,7 @@ paths:
     get:
       summary: Resource Instance
       description: |
-        Return information about a specific instance and it's immediate dependencies.
+        Return information about a specific instance and its immediate dependencies.
       parameters:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/protectable_typeParam'
@@ -979,6 +978,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+
   /{project_id}/operation_logs/:
     get:
       summary: Operation log entry point.
@@ -1510,6 +1510,7 @@ definitions:
     description: |
       Name of the resource type. When available the types that are defined by Heat
       are used.
+
   ProtectableInfo:
     type: object
     properties:
@@ -1638,6 +1639,7 @@ definitions:
           Supply parameters for the operation type.
       enabled:
         type: integer
+
   ScheduledOperationCreateBody:
     type: object
     properties:
@@ -1656,6 +1658,7 @@ definitions:
         type: object
         description: |
           Supply parameters for the operation type.
+
   OperationStatus:
     type: object
     properties:
@@ -1663,6 +1666,7 @@ definitions:
         type: string
       description:
         type: string
+
   OperationLog:
     type: object
     properties:
@@ -1693,6 +1697,7 @@ definitions:
         description: Complete log of the entires for the operation.
         items:
           $ref: '#/definitions/OperationLogEntry'
+
   OperationLogEntry:
     type: object
     properties:
@@ -1702,6 +1707,7 @@ definitions:
       message:
         type: string
         description: Message containing information about an event.
+
   Trigger:
     type: object
     discriminator: type
@@ -1724,6 +1730,7 @@ definitions:
         type: object
         description: |
           Trigger properties. Supply parameters for the trigger type.
+
   TimeTrigger:
     description: |
       Trigger definition for time trigger.
@@ -1743,6 +1750,7 @@ definitions:
             trigger_window:
               type: string
               format: xsd:duration
+
   TriggerCreateBody:
     type: object
     discriminator: type
@@ -1764,7 +1772,6 @@ definitions:
   TriggerUpdateBody:
     type: object
     discriminator: type
-    required: [ type ]
     properties:
       name:
         type: string
@@ -1773,6 +1780,7 @@ definitions:
         type: object
         description: |
           Trigger properties. Supply parameters for the trigger type.
+
   Restore:
     type: object
     properties:
@@ -1833,6 +1841,15 @@ definitions:
         type: string
 
 parameters:
+  projectParam:
+    name: project_id
+    in: path
+    description: |
+      Specifies the ID of the project that owns this entity
+    required: true
+    type: string
+    format: uuid
+
   sortParam:
     name: sort
     in: query
@@ -1842,6 +1859,7 @@ parameters:
       (ascending) or desc (descending).
     required: false
     type: string
+
   limitParam:
     name: limit
     in: query
@@ -1853,6 +1871,7 @@ parameters:
       in a subsequent limited request.
     type: integer
     format: int64
+
   markerParam:
     name: marker
     in: query
@@ -1861,40 +1880,7 @@ parameters:
       an initial limited request and use the ID of the last-seen item from the
       response as the marker parameter value in a subsequent limited request.
     type: string
-  projectParam:
-    name: project_id
-    in: path
-    description: |
-      Specifies the ID of the project that owns this entity
-    required: true
-    type: string
-    format: uuid
-  nameFilterParam:
-    name: name
-    in: query
-    description: name of the entity. Could be a regex pattern.
-    required: false
-    type: string
-    format: regex
-  typeFilterParam:
-    name: type
-    in: query
-    description: type of the entity.
-    required: false
-    type: string
-  statusFilterParam:
-    name: status
-    in: query
-    description: status of the entity.
-    required: false
-    type: string
-  propertiesFilterParam:
-    name: properties
-    in: query
-    description: property of the entity. Could be a regex pattern.
-    required: false
-    type: string
-    format: regex
+
   provider_idParam:
     name: provider_id
     in: path
@@ -1902,6 +1888,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   plan_idParam:
     name: plan_id
     in: path
@@ -1909,6 +1896,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   checkpoint_idParam:
     name: checkpoint_id
     in: path
@@ -1916,6 +1904,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   trigger_idParam:
     name: trigger_id
     in: path
@@ -1923,6 +1912,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   resource_idParam:
     name: resource_id
     in: path
@@ -1930,6 +1920,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   restore_idParam:
     name: restore_id
     in: path
@@ -1937,6 +1928,7 @@ parameters:
     required: true
     type: string
     format: uuid
+
   scheduled_operation_idParam:
     name: scheduled_operation_id
     in: path
@@ -1944,27 +1936,7 @@ parameters:
     required: true
     type: string
     format: uuid
-  scheduled_operation_typeFilterParam:
-    name: operation_type
-    in: query
-    description: type of the scheduled operation.
-    required: false
-    type: string
-    format: regex
-  scheduled_operation_defFilterParam:
-    name: operation_definition
-    in: query
-    description: definition of the scheduled operation. Could be a regex pattern.
-    required: false
-    type: string
-    format: regex
-  trigger_idFilterParam:
-    name: trigger_id
-    in: query
-    description: id of the trigger.
-    required: false
-    type: string
-    format: uuid
+
   operation_log_idParam:
     name: operation_log_id
     in: path
@@ -1972,6 +1944,61 @@ parameters:
     required: true
     type: string
     format: uuid
+
+  nameFilterParam:
+    name: name
+    in: query
+    description: name of the entity. Could be a regex pattern.
+    required: false
+    type: string
+    format: regex
+
+  typeFilterParam:
+    name: type
+    in: query
+    description: type of the entity.
+    required: false
+    type: string
+
+  statusFilterParam:
+    name: status
+    in: query
+    description: status of the entity.
+    required: false
+    type: string
+
+  propertiesFilterParam:
+    name: properties
+    in: query
+    description: property of the entity. Could be a regex pattern.
+    required: false
+    type: string
+    format: regex
+
+  scheduled_operation_typeFilterParam:
+    name: operation_type
+    in: query
+    description: type of the scheduled operation.
+    required: false
+    type: string
+    format: regex
+
+  scheduled_operation_defFilterParam:
+    name: operation_definition
+    in: query
+    description: definition of the scheduled operation. Could be a regex pattern.
+    required: false
+    type: string
+    format: regex
+
+  trigger_idFilterParam:
+    name: trigger_id
+    in: query
+    description: id of the trigger.
+    required: false
+    type: string
+    format: uuid
+
   protectable_typeParam:
     name: protectable_type
     in: path
