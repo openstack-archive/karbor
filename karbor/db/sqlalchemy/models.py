@@ -180,7 +180,7 @@ class Restore(BASE, KarborBase):
     provider_id = Column(String(36))
     checkpoint_id = Column(String(36))
     restore_target = Column(String(255))
-    parameters = Column(String(255))
+    parameters = Column(Text)
     status = Column(String(64))
 
 

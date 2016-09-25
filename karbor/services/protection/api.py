@@ -32,8 +32,8 @@ class API(base.Base):
         self.protection_rpcapi = protection_rpcapi.ProtectionAPI()
         super(API, self).__init__(db_driver)
 
-    def restore(self, context, restore):
-        return self.protection_rpcapi.restore(context, restore)
+    def restore(self, context, restore, restore_auth):
+        return self.protection_rpcapi.restore(context, restore, restore_auth)
 
     def protect(self, context, plan):
         return self.protection_rpcapi.protect(context, plan)

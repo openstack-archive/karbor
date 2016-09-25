@@ -44,12 +44,13 @@ class ProtectionAPI(object):
         self.client = rpc.get_client(target, version_cap=None,
                                      serializer=serializer)
 
-    def restore(self, ctxt, restore=None):
+    def restore(self, ctxt, restore=None, restore_auth=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
             'restore',
-            restore=restore)
+            restore=restore,
+            restore_auth=restore_auth)
 
     def protect(self, ctxt, plan=None):
         cctxt = self.client.prepare(version='1.0')

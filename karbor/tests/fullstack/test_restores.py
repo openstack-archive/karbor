@@ -17,7 +17,12 @@ import re
 
 class RestoresTest(karbor_base.KarborBaseTest):
     """Test Restores operation """
-    parameters = {"username": "admin", "password": "secretadmin"}
+    parameters = {}
+    restore_auth = {
+        "type": "password",
+        "username": "admin",
+        "password": "secretadmin",
+    }
 
     def setUp(self):
         super(RestoresTest, self).setUp()
@@ -59,7 +64,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
         restore.create(self.provider_id, checkpoint.id,
-                       restore_target, self.parameters)
+                       restore_target, self.parameters, self.restore_auth)
 
         restores = self.karbor_client.restores.list()
         after_num = len(restores)
@@ -76,7 +81,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
         restore.create(self.provider_id, checkpoint.id,
-                       restore_target, self.parameters)
+                       restore_target, self.parameters, self.restore_auth)
 
         restore_item = self.karbor_client.restores.get(restore.id)
         self.assertEqual(restore.id, restore_item.id)
@@ -95,10 +100,10 @@ class RestoresTest(karbor_base.KarborBaseTest):
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore1 = self.store(objects.Restore())
         restore1.create(self.provider_id, checkpoint.id,
-                        restore_target, self.parameters)
+                        restore_target, self.parameters, self.restore_auth)
         restore2 = self.store(objects.Restore())
         restore2.create(self.provider_id, checkpoint.id,
-                        restore_target, self.parameters)
+                        restore_target, self.parameters, self.restore_auth)
 
         restores = self.karbor_client.restores.list()
         after_num = len(restores)

@@ -28,8 +28,12 @@ DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
 DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
 DEFAULT_CHECKPOINT_ID = '09edcbdc-d1c2-49c1-a212-122627b20968'
 DEFAULT_RESTORE_TARGET = '192.168.1.2:35357/v2.0'
+DEFAULT_RESTORE_AUTH = {
+    'type': 'password',
+    'username': 'admin',
+    'password': 'test',
+}
 DEFAULT_PARAMETERS = {
-    "username": "admin"
 }
 
 
@@ -120,6 +124,7 @@ class RestoreApiTest(base.TestCase):
             provider_id=DEFAULT_PROVIDER_ID,
             checkpoint_id=DEFAULT_CHECKPOINT_ID,
             restore_target=DEFAULT_RESTORE_TARGET,
+            restore_auth=DEFAULT_RESTORE_AUTH,
             parameters=DEFAULT_PARAMETERS,
             status=constants.RESOURCE_STATUS_STARTED):
         restore_req = {
@@ -127,6 +132,7 @@ class RestoreApiTest(base.TestCase):
             'provider_id': provider_id,
             'checkpoint_id': checkpoint_id,
             'restore_target': restore_target,
+            'restore_auth': restore_auth,
             'parameters': parameters,
             'status': status,
         }

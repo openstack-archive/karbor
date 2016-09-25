@@ -116,11 +116,12 @@ class Restore(object):
             return False
 
     def create(self, provider_id, checkpoint_id, target, parameters,
-               timeout=LONG_TIMEOUT):
+               restore_auth, timeout=LONG_TIMEOUT):
         restore = self.karbor_client.restores.create(provider_id,
                                                      checkpoint_id,
                                                      target,
-                                                     parameters)
+                                                     parameters,
+                                                     restore_auth)
         self.id = restore.id
         utils.wait_until_true(partial(self._restore_status, 'success'),
                               timeout=timeout, sleep=LONG_SLEEP)
