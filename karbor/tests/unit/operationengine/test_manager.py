@@ -115,8 +115,8 @@ class OperationEngineManagerTestCase(base.TestCase):
         trigger_id = "trigger"
 
         self.manager.resume_scheduled_operation(self.ctxt, op_id, trigger_id)
-        self.assertTrue(op_id in (
-            self.manager._trigger_manager._trigger[trigger_id]))
+        self.assertIn(op_id,
+                      self.manager._trigger_manager._trigger[trigger_id])
 
         self.manager.resume_scheduled_operation(self.ctxt, op_id, trigger_id)
         self.assertTrue(1 == len(
