@@ -27,6 +27,31 @@ from karbor.tests import base
 CONF = cfg.CONF
 
 
+class ModelBaseTestCase(base.TestCase):
+    """Base Test cases which supplies assert Objects equal or not."""
+
+    def _dict_from_object(self, obj, ignored_keys):
+        if ignored_keys is None:
+            ignored_keys = []
+        if isinstance(obj, dict):
+            items = obj.items()
+        else:
+            items = obj.iteritems()
+        return {k: v for k, v in items
+                if k not in ignored_keys}
+
+    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
+        obj1 = self._dict_from_object(obj1, ignored_keys)
+        obj2 = self._dict_from_object(obj2, ignored_keys)
+
+        self.assertEqual(
+            len(obj1), len(obj2),
+            "Keys mismatch: %s" % six.text_type(
+                set(obj1.keys()) ^ set(obj2.keys())))
+        for key, value in obj1.items():
+            self.assertEqual(value, obj2[key])
+
+
 class ServicesDbTestCase(base.TestCase):
     """Test cases for Services database table."""
 
@@ -395,8 +420,7 @@ class ScheduledOperationLogTestCase(base.TestCase):
         self.assertEqual('in_progress', log_ref['state'])
 
 
-class PlanDbTestCase(base.TestCase):
-
+class PlanDbTestCase(ModelBaseTestCase):
     """Unit tests for karbor.db.api.plan_*."""
 
     fake_plan = {
@@ -421,27 +445,6 @@ class PlanDbTestCase(base.TestCase):
             "name": "vm1"}],
         'parameters': '{OS::Nova::Server: {consistency: os}}'
     }
-
-    def _dict_from_object(self, obj, ignored_keys):
-        if ignored_keys is None:
-            ignored_keys = []
-        if isinstance(obj, dict):
-            items = obj.items()
-        else:
-            items = obj.iteritems()
-        return {k: v for k, v in items
-                if k not in ignored_keys}
-
-    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
-        obj1 = self._dict_from_object(obj1, ignored_keys)
-        obj2 = self._dict_from_object(obj2, ignored_keys)
-
-        self.assertEqual(
-            len(obj1), len(obj2),
-            "Keys mismatch: %s" % six.text_type(
-                set(obj1.keys()) ^ set(obj2.keys())))
-        for key, value in obj1.items():
-            self.assertEqual(value, obj2[key])
 
     def setUp(self):
         super(PlanDbTestCase, self).setUp()
@@ -489,8 +492,7 @@ class PlanDbTestCase(base.TestCase):
         self.assertEqual("vm2", db_meta[0]["resource_name"])
 
 
-class RestoreDbTestCase(base.TestCase):
-
+class RestoreDbTestCase(ModelBaseTestCase):
     """Unit tests for karbor.db.api.restore_*."""
 
     fake_restore = {
@@ -502,27 +504,6 @@ class RestoreDbTestCase(base.TestCase):
         "parameters": "{'username': 'admin'}",
         "status": "SUCCESS"
     }
-
-    def _dict_from_object(self, obj, ignored_keys):
-        if ignored_keys is None:
-            ignored_keys = []
-        if isinstance(obj, dict):
-            items = obj.items()
-        else:
-            items = obj.iteritems()
-        return {k: v for k, v in items
-                if k not in ignored_keys}
-
-    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
-        obj1 = self._dict_from_object(obj1, ignored_keys)
-        obj2 = self._dict_from_object(obj2, ignored_keys)
-
-        self.assertEqual(
-            len(obj1), len(obj2),
-            "Keys mismatch: %s" % six.text_type(
-                set(obj1.keys()) ^ set(obj2.keys())))
-        for key, value in obj1.items():
-            self.assertEqual(value, obj2[key])
 
     def setUp(self):
         super(RestoreDbTestCase, self).setUp()
@@ -557,8 +538,7 @@ class RestoreDbTestCase(base.TestCase):
                           self.ctxt, 42, {})
 
 
-class OperationLogTestCase(base.TestCase):
-
+class OperationLogTestCase(ModelBaseTestCase):
     """Unit tests for karbor.db.api.operation_log_*."""
 
     fake_operation_log = {
@@ -570,27 +550,6 @@ class OperationLogTestCase(base.TestCase):
         "entries": "[entries:{'timestamp': '2015-08-27T09:50:51-05:00',"
                    "'message': 'Doing things'}]"
     }
-
-    def _dict_from_object(self, obj, ignored_keys):
-        if ignored_keys is None:
-            ignored_keys = []
-        if isinstance(obj, dict):
-            items = obj.items()
-        else:
-            items = obj.iteritems()
-        return {k: v for k, v in items
-                if k not in ignored_keys}
-
-    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
-        obj1 = self._dict_from_object(obj1, ignored_keys)
-        obj2 = self._dict_from_object(obj2, ignored_keys)
-
-        self.assertEqual(
-            len(obj1), len(obj2),
-            "Keys mismatch: %s" % six.text_type(
-                set(obj1.keys()) ^ set(obj2.keys())))
-        for key, value in obj1.items():
-            self.assertEqual(value, obj2[key])
 
     def setUp(self):
         super(OperationLogTestCase, self).setUp()
@@ -629,8 +588,7 @@ class OperationLogTestCase(base.TestCase):
                           self.ctxt, 42, {})
 
 
-class CheckpointRecordTestCase(base.TestCase):
-
+class CheckpointRecordTestCase(ModelBaseTestCase):
     """Unit tests for karbor.db.api.checkpoint_record_*."""
 
     fake_checkpoint_record = {
@@ -648,27 +606,6 @@ class CheckpointRecordTestCase(base.TestCase):
                        "'name': 'vm1'"
                         "}]"
     }
-
-    def _dict_from_object(self, obj, ignored_keys):
-        if ignored_keys is None:
-            ignored_keys = []
-        if isinstance(obj, dict):
-            items = obj.items()
-        else:
-            items = obj.iteritems()
-        return {k: v for k, v in items
-                if k not in ignored_keys}
-
-    def _assertEqualObjects(self, obj1, obj2, ignored_keys=None):
-        obj1 = self._dict_from_object(obj1, ignored_keys)
-        obj2 = self._dict_from_object(obj2, ignored_keys)
-
-        self.assertEqual(
-            len(obj1), len(obj2),
-            "Keys mismatch: %s" % six.text_type(
-                set(obj1.keys()) ^ set(obj2.keys())))
-        for key, value in obj1.items():
-            self.assertEqual(value, obj2[key])
 
     def setUp(self):
         super(CheckpointRecordTestCase, self).setUp()
