@@ -70,16 +70,17 @@ class ProtectableRegistry(object):
         """Get the protectable plugin with the specified type."""
         return self._plugin_map.get(resource_type)
 
-    def list_resources(self, context, resource_type):
+    def list_resources(self, context, resource_type, parameters=None):
         """List resource instances of given type.
 
         :param resource_type: The resource type to list instance.
         :return: The list of resource instance.
         """
         protectable = self._get_protectable(context, resource_type)
-        return protectable.list_resources(context)
+        return protectable.list_resources(context, parameters=parameters)
 
-    def show_resource(self, context, resource_type, resource_id):
+    def show_resource(self, context, resource_type, resource_id,
+                      parameters=None):
         """List resource instances of given type.
 
         :param resource_type: The resource type of instance.
@@ -87,7 +88,8 @@ class ProtectableRegistry(object):
         :return: The show of resource instance.
         """
         protectable = self._get_protectable(context, resource_type)
-        return protectable.show_resource(context, resource_id)
+        return protectable.show_resource(context, resource_id,
+                                         parameters=parameters)
 
     def fetch_dependent_resources(self, context, resource):
         """List dependent resources under given parent resource.

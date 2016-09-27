@@ -44,7 +44,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return (constants.SERVER_RESOURCE_TYPE,
                 constants.PROJECT_RESOURCE_TYPE)
 
-    def list_resources(self, context):
+    def list_resources(self, context, parameters=None):
         try:
             volumes = self._client(context).volumes.list(detailed=False)
         except Exception as e:
@@ -58,7 +58,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=vol.id, name=vol.name)
                     for vol in volumes]
 
-    def show_resource(self, context, resource_id):
+    def show_resource(self, context, resource_id, parameters=None):
         try:
             volume = self._client(context).volumes.get(resource_id)
         except Exception as e:

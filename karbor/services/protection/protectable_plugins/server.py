@@ -43,7 +43,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
     def get_parent_resource_types(self):
         return (constants.PROJECT_RESOURCE_TYPE, )
 
-    def list_resources(self, context):
+    def list_resources(self, context, parameters=None):
         try:
             servers = self._client(context).servers.list(detailed=False)
         except Exception as e:
@@ -57,7 +57,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       name=server.name)
                     for server in servers]
 
-    def show_resource(self, context, resource_id):
+    def show_resource(self, context, resource_id, parameters=None):
         try:
             server = self._client(context).servers.get(resource_id)
         except Exception as e:

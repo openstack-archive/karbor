@@ -61,11 +61,11 @@ class API(base.Base):
 
     def list_protectable_instances(self, context, protectable_type,
                                    marker, limit, sort_keys,
-                                   sort_dirs, filters, offset):
+                                   sort_dirs, filters, offset, parameters):
         return self.protection_rpcapi.\
             list_protectable_instances(context, protectable_type,
                                        marker, limit, sort_keys,
-                                       sort_dirs, filters)
+                                       sort_dirs, filters, parameters)
 
     def list_protectable_dependents(self, context,
                                     protectable_id,
@@ -77,11 +77,13 @@ class API(base.Base):
 
     def show_protectable_instance(self, context,
                                   protectable_type,
-                                  protectable_id):
+                                  protectable_id,
+                                  parameters=None):
         return self.protection_rpcapi.\
             show_protectable_instance(context,
                                       protectable_type,
-                                      protectable_id)
+                                      protectable_id,
+                                      parameters=parameters)
 
     def show_provider(self, context, provider_id):
         return self.protection_rpcapi.\

@@ -105,7 +105,7 @@ class ProtectionAPI(object):
     def list_protectable_instances(
             self, ctxt, protectable_type=None,
             marker=None, limit=None, sort_keys=None,
-            sort_dirs=None, filters=None):
+            sort_dirs=None, filters=None, parameters=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
@@ -115,7 +115,8 @@ class ProtectionAPI(object):
             limit=limit,
             sort_keys=sort_keys,
             sort_dirs=sort_dirs,
-            filters=filters)
+            filters=filters,
+            parameters=parameters)
 
     def list_protectable_dependents(self,
                                     ctxt, protectable_id=None,
@@ -129,13 +130,15 @@ class ProtectionAPI(object):
 
     def show_protectable_instance(self,
                                   ctxt, protectable_type=None,
-                                  protectable_id=None):
+                                  protectable_id=None,
+                                  parameters=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
             'show_protectable_instance',
             protectable_type=protectable_type,
-            protectable_id=protectable_id)
+            protectable_id=protectable_id,
+            parameters=parameters)
 
     def show_provider(self,
                       ctxt, provider_id=None):
