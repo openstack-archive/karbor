@@ -60,7 +60,9 @@ class BaseProtectionPlugin(ProtectionPlugin):
                 requires = parameters.keys()
                 requires.append('checkpoint')
             elif operation == constants.OPERATION_RESTORE:
-                parameters.update(context.parameters)
+                parameters.update(context.parameters.get(resource.type, {}))
+                res_params = resource.type + '#' + str(resource.id)
+                parameters.update(context.parameters.get(res_params, {}))
                 parameters['checkpoint'] = context.checkpoint
                 parameters['heat_template'] = context.heat_template
                 inject = parameters
