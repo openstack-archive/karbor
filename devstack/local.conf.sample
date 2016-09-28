@@ -1,6 +1,5 @@
 [[local|localrc]]
 
-API_WORKERS=0
 DATABASE_PASSWORD=password
 RABBIT_PASSWORD=password
 SERVICE_PASSWORD=password
