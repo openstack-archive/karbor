@@ -174,9 +174,9 @@ class ProtectionManager(manager.Manager):
             raise exception.InvalidInput(
                 reason=_("Invalid checkpoint_id or provider_id"))
 
-        if checkpoint.status in [
+        if checkpoint.status not in [
+            constants.CHECKPOINT_STATUS_AVAILABLE,
             constants.CHECKPOINT_STATUS_ERROR,
-            constants.CHECKPOINT_STATUS_PROTECTING
         ]:
             raise exception.CheckpointNotBeDeleted(
                 checkpoint_id=checkpoint_id)
