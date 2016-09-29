@@ -129,8 +129,7 @@ class ProtectionManager(manager.Manager):
             raise exception.InvalidInput(
                 reason=_("Invalid checkpoint id"))
 
-        if checkpoint.status in [constants.CHECKPOINT_STATUS_ERROR,
-                                 constants.CHECKPOINT_STATUS_PROTECTING]:
+        if checkpoint.status != constants.CHECKPOINT_STATUS_AVAILABLE:
             raise exception.CheckpointNotAvailable(
                 checkpoint_id=checkpoint_id)
 
