@@ -59,19 +59,18 @@ class SyncCheckpointStatusTask(task.Task):
         sync_status.start(interval=CONF.sync_status_interval)
 
     def _sync_status(self, checkpoint, status_getters):
-        status = {}
+        statuses = set()
         for s in status_getters:
             resource_id = s.get('resource_id')
             get_resource_stats = s.get('get_resource_stats')
-            status[resource_id] = get_resource_stats(checkpoint,
-                                                     resource_id)
-        if constants.RESOURCE_STATUS_ERROR in status.values():
+            statuses.add(get_resource_stats(checkpoint, resource_id))
+        if constants.RESOURCE_STATUS_ERROR in statuses:
             checkpoint.status = constants.CHECKPOINT_STATUS_ERROR
             checkpoint.commit()
-        elif constants.RESOURCE_STATUS_PROTECTING in status.values():
+        elif constants.RESOURCE_STATUS_PROTECTING in statuses:
             checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
             checkpoint.commit()
-        elif constants.RESOURCE_STATUS_UNDEFINED in status.values():
+        elif constants.RESOURCE_STATUS_UNDEFINED in statuses:
             checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
             checkpoint.commit()
         else:

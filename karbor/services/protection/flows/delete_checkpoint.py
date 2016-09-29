@@ -43,23 +43,21 @@ class SyncCheckpointStatusTask(task.Task):
         sync_status.start(interval=CONF.sync_status_interval)
 
     def _sync_status(self, checkpoint, status_getters):
-        status = {}
+        statuses = set()
         for s in status_getters:
             resource_id = s.get('resource_id')
             get_resource_stats = s.get('get_resource_stats')
-            status[resource_id] = get_resource_stats(checkpoint,
-                                                     resource_id)
-        list_status = list(set(status.values()))
+            statuses.add(get_resource_stats(checkpoint, resource_id))
         LOG.info(_("Start sync checkpoint status,checkpoint_id:"
                    "%(checkpoint_id)s, resource_status:"
                    "%(resource_status)s") %
                  {"checkpoint_id": checkpoint.id,
-                  "resource_status": status})
-        if constants.RESOURCE_STATUS_ERROR in list_status:
+                  "resource_status": statuses})
+        if constants.RESOURCE_STATUS_ERROR in statuses:
             checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
             checkpoint.commit()
             raise loopingcall.LoopingCallDone()
-        elif [constants.RESOURCE_STATUS_DELETED] == list_status:
+        elif statuses == {constants.RESOURCE_STATUS_DELETED, }:
             checkpoint.delete()
             LOG.info(_("Stop sync checkpoint status,checkpoint_id:"
                        "%(checkpoint_id)s,checkpoint status:"
