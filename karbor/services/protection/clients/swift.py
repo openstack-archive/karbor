@@ -54,7 +54,6 @@ swift_client_opts = [
                help='The backoff time in seconds '
                     'between Swift retries'),
     cfg.StrOpt('swift_ca_cert_file',
-               default=None,
                help='Location of the CA certificate file '
                     'to use for swift client requests.'),
     cfg.BoolOpt('swift_auth_insecure',
