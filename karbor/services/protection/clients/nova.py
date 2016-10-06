@@ -29,6 +29,14 @@ nova_client_opts = [
                'catalog. Format is: separated values of the form: '
                '<service_type>:<service_name>:<endpoint_type> - '
                'Only used if nova_endpoint is unset'),
+    cfg.StrOpt(SERVICE + '_ca_cert_file',
+               default=None,
+               help='Location of the CA certificate file '
+                    'to use for client requests in SSL connections.'),
+    cfg.BoolOpt(SERVICE + '_auth_insecure',
+                default=True,
+                help='Bypass verification of server certificate when '
+                     'making SSL connection to Nova.'),
 ]
 
 cfg.CONF.register_opts(nova_client_opts, group=SERVICE + '_client')
@@ -53,6 +61,8 @@ def create(context, conf):
         'project_id': context.project_id,
         'auth_token': context.auth_token,
         'extensions': extensions,
+        'cacert': conf.nova_client.nova_ca_cert_file,
+        'insecure': conf.nova_client.nova_auth_insecure,
     }
 
     client = nc.Client(NOVACLIENT_VERSION, **args)

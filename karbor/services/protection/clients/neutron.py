@@ -28,6 +28,14 @@ neutron_client_opts = [
                'catalog. Format is: separated values of the form: '
                '<service_type>:<service_name>:<endpoint_type> - '
                'Only used if neutron_endpoint is unset'),
+    cfg.StrOpt(SERVICE + '_ca_cert_file',
+               default=None,
+               help='Location of the CA certificate file '
+                    'to use for client requests in SSL connections.'),
+    cfg.BoolOpt(SERVICE + '_auth_insecure',
+                default=True,
+                help='Bypass verification of server certificate when '
+                     'making SSL connection to Neutron.'),
 ]
 
 cfg.CONF.register_opts(neutron_client_opts, group=SERVICE + '_client')
@@ -46,6 +54,8 @@ def create(context, conf):
     args = {
         'endpoint_url': url,
         'token': context.auth_token,
+        'cacert': conf.neutron_client.neutron_ca_cert_file,
+        'insecure': conf.neutron_client.neutron_auth_insecure,
     }
 
     return neutron_client.Client(**args)

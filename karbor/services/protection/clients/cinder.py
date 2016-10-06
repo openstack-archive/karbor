@@ -28,6 +28,14 @@ cinder_client_opts = [
                'catalog. Format is: separated values of the form: '
                '<service_type>:<service_name>:<endpoint_type> - '
                'Only used if cinder_endpoint is unset'),
+    cfg.StrOpt(SERVICE + '_ca_cert_file',
+               default=None,
+               help='Location of the CA certificate file '
+                    'to use for client requests in SSL connections.'),
+    cfg.BoolOpt(SERVICE + '_auth_insecure',
+                default=True,
+                help='Bypass verification of server certificate when '
+                     'making SSL connection to Cinder.'),
 ]
 
 cfg.CONF.register_opts(cinder_client_opts, group=SERVICE + '_client')
@@ -48,6 +56,8 @@ def create(context, conf):
 
     args = {
         'project_id': context.project_id,
+        'cacert': conf.cinder_client.cinder_ca_cert_file,
+        'insecure': conf.cinder_client.cinder_auth_insecure,
     }
 
     client = cc.Client(CINDERCLIENT_VERSION, **args)
