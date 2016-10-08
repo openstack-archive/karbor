@@ -24,12 +24,13 @@ class UserTrustManager(object):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
-        if not UserTrustManager._instance:
-            UserTrustManager._instance = super(UserTrustManager, cls).__new__(
+        if not cls._instance:
+            cls._instance = super(UserTrustManager, cls).__new__(
                 cls, *args, **kwargs)
-        return UserTrustManager._instance
+            cls._instance._init()
+        return cls._instance
 
-    def __init__(self):
+    def _init(self):
         self._user_trust_map = {}
         self._skp = karbor_keystone_plugin.KarborKeystonePlugin()
 

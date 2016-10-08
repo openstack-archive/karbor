@@ -56,8 +56,11 @@ class UserTrustManagerTestCase(base.TestCase):
 
     @mock.patch.object(karbor_keystone_plugin.KarborKeystonePlugin, '_do_init')
     def test_singleton_user_trust_manager(self, do_init):
-        second = user_trust_manager.UserTrustManager()
-        self.assertTrue(id(self._manager) == id(second))
+        map_id = id(self._manager._user_trust_map)
+        new_manager = user_trust_manager.UserTrustManager()
+
+        self.assertEqual(id(self._manager), id(new_manager))
+        self.assertEqual(map_id, id(new_manager._user_trust_map))
 
     def test_add_operation(self):
         manager = self._manager
