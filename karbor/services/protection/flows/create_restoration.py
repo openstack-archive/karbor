@@ -16,6 +16,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
+from karbor.common import constants
 from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection.restore_heat import HeatTemplate
@@ -42,7 +43,7 @@ class CreateStackTask(task.Task):
 
     def execute(self):
         stack_name = "restore_%s" % str(uuid4())
-        LOG.info(_LI("creating stack, stack_name: %s"), stack_name)
+        LOG.info(_LI("creating stack, stack_name:%s"), stack_name)
         try:
             body = self._heat_client.stacks.create(
                 stack_name=stack_name,
@@ -54,11 +55,12 @@ class CreateStackTask(task.Task):
 
 
 class SyncStackStatusTask(task.Task):
-    def __init__(self, checkpoint, heat_client):
+    def __init__(self, checkpoint, heat_client, restore):
         requires = ['stack_id']
         super(SyncStackStatusTask, self).__init__(requires=requires)
         self._heat_client = heat_client
         self._checkpoint = checkpoint
+        self._restore = restore
 
     def execute(self, stack_id):
         LOG.info(_LI("syncing stack status, stack_id: %s"), stack_id)
@@ -73,6 +75,16 @@ class SyncStackStatusTask(task.Task):
             if stack_status == 'CREATE_IN_PROGRESS':
                 return
 
+            if stack_status == 'CREATE_FAILED':
+                status = constants.OPERATION_EXE_STATE_FAILED
+            elif stack_status == 'CREATE_COMPLETE':
+                status = constants.OPERATION_EXE_STATE_SUCCESS
+
+            status_dict = {
+                "status": status
+            }
+            self._restore.update(status_dict)
+            self._restore.save()
             raise loopingcall.LoopingCallDone()
         except Exception:
             LOG.info(_LI("stop sync stack status, stack_id: %s"), stack_id)
@@ -109,9 +121,11 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
     restoration_flow = workflow_engine.build_flow(flow_name, 'linear')
     result = provider.build_task_flow(ctx)
     resource_flow = result.get('task_flow')
-    workflow_engine.add_tasks(restoration_flow,
-                              resource_flow,
-                              CreateStackTask(heat_client, heat_template),
-                              SyncStackStatusTask(checkpoint, heat_client))
+    workflow_engine.add_tasks(
+        restoration_flow,
+        resource_flow,
+        CreateStackTask(heat_client, heat_template),
+        SyncStackStatusTask(checkpoint, heat_client, restore)
+    )
     flow_engine = workflow_engine.get_engine(restoration_flow)
     return flow_engine

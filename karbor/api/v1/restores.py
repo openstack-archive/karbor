@@ -269,21 +269,19 @@ class RestoresController(wsgi.Controller):
         LOG.debug('call restore RPC  : restoreobj:%s', restoreobj)
 
         # call restore rpc API of protection service
-        result = self.protection_api.restore(context, restoreobj, restore_auth)
-        if result is True:
-            status_update = constants.OPERATION_EXE_STATE_SUCCESS
-        else:
+        try:
+            self.protection_api.restore(context, restoreobj, restore_auth)
+        except Exception:
             status_update = constants.OPERATION_EXE_STATE_FAILED
-        # update the status of restore
-        update_dict = {
-            "status": status_update
-        }
+            # update the status of restore
+            update_dict = {
+                "status": status_update
+            }
+            check_policy(context, 'update', restoreobj)
+            restoreobj = self._restore_update(context,
+                                              restoreobj.get("id"),
+                                              update_dict)
 
-        check_policy(context, 'update', restoreobj)
-        self._restore_update(context,
-                             restoreobj.get("id"), update_dict)
-
-        restoreobj.update(update_dict)
         retval = self._view_builder.detail(req, restoreobj)
 
         return retval
@@ -313,6 +311,7 @@ class RestoresController(wsgi.Controller):
             restore.update(fields)
             restore.save()
             LOG.info(_LI("restore updated successfully."))
+            return restore
         else:
             msg = _("The parameter restore must be a object of "
                     "KarborObject class.")

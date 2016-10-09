@@ -150,7 +150,6 @@ class ProtectionManager(manager.Manager):
                 error=_("Failed to create flow"))
         try:
             self.worker.run_flow(restoration_flow)
-            return True
         except Exception:
             LOG.exception(
                 _LE("Failed to run restoration flow checkpoint: %s"),
