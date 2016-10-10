@@ -54,29 +54,6 @@ def find_config(config_path):
     raise exception.ConfigNotFound(path=os.path.abspath(config_path))
 
 
-def check_string_length(value, name, min_length=0, max_length=None):
-    """Check the length of specified string.
-
-    :param value: the value of the string
-    :param name: the name of the string
-    :param min_length: the min_length of the string
-    :param max_length: the max_length of the string
-    """
-    if not isinstance(value, six.string_types):
-        msg = _("%s is not a string or unicode") % name
-        raise exception.InvalidInput(message=msg)
-
-    if len(value) < min_length:
-        msg = _("%(name)s has a minimum character requirement of "
-                "%(min_length)s.") % {'name': name, 'min_length': min_length}
-        raise exception.InvalidInput(message=msg)
-
-    if max_length and len(value) > max_length:
-        msg = _("%(name)s has more than %(max_length)s "
-                "characters.") % {'name': name, 'max_length': max_length}
-        raise exception.InvalidInput(message=msg)
-
-
 def service_is_up(service):
     """Check whether a service is up based on last heartbeat."""
     last_heartbeat = service['updated_at'] or service['created_at']

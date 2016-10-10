@@ -17,13 +17,13 @@ import time
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
+from oslo_utils import strutils
 import six
 import webob
 
 from karbor import exception
 from karbor import i18n
 from karbor.i18n import _, _LE, _LI
-from karbor import utils
 from karbor.wsgi import common as wsgi
 
 
@@ -843,16 +843,16 @@ class Controller(object):
             if isinstance(name, six.string_types):
                 body['name'] = name.strip()
             try:
-                utils.check_string_length(body['name'], 'Name',
-                                          min_length=0, max_length=255)
+                strutils.check_string_length(body['name'], 'Name',
+                                             min_length=0, max_length=255)
             except exception.InvalidInput as error:
                 raise webob.exc.HTTPBadRequest(explanation=error.msg)
 
         description = body.get('description')
         if description is not None:
             try:
-                utils.check_string_length(description, 'Description',
-                                          min_length=0, max_length=255)
+                strutils.check_string_length(description, 'Description',
+                                             min_length=0, max_length=255)
             except exception.InvalidInput as error:
                 raise webob.exc.HTTPBadRequest(explanation=error.msg)
 
@@ -871,9 +871,9 @@ class Controller(object):
         if isinstance(value, six.string_types) and remove_whitespaces:
             value = value.strip()
         try:
-            utils.check_string_length(value, entity_name,
-                                      min_length=min_length,
-                                      max_length=max_length)
+            strutils.check_string_length(value, entity_name,
+                                         min_length=min_length,
+                                         max_length=max_length)
         except exception.InvalidInput as error:
             raise webob.exc.HTTPBadRequest(explanation=error.msg)
 
