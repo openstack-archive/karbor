@@ -203,8 +203,7 @@ class ProtectablesController(wsgi.Controller):
             protectable_id = instance.get("id")
             instance["type"] = protectable_type
             if protectable_id is None:
-                raise exception.InvalidProtectableInstance(
-                    protectable_id=protectable_id)
+                raise exception.InvalidProtectableInstance()
             dependents = self.protection_api.\
                 list_protectable_dependents(context, protectable_id,
                                             protectable_type)
@@ -266,8 +265,7 @@ class ProtectablesController(wsgi.Controller):
             show_protectable_instance(context, protectable_type,
                                       protectable_id)
         if instance is None:
-            raise exception.InvalidProtectableInstance(
-                protectable_id=instance.get('id'))
+            raise exception.InvalidProtectableInstance()
 
         dependents = self.protection_api.\
             list_protectable_dependents(context, protectable_id,

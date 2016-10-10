@@ -185,7 +185,7 @@ class InvalidContentType(Invalid):
 
 
 class InvalidProtectableInstance(Invalid):
-    message = _("Invalid protectable instance %(protectable_id)s.")
+    message = _("Invalid protectable instance.")
 
 
 class PasteAppNotFound(NotFound):
