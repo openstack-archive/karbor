@@ -77,6 +77,7 @@ class PlanViewBuilder(common.ViewBuilder):
             'plan': {
                 'id': plan.get('id'),
                 'name': plan.get('name'),
+                'description': plan.get('description'),
                 'resources': plan.get('resources'),
                 'provider_id': plan.get('provider_id'),
                 'status': plan.get('status'),
@@ -263,6 +264,7 @@ class PlansController(wsgi.Controller):
 
         plan_properties = {
             'name': plan.get('name', None),
+            'description': plan.get('description', None),
             'provider_id': plan.get('provider_id', None),
             'project_id': context.project_id,
             'status': constants.PLAN_STATUS_SUSPENDED,

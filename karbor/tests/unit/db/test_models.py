@@ -401,6 +401,7 @@ class PlanDbTestCase(base.TestCase):
 
     fake_plan = {
         'name': 'My 3 tier application',
+        'description': 'My 3 tier application protection plan',
         'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
         'status': 'suspended',
         'project_id': '39bb894794b741e982bd26144d2949f6',
@@ -410,6 +411,7 @@ class PlanDbTestCase(base.TestCase):
 
     fake_plan_with_resources = {
         'name': 'My 3 tier application',
+        'description': 'My 3 tier application protection plan',
         'provider_id': 'efc6a88b-9096-4bb6-8634-cda182a6e12a',
         'status': 'suspended',
         'project_id': '39bb894794b741e982bd26144d2949f6',

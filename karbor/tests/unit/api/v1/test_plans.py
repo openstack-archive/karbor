@@ -25,6 +25,7 @@ from karbor.tests.unit.api import fakes
 CONF = cfg.CONF
 
 DEFAULT_NAME = 'My 3 tier application'
+DEFAULT_DESCRIPTION = 'My 3 tier application protection plan'
 DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
 DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
 DEFAULT_RESOURCES = [{'id': 'key1',
@@ -57,6 +58,7 @@ class PlanApiTest(base.TestCase):
     def test_plan_create_InvalidProviderId(self):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
+            description=DEFAULT_DESCRIPTION,
             provider_id="",
             status=constants.PLAN_STATUS_SUSPENDED,
             project_id=DEFAULT_PROJECT_ID,
@@ -69,6 +71,7 @@ class PlanApiTest(base.TestCase):
     def test_plan_create_InvalidResources(self):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
+            description=DEFAULT_DESCRIPTION,
             provider_id=DEFAULT_PROVIDER_ID,
             status=constants.PLAN_STATUS_SUSPENDED,
             project_id=DEFAULT_PROJECT_ID,
@@ -110,6 +113,7 @@ class PlanApiTest(base.TestCase):
     def test_plan_update_InvalidResources(self):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
+            description=DEFAULT_DESCRIPTION,
             provider_id=DEFAULT_PROVIDER_ID,
             status=constants.PLAN_STATUS_SUSPENDED,
             project_id=DEFAULT_PROJECT_ID,
@@ -169,6 +173,7 @@ class PlanApiTest(base.TestCase):
             self, mock_plan_get, mock_check_policy):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
+            description=DEFAULT_DESCRIPTION,
             provider_id=DEFAULT_PROVIDER_ID,
             status=constants.PLAN_STATUS_STARTED,
             project_id=DEFAULT_PROJECT_ID,
@@ -182,6 +187,7 @@ class PlanApiTest(base.TestCase):
                           body)
 
     def _plan_in_request_body(self, name=DEFAULT_NAME,
+                              description=DEFAULT_DESCRIPTION,
                               provider_id=DEFAULT_PROVIDER_ID,
                               status=constants.PLAN_STATUS_SUSPENDED,
                               project_id=DEFAULT_PROJECT_ID,
@@ -189,6 +195,7 @@ class PlanApiTest(base.TestCase):
                               parameters=DEFAULT_PARAMETERS):
         plan_req = {
             'name': name,
+            'description': description,
             'provider_id': provider_id,
             'status': status,
             'project_id': project_id,
