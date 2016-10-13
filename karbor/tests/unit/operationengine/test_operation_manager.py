@@ -10,9 +10,28 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+
 from karbor import exception
 from karbor.services.operationengine import operation_manager
+from karbor.services.operationengine import operations
 from karbor.tests import base
+
+
+class FakeOperation(operations.base.Operation):
+    OPERATION_TYPE = 'fake'
+
+    @classmethod
+    def check_operation_definition(cls, operation_definition):
+        pass
+
+    @classmethod
+    def _execute(cls, operation_definition, param):
+        pass
+
+    @classmethod
+    def _resume(cls, operation_definition, param, log_ref):
+        pass
 
 
 class OperationManagerTestCase(base.TestCase):
@@ -20,6 +39,12 @@ class OperationManagerTestCase(base.TestCase):
 
     def setUp(self):
         super(OperationManagerTestCase, self).setUp()
+
+        mock_obj = mock.Mock()
+        mock_obj.return_value = [FakeOperation]
+        operations.all_operations = mock_obj
+
+        self._operation_type = FakeOperation.OPERATION_TYPE
         self.om = operation_manager.OperationManager()
 
     def test_singleton_operation_manager(self):
@@ -27,18 +52,25 @@ class OperationManagerTestCase(base.TestCase):
         self.assertTrue(self.om == second)
 
     def test_load_all_class(self):
-        self.assertIn("protect", self.om._operation_cls_map)
+        self.assertIn(self._operation_type, self.om._operation_cls_map)
+
+    @mock.patch.object(FakeOperation, 'check_operation_definition')
+    def test_check_operation_definition(self, check):
+        self.om.check_operation_definition(self._operation_type, {})
+        check.assert_called_once_with({})
+
+    @mock.patch.object(operations.base.Operation, 'run')
+    def test_run_operation(self, run):
+        self.om.run_operation(self._operation_type, {})
+        run.assert_called_once_with({})
 
     def test_invalid_operation_type(self):
-        bingo = 0
-        try:
-            self.om.check_operation_definition("123", {})
-        except exception.InvalidInput as ex:
-            bingo = 1 if ex.msg.find("operation type") >= 0 else 0
+        self.assertRaisesRegex(exception.InvalidInput,
+                               'Invalid operation type:',
+                               self.om.check_operation_definition,
+                               "123", {})
 
-        self.assertEqual(1, bingo)
-
-    def test_invalid_operation_definition(self):
-        self.assertRaises(exception.InvalidOperationDefinition,
-                          self.om.check_operation_definition,
-                          "protect", {})
+        self.assertRaisesRegex(exception.InvalidInput,
+                               'Invalid operation type:',
+                               self.om.run_operation,
+                               "123", {})
