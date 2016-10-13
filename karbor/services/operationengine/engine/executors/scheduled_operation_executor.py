@@ -46,8 +46,8 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                           expect_start_time, window_time, **kwargs):
 
         if self._check_operation(operation_id, self._CHECK_ITEMS.values()):
-            LOG.warn(_LW("Execute operation(%s), it can't be executed"),
-                     operation_id)
+            LOG.warning(_LW("Execute operation(%s), it can't be executed"),
+                        operation_id)
             return
 
         end_time_for_run = expect_start_time + timedelta(seconds=window_time)
