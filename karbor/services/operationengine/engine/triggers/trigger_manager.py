@@ -13,11 +13,20 @@
 """
 Manage all triggers.
 """
+from oslo_config import cfg
 from stevedore import driver as import_driver
 
 from karbor import exception
 from karbor.i18n import _
 from karbor.services.operationengine.engine import triggers as all_triggers
+
+trigger_manager_opts = [
+    cfg.StrOpt('executor',
+               default='thread_pool',
+               help='The name of executor which is used to run operations')
+]
+
+cfg.CONF.register_opts(trigger_manager_opts, 'operationengine')
 
 
 class TriggerManager(object):
@@ -37,7 +46,7 @@ class TriggerManager(object):
 
         executor_cls = import_driver.DriverManager(
             'karbor.operationengine.engine.executor',
-            'executor').driver
+            cfg.CONF.operationengine.executor).driver
         self._executor = executor_cls()
 
     def shutdown(self):
@@ -64,7 +73,7 @@ class TriggerManager(object):
 
     def add_trigger(self, trigger_id, trigger_type, trigger_property):
         if trigger_id in self._trigger_obj_map:
-            msg = (_("Trigger id  %s is exist") % trigger_id)
+            msg = (_("Trigger id(%s) is exist") % trigger_id)
             raise exception.InvalidInput(msg)
 
         trigger_cls = self._get_trigger_class(trigger_type)

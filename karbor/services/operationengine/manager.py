@@ -23,7 +23,7 @@ from karbor import context as karbor_context
 from karbor import exception
 from karbor import manager
 from karbor import objects
-from karbor.services.operationengine.engine import trigger_manager
+from karbor.services.operationengine.engine.triggers import trigger_manager
 from karbor.services.operationengine import user_trust_manager
 
 

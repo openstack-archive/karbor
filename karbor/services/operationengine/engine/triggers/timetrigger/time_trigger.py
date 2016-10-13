@@ -83,7 +83,8 @@ class TimeTrigger(triggers.BaseTrigger):
     TIME_FORMAT_MANAGER = time_format_manager.TimeFormatManager()
 
     def __init__(self, trigger_id, trigger_property, executor):
-        super(TimeTrigger, self).__init__(trigger_id, executor)
+        super(TimeTrigger, self).__init__(
+            trigger_id, trigger_property, executor)
 
         self._trigger_property = self.check_trigger_definition(
             trigger_property)
