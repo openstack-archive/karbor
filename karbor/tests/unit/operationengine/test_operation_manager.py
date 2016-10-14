@@ -51,6 +51,11 @@ class OperationManagerTestCase(base.TestCase):
         second = operation_manager.OperationManager()
         self.assertTrue(self.om == second)
 
+    @mock.patch.object(operations.base.Operation, 'init_configuration')
+    def test_do_init(self, init):
+        self.om.do_init()
+        init.assert_called_once()
+
     def test_load_all_class(self):
         self.assertIn(self._operation_type, self.om._operation_cls_map)
 

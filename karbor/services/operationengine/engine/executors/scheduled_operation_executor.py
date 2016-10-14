@@ -41,6 +41,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
     def __init__(self):
         super(ScheduledOperationExecutor, self).__init__()
         self._operation_manager = operation_manager.OperationManager()
+        self._operation_manager.do_init()
 
     def execute_operation(self, operation_id, triggered_time,
                           expect_start_time, window_time, **kwargs):

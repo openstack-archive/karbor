@@ -26,6 +26,8 @@ from karbor.common import constants
 from karbor import context
 from karbor.i18n import _LE
 from karbor import objects
+from karbor.services.operationengine import karbor_client
+from karbor.services.operationengine import user_trust_manager
 
 
 record_operation_log_executor_opts = [
@@ -45,6 +47,7 @@ LOG = logging.getLogger(__name__)
 class Operation(object):
 
     OPERATION_TYPE = ""
+    KARBOR_ENDPOINT = ""
 
     @classmethod
     @abc.abstractmethod
@@ -186,3 +189,21 @@ class Operation(object):
             return logs.objects
         except Exception:
             pass
+
+    @classmethod
+    def _create_karbor_client(cls, user_id, project_id):
+        token = user_trust_manager.UserTrustManager().get_token(
+            user_id, project_id)
+        if not token:
+            return None
+        ctx = context.get_admin_context()
+        ctx.auth_token = token
+        ctx.project_id = project_id
+
+        karbor_url = cls.KARBOR_ENDPOINT.replace("$(tenant_id)s", project_id)
+        return karbor_client.create(ctx, endpoint=karbor_url)
+
+    @classmethod
+    def init_configuration(cls):
+        if not cls.KARBOR_ENDPOINT:
+            cls.KARBOR_ENDPOINT = karbor_client.get_karbor_endpoint()

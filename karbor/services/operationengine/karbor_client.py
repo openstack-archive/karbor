@@ -11,6 +11,9 @@
 #    under the License.
 
 
-def client(user_id, project_id):
-    """Get karbor client"""
-    return None
+def get_karbor_endpoint():
+    pass
+
+
+def create(context, **kwargs):
+    pass

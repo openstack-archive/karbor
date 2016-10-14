@@ -10,15 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import uuidutils
 
 from karbor.common import constants
 from karbor import context
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
-from karbor.services.operationengine import karbor_client
 from karbor.services.operationengine.operations import base
-from oslo_utils import uuidutils
 
 
 class ProtectOperation(base.Operation):
@@ -54,8 +53,8 @@ class ProtectOperation(base.Operation):
 
     @classmethod
     def _run(cls, operation_definition, param, log_ref):
-        client = karbor_client.client(param.get("user_id"),
-                                      param.get("project_id"))
+        client = cls._create_karbor_client(
+            param.get("user_id"), param.get("project_id"))
         try:
             client.checkpoints.create(operation_definition.get("provider_id"),
                                       operation_definition.get("plan_id"))
