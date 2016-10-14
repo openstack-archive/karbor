@@ -22,7 +22,7 @@ from karbor.services.operationengine.engine import triggers as all_triggers
 
 trigger_manager_opts = [
     cfg.StrOpt('executor',
-               default='thread_pool',
+               default='green_thread',
                help='The name of executor which is used to run operations')
 ]
 
