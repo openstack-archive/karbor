@@ -43,7 +43,7 @@ class ProtectablePlugin(object):
         pass
 
     @abc.abstractmethod
-    def list_resources(self, context):
+    def list_resources(self, context, parameters=None):
         """List resource instances of type this plugin supported.
 
         :return: The list of resource instance.
@@ -51,7 +51,7 @@ class ProtectablePlugin(object):
         pass
 
     @abc.abstractmethod
-    def show_resource(self, context, resource_id):
+    def show_resource(self, context, resource_id, parameters=None):
         """Show resource detail information.
 
         """

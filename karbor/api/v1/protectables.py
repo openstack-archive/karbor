@@ -11,7 +11,6 @@
 #    under the License.
 
 """The protectables api."""
-
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -126,6 +125,7 @@ class ProtectablesController(wsgi.Controller):
         """Return data about the given protectable_type."""
         context = req.environ['karbor.context']
         protectable_type = id
+
         LOG.info(_LI("Show the information of a given"
                      " protectable type: %s"), protectable_type)
 
@@ -181,6 +181,13 @@ class ProtectablesController(wsgi.Controller):
         marker, limit, offset = common.get_pagination_params(params)
         sort_keys, sort_dirs = common.get_sort_params(params)
         filters = params
+        utils.check_filters(filters)
+        parameters = filters.get("parameters", None)
+
+        if parameters is not None:
+            if not isinstance(parameters, dict):
+                msg = _("The parameters must be a dict.")
+                raise exception.InvalidInput(reason=msg)
 
         utils.remove_invalid_filter_options(
             context,
@@ -193,11 +200,10 @@ class ProtectablesController(wsgi.Controller):
             msg = _("Invalid protectable type provided.")
             raise exception.InvalidInput(reason=msg)
 
-        utils.check_filters(filters)
         instances = self._instances_get_all(
             context, protectable_type, marker, limit,
             sort_keys=sort_keys, sort_dirs=sort_dirs,
-            filters=filters, offset=offset)
+            filters=filters, offset=offset, parameters=parameters)
 
         for instance in instances:
             protectable_id = instance.get("id")
@@ -215,7 +221,7 @@ class ProtectablesController(wsgi.Controller):
 
     def _instances_get_all(self, context, protectable_type, marker=None,
                            limit=None, sort_keys=None, sort_dirs=None,
-                           filters=None, offset=None):
+                           filters=None, offset=None, parameters=None):
         check_policy(context, 'get_all')
 
         if filters is None:
@@ -239,7 +245,8 @@ class ProtectablesController(wsgi.Controller):
             sort_keys=sort_keys,
             sort_dirs=sort_dirs,
             filters=filters,
-            offset=offset)
+            offset=offset,
+            parameters=parameters)
 
         LOG.info(_LI("Get all instances completed successfully."))
         return instances
@@ -252,8 +259,17 @@ class ProtectablesController(wsgi.Controller):
         """Return a instance about the given protectable_type and id."""
 
         context = req.environ['karbor.context']
+        params = req.params.copy()
+        utils.check_filters(params)
+        parameters = params.get("parameters", None)
+
         LOG.info(_LI("Show the instance of a given protectable"
                      " type: %s"), protectable_type)
+
+        if parameters is not None:
+            if not isinstance(parameters, dict):
+                msg = _("The parameters must be a dict.")
+                raise exception.InvalidInput(reason=msg)
 
         protectable_types = self._get_all(context)
 
@@ -263,7 +279,7 @@ class ProtectablesController(wsgi.Controller):
 
         instance = self.protection_api.\
             show_protectable_instance(context, protectable_type,
-                                      protectable_id)
+                                      protectable_id, parameters=parameters)
         if instance is None:
             raise exception.InvalidProtectableInstance()
 

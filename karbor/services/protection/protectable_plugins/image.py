@@ -43,7 +43,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return (constants.SERVER_RESOURCE_TYPE,
                 constants.PROJECT_RESOURCE_TYPE,)
 
-    def list_resources(self, context):
+    def list_resources(self, context, parameters=None):
         try:
             images = self._glance_client(context).images.list()
         except Exception as e:
@@ -98,7 +98,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                     for image in images
                     if image.owner == parent_resource.id]
 
-    def show_resource(self, context, resource_id):
+    def show_resource(self, context, resource_id, parameters=None):
         try:
             image = self._glance_client(context).images.get(resource_id)
         except Exception as e:

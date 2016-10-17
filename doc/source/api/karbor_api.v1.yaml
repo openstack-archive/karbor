@@ -765,6 +765,7 @@ paths:
         - $ref: '#/parameters/sortParam'
         - $ref: '#/parameters/limitParam'
         - $ref: '#/parameters/markerParam'
+        - $ref: '#/parameters/parametersParam'
       tags:
         - Protectable
         - Resource
@@ -811,6 +812,7 @@ paths:
         - $ref: '#/parameters/projectParam'
         - $ref: '#/parameters/protectable_typeParam'
         - $ref: '#/parameters/resource_idParam'
+        - $ref: '#/parameters/parametersParam'
       tags:
         - Protectable
         - Resource
@@ -1893,6 +1895,12 @@ parameters:
       response as the marker parameter value in a subsequent limited request.
     type: string
 
+  parametersParam:
+    name: parameters
+    in: query
+    description: |
+      The parameters field for protectable instances query.
+    type: string
   provider_idParam:
     name: provider_id
     in: path

@@ -28,7 +28,7 @@ class ProjectProtectablePlugin(protectable_plugin.ProtectablePlugin):
     def get_parent_resource_types(self):
         return ()
 
-    def list_resources(self, context):
+    def list_resources(self, context, parameters=None):
         # TODO(yuvalbr) handle admin context for multiple projects?
         return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                   id=context.project_id,
@@ -37,7 +37,7 @@ class ProjectProtectablePlugin(protectable_plugin.ProtectablePlugin):
     def get_dependent_resources(self, context, parent_resource):
         pass
 
-    def show_resource(self, context, resource_id):
+    def show_resource(self, context, resource_id, parameters=None):
         # TODO(yinwei) get project name through keystone client
         return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                  id=resource_id,

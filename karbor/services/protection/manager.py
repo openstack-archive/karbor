@@ -284,14 +284,15 @@ class ProtectionManager(manager.Manager):
                                    limit=None,
                                    sort_keys=None,
                                    sort_dirs=None,
-                                   filters=None):
+                                   filters=None,
+                                   parameters=None):
 
         LOG.info(_LI("Start to list protectable instances of type: %s"),
                  protectable_type)
 
         try:
             resource_instances = self.protectable_registry.list_resources(
-                context, protectable_type)
+                context, protectable_type, parameters)
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("List resources of type %(type)s failed: %(err)s"),
                       {'type': protectable_type,
@@ -306,7 +307,7 @@ class ProtectionManager(manager.Manager):
 
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def show_protectable_instance(self, context, protectable_type,
-                                  protectable_id):
+                                  protectable_id, parameters=None):
         LOG.info(_LI("Start to show protectable instance of type: %s"),
                  protectable_type)
 
@@ -314,7 +315,8 @@ class ProtectionManager(manager.Manager):
             resource_instance = \
                 self.protectable_registry.show_resource(context,
                                                         protectable_type,
-                                                        protectable_id)
+                                                        protectable_id,
+                                                        parameters=parameters)
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("Show resources of type %(type)s id %(id)s "
                           "failed: %(err)s"),
