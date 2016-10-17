@@ -24,12 +24,12 @@ function create_karbor_accounts {
 
     if is_service_enabled karbor-api; then
 
-        create_service_user "karbor" "admin"
+        create_service_user "$KARBOR_SERVICE_NAME" "admin"
 
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
 
-            get_or_create_service "karbor" "data-protect" "Application Data Protection Service"
-            get_or_create_endpoint "data-protect" "$REGION_NAME" \
+            get_or_create_service "$KARBOR_SERVICE_NAME" "$KARBOR_SERVICE_TYPE" "Application Data Protection Service"
+            get_or_create_endpoint "$KARBOR_SERVICE_TYPE" "$REGION_NAME" \
                 "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
                 "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
                 "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s"
@@ -72,6 +72,11 @@ function configure_karbor_api {
 
             # Configure for clients_keystone
             iniset $KARBOR_API_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
+
+            # Config karbor client
+            iniset $KARBOR_API_CONF karbor_client service_name $KARBOR_SERVICE_NAME
+            iniset $KARBOR_API_CONF karbor_client service_type $KARBOR_SERVICE_TYPE
+            iniset $KARBOR_API_CONF karbor_client version 1
 
         else
             iniset $KARBOR_API_CONF DEFAULT auth_strategy noauth

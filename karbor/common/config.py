@@ -76,6 +76,32 @@ global_opts = [
 CONF.register_opts(global_opts)
 
 
+service_client_opts = [
+    cfg.StrOpt('service_name',
+               help='The name of service registered in Keystone'),
+
+    cfg.StrOpt('service_type',
+               help='The type of service registered in Keystone'),
+
+    cfg.StrOpt('version',
+               help='The version of service client'),
+
+    cfg.StrOpt('region_id',
+               default='RegionOne',
+               help='The region id which the service belongs to.'),
+
+    cfg.StrOpt('ca_cert_file',
+               default=None,
+               help='Location of the CA certificate file '
+                    'to use for client requests in SSL connections.'),
+
+    cfg.BoolOpt('auth_insecure',
+                default=False,
+                help='Bypass verification of server certificate when '
+                     'making SSL connection to service.')
+]
+
+
 keystone_client_opts = [
     cfg.StrOpt('auth_uri',
                default='',
