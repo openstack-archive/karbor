@@ -16,7 +16,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
-from karbor.i18n import _, _LE
+from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection.restore_heat import HeatTemplate
 from taskflow import task
@@ -42,7 +42,7 @@ class CreateStackTask(task.Task):
 
     def execute(self):
         stack_name = "restore_%s" % str(uuid4())
-        LOG.info(_("creating stack, stack_name:%s"), stack_name)
+        LOG.info(_LI("creating stack, stack_name: %s"), stack_name)
         try:
             body = self._heat_client.stacks.create(
                 stack_name=stack_name,
@@ -61,7 +61,7 @@ class SyncStackStatusTask(task.Task):
         self._checkpoint = checkpoint
 
     def execute(self, stack_id):
-        LOG.info(_("syncing stack status, stack_id:%s"), stack_id)
+        LOG.info(_LI("syncing stack status, stack_id: %s"), stack_id)
         sync_status_loop = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, self._checkpoint, stack_id)
         sync_status_loop.start(interval=CONF.sync_status_interval)
@@ -75,7 +75,7 @@ class SyncStackStatusTask(task.Task):
 
             raise loopingcall.LoopingCallDone()
         except Exception:
-            LOG.info(_("stop sync stack status, stack_id:%s"), stack_id)
+            LOG.info(_LI("stop sync stack status, stack_id: %s"), stack_id)
             raise
 
 

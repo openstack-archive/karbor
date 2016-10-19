@@ -114,8 +114,8 @@ def load_plugin(namespace, plugin_name, *args, **kwargs):
         try:
             plugin_class = importutils.import_class(plugin_name)
         except ImportError as e2:
-            LOG.exception(_LE("Error loading plugin by name, %s"), e1)
-            LOG.exception(_LE("Error loading plugin by class, %s"), e2)
+            LOG.error(_LE("Error loading plugin by name, %s"), e1)
+            LOG.error(_LE("Error loading plugin by class, %s"), e2)
             raise ImportError(_("Class not found."))
     return plugin_class(*args, **kwargs)
 

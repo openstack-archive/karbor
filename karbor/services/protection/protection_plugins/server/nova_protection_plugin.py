@@ -18,7 +18,7 @@ from uuid import uuid4
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection.protection_plugins.base_protection_plugin \
     import BaseProtectionPlugin
@@ -93,7 +93,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
         child_nodes = resource_node.child_nodes
         attach_metadata = {}
 
-        LOG.info(_("creating server backup, server_id: %s."), server_id)
+        LOG.info(_LI("creating server backup, server_id: %s."), server_id)
 
         try:
             bank_section.create_object("status",
@@ -266,7 +266,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
             # update resource_definition backup_status
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_AVAILABLE)
-            LOG.info(_("finish backup server, server_id: %s."), server_id)
+            LOG.info(_LI("finish backup server, server_id: %s."), server_id)
         except Exception as err:
             LOG.error(_LE("create backup failed, server_id: %s."), server_id)
             bank_section.update_object("status",
@@ -284,7 +284,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
 
         restore_name = kwargs.get("restore_name", "karbor-restore-server")
 
-        LOG.info(_("restoring server backup, server_id: %s."),
+        LOG.info(_LI("restoring server backup, server_id: %s."),
                  original_server_id)
 
         bank_section = checkpoint.get_resource_bank_section(original_server_id)
@@ -465,7 +465,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
         resource_id = resource_node.value.id
         bank_section = checkpoint.get_resource_bank_section(resource_id)
 
-        LOG.info(_("deleting server backup, server_id: %s."), resource_id)
+        LOG.info(_LI("deleting server backup, server_id: %s."), resource_id)
 
         try:
             bank_section.update_object("status",

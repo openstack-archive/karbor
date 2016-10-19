@@ -11,7 +11,7 @@
 #    under the License.
 
 from karbor.common import constants
-from karbor.i18n import _, _LE
+from karbor.i18n import _, _LE, _LI
 from karbor.services.protection.graph import GraphWalkerListener
 from oslo_log import log as logging
 
@@ -66,7 +66,7 @@ class ResourceGraphWalkerListener(GraphWalkerListener):
     def on_node_enter(self, node, already_visited):
         resource = node.value
         resource_type = resource.type
-        LOG.info(_("on_node_enter, node resource_type:%s"), resource_type)
+        LOG.info(_LI("on_node_enter, node resource_type: %s"), resource_type)
         protection_plugin = self._get_protection_plugin(resource_type)
 
         # get node context
@@ -87,7 +87,7 @@ class ResourceGraphWalkerListener(GraphWalkerListener):
     def on_node_exit(self, node):
         resource = node.value
         resource_type = resource.type
-        LOG.info(_("on_node_exit, node resource_type:%s"), resource_type)
+        LOG.info(_LI("on_node_exit, node resource_type: %s"), resource_type)
         protection_plugin = self._get_protection_plugin(resource_type)
 
         # get node context
