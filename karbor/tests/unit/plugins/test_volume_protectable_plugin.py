@@ -24,7 +24,8 @@ from karbor.tests import base
 from oslo_config import cfg
 
 project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
-vol_info = namedtuple('vol_info', ['id', 'attachments', 'name', 'status'])
+vol_info = namedtuple('vol_info', ['id', 'attachments', 'name', 'status',
+                                   'availability_zone'])
 
 
 class VolumeProtectablePluginTest(base.TestCase):
@@ -69,23 +70,27 @@ class VolumeProtectablePluginTest(base.TestCase):
     @mock.patch.object(volumes.VolumeManager, 'list')
     def test_list_resources(self, mock_volume_list):
         plugin = VolumeProtectablePlugin(self._context)
-
         mock_volume_list.return_value = [
-            vol_info('123', [], 'name123', 'available'),
-            vol_info('456', [], 'name456', 'available'),
+            vol_info('123', [], 'name123', 'available', 'az1'),
+            vol_info('456', [], 'name456', 'available', 'az1'),
         ]
-        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123'),
-                          Resource('OS::Cinder::Volume', '456', 'name456')],
+        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123',
+                                   {'availability_zone': 'az1'}),
+                          Resource('OS::Cinder::Volume', '456', 'name456',
+                                   {'availability_zone': 'az1'})],
                          plugin.list_resources(self._context))
 
     @mock.patch.object(volumes.VolumeManager, 'get')
     def test_show_resource(self, mock_volume_get):
         plugin = VolumeProtectablePlugin(self._context)
 
-        vol_info = namedtuple('vol_info', ['id', 'name', 'status'])
+        vol_info = namedtuple('vol_info', ['id', 'name', 'status',
+                              'availability_zone'])
         mock_volume_get.return_value = vol_info(id='123', name='name123',
-                                                status='available')
-        self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123'),
+                                                status='available',
+                                                availability_zone='az1')
+        self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123',
+                                  {'availability_zone': 'az1'}),
                          plugin.show_resource(self._context, "123"))
 
     @mock.patch.object(volumes.VolumeManager, 'list')
@@ -94,13 +99,15 @@ class VolumeProtectablePluginTest(base.TestCase):
 
         attached = [{'server_id': 'abcdef', 'name': 'name'}]
         mock_volume_list.return_value = [
-            vol_info('123', attached, 'name123', 'available'),
-            vol_info('456', [], 'name456', 'available'),
+            vol_info('123', attached, 'name123', 'available', 'az1'),
+            vol_info('456', [], 'name456', 'available', 'az1'),
         ]
-        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123')],
+        self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123',
+                                   {'availability_zone': 'az1'})],
                          plugin.get_dependent_resources(
                              self._context,
-                             Resource("OS::Nova::Server", 'abcdef', 'name')))
+                             Resource("OS::Nova::Server", 'abcdef', 'name',
+                                      {'availability_zone': 'az1'})))
 
     @mock.patch.object(volumes.VolumeManager, 'list')
     def test_get_project_dependent_resources(self, mock_volume_list):
@@ -109,8 +116,8 @@ class VolumeProtectablePluginTest(base.TestCase):
         plugin = VolumeProtectablePlugin(self._context)
 
         volumes = [
-            mock.Mock(name='Volume', id='123'),
-            mock.Mock(name='Volume', id='456'),
+            mock.Mock(name='Volume', id='123', availability_zone='az1'),
+            mock.Mock(name='Volume', id='456', availability_zone='az1'),
         ]
         setattr(volumes[0], 'os-vol-tenant-attr:tenant_id', 'abcd')
         setattr(volumes[1], 'os-vol-tenant-attr:tenant_id', 'efgh')
@@ -120,4 +127,5 @@ class VolumeProtectablePluginTest(base.TestCase):
         mock_volume_list.return_value = volumes
         self.assertEqual(
             plugin.get_dependent_resources(self._context, project),
-            [Resource('OS::Cinder::Volume', '123', 'name123')])
+            [Resource('OS::Cinder::Volume', '123', 'name123',
+                      {'availability_zone': 'az1'})])

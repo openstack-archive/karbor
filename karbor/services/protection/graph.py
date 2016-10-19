@@ -228,6 +228,7 @@ def deserialize_resource_graph(serialized_resource_graph):
     for sid, node in packed_resource_graph.nodes.items():
         packed_resource_graph.nodes[sid] = Resource(type=node[0],
                                                     id=node[1],
-                                                    name=node[2])
+                                                    name=node[2],
+                                                    extra_info=node[3])
     resource_graph = unpack_graph(packed_resource_graph)
     return resource_graph

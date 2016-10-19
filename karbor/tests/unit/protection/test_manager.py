@@ -82,7 +82,8 @@ class ProtectionServiceTest(base.TestCase):
         result = self.pro_manager.show_protectable_instance(
             fake_cntx, 'OS::Nova::Server', '123456')
         self.assertEqual(
-            {'id': '123456', 'name': 'name123', 'type': 'OS::Nova::Server'},
+            {'id': '123456', 'name': 'name123', 'type': 'OS::Nova::Server',
+             'extra_info': None},
             result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
@@ -98,8 +99,10 @@ class ProtectionServiceTest(base.TestCase):
 
         result = self.pro_manager.list_protectable_instances(
             fake_cntx, 'OS::Nova::Server')
-        self.assertEqual([{'id': '123456', 'name': 'name123'},
-                          {'id': '654321', 'name': 'name654'}],
+        self.assertEqual([{'id': '123456', 'name': 'name123',
+                           'extra_info': None},
+                          {'id': '654321', 'name': 'name654',
+                           'extra_info': None}],
                          result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
@@ -114,9 +117,9 @@ class ProtectionServiceTest(base.TestCase):
         result = self.pro_manager.list_protectable_dependents(
             fake_cntx, 'fake_id', 'OS::Nova::Server')
         self.assertEqual([{'type': 'OS::Cinder::Volume', 'id': '123456',
-                           'name': 'name123'},
+                           'name': 'name123', 'extra_info': None},
                           {'type': 'OS::Cinder::Volume', 'id': '654321',
-                           'name': 'name654'}],
+                           'name': 'name654', 'extra_info': None}],
                          result)
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
