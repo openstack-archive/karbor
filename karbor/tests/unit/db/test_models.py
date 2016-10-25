@@ -483,13 +483,16 @@ class PlanDbTestCase(ModelBaseTestCase):
         resources2 = [{
             "id": "61e51e85-4f31-441f-9a5d-6e93e3194444",
             "type": "OS::Cinder::Volume",
-            "name": "vm2"}]
+            "name": "vm2",
+            "extra_info": "{'availability_zone': 'az1'}"}]
 
         plan = db.plan_create(self.ctxt, self.fake_plan)
         db_meta = db.plan_resources_update(self.ctxt, plan["id"], resources2)
 
         self.assertEqual("OS::Cinder::Volume", db_meta[0]["resource_type"])
         self.assertEqual("vm2", db_meta[0]["resource_name"])
+        self.assertEqual("{'availability_zone': 'az1'}",
+                         db_meta[0]["resource_extra_info"])
 
 
 class RestoreDbTestCase(ModelBaseTestCase):

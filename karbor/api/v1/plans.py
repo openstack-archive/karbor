@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -75,12 +76,25 @@ class PlanViewBuilder(common.ViewBuilder):
 
     def detail(self, request, plan):
         """Detailed view of a single plan."""
+
+        resources = plan.get('resources')
+        resources_list = []
+        for resource in resources:
+            resource_dict = {}
+            resource_dict['id'] = resource.pop('id')
+            resource_dict['name'] = resource.pop('name')
+            resource_dict['type'] = resource.pop('type')
+            extra_info = resource.pop('extra_info', None)
+            if extra_info:
+                resource_dict['extra_info'] = jsonutils.loads(
+                    extra_info)
+            resources_list.append(resource_dict)
         plan_ref = {
             'plan': {
                 'id': plan.get('id'),
                 'name': plan.get('name'),
                 'description': plan.get('description'),
-                'resources': plan.get('resources'),
+                'resources': resources_list,
                 'provider_id': plan.get('provider_id'),
                 'status': plan.get('status'),
                 'parameters': plan.get('parameters'),
@@ -264,13 +278,20 @@ class PlansController(wsgi.Controller):
         self.validate_name_and_description(plan)
         self.validate_plan_resources(plan)
 
+        resources = plan.get('resources', None)
+        if resources:
+            for resource in resources:
+                extra_info = resource.get('extra_info', None)
+                if extra_info is not None:
+                    resource['extra_info'] = jsonutils.dumps(extra_info)
+
         plan_properties = {
             'name': plan.get('name', None),
             'description': plan.get('description', None),
             'provider_id': plan.get('provider_id', None),
             'project_id': context.project_id,
             'status': constants.PLAN_STATUS_SUSPENDED,
-            'resources': plan.get('resources', None),
+            'resources': resources,
             'parameters': parameters,
         }
 
@@ -315,6 +336,13 @@ class PlansController(wsgi.Controller):
         self.validate_name_and_description(update_dict)
         if update_dict.get("resources"):
             self.validate_plan_resources(update_dict)
+
+        resources = update_dict.get('resources', None)
+        if resources:
+            for resource in resources:
+                extra_info = resource.get('extra_info', None)
+                if extra_info is not None:
+                    resource['extra_info'] = jsonutils.dumps(extra_info)
 
         try:
             plan = self._plan_get(context, id)
@@ -365,7 +393,7 @@ class PlansController(wsgi.Controller):
         resources_list = plan["resources"]
         if (isinstance(resources_list, list)) and (len(resources_list) > 0):
             for resource in resources_list:
-                if (isinstance(resource, dict) and (len(resource) == 3) and
+                if (isinstance(resource, dict) and (len(resource) >= 3) and
                         {"id", "type", 'name'}.issubset(resource)):
                     pass
                 else:

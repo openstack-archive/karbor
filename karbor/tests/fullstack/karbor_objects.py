@@ -313,6 +313,7 @@ class Volume(object):
             "id": self.id,
             "type": constants.VOLUME_RESOURCE_TYPE,
             "name": self._name,
+            "extra_info": {'availability_zone': 'az1'},
         }
 
     def create(self, size, name=None, timeout=LONG_TIMEOUT):
