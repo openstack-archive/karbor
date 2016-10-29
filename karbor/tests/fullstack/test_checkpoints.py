@@ -71,7 +71,7 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
         before_num = len(checkpoints)
 
-        checkpoint = objects.Checkpoint()
+        checkpoint = self.store(objects.Checkpoint())
         checkpoint.create(self.provider_id, plan.id)
 
         checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
@@ -84,7 +84,7 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         plan = self.store(objects.Plan())
         plan.create(self.provider_id, [volume, ])
 
-        checkpoint = objects.Checkpoint()
+        checkpoint = self.store(objects.Checkpoint())
         checkpoint.create(self.provider_id, plan.id)
 
         # sanity
