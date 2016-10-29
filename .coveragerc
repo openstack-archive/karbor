@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = karbor
-omit = karbor/tests/*,karbor/openstack/*
+omit = karbor/tests/*
 
 [report]
 ignore_errors = True
