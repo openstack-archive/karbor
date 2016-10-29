@@ -36,6 +36,8 @@ CONF = cfg.CONF
 # user_domain_id = default
 TRUSTEE_CONF_GROUP = 'trustee'
 loading.register_auth_conf_options(CONF, TRUSTEE_CONF_GROUP)
+CONF.import_group('keystone_authtoken',
+                  'keystonemiddleware.auth_token.__init__')
 
 
 class KarborKeystonePlugin(object):
@@ -122,7 +124,11 @@ class KarborKeystonePlugin(object):
 
     def create_trust_session(self, trust_id):
         auth_plugin = self._get_karbor_auth_plugin(trust_id)
-        return keystone_session.Session(auth=auth_plugin)
+        cafile = cfg.CONF.keystone_authtoken.cafile
+        return keystone_session.Session(
+            auth=auth_plugin, cert=cafile, verify=False if
+            CONF.keystone_authtoken.insecure else
+            (CONF.keystone_authtoken.cafile or True))
 
     def _get_service_user(self, user_name, user_domain_id):
         try:
@@ -149,9 +155,13 @@ class KarborKeystonePlugin(object):
         return auth_plugin
 
     def _get_keystone_client(self, auth_plugin):
+        cafile = cfg.CONF.keystone_authtoken.cafile
         try:
-            l_session = keystone_session.Session(auth=auth_plugin)
+            l_session = keystone_session.Session(
+                auth=auth_plugin, cert=cafile, verify=False if
+                CONF.keystone_authtoken.insecure else
+                (CONF.keystone_authtoken.cafile or True))
             return kc_v3.Client(session=l_session)
         except Exception:
-            msg = 'create keystone client failed'
+            msg = ('create keystone client failed.cafile:(%s)' % cafile)
             raise exception.AuthorizationFailure(obj=msg)
