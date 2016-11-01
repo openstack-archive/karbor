@@ -1,8 +1,0 @@
-include AUTHORS
-include ChangeLog
-recursive-include karbor *.cfg
-
-exclude .gitignore
-exclude .gitreview
-
-global-exclude *.pyc
