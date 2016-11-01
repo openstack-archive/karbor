@@ -21,7 +21,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
     restore_auth = {
         "type": "password",
         "username": "admin",
-        "password": "secretadmin",
+        "password": "password",
     }
 
     def setUp(self):
