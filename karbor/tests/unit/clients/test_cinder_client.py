@@ -21,9 +21,9 @@ class CinderClientTest(base.TestCase):
     def setUp(self):
         super(CinderClientTest, self).setUp()
         service_catalog = [
-            {'type': 'volumev2',
-             'name': 'cinderv2',
-             'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v2/abcd'}],
+            {'type': 'volumev3',
+             'name': 'cinderv3',
+             'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v3/abcd'}],
              },
         ]
         self._context = RequestContext(user_id='admin',
@@ -33,15 +33,15 @@ class CinderClientTest(base.TestCase):
 
     def test_create_client_by_endpoint(self):
         cfg.CONF.set_default('cinder_endpoint',
-                             'http://127.0.0.1:8776/v2',
+                             'http://127.0.0.1:8776/v3',
                              'cinder_client')
         client = cinder.create(self._context, cfg.CONF)
-        self.assertEqual('volumev2', client.client.service_type)
-        self.assertEqual('http://127.0.0.1:8776/v2/abcd',
+        self.assertEqual('volumev3', client.client.service_type)
+        self.assertEqual('http://127.0.0.1:8776/v3/abcd',
                          client.client.management_url)
 
     def test_create_client_by_catalog(self):
         client = cinder.create(self._context, cfg.CONF)
-        self.assertEqual('volumev2', client.client.service_type)
-        self.assertEqual('http://127.0.0.1:8776/v2/abcd',
+        self.assertEqual('volumev3', client.client.service_type)
+        self.assertEqual('http://127.0.0.1:8776/v3/abcd',
                          client.client.management_url)

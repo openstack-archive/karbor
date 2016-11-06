@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cinderclient.v2 import volumes
+from cinderclient.v3 import volumes
 from collections import namedtuple
 import mock
 
@@ -31,8 +31,8 @@ class VolumeProtectablePluginTest(base.TestCase):
     def setUp(self):
         super(VolumeProtectablePluginTest, self).setUp()
         service_catalog = [
-            {'type': 'volumev2',
-             'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v2/abcd'}],
+            {'type': 'volumev3',
+             'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v3/abcd'}],
              },
         ]
         self._context = RequestContext(user_id='admin',
@@ -42,19 +42,19 @@ class VolumeProtectablePluginTest(base.TestCase):
 
     def test_create_client_by_endpoint(self):
         cfg.CONF.set_default('cinder_endpoint',
-                             'http://127.0.0.1:8776/v2',
+                             'http://127.0.0.1:8776/v3',
                              'cinder_client')
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertEqual('volumev2',
+        self.assertEqual('volumev3',
                          plugin._client(self._context).client.service_type)
-        self.assertEqual('http://127.0.0.1:8776/v2/abcd',
+        self.assertEqual('http://127.0.0.1:8776/v3/abcd',
                          plugin._client(self._context).client.management_url)
 
     def test_create_client_by_catalog(self):
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertEqual('volumev2',
+        self.assertEqual('volumev3',
                          plugin._client(self._context).client.service_type)
-        self.assertEqual('http://127.0.0.1:8776/v2/abcd',
+        self.assertEqual('http://127.0.0.1:8776/v3/abcd',
                          plugin._client(self._context).client.management_url)
 
     def test_get_resource_type(self):
