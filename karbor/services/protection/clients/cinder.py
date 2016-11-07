@@ -23,7 +23,7 @@ cinder_client_opts = [
     cfg.StrOpt(SERVICE + '_endpoint',
                help='URL of the cinder endpoint.'),
     cfg.StrOpt(SERVICE + '_catalog_info',
-               default='volumev2:cinderv2:publicURL',
+               default='volumev3:cinderv3:publicURL',
                help='Info to match when looking for cinder in the service '
                'catalog. Format is: separated values of the form: '
                '<service_type>:<service_name>:<endpoint_type> - '
@@ -40,7 +40,7 @@ cinder_client_opts = [
 
 cfg.CONF.register_opts(cinder_client_opts, group=SERVICE + '_client')
 
-CINDERCLIENT_VERSION = '2'
+CINDERCLIENT_VERSION = '3'
 
 
 def create(context, conf):

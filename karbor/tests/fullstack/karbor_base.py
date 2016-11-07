@@ -66,10 +66,10 @@ def _get_karbor_client_from_creds():
 def _get_cinder_client_from_creds():
     api_version = ""
     cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client("volumev2")
+    keystone_session = cloud_config.get_session_client("volumev3")
     keystone_auth = cloud_config.get_auth()
     region_name = cloud_config.get_region_name()
-    service_type = "volumev2"
+    service_type = "volumev3"
     endpoint_type = "publicURL"
     endpoint = keystone_auth.get_endpoint(
         keystone_session,
