@@ -13,6 +13,7 @@
 from datetime import datetime
 from datetime import timedelta
 import eventlet
+import functools
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -27,12 +28,17 @@ from karbor.services.operationengine.engine.triggers.timetrigger import\
 time_trigger_opts = [
     cfg.IntOpt('min_interval',
                default=60 * 60,
-               help='The interval of two adjacent time points'),
+               help='The minimum interval of two adjacent time points. '
+                    'min_interval >= (max_window_time * 2)'),
 
-    cfg.IntOpt('window_time',
-               default=60,
-               help='The default window time'),
-    ]
+    cfg.IntOpt('min_window_time',
+               default=900,
+               help='The minimum window time'),
+
+    cfg.IntOpt('max_window_time',
+               default=1800,
+               help='The maximum window time'),
+]
 
 CONF = cfg.CONF
 CONF.register_opts(time_trigger_opts)
@@ -44,6 +50,7 @@ class TriggerOperationGreenThread(object):
 
         self._running = False
         self._thread = None
+
         self._function = function
 
         self._start(first_run_time)
@@ -55,10 +62,6 @@ class TriggerOperationGreenThread(object):
     def running(self):
         return self._running
 
-    def _on_done(self, gt, *args, **kwargs):
-        self._thread = None
-        self._running = False
-
     def _start(self, first_run_time):
         self._running = True
 
@@ -66,14 +69,22 @@ class TriggerOperationGreenThread(object):
         initial_delay = 0 if first_run_time <= now else (
             int(timeutils.delta_seconds(now, first_run_time)))
 
-        self._thread = eventlet.spawn_after(initial_delay, self._run)
+        self._thread = eventlet.spawn_after(
+            initial_delay, self._run, first_run_time)
         self._thread.link(self._on_done)
 
-    def _run(self):
+    def _on_done(self, gt, *args, **kwargs):
+        self._running = False
+        self._thread = None
+
+    def _run(self, expect_run_time):
         while self._running:
-            idle_time = self._function()
-            if idle_time is None:
+            expect_run_time = self._function(expect_run_time)
+            if expect_run_time is None or not self._running:
                 break
+
+            idle_time = int(timeutils.delta_seconds(
+                datetime.utcnow(), expect_run_time))
             eventlet.sleep(idle_time)
 
 
@@ -88,8 +99,6 @@ class TimeTrigger(triggers.BaseTrigger):
 
         self._trigger_property = self.check_trigger_definition(
             trigger_property)
-        self._window = int(
-            trigger_property.get("window", CONF.window_time))
 
         # Only when creating trigger, if user doesn't specify the start_time
         # then the next run time = now
@@ -135,9 +144,6 @@ class TimeTrigger(triggers.BaseTrigger):
         if start_time:
             self._next_run_time = start_time
 
-        self._window = int(
-            valid_trigger_property.get('window', self._window))
-
         self._trigger_property.update(valid_trigger_property)
 
         if len(self._operation_ids) > 0:
@@ -162,7 +168,8 @@ class TimeTrigger(triggers.BaseTrigger):
         first_run_time = self._next_run_time
         if first_run_time < now:
             # Find the first time. We don't known when first use this trigger.
-            tmp_time = now - timedelta(seconds=self._window)
+            tmp_time = now - timedelta(
+                seconds=self._trigger_property['window'])
             if tmp_time < first_run_time:
                 tmp_time = first_run_time
             first_run_time = self._compute_next_run_time(
@@ -176,23 +183,31 @@ class TimeTrigger(triggers.BaseTrigger):
 
             self._next_run_time = first_run_time
 
-        self._greenthread = TriggerOperationGreenThread(
-            first_run_time, self._trigger_operations)
+        self._create_green_thread(first_run_time)
 
-    def _trigger_operations(self):
+    def _create_green_thread(self, first_run_time):
+        func = functools.partial(
+            self._trigger_operations,
+            trigger_property=self._trigger_property.copy())
+
+        self._greenthread = TriggerOperationGreenThread(
+            first_run_time, func)
+
+    def _trigger_operations(self, expect_run_time, trigger_property):
         """Trigger operations once
 
         returns: wait time for next run
         """
-        now = datetime.utcnow()
-        expect_run_time = self._next_run_time
+
         # Just for robustness, actually expect_run_time always <= now
         # but, if the scheduling of eventlet is not accurate, then we
         # can do some adjustments.
-        if expect_run_time > now:
-            return int(timeutils.delta_seconds(now, expect_run_time))
+        now = datetime.utcnow()
+        if expect_run_time > now and (
+                int(timeutils.delta_seconds(now, expect_run_time)) > 0):
+            return expect_run_time
 
-        window = self._window
+        window = trigger_property['window']
         if now > (expect_run_time + timedelta(seconds=window)):
             LOG.exception(_LE("TimeTrigger didn't trigger operation "
                               "on time, now=%(now)s, expect_run_time="
@@ -213,17 +228,16 @@ class TimeTrigger(triggers.BaseTrigger):
                         operation_id, now, expect_run_time, window)
                 except Exception:
                     LOG.exception(_LE("Submit operation to executor "
-                                      "failed, id=%(op_id)s"),
+                                      "failed, id=%s"),
                                   operation_id)
                     pass
 
         self._next_run_time = self._compute_next_run_time(
-            datetime.utcnow(), self._trigger_property['end_time'],
-            self._trigger_property['format'],
-            self._trigger_property['pattern'])
+            datetime.utcnow(), trigger_property['end_time'],
+            trigger_property['format'],
+            trigger_property['pattern'])
 
-        return None if not self._next_run_time else (int(
-            timeutils.delta_seconds(now, self._next_run_time)))
+        return self._next_run_time
 
     @classmethod
     def check_trigger_definition(cls, trigger_definition):
@@ -240,25 +254,25 @@ class TimeTrigger(triggers.BaseTrigger):
 
         interval = int(cls.TIME_FORMAT_MANAGER.get_interval(
             trigger_format, pattern))
-        if interval < CONF.min_interval:
+        if interval is not None and interval < CONF.min_interval:
             msg = (_("The interval of two adjacent time points "
                      "is less than %d") % CONF.min_interval)
             raise exception.InvalidInput(msg)
 
-        window = trigger_definition.get("window", CONF.window_time)
+        window = trigger_definition.get("window", CONF.min_window_time)
         if not isinstance(window, int):
             try:
                 window = int(window)
             except Exception:
                 msg = (_("The trigger windows(%s) is not integer") % window)
                 raise exception.InvalidInput(msg)
-        if window <= 0:
-            msg = (_("The trigger windows(%d) must be positive") % window)
-            raise exception.InvalidInput(msg)
-        if (window * 2) > interval:
-            msg = (_("The trigger windows%(window)d must be less "
-                     "than %(interval)d") % {"window": window,
-                                             "interval": interval / 2})
+
+        if window < CONF.min_window_time or window > CONF.max_window_time:
+            msg = (_("The trigger windows %(window)d must be between "
+                     "%(min_window)d and %(max_window)d") %
+                   {"window": window,
+                    "min_window": CONF.min_window_time,
+                    "max_window": CONF.max_window_time})
             raise exception.InvalidInput(msg)
 
         end_time = trigger_definition.get("end_time", None)
@@ -268,6 +282,7 @@ class TimeTrigger(triggers.BaseTrigger):
         start_time = cls._check_and_get_datetime(start_time, "start_time")
 
         valid_trigger_property = trigger_definition.copy()
+        valid_trigger_property['window'] = window
         valid_trigger_property['start_time'] = start_time
         valid_trigger_property['end_time'] = end_time
         return valid_trigger_property
@@ -301,3 +316,13 @@ class TimeTrigger(triggers.BaseTrigger):
         if next_time and (not end_time or next_time <= end_time):
             return next_time
         return None
+
+    @classmethod
+    def check_configuration(cls):
+        min_window = CONF.min_window_time
+        max_window = CONF.max_window_time
+        min_interval = CONF.min_interval
+
+        if not (min_window < max_window and (max_window * 2 <= min_interval)):
+            msg = (_('Configurations of time trigger are invalid'))
+            raise exception.InvalidInput(msg)

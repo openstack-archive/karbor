@@ -37,11 +37,12 @@ class TimeTriggerTestCase(base.TestCase):
     def setUp(self):
         super(TimeTriggerTestCase, self).setUp()
 
-        self.override_config('min_interval', 60)
+        self._set_configuration()
+
         trigger_property = {
             "format": "crontab",
             "pattern": "* * * * *",
-            "window": 10,
+            "window": 15,
             "start_time": datetime.utcnow() + timedelta(seconds=1),
             "end_time": datetime.utcnow()
         }
@@ -51,6 +52,13 @@ class TimeTriggerTestCase(base.TestCase):
         super(TimeTriggerTestCase, self).tearDown()
 
         self._trigger.shutdown()
+
+    def test_check_configuration(self):
+        self._set_configuration(10, 20, 30)
+        self.assertRaisesRegexp(exception.InvalidInput,
+                                "Configurations of time trigger are invalid",
+                                TimeTrigger.check_configuration)
+        self._set_configuration()
 
     def test_check_trigger_property_window(self):
         trigger_property = {
@@ -64,11 +72,17 @@ class TimeTriggerTestCase(base.TestCase):
                                 TimeTrigger.check_trigger_definition,
                                 trigger_property)
 
+        trigger_property['window'] = 1000
+        self.assertRaisesRegexp(exception.InvalidInput,
+                                "The trigger windows .* must be between .*",
+                                TimeTrigger.check_trigger_definition,
+                                trigger_property)
+
     def test_check_trigger_property_start_time(self):
         trigger_property = {
             "format": "crontab",
             "pattern": "* * * * *",
-            "window": 10,
+            "window": 15,
             "start_time": "abc"
         }
 
@@ -81,7 +95,7 @@ class TimeTriggerTestCase(base.TestCase):
         trigger_property = {
             "format": "crontab",
             "pattern": "* * * * *",
-            "window": 10,
+            "window": 15,
             "end_time": "abc"
         }
 
@@ -118,7 +132,7 @@ class TimeTriggerTestCase(base.TestCase):
         trigger_property = {
             "format": "crontab",
             "pattern": "* * * * *",
-            "window": 10,
+            "window": 15,
             "start_time": datetime.utcnow() + timedelta(seconds=1),
             "end_time": datetime.utcnow()
         }
@@ -131,3 +145,9 @@ class TimeTriggerTestCase(base.TestCase):
         self._trigger.register_operation(operation_id)
         eventlet.sleep(1)
         self.assertEqual(1, self._trigger._executor._ops[operation_id])
+
+    def _set_configuration(self, min_window=15,
+                           max_window=30, min_interval=60):
+        self.override_config('min_interval', min_interval)
+        self.override_config('min_window_time', min_window)
+        self.override_config('max_window_time', max_window)

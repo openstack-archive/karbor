@@ -47,7 +47,13 @@ class BaseTrigger(object):
         pass
 
     @classmethod
+    @abstractmethod
     def check_trigger_definition(cls, trigger_definition):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def check_configuration(cls):
         pass
 
     def has_operations(self):
