@@ -1,0 +1,85 @@
+@startuml
+
+title Restore Class Diagram
+
+interface ProtectionPlugin {
+    ..metadata functions..
+    get_supported_resources_types(): []ResourceType
+    ..graph walk functions..
+    +on_resource_start(context: Context)
+    +on_resource_end(context: Context)
+    ..schema functions..
+    +get_options_schema(resource_type: ResourceType)
+    +get_saved_info_schema(resource_type: ResourceType)
+    +get_restore_schema(resource_type: ResourceType)
+    +get_saved_info(metadata_store: MetadataStore, resource: Resource)
+}
+
+class BaseProtectionPlugin implements ProtectionPlugin {
+  ..graph walk functions..
+  +on_resource_start(context: Context)
+  +on_resource_end(context: Context)
+  ..Protection functions..
+  +create_backup(self, cntxt:Context, checkpoint:CheckPoint, **kwargs)
+  +restore_backup(self, cntxt:Context, checkpoint:CheckPoint, **kwargs)
+  +delete_backup(self, cntxt:Context, checkpoint:CheckPoint, **kwargs)
+  +resume(self, cntxt:Context, checkpoint:CheckPoint, **kwargs)
+  +promote(self, cntxt:Context, checkpoint:CheckPoint, **kwargs)
+}
+
+class HeatResource {
+  ..properties ..
+  -resource_id:String
+  -type:enum
+  -properties:dict
+  -metadata:dict
+  ..init function..
+  +_init(resource_id:String, type:enum):void
+  ..property setters..
+  +set_property(key:String, value:Object):void
+  +set_metadta(key:String, value:Object):void
+  ..print functions..
+  +toDict():dict
+}
+
+class HeatParameter {
+  ..properties..
+  -value:Object
+  ..init function..
+  +_init(value:Object):void
+  ..getters..
+  +get_value():Object
+}
+
+class HeatTemplate {
+  ..properties..
+  +heat_template_version:String
+  +description:String
+  -resources:[]HeatResource
+  -original_id_resource_map:{String:HeatResource}
+  -original_id_parameter_map:{String:HeatParameter}
+  ..functions..
+  put_parameter(original_id:String, parameter:HeatParameter):void
+  put_resource(original_id:String, resource:HeatResource):void
+  get_resource_reference(original_id:String):Object
+  ..printer function..
+  toDict():dict
+  dumpToYamlFile(file:File):String
+}
+
+class Task {
++execute(kwargs)
+}
+
+Task "N" -down-> "1" HeatTemplate: share as input
+
+Task "1"-left-> "N" HeatResource: create
+
+Task "1" -right-> "N" HeatParameter: create
+
+HeatTemplate "1" *-up-> "N" HeatResource: aggregates
+
+HeatTemplate "1" *-up-> "N" HeatParameter: aggregates
+
+BaseProtectionPlugin "1" --> "N" Task: create
+@enduml
