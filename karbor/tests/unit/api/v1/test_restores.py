@@ -46,19 +46,14 @@ class RestoreApiTest(base.TestCase):
     @mock.patch(
         'karbor.services.protection.api.API.restore')
     @mock.patch(
-        'karbor.api.v1.restores.'
-        'RestoresController._restore_update')
-    @mock.patch(
         'karbor.objects.restore.Restore.create')
     def test_restore_create(self, mock_restore_create,
-                            mock_restore_update,
                             mock_rpc_restore):
         restore = self._restore_in_request_body()
         body = {"restore": restore}
         req = fakes.HTTPRequest.blank('/v1/restores')
         self.controller.create(req, body)
         self.assertTrue(mock_restore_create.called)
-        self.assertTrue(mock_restore_update.called)
         self.assertTrue(mock_rpc_restore.called)
 
     def test_restore_create_InvalidBody(self):
