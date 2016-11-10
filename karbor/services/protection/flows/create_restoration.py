@@ -93,16 +93,24 @@ class SyncStackStatusTask(task.Task):
 
 def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
              restore, restore_auth):
-    target = restore['restore_target']
-    auth_type = restore_auth["type"]
-    if auth_type == "password":
-        username = restore_auth["username"]
-        password = restore_auth["password"]
+    target = restore.get('restore_target', None)
 
     # TODO(luobin): create a heat_client
-    kwargs = {"auth_url": target,
-              "username": username,
-              "password": password}
+    # Initialize a heat client using current login tenant when the
+    # restore_target and restore_auth is not provided.
+    if target is not None:
+        username = None
+        password = None
+        if restore_auth is not None:
+            auth_type = restore_auth.get("type", None)
+            if auth_type == "password":
+                username = restore_auth["username"]
+                password = restore_auth["password"]
+        kwargs = {"auth_url": target,
+                  "username": username,
+                  "password": password}
+    else:
+        kwargs = {}
     heat_client = ClientFactory.create_client("heat",
                                               context=context,
                                               **kwargs)

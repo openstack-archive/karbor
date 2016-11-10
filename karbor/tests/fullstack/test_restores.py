@@ -70,6 +70,25 @@ class RestoresTest(karbor_base.KarborBaseTest):
         after_num = len(restores)
         self.assertEqual(1, after_num - before_num)
 
+    def test_restore_create_without_target_and_auth(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [volume, ])
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan.id)
+
+        restores = self.karbor_client.restores.list()
+        before_num = len(restores)
+
+        restore = self.store(objects.Restore())
+        restore.create(self.provider_id, checkpoint.id,
+                       None, self.parameters, None)
+
+        restores = self.karbor_client.restores.list()
+        after_num = len(restores)
+        self.assertEqual(1, after_num - before_num)
+
     def test_restore_get(self):
         volume = self.store(objects.Volume())
         volume.create(1)
