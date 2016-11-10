@@ -25,6 +25,11 @@ This example will show protecting volume.
     swift_key=123456
     swift_tenant_name=admin
 
+    [swift_bank_plugin]
+    lease_expire_window=120
+    lease_renew_window=100
+    lease_validity_window=100
+
 
 
 #. To use cinder or karbor client, we should provide Keystone authentication
@@ -66,6 +71,7 @@ This example will show protecting volume.
     |    Protectable type   |
     +-----------------------+
     |   OS::Cinder::Volume  |
+    |   OS::Glance::Image   |
     | OS::Keystone::Project |
     |    OS::Nova::Server   |
     +-----------------------+
