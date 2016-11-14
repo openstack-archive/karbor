@@ -126,9 +126,8 @@ class KarborKeystonePlugin(object):
         auth_plugin = self._get_karbor_auth_plugin(trust_id)
         cafile = cfg.CONF.keystone_authtoken.cafile
         return keystone_session.Session(
-            auth=auth_plugin, cert=cafile, verify=False if
-            CONF.keystone_authtoken.insecure else
-            (CONF.keystone_authtoken.cafile or True))
+            auth=auth_plugin, verify=False if
+            CONF.keystone_authtoken.insecure else cafile)
 
     def _get_service_user(self, user_name, user_domain_id):
         try:
@@ -158,9 +157,8 @@ class KarborKeystonePlugin(object):
         cafile = cfg.CONF.keystone_authtoken.cafile
         try:
             l_session = keystone_session.Session(
-                auth=auth_plugin, cert=cafile, verify=False if
-                CONF.keystone_authtoken.insecure else
-                (CONF.keystone_authtoken.cafile or True))
+                auth=auth_plugin, verify=False if
+                CONF.keystone_authtoken.insecure else cafile)
             return kc_v3.Client(session=l_session)
         except Exception:
             msg = ('create keystone client failed.cafile:(%s)' % cafile)
