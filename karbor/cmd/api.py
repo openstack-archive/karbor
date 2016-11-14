@@ -41,7 +41,7 @@ def main():
     logging.setup(CONF, "karbor")
 
     rpc.init(CONF)
-    launcher = service.process_launcher()
+    launcher = service.get_launcher()
     server = service.WSGIService('osapi_karbor')
     launcher.launch_service(server, workers=server.workers)
     launcher.wait()
