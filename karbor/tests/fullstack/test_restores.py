@@ -10,9 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
+
 from karbor.tests.fullstack import karbor_base
 from karbor.tests.fullstack import karbor_objects as objects
-import re
 
 
 class RestoresTest(karbor_base.KarborBaseTest):
@@ -30,15 +31,12 @@ class RestoresTest(karbor_base.KarborBaseTest):
         self.assertTrue(len(providers))
         self.provider_id = providers[0].id
 
-    def tearDown(self):
-        self.cleanup_volumes()
-        super(RestoresTest, self).tearDown()
-
-    def cleanup_volumes(self):
-        volumes = self.cinder_client.volumes.list()
+    def _store_volume(self, volumes_pre, volumes_post):
+        volumes = list(set(volumes_post).difference(set(volumes_pre)))
         for volume in volumes:
-            if "available" == volume.status:
-                self.cinder_client.volumes.delete(volume.id)
+            volume_ = objects.Volume()
+            volume_.id = volume.id
+            self.store(volume_)
 
     @staticmethod
     def get_restore_target(endpoint):
@@ -60,6 +58,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
+        volumes_pre = self.cinder_client.volumes.list()
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
@@ -69,6 +68,9 @@ class RestoresTest(karbor_base.KarborBaseTest):
         restores = self.karbor_client.restores.list()
         after_num = len(restores)
         self.assertEqual(1, after_num - before_num)
+
+        volumes_post = self.cinder_client.volumes.list()
+        self._store_volume(volumes_pre, volumes_post)
 
     def test_restore_create_without_target_and_auth(self):
         volume = self.store(objects.Volume())
@@ -80,6 +82,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
+        volumes_pre = self.cinder_client.volumes.list()
 
         restore = self.store(objects.Restore())
         restore.create(self.provider_id, checkpoint.id,
@@ -89,6 +92,9 @@ class RestoresTest(karbor_base.KarborBaseTest):
         after_num = len(restores)
         self.assertEqual(1, after_num - before_num)
 
+        volumes_post = self.cinder_client.volumes.list()
+        self._store_volume(volumes_pre, volumes_post)
+
     def test_restore_get(self):
         volume = self.store(objects.Volume())
         volume.create(1)
@@ -97,6 +103,8 @@ class RestoresTest(karbor_base.KarborBaseTest):
         checkpoint = self.store(objects.Checkpoint())
         checkpoint.create(self.provider_id, plan.id)
 
+        volumes_pre = self.cinder_client.volumes.list()
+
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
         restore.create(self.provider_id, checkpoint.id,
@@ -104,6 +112,9 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restore_item = self.karbor_client.restores.get(restore.id)
         self.assertEqual(restore.id, restore_item.id)
+
+        volumes_post = self.cinder_client.volumes.list()
+        self._store_volume(volumes_pre, volumes_post)
 
     def test_restore_list(self):
         volume = self.store(objects.Volume())
@@ -115,6 +126,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
+        volumes_pre = self.cinder_client.volumes.list()
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore1 = self.store(objects.Restore())
@@ -127,3 +139,6 @@ class RestoresTest(karbor_base.KarborBaseTest):
         restores = self.karbor_client.restores.list()
         after_num = len(restores)
         self.assertEqual(2, after_num - before_num)
+
+        volumes_post = self.cinder_client.volumes.list()
+        self._store_volume(volumes_pre, volumes_post)
