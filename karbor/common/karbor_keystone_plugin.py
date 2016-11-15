@@ -34,6 +34,7 @@ CONF = cfg.CONF
 # username = karbor
 # password = password
 # user_domain_id = default
+KEYSTONECLIENT_VERSION = (3, 0)
 TRUSTEE_CONF_GROUP = 'trustee'
 loading.register_auth_conf_options(CONF, TRUSTEE_CONF_GROUP)
 CONF.import_group('keystone_authtoken',
@@ -159,7 +160,8 @@ class KarborKeystonePlugin(object):
             l_session = keystone_session.Session(
                 auth=auth_plugin, verify=False if
                 CONF.keystone_authtoken.insecure else cafile)
-            return kc_v3.Client(session=l_session)
+            return kc_v3.Client(version=KEYSTONECLIENT_VERSION,
+                                session=l_session)
         except Exception:
             msg = ('create keystone client failed.cafile:(%s)' % cafile)
             raise exception.AuthorizationFailure(obj=msg)

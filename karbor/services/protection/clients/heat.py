@@ -11,7 +11,7 @@
 #    under the License.
 
 from heatclient import client as hc
-from keystoneclient.v2_0 import client as kc
+from keystoneclient.v3 import client as kc_v3
 from oslo_config import cfg
 
 from oslo_log import log as logging
@@ -67,18 +67,21 @@ def create_heat_client_with_auth_url(context, conf, **kwargs):
     insecure = conf.heat_client.heat_auth_insecure
     LOG.info(_LI('Creating heat client with auth url %s.'), auth_url)
     try:
-        keystone = kc.Client(version=KEYSTONECLIENT_VERSION,
-                             username=username,
-                             tenant_name=tenant_name,
-                             password=password,
-                             auth_url=auth_url)
+        keystone = kc_v3.Client(version=KEYSTONECLIENT_VERSION,
+                                username=username,
+                                tenant_name=tenant_name,
+                                password=password,
+                                auth_url=auth_url)
 
-        auth_token = keystone.auth_ref['token']['id']
+        auth_token = keystone.auth_token
         heat_endpoint = ''
-        services = keystone.auth_ref['serviceCatalog']
+        services = keystone.service_catalog.catalog['catalog']
         for service in services:
             if service['name'] == 'heat':
-                heat_endpoint = service['endpoints'][0]['publicURL']
+                endpoints = service['endpoints']
+                for endpoint in endpoints:
+                    if endpoint['interface'] == 'public':
+                        heat_endpoint = endpoint['url']
         heat = hc.Client(HEATCLIENT_VERSION, endpoint=heat_endpoint,
                          token=auth_token, cacert=cacert, insecure=insecure)
         return heat
