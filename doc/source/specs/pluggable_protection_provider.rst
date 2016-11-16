@@ -11,12 +11,16 @@
         .green {color:#4caf50; font-weight: bold;}
         .yellow {color:#fbc02d; font-weight: bold;}
         .indigo {color:#536dfe; font-weight: bold;}
+        .purple {color:#cd12da; font-weight: bold;}
+        .black {colot:#000000; font-weight: bold;}
     </style>
 
 .. role:: red
 .. role:: green
 .. role:: yellow
 .. role:: indigo
+.. role:: purple
+.. role:: black
 
 ==========================================
 Pluggable Protection Provider
@@ -110,85 +114,141 @@ defined:
    Checkpoint
 #. The implementation of each operation
 
-Protection Plugin Operation Activities
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Protection Plugin API & Workflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Protection Plugin* defines how to protect, restore, and delete resources. In
-order to specify the detailed flow of each operation, a *Protection Plugin*
-needs to implement numerous 'hooks'. These hooks, named *Activities*, differ
-from one another by their time of execution in respect to other activities,
-either of the same resource, or other resources. 
+*Protection Plugin* defines how to protect, restore, and delete resources.
 
-#. **PreActivity**: invoked before any activity for this resource and dependent
-   resources has begun
-#. **ParallelActivity**: invoked after the resource *PreActivity* is complete,
-   regardless of the dependent resources' activities.
-#. **PostActivity**: invoked after all of the resource's activities are
-   complete, and the dependent resources' *PostActivities* are complete
+When performing an operation there might be a need for a ProtectionPlugin to
+perform actions on a resource before or after some operation was performed on
+a related resource.
 
-For example, a Protection Plugin for Nova servers, might implement a protect
-operation by using *PreActivity* to contact a guest agent, in order to complete
-database and operation system transactions, use *ParallelActivity* to backup
-the server metadata, and use *PostActivity* to contact a guest agent, in order
-to resume transactions.
+For example, before takin a spanshot of a volume you need to quiesce the VM
+and\or run any guest agent operation. Doing it after taking the checkpoint is
+useless.
 
-Practically, the protection plugin may implement methods in the form of::
+On the other hand, when copying a volume's data to different sites there is no
+need for other operations to wait on the copy.
 
-  activity_<operation_type>_<activity_type>
+Finally, there might be a need to perform an operation marking a transaction
+as successfull after everything related to a VM was protected.
 
-Where:
+Looking at this we see there are 3 distinct phases for every protection.
 
-* ``operation_type`` is one of: ``protect``, ``restore``, ``delete``
-* ``activity_type`` is one of: ``pre``, ``post``, ``parallel``
+#. *Preperation Phase*: This phase for performing actions in relation to a
+   resource's dependencies. It's called the "Preperation Phase" because it
+   where a plugin should do all the preperation required for the next phase.
+   Operation in this phase should be as short as possible since they are not
+   parraralized as much as in the following phases. As an example, taking
+   snapshots of all the volumes should happen in relation to the owning VMs
+   and also happen in a narrower time frame. Copying those snapshots can
+   happen later and is much more parallizable.
+#. *Main Phase*: This phase is for doing work that has no dependencies or time
+   sensitivity. This will be mainly used for transferring the large amount of
+   information generated in the backup to different sites.
+#. *Completion Phase*: This phase is for performing work once *all* the work,
+   not just preperation, was completed on a resource and all of it's
+   dependencies. This is a good place to attach resources (in case of restore)
+   or close transactions.
+
+As a Protection Plugin developer you want to minimize the work needed to be
+done in the preperation and completion phases and do the bulk of the work in
+the main phase since will allow for the most efficient execution of the
+operation.
+
+It's important to note that a developer doesn't have to do any action during a
+phase. It's completly valid to only use the main or preperation phase. In
+fact, we think it's going to be very rare that a Protection Plugin will need
+to use all the phases.
+
+In order to specify the detailed flow of each operation, a *Protection Plugin*
+needs to implement numerous 'hooks'. These hooks, differ from one another by
+their time of execution in respect to other hooks, either of the same
+resource, or other resources.
+
+For *each* operation the pluggin can implement each of the hooks:
+
+#. **Preperation hooks**: as noted, preperation is for running tasks in
+   relation to other resources in the graph. This is why two hooks exist, one
+   for running before dependent resources' pereperation and one for after.
+
+   #. **Prepare begin hook**: invoked before any hook of this resource and
+      dependent resources has begun.
+
+      For tasks that need to happen before any dependent resource’s operations
+      begin
+
+      Hook method name: **on_prepare_begin**
+
+   #. **Prepare finish hook**: invoked after any prepare hooks of dependent
+      resources are complete.
+
+      For tasks that finish the work began in *prepare begin hook*, for tasks that
+      require that the dependent resource’s prepare phase finished
+
+      Hook method name: **on_prepare_finish**
+
+#. **Main hook**: invoked after the resource *prepare hooks* are complete.
+
+   For tasks that do heavy lifting and can run in parallel to dependent or
+   dependee resources *main hooks*
+
+   Hook method name: **on_main**
+
+#. **Complete hook**: invoked once the resource's main hook is complete, and
+   the dependent resources' *complete hooks* are complete
+
+   For tasks that require that the dependent resource's operations are
+   complete, and finalize the operation on the resource.
+
+   Hook method name: **on_complete**
+
+For example: a Protection Plugin for Nova servers, might implement a protect
+operation by using *prepare begin hook* to quiesce the Server and/or contact a
+guest agent to complete transactions. A protection plugin for Cinder volumes
+can implement *prepare finish hook* to take a snapshot of the volume. The
+server's *prepare finish hook* unquiesces the server and/or contacts a guest
+agent. Both the server's and the volume's *main hook* do the heavy lifting of
+copying the data.
 
 Notes:
 
 * Unimplemented methods are practically no-op
 * Each such method receives as parameters: ``checkpoint``, ``context``,
   ``resource``, and ``parameters`` objects
-* These methods may return immediately, or use ``yield``. In the case ``yield``
-  is used, the Protection Provider infrastructure is responsible for
-  periodically call ``next()``, in order to "poll". This is extremely useful in
-  cases where asynchronous operations are initiated (such as Cinder volume
-  creation), but polling must be performed in order to decide when the
-  operation is complete, and whether it is successful or not. For example:
 
 ::
 
-  def activity_protect_parallel(self, checkpoint, context, resource, parameters):
-      id = start_operation( ... )
-      while True:
-          status = get_status(id)
-          if status == 'error':
-              raise Exception
-          elif status == 'success':
-              return
-          else:
-              yield
+  def prepare_finish(self, checkpoint, context, resource, parameters):
+      ...
 
-.. figure:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/activities-links.png
-    :alt: Activities Links
+.. figure:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/hooks.png
+    :alt: Protection Plugin Hooks
     :align: center
 
-    Activities Links
+    Protection Plugin Hooks
 
-    :green:`Green`: link of the parent resource PreActivity to the child
-    resource PreActivity
+    :green:`Green`: Child resource Prepare_begin depends on its parent resource
+    Prepare_begin
 
-    :yellow:`Yellow`: link of the resource PreActivity to ParallelActivity
+    :indigo:`Indigo`: The resource Prepare_finish depends on the resource
+    Prepare_begin
 
-    :red:`Red`: link of the resource ParallelActivity to PostActivity
+    :purple:`Purple`: Parent resource Prepare_finish depends on the child
+    resource Prepare_finish
 
-    :indigo:`Indigo`: link of the child resource PostActivity to the parent
-    resource PostActivity
+    :yellow:`Yellow`: The resource Main depends on the resource Prepare_finish
+
+    :red:`Red`: The resource Complete depends on the resource Main
+
+    :black:`Black`: Parent resource Complete depends on the child resource’s
+    Complete
+
+
 
 This scheme decouples the tree structure from the task execution. A plugin that
 handles multiple resources or that aggregates multiple resources to one task can
 use this mechanism to only return tasks when appropriate for it's scheme.
-
-.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/pluggable_protection_provider.svg
-    :alt: Karbor
-    :align: center
 
 References
 ==========
