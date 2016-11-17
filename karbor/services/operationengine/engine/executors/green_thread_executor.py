@@ -55,15 +55,15 @@ class GreenThreadExecutor(base.BaseExecutor):
                           expect_start_time, window_time, **kwargs):
 
         if operation_id in self._operation_thread_map:
-            LOG.warn(_LW("Execute operation(%s), "
-                         "the previous one has not been finished"),
-                     operation_id)
+            LOG.warning(_LW("Execute operation(%s), "
+                            "the previous one has not been finished"),
+                        operation_id)
             return
 
         num = CONF.operationengine.max_concurrent_operations
         if num and len(self._operation_thread_map) >= num:
-            LOG.warn(_LW("The amount of concurrent running operations "
-                         "exceeds %d"), num)
+            LOG.warning(_LW("The amount of concurrent running operations "
+                            "exceeds %d"), num)
             return
         self._operation_thread_map[operation_id] = None
 
@@ -81,8 +81,8 @@ class GreenThreadExecutor(base.BaseExecutor):
             # green thread. So if operation_id is not exist, it may be
             # canceled by 'cancel_operation' during the call to DB in
             # the codes above.
-            LOG.warn(_LW("Operation(%s) is not exist after call to DB"),
-                     operation_id)
+            LOG.warning(_LW("Operation(%s) is not exist after call to DB"),
+                        operation_id)
             return
 
         param = {
@@ -188,8 +188,8 @@ class GreenThreadExecutor(base.BaseExecutor):
         try:
             del self._operation_thread_map[op_id]
         except Exception:
-            LOG.warn(_LW("Unknown operation id(%s) received, "
-                         "when the green thread exit"), op_id)
+            LOG.warning(_LW("Unknown operation id(%s) received, "
+                            "when the green thread exit"), op_id)
 
     def _create_thread(self, function, operation_id, param):
         gt = eventlet.spawn(function, operation_id, param)
