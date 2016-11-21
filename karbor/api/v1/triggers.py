@@ -15,7 +15,6 @@
 from datetime import datetime
 from oslo_log import log as logging
 from oslo_utils import uuidutils
-import uuid
 from webob import exc
 
 from karbor.api import common
@@ -106,7 +105,7 @@ class TriggersController(wsgi.Controller):
         trigger_property.setdefault(
             'start_time', datetime.utcnow().replace(microsecond=0))
         trigger_definition = {
-            'id': str(uuid.uuid4()),
+            'id': uuidutils.generate_uuid(),
             'name': trigger_name,
             'project_id': context.project_id,
             'type': trigger_type,

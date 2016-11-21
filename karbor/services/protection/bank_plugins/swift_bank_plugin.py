@@ -13,7 +13,6 @@
 import json
 import math
 import time
-import uuid
 
 from karbor import exception
 from karbor.i18n import _, _LE
@@ -23,6 +22,7 @@ from karbor.services.protection import client_factory
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+from oslo_utils import uuidutils
 from swiftclient import ClientException
 
 swift_bank_plugin_opts = [
@@ -70,7 +70,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self._config.swift_bank_plugin.lease_validity_window
 
         # TODO(luobin): create a uuid of this bank_plugin
-        self.owner_id = str(uuid.uuid4())
+        self.owner_id = uuidutils.generate_uuid()
         self.lease_expire_time = 0
         self.bank_leases_container = "leases"
         self.connection = self._setup_connection()

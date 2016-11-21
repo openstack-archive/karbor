@@ -10,11 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from uuid import uuid4
-
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+from oslo_utils import uuidutils
 
 from karbor.common import constants
 from karbor.i18n import _LE, _LI
@@ -42,7 +41,7 @@ class CreateStackTask(task.Task):
         self._template = template
 
     def execute(self):
-        stack_name = "restore_%s" % str(uuid4())
+        stack_name = "restore_%s" % uuidutils.generate_uuid()
         LOG.info(_LI("creating stack, stack_name:%s"), stack_name)
         try:
             body = self._heat_client.stacks.create(

@@ -12,8 +12,8 @@
 
 from collections import OrderedDict
 from copy import deepcopy
+from oslo_utils import uuidutils
 import six
-from uuid import uuid4 as uuid
 
 from karbor import exception
 from karbor.services.protection.bank_plugin import Bank
@@ -56,7 +56,7 @@ class _InMemoryBankPlugin(BankPlugin):
         del self._data[key]
 
     def get_owner_id(self):
-        return str(uuid())
+        return uuidutils.generate_uuid()
 
 
 class _InMemoryLeasePlugin(LeasePlugin):

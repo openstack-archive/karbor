@@ -18,7 +18,6 @@ import six
 import sys
 import threading
 import time
-import uuid
 
 from oslo_config import cfg
 from oslo_db import api as oslo_db_api
@@ -28,6 +27,7 @@ from oslo_db.sqlalchemy import session as db_session
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import RelationshipProperty
@@ -368,7 +368,7 @@ def _trigger_get(context, id, session=None):
 
 def trigger_create(context, values):
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
 
     trigger_ref = models.Trigger()
     trigger_ref.update(values)
@@ -449,7 +449,7 @@ def _scheduled_operation_get(context, id, columns_to_join=[], session=None):
 
 def scheduled_operation_create(context, values):
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
 
     operation_ref = models.ScheduledOperation()
     operation_ref.update(values)
@@ -801,7 +801,7 @@ def plan_create(context, values):
 
     plan_ref = models.Plan()
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
     plan_ref.update(values)
 
     session = get_session()
@@ -1002,7 +1002,7 @@ def _process_plan_filters(query, filters):
 def restore_create(context, values):
     restore_ref = models.Restore()
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
     restore_ref.update(values)
 
     session = get_session()
@@ -1166,7 +1166,7 @@ def _process_restore_filters(query, filters):
 def operation_log_create(context, values):
     operation_log_ref = models.OperationLog()
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
     operation_log_ref.update(values)
 
     session = get_session()
@@ -1317,7 +1317,7 @@ def _process_operation_log_filters(query, filters):
 def checkpoint_record_create(context, values):
     checkpoint_record_ref = models.CheckpointRecord()
     if not values.get('id'):
-        values['id'] = str(uuid.uuid4())
+        values['id'] = uuidutils.generate_uuid()
     checkpoint_record_ref.update(values)
 
     session = get_session()

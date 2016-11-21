@@ -12,9 +12,9 @@
 
 import datetime
 import mock
-import uuid
 
 from iso8601 import iso8601
+from oslo_utils import uuidutils
 from oslo_versionedobjects import fields
 
 from karbor import objects
@@ -37,7 +37,7 @@ class TestKarborObject(test_objects.BaseObjectsTestCase):
         super(TestKarborObject, self).setUp()
         self.obj = TestObject(
             scheduled_at=None,
-            uuid=uuid.uuid4(),
+            uuid=uuidutils.generate_uuid(),
             text='text')
         self.obj.obj_reset_changes()
 

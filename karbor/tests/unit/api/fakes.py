@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 import routes
 import webob
@@ -98,5 +98,5 @@ class TestRouter(wsgi.Router):
 
 def get_fake_uuid(token=0):
     if token not in FAKE_UUIDS:
-        FAKE_UUIDS[token] = str(uuid.uuid4())
+        FAKE_UUIDS[token] = uuidutils.generate_uuid()
     return FAKE_UUIDS[token]
