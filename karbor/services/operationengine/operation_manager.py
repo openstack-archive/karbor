@@ -26,15 +26,14 @@ class OperationManager(object):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
-        if not OperationManager._instance:
-            OperationManager._instance = super(
+        if not cls._instance:
+            cls._instance = super(
                 OperationManager, cls).__new__(
                     cls, *args, **kwargs)
-        return OperationManager._instance
+            cls._instance._init()
+        return cls._instance
 
-    def __init__(self):
-        super(OperationManager, self).__init__()
-
+    def _init(self):
         all_cls = operations.all_operations()
         self._operation_cls_map = {cls.OPERATION_TYPE: cls
                                    for cls in all_cls}

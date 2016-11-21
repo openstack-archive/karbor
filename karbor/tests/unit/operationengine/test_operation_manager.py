@@ -40,32 +40,31 @@ class OperationManagerTestCase(base.TestCase):
     def setUp(self):
         super(OperationManagerTestCase, self).setUp()
 
-        mock_obj = mock.Mock()
-        mock_obj.return_value = [FakeOperation]
-        operations.all_operations = mock_obj
-
         self._operation_type = FakeOperation.OPERATION_TYPE
         self.om = operation_manager.OperationManager()
 
     def test_singleton_operation_manager(self):
-        second = operation_manager.OperationManager()
-        self.assertTrue(self.om == second)
+        map_id = id(self.om._operation_cls_map)
+        new_om = operation_manager.OperationManager()
+
+        self.assertEqual(id(self.om), id(new_om))
+        self.assertEqual(map_id, id(new_om._operation_cls_map))
 
     @mock.patch.object(operations.base.Operation, 'init_configuration')
     def test_do_init(self, init):
+        self._set_fake_op()
         self.om.do_init()
         init.assert_called_once()
 
-    def test_load_all_class(self):
-        self.assertIn(self._operation_type, self.om._operation_cls_map)
-
     @mock.patch.object(FakeOperation, 'check_operation_definition')
     def test_check_operation_definition(self, check):
+        self._set_fake_op()
         self.om.check_operation_definition(self._operation_type, {})
         check.assert_called_once_with({})
 
     @mock.patch.object(operations.base.Operation, 'run')
     def test_run_operation(self, run):
+        self._set_fake_op()
         self.om.run_operation(self._operation_type, {})
         run.assert_called_once_with({})
 
@@ -79,3 +78,6 @@ class OperationManagerTestCase(base.TestCase):
                                'Invalid operation type:',
                                self.om.run_operation,
                                "123", {})
+
+    def _set_fake_op(self):
+        self.om._operation_cls_map = {self._operation_type: FakeOperation}
