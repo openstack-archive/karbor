@@ -91,8 +91,9 @@ class TriggerOperationGreenThread(object):
             if expect_run_time is None or not self._running:
                 break
 
-            idle_time = int(timeutils.delta_seconds(
-                datetime.utcnow(), expect_run_time))
+            now = datetime.utcnow()
+            idle_time = 0 if expect_run_time <= now else int(
+                timeutils.delta_seconds(now, expect_run_time))
             eventlet.sleep(idle_time)
 
 
@@ -201,19 +202,20 @@ class TimeTrigger(triggers.BaseTrigger):
         # Just for robustness, actually expect_run_time always <= now
         # but, if the scheduling of eventlet is not accurate, then we
         # can do some adjustments.
-        now = datetime.utcnow()
-        if expect_run_time > now and (
-                int(timeutils.delta_seconds(now, expect_run_time)) > 0):
+        entry_time = datetime.utcnow()
+        if entry_time < expect_run_time and (
+                int(timeutils.delta_seconds(entry_time, expect_run_time)) > 0):
             return expect_run_time
 
-        window = trigger_property['window']
-        if now > (expect_run_time + timedelta(seconds=window)):
-            LOG.exception(_LE("TimeTrigger didn't trigger operation "
-                              "on time, now=%(now)s, expect_run_time="
-                              "%(expect_run_time)s, window=%(window)d"),
-                          {'now': now,
-                           'expect_run_time': expect_run_time,
-                           'window': window})
+        window = trigger_property.get("window")
+        end_time = expect_run_time + timedelta(seconds=window)
+        if end_time <= entry_time:
+            LOG.error(_LE("Can not trigger operations to run. "
+                          "Because it is out of end time of window. "
+                          "expect run time=%(expect)s, end time=%(end)s, "
+                          "entry time=%(now)s"),
+                      {'expect': expect_run_time, 'end': end_time,
+                       'now': entry_time})
         else:
             # The self._executor.execute_operation may have I/O operation.
             # If it is, this green thread will be switched out during looping
@@ -224,17 +226,26 @@ class TimeTrigger(triggers.BaseTrigger):
             for operation_id in operation_ids:
                 try:
                     self._executor.execute_operation(
-                        operation_id, now, expect_run_time, window)
+                        operation_id, entry_time, expect_run_time, window)
                 except Exception:
                     LOG.exception(_LE("Submit operation to executor "
                                       "failed, id=%s"),
                                   operation_id)
                     pass
 
-        return self._compute_next_run_time(
-            datetime.utcnow(), trigger_property['end_time'],
+        next_time = self._compute_next_run_time(
+            expect_run_time, trigger_property['end_time'],
             trigger_property['format'],
             trigger_property['pattern'])
+        now = datetime.utcnow()
+        if next_time and next_time <= now:
+            LOG.error(_LE("Next run time:%(next_time)s <= now:%(now)s. Maybe "
+                          "the entry time=%(entry)s is too late, even exceeds "
+                          "the end time of window=%(end)s, or it was blocked "
+                          "where sending the operation to executor."),
+                      {'next_time': next_time, 'now': now,
+                       'entry': entry_time, 'end': end_time})
+        return next_time
 
     @classmethod
     def check_trigger_definition(cls, trigger_definition):
