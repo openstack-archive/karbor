@@ -34,7 +34,7 @@ class FakeUserTrustManager(object):
 
 
 class FakeCheckPoint(object):
-    def create(self, provider_id, plan_id):
+    def create(self, provider_id, plan_id, extra_info):
         return
 
 
