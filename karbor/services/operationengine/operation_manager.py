@@ -13,7 +13,6 @@
 """
 Manage all operations.
 """
-import six
 
 from karbor import exception
 from karbor.i18n import _
@@ -39,7 +38,7 @@ class OperationManager(object):
                                    for cls in all_cls}
 
     def do_init(self):
-        for t, cls in six.iteritems(self._operation_cls_map):
+        for t, cls in self._operation_cls_map.items():
             cls.init_configuration()
 
     def _get_operation_cls(self, operation_type):

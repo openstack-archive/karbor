@@ -21,8 +21,6 @@ from oslo_utils import importutils
 from oslo_utils import strutils
 from oslo_utils import timeutils
 
-import six
-
 from karbor import exception
 from karbor.i18n import _, _LE
 from stevedore import driver
@@ -80,7 +78,7 @@ def remove_invalid_filter_options(context, filters,
 
 
 def check_filters(filters):
-    for k, v in six.iteritems(filters):
+    for k, v in filters.items():
         try:
             filters[k] = ast.literal_eval(v)
         except (ValueError, SyntaxError):
