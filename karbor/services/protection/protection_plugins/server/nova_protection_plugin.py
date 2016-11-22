@@ -14,7 +14,6 @@ import eventlet
 from io import BytesIO
 import os
 from time import sleep
-from uuid import uuid4
 
 from karbor.common import constants
 from karbor import exception
@@ -27,6 +26,7 @@ from karbor.services.protection.protection_plugins.server \
 from karbor.services.protection.restore_heat import HeatResource
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 protection_opts = [
     cfg.IntOpt('backup_image_object_size',
@@ -409,7 +409,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
             networks.append({"network": network})
         properties["networks"] = networks
 
-        heat_resource_id = str(uuid4())
+        heat_resource_id = uuidutils.generate_uuid()
         heat_server_resource = HeatResource(heat_resource_id,
                                             constants.SERVER_RESOURCE_TYPE)
         for key, value in properties.items():
@@ -431,7 +431,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                           "instance_uuid": instance_uuid,
                           "volume_id": volume_id}
 
-            heat_resource_id = str(uuid4())
+            heat_resource_id = uuidutils.generate_uuid()
             heat_attachment_resource = HeatResource(
                 heat_resource_id,
                 VOLUME_ATTACHMENT_RESOURCE)
@@ -450,7 +450,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                 original_server_id)
             properties = {"instance_uuid": instance_uuid,
                           "floating_ip": floating_ip}
-            heat_resource_id = str(uuid4())
+            heat_resource_id = uuidutils.generate_uuid()
             heat_floating_resource = HeatResource(
                 heat_resource_id, FLOATING_IP_ASSOCIATION)
 

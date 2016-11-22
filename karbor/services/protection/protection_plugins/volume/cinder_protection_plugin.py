@@ -11,7 +11,6 @@
 #    under the License.
 
 import six
-from uuid import uuid4
 
 from cinderclient.exceptions import NotFound
 from karbor.common import constants
@@ -26,6 +25,7 @@ from karbor.services.protection.restore_heat import HeatResource
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+from oslo_utils import uuidutils
 
 
 protection_opts = [
@@ -180,7 +180,7 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
                           "%s@%s" % (checkpoint.id, resource_id))
         description = kwargs.get("restore_description")
 
-        heat_resource_id = str(uuid4())
+        heat_resource_id = uuidutils.generate_uuid()
         heat_resource = HeatResource(heat_resource_id,
                                      constants.VOLUME_RESOURCE_TYPE)
 

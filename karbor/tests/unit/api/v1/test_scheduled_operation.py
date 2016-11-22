@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
+from oslo_utils import uuidutils
 from webob import exc
 
 from karbor.api.v1 import plans as plan_api
@@ -50,7 +50,7 @@ class ScheduledOperationApiTest(base.TestCase):
         self.req = fakes.HTTPRequest.blank('/v1/scheduled_operations')
 
         trigger = self._create_trigger()
-        self._plan = self._create_plan(str(uuid.uuid4()))
+        self._plan = self._create_plan(uuidutils.generate_uuid())
         self.default_create_operation_param = {
             "name": "123",
             "description": "123",
