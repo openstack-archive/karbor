@@ -26,14 +26,11 @@ function create_karbor_accounts {
 
         create_service_user "$KARBOR_SERVICE_NAME" "admin"
 
-        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-
-            get_or_create_service "$KARBOR_SERVICE_NAME" "$KARBOR_SERVICE_TYPE" "Application Data Protection Service"
-            get_or_create_endpoint "$KARBOR_SERVICE_TYPE" "$REGION_NAME" \
-                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
-                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
-                "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s"
-        fi
+        get_or_create_service "$KARBOR_SERVICE_NAME" "$KARBOR_SERVICE_TYPE" "Application Data Protection Service"
+        get_or_create_endpoint "$KARBOR_SERVICE_TYPE" "$REGION_NAME" \
+            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
+            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s" \
+            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(tenant_id)s"
     fi
 }
 
