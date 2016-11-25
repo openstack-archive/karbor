@@ -91,4 +91,4 @@ class CheckpointTest(base.TestCase):
         )
         self.assertEqual(len(resource_graph), len(cp.resource_graph))
         for start_node in resource_graph:
-            self.assertEqual(True, start_node in cp.resource_graph)
+            self.assertIn(start_node, cp.resource_graph)

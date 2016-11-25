@@ -68,4 +68,4 @@ class SerializeResourceGraphTest(base.TestCase):
             serialized_resource_graph)
         self.assertEqual(len(resource_graph), len(deserialized_resource_graph))
         for start_node in resource_graph:
-            self.assertEqual(True, start_node in deserialized_resource_graph)
+            self.assertIn(start_node, deserialized_resource_graph)
