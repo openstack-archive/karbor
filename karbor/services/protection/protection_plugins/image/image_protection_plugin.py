@@ -206,7 +206,7 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
         image_id = resource_node.value.id
         bank_section = checkpoint.get_resource_bank_section(image_id)
 
-        LOG.info(_LE("deleting image backup failed, image_id: %s."),
+        LOG.info(_LI("deleting image backup failed, image_id: %s."),
                  image_id)
         try:
             bank_section.update_object("status",
