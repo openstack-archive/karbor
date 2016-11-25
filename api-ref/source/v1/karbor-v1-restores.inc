@@ -103,6 +103,7 @@ Request
    - provider_id: provider_id
    - checkpoint_id: checkpoint_id
    - restore_target: restore_target
+   - restore_auth: restore_auth
    - parameters: restore_parameters
 
 Request Example
@@ -123,6 +124,7 @@ Response
    - provider_id: provider_id
    - checkpoint_id: checkpoint_id
    - restore_target: restore_target
+   - restore_auth: restore_auth
    - parameters: restore_parameters
    - status: restore_status
 
