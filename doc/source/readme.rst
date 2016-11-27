@@ -58,7 +58,7 @@ Main Concepts
 =============
 
 Protection Providers
------------------------
+--------------------
 
 .. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/
     protection_provider.png
@@ -137,7 +137,7 @@ complex retention plan to automate the creation and deletion of checkpoints.
 
 Protectables
 ------------
-Protectabes are any class or type of entity that can be protected by Karbor.
+Protectables are any class or type of entity that can be protected by Karbor.
 Since setups might have different entities they would like to protect Karbor
 doesn't bind the API to specific entity types. The admin can even add new
 protectables during set up as long as the protection provider can handle those
@@ -156,7 +156,7 @@ The system is built from independent services and a scalable *Workflow
 engine* that ties them together:
 
 Karbor API Service
-=================
+==================
 
 .. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/
     karbor-api.png
@@ -173,7 +173,7 @@ a hardware device, an external database, etc.).
 
 
 Resource (Protectable) API
----------------------------
+--------------------------
 
 Enables the Karbor user to access information about which resource types are
 protectable (i.e. can be protected by Karbor).  In addition, enables the user to
@@ -181,7 +181,7 @@ get  additional information on each resource type, such as a list of actual
 instances and their dependencies.
 
 Provider API
----------------
+------------
 
 Enables the Karbor user to list available providers and get parameters and
 result schema super-set for all plugins of a specific Provider.
@@ -197,7 +197,7 @@ the following operations:
 -  Starting and suspending of plans.
 
 Automatic Operation API
---------------------------
+-----------------------
 
 This API enables the Karbor user to manage protection Operations:
 
@@ -206,9 +206,9 @@ This API enables the Karbor user to manage protection Operations:
 -  Status on a given Operation ID.
 
 Checkpoint API
----------------
+--------------
 
-This API enables the Karbor user to access and manage the checkpoints stored in
+This API enables the Karbor user to access and manage checkpoints stored in
 the protection provider:
 
 -  List all checkpoints given a Bank ID.
@@ -217,14 +217,14 @@ the protection provider:
 -  Create a checkpoint.
 
 Restore API
----------------
+-----------
 
-This API enables the Karbor user restore a checkpoint on to a restore target:
+This API enables the Karbor user to restore a checkpoint onto a restore target:
 
 -  Create restored system from a checkpoint.
 
 Karbor Schedule Service
-======================
+=======================
 
 This subsystem is responsible for scheduling and orchestrating the execution of
 *Protection Plans*.
@@ -232,39 +232,39 @@ This subsystem is responsible for scheduling and orchestrating the execution of
 The implementation can be replaced by any other external solution since it uses
 only functions that are available through the north-bound API.
 
-Once an entity is created it can be tracked through the north-bound API as well
-so that monitoring the operations is independent from the scheduler.
+Once an entity is created, it can be tracked through the north-bound API,
+so monitoring the operations is independent from the scheduler.
 
-It will be responsible for executing the automatic operations to specific tasks
-and tracking  them.
+It will be responsible for the automatic execution of specific operations
+and tracking them.
 
 Automatic Operation
 -------------------
 
 Automatic operations are the core of the scheduler. They define higher level
-automatic logic. The simple case are scheduled operations that perform basic
-operations at a specific trigger. There will also be available complex
-scheduling policies that will perform multiple north-bound basic APIs.
+automatic logic. A simple scenario is a set of scheduled operations that
+perform basic APIs at a specific trigger. There will also be complex scheduling
+policies available that perform multiple north-bound basic APIs.
 
 Trigger Engine
 --------------
 
-This sub-component of the Schedule Service is responsible for generating
-triggers to begin the execution of the Plan Orchestration.
+This sub-component of the schedule service is responsible for generating
+triggers, which begin the execution of the Plan Orchestration.
 
-It can be done based on a Timer or an Event Collector - Open to implementation.
+It can be done based on a timer or an event collector, based on implementation.
 
-In the first version of Karbor reference implementation, it will only provide
-time-based triggering.
+In the first Karbor reference implementation, the trigger engine will only
+provide time-based triggers.
 
 Scheduled Operation
 -------------------
 
-The sub-component of the Schedule Service is responsible for holding the
-mapping between a Trigger and Operation(s).
+This sub-component of the schedule service is responsible for holding the
+mapping between a trigger and operation(s).
 
 Karbor Protection Service
-========================
+=========================
 
 This subsystem is responsible for handling the following tasks:
 
