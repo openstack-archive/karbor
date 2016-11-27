@@ -176,7 +176,7 @@ class GraphBuilderTest(base.TestCase):
         unpacked_graph = graph.unpack_graph(packed_graph)
         self.assertEqual(len(test_graph), len(unpacked_graph))
         for start_node in test_graph:
-            self.assertEqual(True, start_node in unpacked_graph)
+            self.assertIn(start_node, unpacked_graph)
 
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
