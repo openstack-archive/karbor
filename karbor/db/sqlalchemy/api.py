@@ -28,9 +28,7 @@ from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
-from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql import expression
 from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.sql import func
@@ -936,62 +934,14 @@ def plan_get_all_by_project(context, project_id, marker, limit,
 
 
 def _process_plan_filters(query, filters):
-    """Common filter processing for Plan queries.
+    exact_match_filter_names = ['project_id', 'status']
+    query = _list_common_process_exact_filter(models.Plan, query, filters,
+                                              exact_match_filter_names)
 
-    Filter values that are in lists, tuples, or sets cause an 'IN' operator
-    to be used, while exact matching ('==' operator) is used for other values.
+    regex_match_filter_names = ['name', 'description']
+    query = _list_common_process_regex_filter(models.Plan, query, filters,
+                                              regex_match_filter_names)
 
-    A 'metadata' filter key must correspond to a dictionary value of metadata
-    key-value pairs.
-
-    :param query: Model query to use
-    :param filters: dictionary of filters
-    :returns: updated query or None
-    """
-    filters = filters.copy()
-
-    # Apply exact match filters for everything else, ensure that the
-    # filter value exists on the model
-    for key in filters.keys():
-        # metadata is unique, must be a dict
-        if key == 'resources':
-            if not isinstance(filters[key], dict):
-                LOG.debug("'metadata' filter value is not valid.")
-                return None
-            continue
-        try:
-            column_attr = getattr(models.Plan, key)
-            # Do not allow relationship properties since those require
-            # schema specific knowledge
-            prop = getattr(column_attr, 'property')
-            if isinstance(prop, RelationshipProperty):
-                LOG.debug(("'%s' filter key is not valid, "
-                           "it maps to a relationship."), key)
-                return None
-        except AttributeError:
-            LOG.debug("'%s' filter key is not valid.", key)
-            return None
-
-    # Holds the simple exact matches
-    filter_dict = {}
-
-    # Iterate over all filters, special case the filter if necessary
-    for key, value in filters.items():
-        if key == 'resources':
-            col_attr = getattr(models.Plan, 'continue')
-            for k, v in value.items():
-                query = query.filter(or_(col_attr.any(key=k, value=v)))
-        elif isinstance(value, (list, tuple, set, frozenset)):
-            # Looking for values in a list; apply to query directly
-            column_attr = getattr(models.Plan, key)
-            query = query.filter(column_attr.in_(value))
-        else:
-            # OK, simple exact match; save for later
-            filter_dict[key] = value
-
-    # Apply simple exact matches
-    if filter_dict:
-        query = query.filter_by(**filter_dict)
     return query
 
 
