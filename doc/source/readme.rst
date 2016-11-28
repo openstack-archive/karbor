@@ -203,7 +203,7 @@ This API enables the Karbor user to manage protection Operations:
 
 -  Create a checkpoint for a given Protection Plan.
 -  Delete unneeded checkpoints from the provider.
--  Status on a given Operation ID.
+-  Query the status on a given Operation ID.
 
 Checkpoint API
 --------------
