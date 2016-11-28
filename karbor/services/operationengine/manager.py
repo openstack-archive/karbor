@@ -14,7 +14,6 @@
 OperationEngine Service
 """
 
-from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
@@ -26,8 +25,6 @@ from karbor import objects
 from karbor.services.operationengine.engine.triggers import trigger_manager
 from karbor.services.operationengine import user_trust_manager
 
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 

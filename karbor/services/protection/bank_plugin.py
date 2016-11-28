@@ -14,12 +14,9 @@ import abc
 import os
 import six
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor import exception
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 

@@ -13,14 +13,11 @@
 """Handles all requests relating to protection service."""
 
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor.db import base
 from karbor.services.protection import rpcapi as protection_rpcapi
 
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 

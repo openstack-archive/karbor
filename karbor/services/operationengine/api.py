@@ -13,14 +13,11 @@
 """Handles all requests relating to OperationEngine."""
 
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor.db import base
 from karbor.services.operationengine import rpcapi as operationengine_rpcapi
 
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
