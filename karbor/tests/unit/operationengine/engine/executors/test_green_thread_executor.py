@@ -57,7 +57,7 @@ class GreenThreadExecutorTestCase(base.TestCase):
         window_time = 30
         self._executor.execute_operation(self._op_id, now, now, window_time)
 
-        self.assertTrue(self._op_id in self._executor._operation_thread_map)
+        self.assertIn(self._op_id, self._executor._operation_thread_map)
 
         eventlet.sleep(1)
 
@@ -77,7 +77,7 @@ class GreenThreadExecutorTestCase(base.TestCase):
         self._executor.resume_operation(self._op_id, end_time_for_run=(
             now + timedelta(seconds=window_time)))
 
-        self.assertTrue(self._op_id in self._executor._operation_thread_map)
+        self.assertIn(self._op_id, self._executor._operation_thread_map)
 
         eventlet.sleep(1)
 
@@ -95,7 +95,7 @@ class GreenThreadExecutorTestCase(base.TestCase):
         window_time = 30
         self._executor.execute_operation(self._op_id, now, now, window_time)
 
-        self.assertTrue(self._op_id in self._executor._operation_thread_map)
+        self.assertIn(self._op_id, self._executor._operation_thread_map)
 
         self._executor.cancel_operation(self._op_id)
 
