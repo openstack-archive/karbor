@@ -781,9 +781,16 @@ None
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
     "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
     "restore_target": "http://192.168.1.2:35357/v2.0/",
-    "parameters": {
+    "restore_auth": {
+      "type": "password",
       "username": "admin",
       "password": "secretadmin"
+    },
+    "parameters": {
+      "OS::Cinder::Volume": {
+      },
+      "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": {
+      }
     }
   }
 }
@@ -798,9 +805,16 @@ None
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
     "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
     "restore_target": "http://192.168.1.2:35357/v2.0/",
-    "parameters": {
+    "restore_auth": {
+      "type": "password",
       "username": "admin",
       "password": "***"
+    },
+    "parameters": {
+      "OS::Cinder::Volume": {
+      },
+      "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": {
+      }
     },
     "status": "success"
   }

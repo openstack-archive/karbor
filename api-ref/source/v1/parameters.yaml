@@ -300,6 +300,13 @@ restore:
   in: body
   required: true
   type: object
+restore_auth:
+  description: |
+    The authentication for restore, include "``type``" "``username``" and
+    "``password``" key.
+  in: body
+  required: true
+  type: dict
 restore_id:
   description: |
     The UUID of the restore.
@@ -314,8 +321,8 @@ restore_list:
   type: array
 restore_parameters:
   description: |
-    The specified parameters for restore, it may include "``username``" and
-    "``password``" for target.
+    specifies each resource or resource type paramters according to protection
+    plugin's restore schema.
   in: body
   required: true
   type: dict
