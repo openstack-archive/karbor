@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from karbor import exception
 from karbor.services.protection import provider
 from karbor.tests import base
 import mock
@@ -57,3 +58,8 @@ class ProviderRegistryTest(base.TestCase):
         provider_list = pr.list_providers()
         for provider_node in provider_list:
             self.assertTrue(pr.show_provider(provider_node['id']))
+
+    def test_show_non_existent_provider(self):
+        pr = provider.ProviderRegistry()
+        self.assertRaises(exception.ProviderNotFound, pr.show_provider,
+                          'garbage')

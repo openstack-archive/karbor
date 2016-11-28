@@ -28,7 +28,6 @@ from karbor import manager
 from karbor.resource import Resource
 from karbor.services.protection.flows import worker as flow_manager
 from karbor.services.protection.protectable_registry import ProtectableRegistry
-from karbor.services.protection.provider import PluggableProtectionProvider
 from karbor import utils
 
 LOG = logging.getLogger(__name__)
@@ -85,8 +84,6 @@ class ProtectionManager(manager.Manager):
         provider_id = plan.get('provider_id', None)
         plan_id = plan.get('id', None)
         provider = self.provider_registry.show_provider(provider_id)
-        if not provider:
-            raise exception.ProviderNotFound(provider_id=provider_id)
         try:
             protection_flow = self.worker.get_flow(context,
                                                    constants.OPERATION_PROTECT,
@@ -226,8 +223,6 @@ class ProtectionManager(manager.Manager):
                 filters.get("end_date"), "%Y-%m-%d")
         sort_dir = None if sort_dirs is None else sort_dirs[0]
         provider = self.provider_registry.show_provider(provider_id)
-        if provider is None:
-            raise exception.ProviderNotFound(provider_id=provider_id)
         checkpoint_ids = provider.list_checkpoints(
             limit=limit, marker=marker, plan_id=plan_id,
             start_date=start_date, end_date=end_date, sort_dir=sort_dir)
@@ -241,8 +236,6 @@ class ProtectionManager(manager.Manager):
                                    exception.CheckpointNotFound)
     def show_checkpoint(self, context, provider_id, checkpoint_id):
         provider = self.provider_registry.show_provider(provider_id)
-        if provider is None:
-            raise exception.ProviderNotFound(provider_id=provider_id)
 
         checkpoint = provider.get_checkpoint(checkpoint_id)
         return checkpoint.to_dict()
@@ -368,12 +361,9 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.ProviderNotFound)
     def show_provider(self, context, provider_id):
         provider = self.provider_registry.show_provider(provider_id)
-        if isinstance(provider, PluggableProtectionProvider):
-            response = {'id': provider.id,
-                        'name': provider.name,
-                        'description': provider.description,
-                        'extended_info_schema': provider.extended_info_schema,
-                        }
-            return response
-        else:
-            raise exception.ProviderNotFound(provider_id=provider_id)
+        response = {'id': provider.id,
+                    'name': provider.name,
+                    'description': provider.description,
+                    'extended_info_schema': provider.extended_info_schema,
+                    }
+        return response

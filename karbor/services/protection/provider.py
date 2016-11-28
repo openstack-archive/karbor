@@ -13,6 +13,7 @@
 import os
 
 from karbor.common import constants
+from karbor import exception
 from karbor.i18n import _, _LE
 from karbor.resource import Resource
 from karbor.services.protection import bank_plugin
@@ -255,9 +256,11 @@ class ProviderRegistry(object):
             provider_config.register_opts(provider_opts, 'provider')
             try:
                 provider = PluggableProtectionProvider(provider_config)
-            except Exception:
-                LOG.error(_LE("Load provider: %s failed."),
-                          provider_config.provider.name)
+            except Exception as e:
+                LOG.error(_LE("Load provider: %(provider)s failed. "
+                              "Reason: %(reason)s"),
+                          {'provider': provider_config.provider.name,
+                           'reason': e})
             else:
                 self.providers[provider.id] = provider
 
@@ -270,4 +273,7 @@ class ProviderRegistry(object):
                 for provider in self.providers.values()]
 
     def show_provider(self, provider_id):
-        return self.providers.get(provider_id, None)
+        try:
+            return self.providers[provider_id]
+        except KeyError:
+            raise exception.ProviderNotFound(provider_id=provider_id)
