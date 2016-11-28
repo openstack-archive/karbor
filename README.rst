@@ -7,9 +7,9 @@ Team and repository tags
 
 .. Change things from this point on
 
-=====
+======
 Karbor
-=====
+======
 
 Application Data Protection as a Service for OpenStack
 
@@ -46,7 +46,7 @@ Design for multiple perspectives:
 
 * Vendors: Standard API for protection products
 
-  * Create plugins that implement Protection mechanisms for different OpenStack 
+  * Create plugins that implement Protection mechanisms for different OpenStack
     resources
 
 *****
