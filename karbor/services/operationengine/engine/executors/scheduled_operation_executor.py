@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-
 from abc import abstractmethod
 from datetime import datetime
 from datetime import timedelta
@@ -125,7 +123,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
         try:
             state_ref = objects.ScheduledOperationState.get_by_operation_id(
                 ctxt, operation_id)
-            for item, value in six.iteritems(updates):
+            for item, value in updates.items():
                 setattr(state_ref, item, value)
             state_ref.save()
         except Exception:
