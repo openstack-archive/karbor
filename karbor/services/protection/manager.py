@@ -28,6 +28,7 @@ from karbor import exception
 from karbor.i18n import _, _LI, _LE
 from karbor import manager
 from karbor.resource import Resource
+from karbor.services.protection import client_factory
 from karbor.services.protection.flows import worker as flow_manager
 from karbor.services.protection.protectable_registry import ProtectableRegistry
 from karbor import utils
@@ -61,6 +62,9 @@ class ProtectionManager(manager.Manager):
     def __init__(self, service_name=None,
                  *args, **kwargs):
         super(ProtectionManager, self).__init__(*args, **kwargs)
+
+        client_factory.init()
+
         provider_reg = CONF.provider_registry
         self.provider_registry = utils.load_plugin(PROVIDER_NAMESPACE,
                                                    provider_reg)

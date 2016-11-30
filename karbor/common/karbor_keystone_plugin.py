@@ -55,6 +55,7 @@ class KarborKeystonePlugin(object):
         self._client = None
         self._auth_uri = ""
         self._karbor_user_id = ""
+        self._service_auth_plugin = None
 
         self._do_init()
 
@@ -64,6 +65,7 @@ class KarborKeystonePlugin(object):
         auth_plugin._project_name = "service"
         auth_plugin._project_domain_id = "default"
 
+        self._service_auth_plugin = auth_plugin
         self._client = self._get_keystone_client(auth_plugin)
 
         lcfg = CONF[TRUSTEE_CONF_GROUP]
@@ -75,6 +77,10 @@ class KarborKeystonePlugin(object):
         except Exception:
             msg = 'get keystone auth url failed'
             raise exception.AuthorizationFailure(obj=msg)
+
+    @property
+    def service_auth_plugin(self):
+        return self._service_auth_plugin
 
     def get_service_endpoint(self, service_name, service_type,
                              region_id, interface='public'):
@@ -96,7 +102,7 @@ class KarborKeystonePlugin(object):
             msg = ('get service(%s) endpoint failed' % service_name)
             raise exception.AuthorizationFailure(obj=msg)
 
-    def create_trust_to_karbor(self, context):
+    def create_user_auth_plugin(self, context):
         if not context.auth_token_info:
             msg = ("user=%s, project=%s" % (context.user_id,
                                             context.project_id))
@@ -104,9 +110,12 @@ class KarborKeystonePlugin(object):
 
         auth_ref = access.create(body=context.auth_token_info,
                                  auth_token=context.auth_token)
-        user_auth_plugin = access_plugin.AccessInfoPlugin(
+        return access_plugin.AccessInfoPlugin(
             auth_url=self._auth_uri, auth_ref=auth_ref)
-        l_kc_v3 = self._get_keystone_client(user_auth_plugin)
+
+    def create_trust_to_karbor(self, context):
+        l_kc_v3 = self._get_keystone_client(
+            self.create_user_auth_plugin(context))
         try:
             trust = l_kc_v3.trusts.create(trustor_user=context.user_id,
                                           trustee_user=self._karbor_user_id,

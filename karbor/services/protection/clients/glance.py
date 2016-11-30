@@ -14,7 +14,7 @@ from glanceclient import client as gc
 from oslo_config import cfg
 from oslo_log import log as logging
 from karbor.i18n import _LE, _LI
-from karbor.services.protection import utils
+from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ cfg.CONF.register_opts(glance_client_opts, group=SERVICE + '_client')
 GLANCECLIENT_VERSION = '2'
 
 
-def create(context, conf):
+def create(context, conf, **kwargs):
     conf.register_opts(glance_client_opts, group=SERVICE + '_client')
     try:
         url = utils.get_url(SERVICE, context, conf)

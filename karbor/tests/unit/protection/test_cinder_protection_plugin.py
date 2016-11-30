@@ -18,7 +18,7 @@ from karbor.context import RequestContext
 from karbor import exception
 from karbor.resource import Resource
 from karbor.services.protection import bank_plugin
-from karbor.services.protection.client_factory import ClientFactory
+from karbor.services.protection import client_factory
 from karbor.services.protection.protection_plugins.volume. \
     cinder_protection_plugin import CinderBackupProtectionPlugin
 from karbor.services.protection.protection_plugins.volume \
@@ -91,6 +91,10 @@ class BackupResponse(object):
 class CinderProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(CinderProtectionPluginTest, self).setUp()
+        cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
+        with mock.patch.object(cls, '_do_init'):
+            client_factory.init()
+
         self.plugin = CinderBackupProtectionPlugin()
         cfg.CONF.set_default('cinder_endpoint',
                              'http://127.0.0.1:8776/v2',
@@ -99,7 +103,8 @@ class CinderProtectionPluginTest(base.TestCase):
         self.cntxt = RequestContext(user_id='admin',
                                     project_id='abcd',
                                     auth_token='efgh')
-        self.cinder_client = ClientFactory.create_client("cinder", self.cntxt)
+        self.cinder_client = client_factory.ClientFactory.create_client(
+            "cinder", self.cntxt)
 
     def _get_checkpoint(self):
         fake_bank = bank_plugin.Bank(fakes.FakeBankPlugin())

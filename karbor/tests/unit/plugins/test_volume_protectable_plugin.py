@@ -17,6 +17,7 @@ import mock
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
+from karbor.services.protection import client_factory
 from karbor.services.protection.protectable_plugins.volume \
     import VolumeProtectablePlugin
 
@@ -30,6 +31,12 @@ vol_info = namedtuple('vol_info', ['id', 'attachments', 'name'])
 class VolumeProtectablePluginTest(base.TestCase):
     def setUp(self):
         super(VolumeProtectablePluginTest, self).setUp()
+
+        with mock.patch.object(
+                client_factory.karbor_keystone_plugin.KarborKeystonePlugin,
+                '_do_init'):
+            client_factory.init()
+
         service_catalog = [
             {'type': 'volumev3',
              'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v3/abcd'}],

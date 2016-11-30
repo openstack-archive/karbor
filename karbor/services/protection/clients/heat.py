@@ -16,7 +16,7 @@ from oslo_config import cfg
 
 from oslo_log import log as logging
 from karbor.i18n import _LE, _LI
-from karbor.services.protection import utils
+from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
 

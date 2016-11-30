@@ -62,7 +62,7 @@ def register_opts(conf):
     conf.register_opts(swift_client_opts, group=SERVICE + '_client')
 
 
-def create(context, conf):
+def create(context, conf, **kwargs):
     register_opts(conf)
 
     client_config = conf.swift_client

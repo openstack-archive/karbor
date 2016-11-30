@@ -13,6 +13,7 @@
 import collections
 from karbor.context import RequestContext
 from karbor.resource import Resource
+from karbor.services.protection import client_factory
 from karbor.services.protection.protectable_plugins.server \
     import ServerProtectablePlugin
 
@@ -25,6 +26,11 @@ from oslo_config import cfg
 class ServerProtectablePluginTest(base.TestCase):
     def setUp(self):
         super(ServerProtectablePluginTest, self).setUp()
+        with mock.patch.object(
+                client_factory.karbor_keystone_plugin.KarborKeystonePlugin,
+                '_do_init'):
+            client_factory.init()
+
         service_catalog = [
             {'type': 'compute',
              'endpoints': [{'publicURL': 'http://127.0.0.1:8774/v2.1/abcd'}],

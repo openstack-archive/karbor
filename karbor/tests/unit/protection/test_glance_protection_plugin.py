@@ -17,7 +17,7 @@ from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
-from karbor.services.protection.client_factory import ClientFactory
+from karbor.services.protection import client_factory
 from karbor.services.protection.protection_plugins. \
     image.image_protection_plugin import GlanceProtectionPlugin
 from karbor.services.protection.protection_plugins.image \
@@ -76,6 +76,10 @@ class CheckpointCollection(object):
 class GlanceProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(GlanceProtectionPluginTest, self).setUp()
+        cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
+        with mock.patch.object(cls, '_do_init'):
+            client_factory.init()
+
         self.plugin = GlanceProtectionPlugin()
         cfg.CONF.set_default('glance_endpoint',
                              'http://127.0.0.1:9292',
@@ -84,7 +88,8 @@ class GlanceProtectionPluginTest(base.TestCase):
         self.cntxt = RequestContext(user_id='admin',
                                     project_id='abcd',
                                     auth_token='efgh')
-        self.glance_client = ClientFactory.create_client("glance", self.cntxt)
+        self.glance_client = client_factory.ClientFactory.create_client(
+            "glance", self.cntxt)
         self.checkpoint = CheckpointCollection()
 
     def test_get_options_schema(self):
