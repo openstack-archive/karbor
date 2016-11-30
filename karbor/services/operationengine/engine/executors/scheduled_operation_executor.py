@@ -13,7 +13,6 @@
 from abc import abstractmethod
 from datetime import datetime
 from datetime import timedelta
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
@@ -24,7 +23,6 @@ from karbor import objects
 from karbor.services.operationengine.engine.executors import base
 from karbor.services.operationengine import operation_manager
 
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 

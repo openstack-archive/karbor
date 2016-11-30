@@ -10,15 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 from oslo_versionedobjects import fields
 
 from karbor import db
 from karbor import exception
 from karbor.i18n import _
 from karbor.objects import base
-
-CONF = cfg.CONF
 
 
 @base.KarborObjectRegistry.register

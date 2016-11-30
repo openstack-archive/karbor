@@ -10,14 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
 
 from karbor import db
 from karbor.objects import base
-
-CONF = cfg.CONF
 
 
 @base.KarborObjectRegistry.register
