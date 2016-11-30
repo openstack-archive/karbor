@@ -34,11 +34,13 @@ from karbor import utils
 import six
 
 query_plan_filters_opt = cfg.ListOpt('query_plan_filters',
-                                     default=['name', 'status'],
+                                     default=['name', 'status',
+                                              'description'],
                                      help="Plan filter options which "
                                           "non-admin user could use to "
                                           "query plans. Default values "
-                                          "are: ['name', 'status']")
+                                          "are: ['name', 'status', "
+                                          "'description']")
 CONF = cfg.CONF
 CONF.register_opt(query_plan_filters_opt)
 
