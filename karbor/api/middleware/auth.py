@@ -58,7 +58,7 @@ def pipeline_factory(loader, global_conf, **local_conf):
 
 
 class InjectContext(base_wsgi.Middleware):
-    """Add a 'karbor.context' to WSGI environ."""
+    """Add a 'karbor.context' to WSGI environment."""
 
     def __init__(self, context, *args, **kwargs):
         self.context = context
