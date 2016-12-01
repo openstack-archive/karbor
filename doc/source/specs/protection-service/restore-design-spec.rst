@@ -8,9 +8,9 @@
 Restore design spec (protection service level)
 ==============================================
 
-https://bugs.launchpad.net/smaug/+bug/1560826
+https://bugs.launchpad.net/karbor/+bug/1560826
 
-Protection Service is a component of smaug (an openstack project working as a
+Protection Service is a component of karbor (an openstack project working as a
 service for data protection), which is responsible to execute
 protect/restore/other actions on operations (triggered plans).  The restore
 functionality of protection service is basically about 4 aspects:
@@ -23,13 +23,13 @@ functionality of protection service is basically about 4 aspects:
 
 4. How to watch restoration procedure.
 
-The most important assumption we hold here is that the bank of smaug, which
+The most important assumption we hold here is that the bank of karbor, which
 holds our protection data, is high available and reliable.
 
 Restore from what point
 ================================================
 
-In `document protection service design <https://raw.githubusercontent.com/openstack/smaug/master/doc/source/spes/protection-service/protection-service.rst>`_
+In `document protection service design <https://raw.githubusercontent.com/openstack/karbor/master/doc/source/spes/protection-service/protection-service.rst>`_
 , we have described the procedure to protect resource, where for each protection
 plan execution, we will persist a checkpoint in bank.
 
@@ -76,12 +76,12 @@ It means that the resources stack to be protected and rebuilt not only includes
 the target resources explicitly set in the protection plan, but also includes
 those resources which the target resources depend on.
 
-The smaug protection service will call protection plugin to build the resource
+The karbor protection service will call protection plugin to build the resource
 stack in the order of  the dependencies described by the resource graph
 (persisted in checkpoint as mentioned above).
 
 However, for each kind of resource, to keep what unchanged but what changed is
-not the responsibility of smaug protection service.  It's the implementation of
+not the responsibility of karbor protection service.  It's the implementation of
 each protection plugin who is free to define their own rules. Say, one server
 protection plugin may require to keep fixed ip unchanged after restoration, and
 another server protection plugin may require to keep the attachment device path
@@ -89,10 +89,10 @@ of one volume to be the same, etc.  Those requirements could be met in the
 implementation of the concrete server protection plugin.
 
 The procedure of building openstack resource stack is aligned with openstack
-heat service.  To avoid repeating development work, for now, smaug adopts the
+heat service.  To avoid repeating development work, for now, karbor adopts the
 way to generate the heat template (HOT) as the restore intermediate target.
-Smaug restore API enables user to specify the file path to export heat template,
-and smaug protection service will generate heat template according to protection
+Karbor restore API enables user to specify the file path to export heat template,
+and karbor protection service will generate heat template according to protection
 data, and will export it to the specified file path.
 
 How to restore
@@ -109,7 +109,7 @@ in memory, but we also tolerates some other backup protection plugin which
 doesn't rely on standard openstack API to create resources.  In this way, the
 restore function may produce resources directly instead of by heat.
 
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/class_diagram.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/class_diagram.png
 
 Generally, each restore task will share an injected parameter: an instance of
 HeatTemplate class.  It's created per restore request, and will manage the in
@@ -186,7 +186,7 @@ could choose to extend heat resource to include its own resource building logic.
 
 work flow of restoration:
 -----------------------------
-.. image:: https://raw.githubusercontent.com/openstack/smaug/master/doc/images/protection-service/restore-processing-sequence-flow.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/restore-processing-sequence-flow.png
 
 
 1. User calls API to specify restore from one checkpoint and other restore
@@ -212,7 +212,7 @@ different server flavor, different volume type, etc.
 
 The basic idea is the protection plugin is free to generate template according
 to the target site status.  It could check target site status through openstack
-API or config file, and smaug could define some rules to adapt one world to
+API or config file, and karbor could define some rules to adapt one world to
 another.
 
 Restore heat stack managed resources(TBD)
