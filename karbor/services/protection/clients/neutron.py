@@ -13,7 +13,8 @@
 from neutronclient.v2_0 import client as neutron_client
 from oslo_config import cfg
 from oslo_log import log as logging
-from karbor.i18n import _LE, _LI
+
+from karbor.common import config
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -38,24 +39,26 @@ neutron_client_opts = [
                      'making SSL connection to Neutron.'),
 ]
 
-cfg.CONF.register_opts(neutron_client_opts, group=SERVICE + '_client')
+CONFIG_GROUP = '%s_client' % SERVICE
+CONF = cfg.CONF
+CONF.register_opts(config.service_client_opts, group=CONFIG_GROUP)
+CONF.register_opts(neutron_client_opts, group=CONFIG_GROUP)
+CONF.set_default('service_name', 'neutron', CONFIG_GROUP)
+CONF.set_default('service_type', 'network', CONFIG_GROUP)
 
 
 def create(context, conf, **kwargs):
-    conf.register_opts(neutron_client_opts, group=SERVICE + '_client')
-    try:
-        url = utils.get_url(SERVICE, context, conf)
-    except Exception:
-        LOG.error(_LE("Get neutron service endpoint url failed"))
-        raise
+    conf.register_opts(neutron_client_opts, group=CONFIG_GROUP)
 
-    LOG.info(_LI("Creating neutron client with url %s."), url)
+    client_config = conf[CONFIG_GROUP]
+    url = utils.get_url(SERVICE, context, client_config, **kwargs)
+    LOG.debug("Creating neutron client with url %s.", url)
 
     args = {
         'endpoint_url': url,
         'token': context.auth_token,
-        'cacert': conf.neutron_client.neutron_ca_cert_file,
-        'insecure': conf.neutron_client.neutron_auth_insecure,
+        'cacert': client_config.neutron_ca_cert_file,
+        'insecure': client_config.neutron_auth_insecure,
     }
 
     return neutron_client.Client(**args)

@@ -13,9 +13,10 @@
 from heatclient import client as hc
 from keystoneclient.v3 import client as kc_v3
 from oslo_config import cfg
-
 from oslo_log import log as logging
-from karbor.i18n import _LE, _LI
+
+from karbor.common import config
+from karbor.i18n import _LE
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -43,29 +44,35 @@ heat_client_opts = [
                      'making SSL connection to Cinder.'),
 ]
 
-cfg.CONF.register_opts(heat_client_opts, group=SERVICE + '_client')
+CONFIG_GROUP = '%s_client' % SERVICE
+CONF = cfg.CONF
+CONF.register_opts(config.service_client_opts, group=CONFIG_GROUP)
+CONF.register_opts(heat_client_opts, group=CONFIG_GROUP)
+CONF.set_default('service_name', 'heat', CONFIG_GROUP)
+CONF.set_default('service_type', 'orchestration', CONFIG_GROUP)
 
 KEYSTONECLIENT_VERSION = (3, 0)
 HEATCLIENT_VERSION = '1'
 
 
 def create(context, conf, **kwargs):
-    cfg.CONF.register_opts(heat_client_opts, group=SERVICE + '_client')
-    auth_url = kwargs.get("auth_url", None)
-    if auth_url is not None:
-        return create_heat_client_with_auth_url(context, conf, **kwargs)
+    cfg.CONF.register_opts(heat_client_opts, group=CONFIG_GROUP)
+
+    client_config = conf[CONFIG_GROUP]
+    if kwargs.get("auth_url", None):
+        return _create_client_with_auth_url(context, client_config, **kwargs)
     else:
-        return create_heat_client_with_tenant(context, conf)
+        return _create_client_with_tenant(context, client_config, **kwargs)
 
 
-def create_heat_client_with_auth_url(context, conf, **kwargs):
+def _create_client_with_auth_url(context, client_config, **kwargs):
     auth_url = kwargs["auth_url"]
     username = kwargs["username"]
     password = kwargs["password"]
     tenant_name = context.project_name
-    cacert = conf.heat_client.heat_ca_cert_file
-    insecure = conf.heat_client.heat_auth_insecure
-    LOG.info(_LI('Creating heat client with auth url %s.'), auth_url)
+    cacert = client_config.heat_ca_cert_file
+    insecure = client_config.heat_auth_insecure
+    LOG.debug('Creating heat client with auth url %s.', auth_url)
     try:
         keystone = kc_v3.Client(version=KEYSTONECLIENT_VERSION,
                                 username=username,
@@ -90,24 +97,15 @@ def create_heat_client_with_auth_url(context, conf, **kwargs):
         raise
 
 
-def create_heat_client_with_tenant(context, conf):
-    cacert = conf.heat_client.heat_ca_cert_file
-    insecure = conf.heat_client.heat_auth_insecure
+def _create_client_with_tenant(context, client_config, **kwargs):
+    url = utils.get_url(SERVICE, context, client_config,
+                        append_project_fmt='%(url)s/%(project)s', **kwargs)
+    LOG.debug('Creating heat client with url %s.', url)
 
-    conf.register_opts(heat_client_opts, group=SERVICE + '_client')
-    try:
-        url = utils.get_url(SERVICE, context, conf,
-                            append_project_fmt='%(url)s/%(project)s')
-    except Exception:
-        LOG.error(_LE("Get heat service endpoint url failed."))
-        raise
-
-    try:
-        LOG.info(_LI('Creating heat client with url %s.'), url)
-        heat = hc.Client(HEATCLIENT_VERSION, endpoint=url,
-                         token=context.auth_token, cacert=cacert,
-                         insecure=insecure)
-        return heat
-    except Exception:
-        LOG.error(_LE('Creating heat client with endpoint fails.'))
-        raise
+    args = {
+        'endpoint': url,
+        'token': context.auth_token,
+        'cacert': client_config.heat_ca_cert_file,
+        'insecure': client_config.heat_auth_insecure,
+    }
+    return hc.Client(HEATCLIENT_VERSION, **args)

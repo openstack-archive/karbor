@@ -30,7 +30,8 @@ def get_karbor_endpoint():
         sc_cfg = CONF[CONFIG_GROUP]
         kc_plugin = karbor_keystone_plugin.KarborKeystonePlugin()
         url = kc_plugin.get_service_endpoint(
-            sc_cfg.service_name, sc_cfg.service_type, sc_cfg.region_id)
+            sc_cfg.service_name, sc_cfg.service_type,
+            sc_cfg.region_id, sc_cfg.interface)
 
         return url.replace("$(", "%(")
     except Exception:

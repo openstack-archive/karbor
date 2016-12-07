@@ -90,6 +90,11 @@ service_client_opts = [
                default='RegionOne',
                help='The region id which the service belongs to.'),
 
+    cfg.StrOpt('interface',
+               default='internal',
+               help='The network interface of the endpoint. Valid '
+                    'values are: public, admin, internal.'),
+
     cfg.StrOpt('ca_cert_file',
                default=None,
                help='Location of the CA certificate file '

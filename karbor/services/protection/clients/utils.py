@@ -28,29 +28,57 @@ def _parse_service_catalog_info(config, context):
         if entry.get('type') == service_type:
             return entry.get('endpoints')[0].get(endpoint_type)
 
-    raise exception.KarborException(_(
-        "Couldn't find the endpoint of service type %s "
-        "from service catalog") % service_type)
-
 
 def _parse_service_endpoint(endpoint_url, context, append_project_fmt=None):
+    if not endpoint_url:
+        return None
+
     if not append_project_fmt:
         return endpoint_url
+
     return append_project_fmt % {
         'url': endpoint_url,
         'project': context.project_id,
     }
 
 
-def get_url(service, context, conf, append_project_fmt=None):
+def get_url(service, context, client_config,
+            append_project_fmt=None, **kwargs):
     '''Return the url of given service endpoint.'''
-    client_conf = getattr(conf, service + '_client')
 
-    endpoint = getattr(client_conf, service + '_endpoint')
-    if endpoint is not None:
-        return _parse_service_endpoint(endpoint, context, append_project_fmt)
+    url = ""
 
-    return _parse_service_catalog_info(
-        getattr(client_conf, service + '_catalog_info'),
-        context
-    )
+    # get url by endpoint
+    try:
+        url = _parse_service_endpoint(client_config['%s_endpoint' % service],
+                                      context, append_project_fmt)
+        if url:
+            return url
+    except Exception:
+        pass
+
+    # get url by catalog
+    try:
+        url = _parse_service_catalog_info(
+            client_config['%s_catalog_info' % service], context)
+        if url:
+            return url
+    except Exception:
+        pass
+
+    # get url by accessing keystone
+    try:
+        keystone_plugin = kwargs.get('keystone_plugin')
+        url = keystone_plugin.get_service_endpoint(
+            client_config.service_name, client_config.service_type,
+            client_config.region_id, client_config.interface)
+
+        url = url.replace("$", "%")
+    except Exception:
+        pass
+
+    if url:
+        return url
+
+    raise exception.KarborException(
+        _("Couldn't find the endpoint of service(%s)") % service)

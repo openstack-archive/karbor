@@ -67,7 +67,7 @@ class ImageProtectablePluginTest(base.TestCase):
             plugin._glance_client(self._context).http_client.endpoint,
             'http://127.0.0.1:9292')
         self.assertEqual(
-            plugin._nova_client(self._context).client.management_url,
+            plugin._nova_client(self._context).client.endpoint_override,
             'http://127.0.0.1:8774/v2.1/abcd')
 
     @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
@@ -84,7 +84,7 @@ class ImageProtectablePluginTest(base.TestCase):
             plugin._glance_client(self._context).http_client.endpoint,
             'http://127.0.0.1:9292')
         self.assertEqual(
-            plugin._nova_client(self._context).client.management_url,
+            plugin._nova_client(self._context).client.endpoint_override,
             'http://127.0.0.1:8774/v2.1/abcd')
 
     def test_get_resource_type(self):

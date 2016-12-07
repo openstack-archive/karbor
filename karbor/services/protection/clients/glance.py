@@ -13,7 +13,8 @@
 from glanceclient import client as gc
 from oslo_config import cfg
 from oslo_log import log as logging
-from karbor.i18n import _LE, _LI
+
+from karbor.common import config
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -38,26 +39,28 @@ glance_client_opts = [
                      'making SSL connection to Glance.'),
 ]
 
-cfg.CONF.register_opts(glance_client_opts, group=SERVICE + '_client')
+CONFIG_GROUP = '%s_client' % SERVICE
+CONF = cfg.CONF
+CONF.register_opts(config.service_client_opts, group=CONFIG_GROUP)
+CONF.register_opts(glance_client_opts, group=CONFIG_GROUP)
+CONF.set_default('service_name', 'glance', CONFIG_GROUP)
+CONF.set_default('service_type', 'image', CONFIG_GROUP)
 
 GLANCECLIENT_VERSION = '2'
 
 
 def create(context, conf, **kwargs):
-    conf.register_opts(glance_client_opts, group=SERVICE + '_client')
-    try:
-        url = utils.get_url(SERVICE, context, conf)
-    except Exception:
-        LOG.error(_LE("Get glance service endpoint url failed"))
-        raise
+    conf.register_opts(glance_client_opts, group=CONFIG_GROUP)
 
-    LOG.info(_LI("Creating glance client with url %s."), url)
+    client_config = conf[CONFIG_GROUP]
+    url = utils.get_url(SERVICE, context, client_config, **kwargs)
+    LOG.debug("Creating glance client with url %s.", url)
 
     args = {
         'endpoint': url,
         'token': context.auth_token,
-        'cacert': conf.glance_client.glance_ca_cert_file,
-        'insecure': conf.glance_client.glance_auth_insecure,
+        'cacert': client_config.glance_ca_cert_file,
+        'insecure': client_config.glance_auth_insecure,
     }
 
     return gc.Client(GLANCECLIENT_VERSION, **args)

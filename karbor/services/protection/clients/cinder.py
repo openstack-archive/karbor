@@ -13,7 +13,8 @@
 from cinderclient import client as cc
 from oslo_config import cfg
 from oslo_log import log as logging
-from karbor.i18n import _LI, _LE
+
+from karbor.common import config
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -38,26 +39,28 @@ cinder_client_opts = [
                      'making SSL connection to Cinder.'),
 ]
 
-cfg.CONF.register_opts(cinder_client_opts, group=SERVICE + '_client')
+CONFIG_GROUP = '%s_client' % SERVICE
+CONF = cfg.CONF
+CONF.register_opts(config.service_client_opts, group=CONFIG_GROUP)
+CONF.register_opts(cinder_client_opts, group=CONFIG_GROUP)
+CONF.set_default('service_name', 'cinderv3', CONFIG_GROUP)
+CONF.set_default('service_type', 'volumev3', CONFIG_GROUP)
 
 CINDERCLIENT_VERSION = '3'
 
 
 def create(context, conf, **kwargs):
-    conf.register_opts(cinder_client_opts, group=SERVICE + '_client')
-    try:
-        url = utils.get_url(SERVICE, context, conf,
-                            append_project_fmt='%(url)s/%(project)s')
-    except Exception:
-        LOG.error(_LE("Get cinder service endpoint url failed."))
-        raise
+    conf.register_opts(cinder_client_opts, group=CONFIG_GROUP)
 
-    LOG.info(_LI('Creating cinder client with url %s.'), url)
+    client_config = conf[CONFIG_GROUP]
+    url = utils.get_url(SERVICE, context, client_config,
+                        append_project_fmt='%(url)s/%(project)s', **kwargs)
+    LOG.debug('Creating cinder client with url %s.', url)
 
     args = {
         'project_id': context.project_id,
-        'cacert': conf.cinder_client.cinder_ca_cert_file,
-        'insecure': conf.cinder_client.cinder_auth_insecure,
+        'cacert': client_config.cinder_ca_cert_file,
+        'insecure': client_config.cinder_auth_insecure,
     }
 
     client = cc.Client(CINDERCLIENT_VERSION, **args)

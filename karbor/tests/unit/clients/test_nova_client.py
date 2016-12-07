@@ -10,11 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import session as keystone_session
+from oslo_config import cfg
+
 from karbor.context import RequestContext
 from karbor.services.protection.clients import nova
-
 from karbor.tests import base
-from oslo_config import cfg
 
 
 class NovaClientTest(base.TestCase):
@@ -35,13 +36,16 @@ class NovaClientTest(base.TestCase):
         cfg.CONF.set_default('nova_endpoint',
                              'http://127.0.0.1:8774/v2.1',
                              'nova_client')
-        client = nova.create(self._context, cfg.CONF, session={})
+
+        client = nova.create(self._context, cfg.CONF,
+                             session=keystone_session.Session(auth=None))
         self.assertEqual('compute', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         client.client.management_url)
+                         client.client.endpoint_override)
 
     def test_create_client_by_catalog(self):
-        client = nova.create(self._context, cfg.CONF, session={})
+        client = nova.create(self._context, cfg.CONF,
+                             session=keystone_session.Session(auth=None))
         self.assertEqual('compute', client.client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         client.client.management_url)
+                         client.client.endpoint_override)

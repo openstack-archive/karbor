@@ -14,8 +14,9 @@ from novaclient import client as nc
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from karbor.common import config
 from karbor import exception
-from karbor.i18n import _LI, _LE
+from karbor.i18n import _LE
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -41,21 +42,23 @@ nova_client_opts = [
                      'making SSL connection to Nova.'),
 ]
 
-cfg.CONF.register_opts(nova_client_opts, group=SERVICE + '_client')
+CONFIG_GROUP = '%s_client' % SERVICE
+CONF = cfg.CONF
+CONF.register_opts(config.service_client_opts, group=CONFIG_GROUP)
+CONF.register_opts(nova_client_opts, group=CONFIG_GROUP)
+CONF.set_default('service_name', 'nova', CONFIG_GROUP)
+CONF.set_default('service_type', 'compute', CONFIG_GROUP)
 
 NOVACLIENT_VERSION = '2'
 
 
 def create(context, conf, **kwargs):
-    conf.register_opts(nova_client_opts, group=SERVICE + '_client')
-    try:
-        url = utils.get_url(SERVICE, context, conf,
-                            append_project_fmt='%(url)s/%(project)s')
-    except Exception:
-        LOG.error(_LE("Get nova service endpoint url failed."))
-        raise
+    conf.register_opts(nova_client_opts, group=CONFIG_GROUP)
 
-    LOG.info(_LI('Creating nova client with url %s.'), url)
+    client_config = conf[CONFIG_GROUP]
+    url = utils.get_url(SERVICE, context, client_config,
+                        append_project_fmt='%(url)s/%(project)s', **kwargs)
+    LOG.debug('Creating nova client with url %s.', url)
 
     extensions = nc.discover_extensions(NOVACLIENT_VERSION)
     session = kwargs.get('session')

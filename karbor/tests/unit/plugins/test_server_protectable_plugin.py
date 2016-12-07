@@ -53,8 +53,9 @@ class ServerProtectablePluginTest(base.TestCase):
             auth=None)
         self.assertEqual('compute',
                          plugin._client(self._context).client.service_type)
-        self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         plugin._client(self._context).client.management_url)
+        self.assertEqual(
+            'http://127.0.0.1:8774/v2.1/abcd',
+            plugin._client(self._context).client.endpoint_override)
 
     @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
                 '_generate_session')
@@ -64,8 +65,9 @@ class ServerProtectablePluginTest(base.TestCase):
             auth=None)
         self.assertEqual('compute',
                          plugin._client(self._context).client.service_type)
-        self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         plugin._client(self._context).client.management_url)
+        self.assertEqual(
+            'http://127.0.0.1:8774/v2.1/abcd',
+            plugin._client(self._context).client.endpoint_override)
 
     @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
                 '_generate_session')
