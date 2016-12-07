@@ -35,6 +35,9 @@ Request
 .. rest_parameters:: parameters.yaml
 
    - tenant_id: tenant_id
+   - sort: sort
+   - limit: limit
+   - marker: marker
 
 Response
 --------

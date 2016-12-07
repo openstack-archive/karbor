@@ -58,6 +58,9 @@ Request
 
    - tenant_id: tenant_id
    - provider_id: provider_id_1
+   - sort: sort
+   - limit: limit
+   - marker: marker
 
 Response
 --------
