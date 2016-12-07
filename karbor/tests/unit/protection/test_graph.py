@@ -178,6 +178,22 @@ class GraphBuilderTest(base.TestCase):
         for start_node in test_graph:
             self.assertIn(start_node, unpacked_graph)
 
+    def test_pack_unpack_graph(self):
+        test_base = {
+            "A1": ["B1", "B2", "B3", "B4"],
+            "B1": [],
+            "B2": [],
+            "B3": ["B1"],
+            "B4": ["B2"],
+        }
+
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        packed_graph = graph.pack_graph(test_graph)
+        unpacked_graph = graph.unpack_graph(packed_graph)
+        self.assertEqual(len(test_graph), len(unpacked_graph))
+        for start_node in test_graph:
+            self.assertIn(start_node, unpacked_graph)
+
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
     def __init__(self, expected_event_stream, test):
