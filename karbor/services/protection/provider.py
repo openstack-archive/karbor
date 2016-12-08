@@ -115,7 +115,8 @@ class PluggableProtectionProvider(object):
             plugin = utils.load_plugin(PROTECTION_NAMESPACE, bank_name,
                                        self._config)
         except Exception:
-            LOG.error(_LE("Load bank plugin: '%s' failed."), bank_name)
+            LOG.exception(_LE("Load bank plugin: '%s' failed."),
+                          bank_name)
             raise
         else:
             self._bank_plugin = plugin
@@ -125,7 +126,8 @@ class PluggableProtectionProvider(object):
             plugin = utils.load_plugin(PROTECTION_NAMESPACE, plugin_name,
                                        self._config)
         except Exception:
-            LOG.error(_LE("Load protection plugin: '%s' failed."), plugin_name)
+            LOG.exception(_LE("Load protection plugin: '%s' failed."),
+                          plugin_name)
             raise
         else:
             self._plugin_map[plugin_name] = plugin
