@@ -54,11 +54,14 @@ def create(context, conf, **kwargs):
     url = utils.get_url(SERVICE, context, client_config, **kwargs)
     LOG.debug("Creating neutron client with url %s.", url)
 
+    if kwargs.get('session'):
+        return neutron_client.Client(session=kwargs.get('session'),
+                                     endpoint_override=url)
+
     args = {
         'endpoint_url': url,
         'token': context.auth_token,
         'cacert': client_config.neutron_ca_cert_file,
         'insecure': client_config.neutron_auth_insecure,
     }
-
     return neutron_client.Client(**args)

@@ -102,6 +102,10 @@ def _create_client_with_tenant(context, client_config, **kwargs):
                         append_project_fmt='%(url)s/%(project)s', **kwargs)
     LOG.debug('Creating heat client with url %s.', url)
 
+    if kwargs.get('session'):
+        return hc.Client(HEATCLIENT_VERSION, session=kwargs.get('session'),
+                         endpoint=url)
+
     args = {
         'endpoint': url,
         'token': context.auth_token,

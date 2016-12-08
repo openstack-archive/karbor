@@ -11,26 +11,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+from oslo_config import cfg
 
 from karbor.context import RequestContext
 from karbor.services.protection.clients import glance
 from karbor.tests import base
-from oslo_config import cfg
 
 
 class GlanceClientTest(base.TestCase):
     def setUp(self):
         super(GlanceClientTest, self).setUp()
+
+        self._public_url = 'http://127.0.0.1:9292'
+
         service_catalog = [
             {
-                'endpoints': [
-                    {'publicURL': 'http://127.0.0.1:9292', }
-                ],
+                'endpoints': [{'publicURL': self._public_url}],
                 'type': 'image',
                 'name': 'glance',
             },
         ]
-
         self._context = RequestContext(user_id='admin',
                                        project_id='abcd',
                                        auth_token='efgh',
@@ -46,3 +47,26 @@ class GlanceClientTest(base.TestCase):
     def test_create_client_by_catalog(self):
         gc = glance.create(self._context, cfg.CONF)
         self.assertEqual('http://127.0.0.1:9292', gc.http_client.endpoint)
+
+    @mock.patch('karbor.services.protection.clients.utils.get_url')
+    @mock.patch('glanceclient.client.Client')
+    def test_create_client(self, create, get_url):
+        get_url.return_value = self._public_url
+
+        client_config = cfg.CONF[glance.CONFIG_GROUP]
+        client_version = glance.GLANCECLIENT_VERSION
+        session = object()
+        args = {
+            'endpoint': self._public_url,
+            'token': self._context.auth_token,
+            'cacert': client_config.glance_ca_cert_file,
+            'insecure': client_config.glance_auth_insecure,
+        }
+
+        glance.create(self._context, cfg.CONF)
+        create.assert_called_with(client_version, **args)
+
+        glance.create(self._context, cfg.CONF, session=session)
+        create.assert_called_with(client_version,
+                                  endpoint=self._public_url,
+                                  session=session)

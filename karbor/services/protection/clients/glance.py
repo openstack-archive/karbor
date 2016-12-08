@@ -56,11 +56,14 @@ def create(context, conf, **kwargs):
     url = utils.get_url(SERVICE, context, client_config, **kwargs)
     LOG.debug("Creating glance client with url %s.", url)
 
+    if kwargs.get('session'):
+        return gc.Client(GLANCECLIENT_VERSION, session=kwargs.get('session'),
+                         endpoint=url)
+
     args = {
         'endpoint': url,
         'token': context.auth_token,
         'cacert': client_config.glance_ca_cert_file,
         'insecure': client_config.glance_auth_insecure,
     }
-
     return gc.Client(GLANCECLIENT_VERSION, **args)
