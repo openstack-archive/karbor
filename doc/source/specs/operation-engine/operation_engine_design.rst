@@ -18,7 +18,7 @@ Problem description
 1. Define the operations and triggers (time or event)
 2. Bind the operation with trigger and activate the trigger
 3. Define the executor which will run the operations
-4. Ensure the high availablity of Operation Engine Service
+4. Ensure the high availability of Operation Engine Service
 
 .. image:: ../../../images/operation-engine/operation_engine_architecture_diagram.png
   :height: 300px

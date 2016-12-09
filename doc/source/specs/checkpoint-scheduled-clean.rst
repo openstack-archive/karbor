@@ -125,7 +125,7 @@ New optional body attribute when creating a scheduled operation::
 Security impact
 ---------------
 
-We need to make sure the two values are withing bounds to prevent any attacks.
+We need to make sure the two values are within bounds to prevent any attacks.
 The bounds will be defined in the local config.
 
 Notifications impact

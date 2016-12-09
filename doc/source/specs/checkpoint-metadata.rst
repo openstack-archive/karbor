@@ -73,7 +73,7 @@ New optional body attribute when creating a new checkpoint::
 Security impact
 ---------------
 
-We need to make sure the number of entries and their size is withing bounds
+We need to make sure the number of entries and their size is within bounds
 to prevent any attacks.
 
 Notifications impact

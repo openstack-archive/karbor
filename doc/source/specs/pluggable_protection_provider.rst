@@ -131,13 +131,13 @@ On the other hand, when copying a volume's data to different sites there is no
 need for other operations to wait on the copy.
 
 Finally, there might be a need to perform an operation marking a transaction
-as successfull after everything related to a VM was protected.
+as successful after everything related to a VM was protected.
 
 Looking at this we see there are 3 distinct phases for every protection.
 
-#. *Preperation Phase*: This phase for performing actions in relation to a
-   resource's dependencies. It's called the "Preperation Phase" because it
-   where a plugin should do all the preperation required for the next phase.
+#. *Preparation Phase*: This phase for performing actions in relation to a
+   resource's dependencies. It's called the "Preparation Phase" because it
+   where a plugin should do all the preparation required for the next phase.
    Operation in this phase should be as short as possible since they are not
    parraralized as much as in the following phases. As an example, taking
    snapshots of all the volumes should happen in relation to the owning VMs
@@ -147,17 +147,17 @@ Looking at this we see there are 3 distinct phases for every protection.
    sensitivity. This will be mainly used for transferring the large amount of
    information generated in the backup to different sites.
 #. *Completion Phase*: This phase is for performing work once *all* the work,
-   not just preperation, was completed on a resource and all of it's
+   not just preparation, was completed on a resource and all of it's
    dependencies. This is a good place to attach resources (in case of restore)
    or close transactions.
 
 As a Protection Plugin developer you want to minimize the work needed to be
-done in the preperation and completion phases and do the bulk of the work in
+done in the preparation and completion phases and do the bulk of the work in
 the main phase since will allow for the most efficient execution of the
 operation.
 
 It's important to note that a developer doesn't have to do any action during a
-phase. It's completly valid to only use the main or preperation phase. In
+phase. It's completly valid to only use the main or preparation phase. In
 fact, we think it's going to be very rare that a Protection Plugin will need
 to use all the phases.
 
@@ -168,7 +168,7 @@ resource, or other resources.
 
 For *each* operation the pluggin can implement each of the hooks:
 
-#. **Preperation hooks**: as noted, preperation is for running tasks in
+#. **Preparation hooks**: as noted, preparation is for running tasks in
    relation to other resources in the graph. This is why two hooks exist, one
    for running before dependent resources' pereperation and one for after.
 
