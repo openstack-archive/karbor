@@ -59,6 +59,33 @@ trigger_id_1:
 
 
 # variables in query
+limit:
+  description: |
+    Requests a page size of items. Returns a number
+    of items up to a limit value. Use the ``limit`` parameter to make
+    an initial limited request and use the ID of the last-seen item
+    from the response as the ``marker`` parameter value in a
+    subsequent limited request.
+  in: query
+  required: false
+  type: integer
+marker:
+  description: |
+    The ID of the last-seen item. Use the ``limit``
+    parameter to make an initial limited request and use the ID of the
+    last-seen item from the response as the ``marker`` parameter value
+    in a subsequent limited request.
+  in: query
+  required: false
+  type: string
+sort:
+  description: |
+    Comma-separated list of sort keys and optional
+    sort directions in the form of < key > [: < direction > ]. A valid
+    direction is ``asc`` (ascending) or ``desc`` (descending).
+  in: query
+  required: false
+  type: string
 
 
 # variables in body
