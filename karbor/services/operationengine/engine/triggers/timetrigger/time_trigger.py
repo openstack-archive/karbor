@@ -50,7 +50,7 @@ LOG = logging.getLogger(__name__)
 
 class TriggerOperationGreenThread(object):
     def __init__(self, first_run_time, function):
-
+        self._is_sleeping = True
         self._pre_run_time = None
         self._running = False
         self._thread = None
@@ -61,6 +61,8 @@ class TriggerOperationGreenThread(object):
 
     def kill(self):
         self._running = False
+        if self._is_sleeping:
+            self._thread.kill()
 
     @property
     def running(self):
@@ -82,17 +84,21 @@ class TriggerOperationGreenThread(object):
         self._thread.link(self._on_done)
 
     def _on_done(self, gt, *args, **kwargs):
+        self._is_sleeping = True
         self._pre_run_time = None
         self._running = False
         self._thread = None
 
     def _run(self, expect_run_time):
         while self._running:
+            self._is_sleeping = False
             self._pre_run_time = expect_run_time
 
             expect_run_time = self._function(expect_run_time)
             if expect_run_time is None or not self._running:
                 break
+
+            self._is_sleeping = True
 
             now = datetime.utcnow()
             idle_time = 0 if expect_run_time <= now else int(
