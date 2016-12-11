@@ -34,6 +34,7 @@ function generate_testr_results {
 
     if [[ "$venv" == fullstack* ]] ; then
         generate_test_logs "/tmp/${venv}-logs"
+        generate_test_logs "${KARBOR_DIR}/.tox/${venv}/log"
     fi
 }
 
@@ -51,10 +52,9 @@ sudo chown -R $owner:stack "$KARBOR_DIR"
 
 # Run tests
 echo "Running karbor $venv tests"
-set +e
 sudo -n -H -u "$owner" tox -e "$venv"
+cp /opt/stack/new/karbor/.tox/fullstack/log/fullstack-0.log /opt/stack/log/fullstack-0.log
 testr_exit_code=$?
-set -e
 
 # Collect and parse results
 generate_testr_results
