@@ -165,6 +165,24 @@ class TimeTriggerTestCase(base.TestCase):
         trigger.unregister_operation(operation_id)
         self.assertNotIn(operation_id, trigger._operation_ids)
 
+    def test_unregister_operation_when_scheduling(self):
+        trigger = self._generate_trigger()
+
+        for op_id in ['1', '2', '3']:
+            trigger.register_operation(op_id)
+            self.assertTrue(op_id in trigger._operation_ids)
+        eventlet.sleep(0.5)
+
+        for op_id in ['2', '3']:
+            trigger.unregister_operation(op_id)
+            self.assertTrue(op_id not in trigger._operation_ids)
+        eventlet.sleep(0.6)
+
+        self.assertTrue(trigger._executor._ops['1'] >= 1)
+
+        self.assertTrue(('2' not in trigger._executor._ops) or (
+            '3' not in trigger._executor._ops))
+
     def test_update_trigger_property(self):
         trigger = self._generate_trigger()
 
