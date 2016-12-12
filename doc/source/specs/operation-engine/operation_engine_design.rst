@@ -137,3 +137,4 @@ Flow
 
 .. image:: ../../../images/operation-engine/delete_scheduled_operation_seq_diagram.png
   :height: 400px
+
