@@ -600,3 +600,12 @@ def checkpoint_record_get_all_by_filters_sort(
     return IMPL.checkpoint_record_get_all_by_filters_sort(
         context, filters, limit=limit, marker=marker,
         sort_keys=sort_keys, sort_dirs=sort_dirs)
+
+
+def purge_deleted_rows(context, age_in_days):
+    """Purge deleted rows older than given age from karbor tables
+
+    Raises InvalidParameterValue if age_in_days is incorrect.
+    :returns: number of deleted rows
+    """
+    return IMPL.purge_deleted_rows(context, age_in_days=age_in_days)
