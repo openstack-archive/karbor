@@ -17,6 +17,7 @@ from oslo_config import cfg
 CONF = cfg.CONF
 
 CONF.import_opt('policy_file', 'karbor.policy', group='oslo_policy')
+CONF.import_opt('provider_config_dir', 'karbor.services.protection.provider')
 
 
 def set_defaults(conf):
