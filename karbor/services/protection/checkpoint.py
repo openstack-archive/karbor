@@ -109,7 +109,7 @@ class Checkpoint(object):
 
     def _assert_supported_version(self, new_md):
         if new_md["version"] not in self.SUPPORTED_VERSIONS:
-            # Something bad happend invalidate the object
+            # Something bad happened invalidate the object
             self._md_cache = None
             self._checkpoint_section = None
             raise RuntimeError(
