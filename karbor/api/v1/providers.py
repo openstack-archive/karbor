@@ -41,11 +41,13 @@ query_provider_filters_opt = \
 
 query_checkpoint_filters_opt = \
     cfg.ListOpt('query_checkpoint_filters',
-                default=['project_id', 'status'],
+                default=['project_id', 'plan_id',
+                         'start_date', 'end_date'],
                 help="Checkpoint filter options which "
                      "non-admin user could use to "
                      "query checkpoints. Default values "
-                     "are: ['project_id', 'status']")
+                     "are: ['project_id', 'plan_id', "
+                     "'start_date', 'end_date']")
 
 CONF = cfg.CONF
 CONF.register_opt(query_provider_filters_opt)
