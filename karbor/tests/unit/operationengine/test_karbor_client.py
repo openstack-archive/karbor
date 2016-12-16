@@ -35,8 +35,8 @@ class KarborClientTest(base.TestCase):
         sc = karbor_client.create(ctx, endpoint=karbor_url)
         self.assertEqual(karbor_url, sc.http_client.endpoint)
 
-        karbor_url = "http://127.0.0.1:9090/$(tenant_id)s"
+        karbor_url = "http://127.0.0.1:9090/$(project_id)s"
         get_service_endpoint.return_value = karbor_url
-        endpoint = karbor_url.replace("$(tenant_id)s", ctx.project_id)
+        endpoint = karbor_url.replace("$(project_id)s", ctx.project_id)
         sc = karbor_client.create(ctx)
         self.assertEqual(endpoint, sc.http_client.endpoint)
