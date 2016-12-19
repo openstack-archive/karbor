@@ -97,7 +97,7 @@ class ScheduledOperationApiTest(base.TestCase):
                           self.controller.create,
                           self.req, body)
 
-    def test_create_operation_recieve_invalid_except(self):
+    def test_create_operation_receive_invalid_except(self):
         self.remote_operation_api._create_operation_exception =\
             exception.TriggerIsInvalid(trigger_id=None)
 
@@ -109,7 +109,7 @@ class ScheduledOperationApiTest(base.TestCase):
 
         self.remote_operation_api._create_operation_exception = None
 
-    def test_create_operation_recieve_unknown_except(self):
+    def test_create_operation_receive_unknown_except(self):
         self.remote_operation_api._create_operation_exception =\
             exception.TriggerNotFound(id=None)
 
@@ -129,7 +129,7 @@ class ScheduledOperationApiTest(base.TestCase):
         operation = self.controller.create(self.req, body)
         self.assertEqual(name, operation['scheduled_operation']['name'])
 
-    def test_delete_operation_recieve_NotFound_except(self):
+    def test_delete_operation_receive_NotFound_except(self):
         self.remote_operation_api._delete_operation_exception =\
             exception.ScheduledOperationStateNotFound(op_id=None)
 
