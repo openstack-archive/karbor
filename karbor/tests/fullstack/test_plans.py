@@ -19,9 +19,7 @@ class PlansTest(karbor_base.KarborBaseTest):
     """Test Plans operation"""
     def setUp(self):
         super(PlansTest, self).setUp()
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        self.provider_id = providers[0].id
+        self.provider_id = self.provider_id_noop
 
     def test_plans_list(self):
         nplans_before = len(self.karbor_client.plans.list())

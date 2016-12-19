@@ -151,7 +151,7 @@ class Checkpoint(object):
             value={
                 "version": cls.VERSION,
                 "id": checkpoint_id,
-                "status": "protecting",
+                "status": constants.CHECKPOINT_STATUS_PROTECTING,
                 "owner_id": owner_id,
                 "provider_id": plan.get("provider_id"),
                 "project_id": plan.get("project_id"),

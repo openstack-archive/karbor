@@ -11,18 +11,12 @@
 #    under the License.
 
 import os
+import six
 
-from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _, _LE
-from karbor.resource import Resource
 from karbor.services.protection import bank_plugin
 from karbor.services.protection.checkpoint import CheckpointCollection
-from karbor.services.protection.graph import GraphWalker
-from karbor.services.protection.protectable_registry import ProtectableRegistry
-from karbor.services.protection.resource_graph import ResourceGraphContext
-from karbor.services.protection.resource_graph \
-    import ResourceGraphWalkerListener
 from karbor import utils
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -84,7 +78,7 @@ class PluggableProtectionProvider(object):
             for plugin_name in self._config.provider.plugin:
                 if not plugin_name:
                     raise ImportError(_("Empty protection plugin"))
-                self._load_plugin(plugin_name)
+                self._register_plugin(plugin_name)
 
     @property
     def id(self):
@@ -110,6 +104,12 @@ class PluggableProtectionProvider(object):
     def plugins(self):
         return self._plugin_map
 
+    def load_plugins(self):
+        return {
+            plugin_type: plugin_class(self._config)
+            for plugin_type, plugin_class in six.iteritems(self.plugins)
+        }
+
     def _load_bank(self, bank_name):
         try:
             plugin = utils.load_plugin(PROTECTION_NAMESPACE, bank_name,
@@ -121,17 +121,16 @@ class PluggableProtectionProvider(object):
         else:
             self._bank_plugin = plugin
 
-    def _load_plugin(self, plugin_name):
+    def _register_plugin(self, plugin_name):
         try:
-            plugin = utils.load_plugin(PROTECTION_NAMESPACE, plugin_name,
-                                       self._config)
+            plugin = utils.load_class(PROTECTION_NAMESPACE, plugin_name)
         except Exception:
             LOG.exception(_LE("Load protection plugin: '%s' failed."),
                           plugin_name)
             raise
         else:
-            self._plugin_map[plugin_name] = plugin
             for resource in plugin.get_supported_resources_types():
+                self._plugin_map[resource] = plugin
                 if hasattr(plugin, 'get_options_schema'):
                     self._extended_info_schema['options_schema'][resource] \
                         = plugin.get_options_schema(resource)
@@ -154,88 +153,6 @@ class PluggableProtectionProvider(object):
         return checkpoint_collection.list_ids(
             limit=limit, marker=marker, plan_id=plan_id,
             start_date=start_date, end_date=end_date, sort_dir=sort_dir)
-
-    def build_task_flow(self, ctx):
-        cntxt = ctx["context"]
-        workflow_engine = ctx["workflow_engine"]
-        operation = ctx["operation_type"]
-
-        resource_context = None
-        resource_graph = None
-
-        if operation == constants.OPERATION_PROTECT:
-            plan = ctx["plan"]
-            task_flow = workflow_engine.build_flow(flow_name=plan.get('id'))
-            resources = plan.get('resources')
-            parameters = plan.get('parameters')
-            graph_resources = []
-            for resource in resources:
-                graph_resources.append(Resource(type=resource['type'],
-                                                id=resource['id'],
-                                                name=resource['name']))
-            # TODO(luobin): pass registry in ctx
-            registry = ProtectableRegistry()
-            registry.load_plugins()
-            resource_graph = registry.build_graph(cntxt, graph_resources)
-            resource_context = ResourceGraphContext(
-                cntxt=cntxt,
-                operation=operation,
-                workflow_engine=workflow_engine,
-                task_flow=task_flow,
-                plugin_map=self._plugin_map,
-                parameters=parameters
-            )
-        if operation == constants.OPERATION_RESTORE:
-            restore = ctx['restore']
-            task_flow = workflow_engine.build_flow(
-                flow_name=restore.get('id'))
-            checkpoint = ctx["checkpoint"]
-            resource_graph = checkpoint.resource_graph
-            parameters = restore.get('parameters')
-            heat_template = ctx["heat_template"]
-            resource_context = ResourceGraphContext(
-                cntxt=cntxt,
-                checkpoint=checkpoint,
-                operation=operation,
-                workflow_engine=workflow_engine,
-                task_flow=task_flow,
-                plugin_map=self._plugin_map,
-                parameters=parameters,
-                heat_template=heat_template
-            )
-        if operation == constants.OPERATION_DELETE:
-            checkpoint = ctx['checkpoint']
-            task_flow = workflow_engine.build_flow(
-                flow_name=checkpoint.id)
-            resource_graph = checkpoint.resource_graph
-            resource_context = ResourceGraphContext(
-                cntxt=cntxt,
-                checkpoint=checkpoint,
-                operation=operation,
-                workflow_engine=workflow_engine,
-                task_flow=task_flow,
-                plugin_map=self._plugin_map
-            )
-
-        # TODO(luobin): for other type operations
-
-        walker_listener = ResourceGraphWalkerListener(resource_context)
-        graph_walker = GraphWalker()
-        graph_walker.register_listener(walker_listener)
-        graph_walker.walk_graph(resource_graph)
-
-        if operation == constants.OPERATION_PROTECT:
-            return {"task_flow": walker_listener.context.task_flow,
-                    "status_getters": walker_listener.context.status_getters,
-                    "resource_graph": resource_graph}
-        if operation == constants.OPERATION_RESTORE:
-            return {"task_flow": walker_listener.context.task_flow}
-        if operation == constants.OPERATION_DELETE:
-            return {"task_flow": walker_listener.context.task_flow,
-                    "status_getters": walker_listener.context.status_getters
-                    }
-
-        # TODO(luobin): for other type operations
 
 
 class ProviderRegistry(object):

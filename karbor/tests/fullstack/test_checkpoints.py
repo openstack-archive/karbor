@@ -19,15 +19,14 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
     """Test Checkpoints operation """
     def setUp(self):
         super(CheckpointsTest, self).setUp()
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        self.provider_id = providers[0].id
+        self.provider_id = self.provider_id_noop
 
     def test_checkpoint_create(self):
+        self.skipTest('Requires cinder protection plugin adjustment')
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
+        plan.create(self.provider_id_os, [volume, ])
 
         backups = self.cinder_client.backups.list()
         before_num = len(backups)

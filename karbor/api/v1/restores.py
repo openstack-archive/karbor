@@ -264,7 +264,7 @@ class RestoresController(wsgi.Controller):
             'checkpoint_id': restore.get('checkpoint_id'),
             'restore_target': restore.get('restore_target'),
             'parameters': parameters,
-            'status': constants.RESOURCE_STATUS_STARTED,
+            'status': constants.RESTORE_STATUS_IN_PROGRESS,
         }
 
         restoreobj = objects.Restore(context=context,
@@ -276,10 +276,9 @@ class RestoresController(wsgi.Controller):
         try:
             self.protection_api.restore(context, restoreobj, restore_auth)
         except Exception:
-            status_update = constants.OPERATION_EXE_STATE_FAILED
             # update the status of restore
             update_dict = {
-                "status": status_update
+                "status": constants.RESTORE_STATUS_FAILURE
             }
             check_policy(context, 'update', restoreobj)
             restoreobj = self._restore_update(context,

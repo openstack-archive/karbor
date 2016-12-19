@@ -15,6 +15,8 @@ Protection Service
 """
 
 from datetime import datetime
+from eventlet import greenpool
+from eventlet import greenthread
 import six
 
 from oslo_config import cfg
@@ -35,7 +37,12 @@ LOG = logging.getLogger(__name__)
 protection_manager_opts = [
     cfg.StrOpt('provider_registry',
                default='karbor.services.protection.provider.ProviderRegistry',
-               help='the provider registry')
+               help='the provider registry'),
+    cfg.IntOpt('max_concurrent_operations',
+               default=0,
+               help='number of maximum concurrent operation (protect, restore,'
+                    ' delete) flows. 0 means no hard limit'
+               )
 ]
 
 CONF = cfg.CONF
@@ -60,6 +67,16 @@ class ProtectionManager(manager.Manager):
         self.protectable_registry = ProtectableRegistry()
         self.protectable_registry.load_plugins()
         self.worker = flow_manager.Worker()
+        self._greenpool = None
+        self._greenpool_size = CONF.max_concurrent_operations
+        if self._greenpool_size != 0:
+            self._greenpool = greenpool.GreenPool(self._greenpool_size)
+
+    def _spawn(self, func, *args, **kwargs):
+        if self._greenpool is not None:
+            return self._greenpool.spawn_n(func, *args, **kwargs)
+        else:
+            return greenthread.spawn_n(func, *args, **kwargs)
 
     def init_host(self, **kwargs):
         """Handle initialization if this is a standalone service"""
@@ -84,32 +101,32 @@ class ProtectionManager(manager.Manager):
         provider_id = plan.get('provider_id', None)
         plan_id = plan.get('id', None)
         provider = self.provider_registry.show_provider(provider_id)
+        checkpoint_collection = provider.get_checkpoint_collection()
+        try:
+            checkpoint = checkpoint_collection.create(plan)
+        except Exception as e:
+            LOG.exception(_LE("Failed to create checkpoint, plan: %s"),
+                          plan_id)
+            exc = exception.FlowError(flow="protect",
+                                      error="Error creating checkpoint")
+            six.raise_from(exc, e)
         try:
             protection_flow = self.worker.get_flow(context,
                                                    constants.OPERATION_PROTECT,
                                                    plan=plan,
-                                                   provider=provider)
-        except Exception:
+                                                   provider=provider,
+                                                   checkpoint=checkpoint)
+        except Exception as e:
             LOG.exception(_LE("Failed to create protection flow, plan: %s"),
                           plan_id)
             raise exception.FlowError(
                 flow="protect",
-                error=_("Failed to create flow"))
-        try:
-            self.worker.run_flow(protection_flow)
-        except Exception:
-            LOG.exception(_LE("Failed to run protection flow, plan: %s"),
-                          plan_id)
+                error=e.msg if hasattr(e, 'msg') else 'Internal error')
+        self._spawn(self.worker.run_flow, protection_flow)
+        return checkpoint.id
 
-            raise exception.FlowError(
-                flow="protect",
-                error=_("Failed to run flow"))
-        finally:
-            checkpoint = self.worker.flow_outputs(protection_flow,
-                                                  target='checkpoint')
-            return {'checkpoint_id': checkpoint.id}
-
-    @messaging.expected_exceptions(exception.InvalidInput,
+    @messaging.expected_exceptions(exception.ProviderNotFound,
+                                   exception.CheckpointNotFound,
                                    exception.CheckpointNotAvailable,
                                    exception.FlowError)
     def restore(self, context, restore, restore_auth):
@@ -118,13 +135,11 @@ class ProtectionManager(manager.Manager):
         checkpoint_id = restore["checkpoint_id"]
         provider_id = restore["provider_id"]
         provider = self.provider_registry.show_provider(provider_id)
-        try:
-            checkpoint_collection = provider.get_checkpoint_collection()
-            checkpoint = checkpoint_collection.get(checkpoint_id)
-        except Exception:
-            LOG.error(_LE("Invalid checkpoint id: %s"), checkpoint_id)
-            raise exception.InvalidInput(
-                reason=_("Invalid checkpoint id"))
+        if not provider:
+            raise exception.ProviderNotFound(provider_id=provider_id)
+
+        checkpoint_collection = provider.get_checkpoint_collection()
+        checkpoint = checkpoint_collection.get(checkpoint_id)
 
         if checkpoint.status != constants.CHECKPOINT_STATUS_AVAILABLE:
             raise exception.CheckpointNotAvailable(
@@ -145,15 +160,7 @@ class ProtectionManager(manager.Manager):
             raise exception.FlowError(
                 flow="restore",
                 error=_("Failed to create flow"))
-        try:
-            self.worker.run_flow(restoration_flow)
-        except Exception:
-            LOG.exception(
-                _LE("Failed to run restoration flow checkpoint: %s"),
-                checkpoint_id)
-            raise exception.FlowError(
-                flow="restore",
-                error=_("Failed to run flow"))
+        self._spawn(self.worker.run_flow, restoration_flow)
 
     def delete(self, context, provider_id, checkpoint_id):
         LOG.info(_LI("Starting protection service:delete action"))
@@ -191,12 +198,7 @@ class ProtectionManager(manager.Manager):
             raise exception.KarborException(_(
                 "Failed to create delete checkpoint flow."
             ))
-        try:
-            self.worker.run_flow(delete_checkpoint_flow)
-            return True
-        except Exception:
-            LOG.exception(_LE("Failed to run delete checkpoint flow"))
-            raise
+        self._spawn(self.worker.run_flow, delete_checkpoint_flow)
 
     def start(self, plan):
         # TODO(wangliuan)

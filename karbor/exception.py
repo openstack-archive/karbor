@@ -262,6 +262,11 @@ class ProtectableTypeNotFound(NotFound):
                 " not be found.")
 
 
+class ProtectionPluginNotFound(NotFound):
+    message = _("Protection Plugin for %(type)s could"
+                " not be found.")
+
+
 class ProviderNotFound(NotFound):
     message = _("Provider %(provider_id)s could"
                 " not be found.")

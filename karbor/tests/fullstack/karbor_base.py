@@ -170,6 +170,8 @@ class KarborBaseTest(base.BaseTestCase):
         self.karbor_client = _get_karbor_client_from_creds()
         self.keystone_endpoint = _get_keystone_endpoint_from_creds()
         self._testcase_store = ObjectStore()
+        self.provider_id_noop = 'b766f37c-d011-4026-8228-28730d734a3f'
+        self.provider_id_os = 'cf56bd3e-97a7-4078-b6d5-f36246333fd9'
 
     def store(self, obj, close_func=None):
         return self._testcase_store.store(obj, close_func)

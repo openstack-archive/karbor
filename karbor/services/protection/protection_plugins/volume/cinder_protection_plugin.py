@@ -52,19 +52,24 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
         sync_status_loop.start(interval=self.protection_sync_interval,
                                initial_delay=self.protection_sync_interval)
 
-    def get_supported_resources_types(self):
-        return self._SUPPORT_RESOURCE_TYPES
+    @classmethod
+    def get_supported_resources_types(cls):
+        return cls._SUPPORT_RESOURCE_TYPES
 
-    def get_options_schema(self, resources_type):
+    @classmethod
+    def get_options_schema(cls, resources_type):
         return cinder_schemas.OPTIONS_SCHEMA
 
-    def get_restore_schema(self, resources_type):
+    @classmethod
+    def get_restore_schema(cls, resources_type):
         return cinder_schemas.RESTORE_SCHEMA
 
-    def get_saved_info_schema(self, resources_type):
+    @classmethod
+    def get_saved_info_schema(cls, resources_type):
         return cinder_schemas.SAVED_INFO_SCHEMA
 
-    def get_saved_info(self, metadata_store, resource):
+    @classmethod
+    def get_saved_info(cls, metadata_store, resource):
         # TODO(hurong)
         pass
 

@@ -50,25 +50,20 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
     def _add_to_threadpool(self, func, *args, **kwargs):
         self._tp.spawn_n(func, *args, **kwargs)
 
-    def get_resource_stats(self, checkpoint, resource_id):
-        # Get the status of this resource
-        bank_section = checkpoint.get_resource_bank_section(resource_id)
-        try:
-            status = bank_section.get_object("status")
-            return status
-        except Exception:
-            return "undefined"
-
-    def get_options_schema(self, resources_type):
+    @classmethod
+    def get_options_schema(cls, resources_type):
         return image_schemas.OPTIONS_SCHEMA
 
-    def get_restore_schema(self, resources_type):
+    @classmethod
+    def get_restore_schema(cls, resources_type):
         return image_schemas.RESTORE_SCHEMA
 
-    def get_saved_info_schema(self, resources_type):
+    @classmethod
+    def get_saved_info_schema(cls, resources_type):
         return image_schemas.SAVED_INFO_SCHEMA
 
-    def get_saved_info(self, metadata_store, resource):
+    @classmethod
+    def get_saved_info(cls, metadata_store, resource):
         pass
 
     def _glance_client(self, cntxt):
@@ -228,5 +223,6 @@ class GlanceProtectionPlugin(BaseProtectionPlugin):
                 resource_id=image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
 
-    def get_supported_resources_types(self):
-        return self._SUPPORT_RESOURCE_TYPES
+    @classmethod
+    def get_supported_resources_types(cls):
+        return cls._SUPPORT_RESOURCE_TYPES

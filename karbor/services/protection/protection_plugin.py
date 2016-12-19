@@ -9,60 +9,129 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import abc
-
-import six
-
-from oslo_config import cfg
 from oslo_log import log as logging
 
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
+class Operation(object):
+    def __init__(self):
+        super(Operation, self).__init__()
+
+    def on_prepare_begin(self, checkpoint, resource, context, parameters,
+                         **kwargs):
+        """on_prepare_begin hook runs before any child resource's hooks run
+
+        Optional
+        :param checkpoint: checkpoint object for this operation
+        :param resource: a resource object for this operation
+        :param context: current operation context (viable for clients)
+        :param parameters: dictionary representing operation parameters
+        :param heat_template: HeatTemplate for restore operation only
+        """
+        pass
+
+    def on_prepare_finish(self, checkpoint, resource, context, parameters,
+                          **kwargs):
+        """on_prepare_finish hook runs after all child resources' prepare hooks
+
+        Optional
+        :param checkpoint: checkpoint object for this operation
+        :param resource: a resource object for this operation
+        :param context: current operation context (viable for clients)
+        :param parameters: dictionary representing operation parameters
+        :param heat_template: HeatTemplate for restore operation only
+        """
+        pass
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        """on_main hook runs in parallel to other resources' on_main hooks
+
+        Your main operation heavy lifting should probably be here.
+        Optional
+        :param checkpoint: checkpoint object for this operation
+        :param resource: a resource object for this operation
+        :param context: current operation context (viable for clients)
+        :param parameters: dictionary representing operation parameters
+        :param heat_template: HeatTemplate for restore operation only
+        """
+        pass
+
+    def on_complete(self, checkpoint, resource, context, parameters, **kwargs):
+        """on_complete hook runs after all dependent resource's hooks
+
+        Optional
+        :param checkpoint: checkpoint object for this operation
+        :param resource: a resource object for this operation
+        :param context: current operation context (viable for clients)
+        :param parameters: dictionary representing operation parameters
+        :param heat_template: HeatTemplate for restore operation only
+        """
+        pass
+
+
 class ProtectionPlugin(object):
     def __init__(self, config=None):
         self._config = config
 
-    @abc.abstractmethod
-    def get_supported_resources_types(self):
-        # TODO(wangliuan)
-        pass
+    def get_protect_operation(self, resource):
+        """Returns the protect Operation for this resource
 
-    @abc.abstractmethod
-    def get_options_schema(self, resources_type):
-        # TODO(wangliuan)
-        pass
+        :returns: Operation for the resource
+        """
+        raise NotImplementedError
 
-    @abc.abstractmethod
-    def get_saved_info_schema(self, resources_type):
-        # TODO(wangliuan)
-        pass
+    def get_restore_operation(self, resource):
+        """Returns the restore Operation for this resource
 
-    @abc.abstractmethod
-    def get_restore_schema(self, resources_type):
-        # TODO(wangliuan)
-        pass
+        :returns: Operation for the resource
+        """
+        raise NotImplementedError
 
-    @abc.abstractmethod
-    def get_saved_info(self, metadata_store, resource):
-        # TODO(wangliuan)
-        pass
+    def get_delete_operation(self, resource):
+        """Returns the delete Operation for this resource
 
-    @abc.abstractmethod
-    def get_resource_stats(self, checkpoint, resource_id):
-        # TODO(wangliuan)
-        pass
+        :returns: Operation for the resource
+        """
+        raise NotImplementedError
 
-    @abc.abstractmethod
-    def on_resource_start(self, context):
-        # TODO(wangliuan)
-        pass
+    @classmethod
+    def get_supported_resources_types(cls):
+        """Returns a list of resource types this plugin supports
 
-    @abc.abstractmethod
-    def on_resource_end(self, context):
-        # TODO(wangliuan)
-        pass
+        :returns: a list of resource types
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_options_schema(cls, resource_type):
+        """Returns the protect options schema for a resource type
+
+        :returns: a dictionary representing the schema
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_saved_info_schema(cls, resource_type):
+        """Returns the saved info schema for a resource type
+
+        :returns: a dictionary representing the schema
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_restore_schema(cls, resource_type):
+        """Returns the restore schema for a resource type
+
+        :returns: a dictionary representing the schema
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_saved_info(cls, metadata_store, resource):
+        """Returns the saved info for a resource
+
+        :returns: a dictionary representing the saved info
+        """
+        raise NotImplementedError

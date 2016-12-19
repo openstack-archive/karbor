@@ -10,14 +10,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from karbor import exception
-from karbor.services.protection import provider
-from karbor.tests import base
 import mock
 
+from karbor.resource import Resource
+from karbor.services.protection import provider
+from karbor.tests import base
+from karbor.tests.unit.protection import fakes
 from oslo_config import cfg
 
 CONF = cfg.CONF
+
+(parent_type, child_type, grandchild_type) = \
+    fakes.FakeProtectionPlugin.SUPPORTED_RESOURCES
+
+parent = Resource(id='A1', name='parent', type=parent_type)
+child = Resource(id='B1', name='child', type=child_type)
+grandchild = Resource(id='C1', name='grandchild', type=grandchild_type)
+resource_graph = {
+    parent: [child],
+    child: [grandchild],
+    grandchild: [],
+}
 
 
 class ProviderRegistryTest(base.TestCase):
@@ -25,10 +38,11 @@ class ProviderRegistryTest(base.TestCase):
         super(ProviderRegistryTest, self).setUp()
 
     @mock.patch.object(provider.PluggableProtectionProvider, '_load_bank')
-    @mock.patch.object(provider.PluggableProtectionProvider, '_load_plugin')
-    def test_load_providers(self, mock_load_bank, mock_load_plugin):
+    @mock.patch.object(provider.PluggableProtectionProvider,
+                       '_register_plugin')
+    def test_load_providers(self, mock_load_bank, mock_register_plugin):
         pr = provider.ProviderRegistry()
-        self.assertEqual(mock_load_plugin.call_count, 1)
+        self.assertEqual(mock_register_plugin.call_count, 1)
         self.assertEqual(mock_load_bank.call_count, 1)
         self.assertEqual(len(pr.providers), 1)
 
@@ -38,16 +52,13 @@ class ProviderRegistryTest(base.TestCase):
     def test_provider_bank_config(self):
         pr = provider.ProviderRegistry()
         provider1 = pr.show_provider('fake_id1')
-        self.assertEqual(provider1.bank._plugin._config.fake_bank.fake_host,
-                         'thor')
+        self.assertEqual(provider1.bank._plugin.fake_host, 'thor')
 
     def test_provider_plugin_config(self):
         pr = provider.ProviderRegistry()
         provider1 = pr.show_provider('fake_id1')
-        plugin_name = 'karbor.tests.unit.fake_protection.FakeProtectionPlugin'
-        self.assertEqual(
-            provider1.plugins[plugin_name]._config.fake_plugin.fake_user,
-            'user')
+        plugins = provider1.load_plugins()
+        self.assertEqual(plugins['Test::ResourceA'].fake_user, 'user')
 
     def test_list_provider(self):
         pr = provider.ProviderRegistry()
@@ -58,8 +69,3 @@ class ProviderRegistryTest(base.TestCase):
         provider_list = pr.list_providers()
         for provider_node in provider_list:
             self.assertTrue(pr.show_provider(provider_node['id']))
-
-    def test_show_non_existent_provider(self):
-        pr = provider.ProviderRegistry()
-        self.assertRaises(exception.ProviderNotFound, pr.show_provider,
-                          'garbage')

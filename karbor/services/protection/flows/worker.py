@@ -52,13 +52,14 @@ class Worker(object):
         if operation_type == constants.OPERATION_PROTECT:
             plan = kwargs.get('plan', None)
             provider = kwargs.get('provider', None)
+            checkpoint = kwargs.get('checkpoint')
             protection_flow = create_protection.get_flow(context,
                                                          self.workflow_engine,
                                                          operation_type,
                                                          plan,
-                                                         provider)
+                                                         provider,
+                                                         checkpoint)
             return protection_flow
-        # TODO(wangliuan)implement the other operation
 
     def get_restoration_flow(self, context, operation_type, checkpoint,
                              provider, restore, restore_auth):

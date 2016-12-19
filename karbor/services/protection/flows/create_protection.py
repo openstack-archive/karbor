@@ -11,94 +11,66 @@
 # under the License.
 
 from karbor.common import constants
-from karbor.i18n import _LI
-from oslo_config import cfg
+from karbor.resource import Resource
+from karbor.services.protection.protectable_registry import ProtectableRegistry
+from karbor.services.protection import resource_flow
 from oslo_log import log as logging
-from oslo_service import loopingcall
 from taskflow import task
-
-sync_status_opts = [
-    cfg.IntOpt('sync_status_interval',
-               default=60,
-               help='update protection status interval')
-]
-
-CONF = cfg.CONF
-CONF.register_opts(sync_status_opts)
 
 LOG = logging.getLogger(__name__)
 
 
-class CreateCheckpointTask(task.Task):
-    def __init__(self, plan, provider, resource_graph):
-        provides = 'checkpoint'
-        super(CreateCheckpointTask, self).__init__(provides=provides)
-        self._plan = plan
-        self._provider = provider
-        self._resource_graph = resource_graph
+class InitiateProtectTask(task.Task):
+    def __init__(self):
+        super(InitiateProtectTask, self).__init__()
 
-    def execute(self):
-        checkpoint_collection = self._provider.get_checkpoint_collection()
-        checkpoint = checkpoint_collection.create(self._plan)
-        checkpoint.resource_graph = self._resource_graph
+    def execute(self, checkpoint, *args, **kwargs):
+        LOG.debug("Initiate protect checkpoint_id: %s", checkpoint.id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
         checkpoint.commit()
-        return checkpoint
+
+    def revert(self, checkpoint, *args, **kwargs):
+        LOG.debug("Failed to protect checkpoint_id: %s", checkpoint.id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_ERROR
+        checkpoint.commit()
 
 
-class SyncCheckpointStatusTask(task.Task):
-    def __init__(self, status_getters):
-        requires = ['checkpoint']
-        super(SyncCheckpointStatusTask, self).__init__(requires=requires)
-        self._status_getters = status_getters
+class CompleteProtectTask(task.Task):
+    def __init__(self):
+        super(CompleteProtectTask, self).__init__()
 
     def execute(self, checkpoint):
-        LOG.info(_LI("Start sync checkpoint status,checkpoint_id: %s"),
-                 checkpoint.id)
-        sync_status = loopingcall.FixedIntervalLoopingCall(
-            self._sync_status, checkpoint, self._status_getters)
-        sync_status.start(interval=CONF.sync_status_interval)
-
-    def _sync_status(self, checkpoint, status_getters):
-        statuses = set()
-        for s in status_getters:
-            resource_id = s.get('resource_id')
-            get_resource_stats = s.get('get_resource_stats')
-            statuses.add(get_resource_stats(checkpoint, resource_id))
-        if constants.RESOURCE_STATUS_ERROR in statuses:
-            checkpoint.status = constants.CHECKPOINT_STATUS_ERROR
-            checkpoint.commit()
-        elif constants.RESOURCE_STATUS_PROTECTING in statuses:
-            checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
-            checkpoint.commit()
-        elif constants.RESOURCE_STATUS_UNDEFINED in statuses:
-            checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
-            checkpoint.commit()
-        else:
-            checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE
-            checkpoint.commit()
-            LOG.info(_LI("Stop sync checkpoint status,checkpoint_id: "
-                         "%(checkpoint_id)s,checkpoint status: "
-                         "%(checkpoint_status)s"),
-                     {"checkpoint_id": checkpoint.id,
-                      "checkpoint_status": checkpoint.status})
-            raise loopingcall.LoopingCallDone()
+        LOG.debug("Complete protect checkpoint_id: %s", checkpoint.id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE
+        checkpoint.commit()
 
 
-def get_flow(context, workflow_engine, operation_type, plan, provider):
-    ctx = {'context': context,
-           'plan': plan,
-           'workflow_engine': workflow_engine,
-           'operation_type': operation_type}
-    flow_name = "create_protection_" + plan.get('id')
+def get_flow(context, workflow_engine, operation_type, plan, provider,
+             checkpoint):
+    protectable_registry = ProtectableRegistry()
+    resources = set(Resource(**item) for item in plan.get("resources"))
+    resource_graph = protectable_registry.build_graph(context,
+                                                      resources)
+    checkpoint.resource_graph = resource_graph
+    checkpoint.commit()
+    flow_name = "Protect_" + plan.get('id')
     protection_flow = workflow_engine.build_flow(flow_name, 'linear')
-    result = provider.build_task_flow(ctx)
-    status_getters = result.get('status_getters')
-    resource_flow = result.get('task_flow')
-    resource_graph = result.get('resource_graph')
-    workflow_engine.add_tasks(protection_flow,
-                              CreateCheckpointTask(plan, provider,
-                                                   resource_graph),
-                              resource_flow,
-                              SyncCheckpointStatusTask(status_getters))
-    flow_engine = workflow_engine.get_engine(protection_flow)
+    plugins = provider.load_plugins()
+    resources_task_flow = resource_flow.build_resource_flow(
+        operation_type=operation_type,
+        context=context,
+        workflow_engine=workflow_engine,
+        resource_graph=resource_graph,
+        plugins=plugins,
+        parameters=plan.get('parameters'),
+    )
+    workflow_engine.add_tasks(
+        protection_flow,
+        InitiateProtectTask(),
+        resources_task_flow,
+        CompleteProtectTask(),
+    )
+    flow_engine = workflow_engine.get_engine(protection_flow, store={
+        'checkpoint': checkpoint
+    })
     return flow_engine

@@ -98,12 +98,3 @@ class BaseProtectionPlugin(ProtectionPlugin):
                                                   child_task, parent_task)
             else:
                 task_stack.pop()
-
-    def get_resource_stats(self, checkpoint, resource_id):
-        # Get the status of this resource
-        bank_section = checkpoint.get_resource_bank_section(resource_id)
-        try:
-            status = bank_section.get_object("status")
-            return status
-        except Exception:
-            return constants.RESOURCE_STATUS_UNDEFINED

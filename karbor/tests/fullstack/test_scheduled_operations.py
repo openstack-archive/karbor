@@ -25,7 +25,7 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         super(ScheduledOperationsTest, self).setUp()
         providers = self.provider_list()
         self.assertTrue(len(providers))
-        self.provider_id = providers[0].id
+        self.provider_id = self.provider_id_noop
 
     def _create_scheduled_operation(self,
                                     trigger_properties,
