@@ -93,3 +93,51 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         self.assertEqual(constants.CHECKPOINT_STATUS_AVAILABLE,
                          checkpoint_item.status)
         self.assertEqual(checkpoint.id, checkpoint_item.id)
+
+    def test_checkpoint_for_server_attached_volume(self):
+        """Test checkpoint for server which has attached some volumes"""
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        server = self.store(objects.Server())
+        server.create()
+        server.attach_volume(volume.id)
+
+        plan0 = self.store(objects.Plan())
+        plan0.create(self.provider_id, [server, ])
+
+        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
+        before_checkpoints_num = len(checkpoints)
+        backups = self.cinder_client.backups.list()
+        before_backups_num = len(backups)
+
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan0.id, timeout=900)
+
+        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
+        after_checkpoints_num = len(checkpoints)
+        self.assertEqual(1, after_checkpoints_num - before_checkpoints_num)
+
+        backups = self.cinder_client.backups.list()
+        after_backups_num = len(backups)
+        self.assertEqual(1, after_backups_num - before_backups_num)
+
+        plan1 = self.store(objects.Plan())
+        plan1.create(self.provider_id, [server, volume])
+
+        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
+        before_checkpoints_num = len(checkpoints)
+        backups = self.cinder_client.backups.list()
+        before_backups_num = len(backups)
+
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan1.id, timeout=720)
+
+        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
+        after_checkpoints_num = len(checkpoints)
+        self.assertEqual(1, after_checkpoints_num - before_checkpoints_num)
+
+        backups = self.cinder_client.backups.list()
+        after_backups_num = len(backups)
+        self.assertEqual(1, after_backups_num - before_backups_num)
+
+        server.detach_volume(volume.id)

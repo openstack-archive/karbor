@@ -243,6 +243,20 @@ class Server(object):
         utils.wait_until_true(partial(self._volume_attached, volume_id),
                               timeout=timeout, sleep=MEDIUM_SLEEP)
 
+    def _volume_detached(self, volume_id):
+        volume_item = self.cinder_client.volumes.get(volume_id)
+        server_attachments = filter(lambda x: x['server_id'] == self.id,
+                                    volume_item.attachments)
+        if len(server_attachments) > 0:
+            return False
+        else:
+            return True
+
+    def detach_volume(self, volume_id, timeout=MEDIUM_TIMEOUT):
+        self.nova_client.volumes.delete_server_volume(self.id, volume_id)
+        utils.wait_until_true(partial(self._volume_detached, volume_id),
+                              timeout=timeout, sleep=MEDIUM_SLEEP)
+
     def close(self, timeout=MEDIUM_TIMEOUT):
         try:
             self.nova_client.servers.delete(self.id)
