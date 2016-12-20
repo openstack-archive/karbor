@@ -27,9 +27,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
     def setUp(self):
         super(RestoresTest, self).setUp()
-        providers = self.provider_list()
-        self.assertTrue(len(providers))
-        self.provider_id = providers[0].id
+        self.provider_id = self.provider_id_noop
 
     def _store_volume(self, volumes_pre, volumes_post):
         volumes = list(set(volumes_post).difference(set(volumes_pre)))

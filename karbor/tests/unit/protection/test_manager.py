@@ -146,7 +146,8 @@ class ProtectionServiceTest(base.TestCase):
                                        mock_cp_collection_get):
         mock_provider.return_value = fakes.FakeProvider()
         context = mock.MagicMock()
-        mock_cp_collection_get.side_effect = exception.CheckpointNotFound()
+        mock_cp_collection_get.side_effect = exception.CheckpointNotFound(
+            checkpoint_id='123')
         self.assertRaises(oslo_messaging.ExpectedException,
                           self.pro_manager.show_checkpoint,
                           context,

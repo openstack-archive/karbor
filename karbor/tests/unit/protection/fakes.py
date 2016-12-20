@@ -14,7 +14,9 @@
 #    under the License.
 
 import futurist
+import mock
 
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor.i18n import _LE
@@ -23,11 +25,14 @@ from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
 from karbor.services.protection.graph import build_graph
+from karbor.services.protection import protection_plugin
 from karbor.services.protection import provider
+from karbor.services.protection import resource_flow
 
 from taskflow import engines
 from taskflow.patterns import graph_flow
 from taskflow.patterns import linear_flow
+from taskflow import task
 
 LOG = logging.getLogger(__name__)
 
@@ -73,6 +78,11 @@ class FakeBankPlugin(BankPlugin):
     def __init__(self, config=None):
         super(FakeBankPlugin, self).__init__(config=config)
         self._objects = {}
+        fake_bank_opts = [
+            cfg.StrOpt('fake_host'),
+        ]
+        config.register_opts(fake_bank_opts, 'fake_bank')
+        self.fake_host = config['fake_bank']['fake_host']
 
     def create_object(self, key, value):
         self._objects[key] = value
@@ -128,35 +138,57 @@ class FakeProtectablePlugin(object):
         pass
 
 
-class FakeProtectionPlugin(object):
-    def __init__(self, expected_event_stream):
-        self._expected_event_stream = expected_event_stream
+class MockOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(MockOperation, self).__init__()
+        for hook_name in resource_flow.HOOKS:
+            setattr(self, hook_name, mock.Mock())
 
-    def on_resource_start(self, context):
-        resource = context.node.value
-        workflow_engine = context.workflow_engine
-        task_flow = context.task_flow
-        if self._expected_event_stream.pop(0) != (
-                "on_resource_start",
-                resource.id,
-                context.is_first_visited):
-            raise Exception
-        if context.is_first_visited and workflow_engine:
-            task = workflow_engine.create_task("fake_task")
-            workflow_engine.add_tasks(task_flow, task)
 
-    def on_resource_end(self, context):
-        resource = context.node.value
-        if self._expected_event_stream.pop(0) != (
-                "on_resource_end",
-                resource.id):
-            raise Exception
+class FakeProtectionPlugin(protection_plugin.ProtectionPlugin):
+    SUPPORTED_RESOURCES = [
+        'Test::ResourceA',
+        'Test::ResourceB',
+        'Test::ResourceC',
+    ]
 
-    def get_resource_stats(self):
-        pass
+    def __init__(self, config=None, *args, **kwargs):
+        super(FakeProtectionPlugin, self).__init__(config)
+        fake_plugin_opts = [
+            cfg.StrOpt('fake_user'),
+        ]
+        if config:
+            config.register_opts(fake_plugin_opts, 'fake_plugin')
+            self.fake_user = config['fake_plugin']['fake_user']
 
-    def get_supported_resources_types(self):
-        return ["fake"]
+    def get_protect_operation(self, *args, **kwargs):
+        return MockOperation()
+
+    def get_restore_operation(self, *args, **kwargs):
+        return MockOperation()
+
+    def get_delete_operation(self, *args, **kwargs):
+        return MockOperation()
+
+    @classmethod
+    def get_supported_resources_types(cls):
+        return cls.SUPPORTED_RESOURCES
+
+    @classmethod
+    def get_options_schema(cls, resource_type):
+        return {}
+
+    @classmethod
+    def get_saved_info_schema(cls, resource_type):
+        return {}
+
+    @classmethod
+    def get_restore_schema(cls, resource_type):
+        return {}
+
+    @classmethod
+    def get_saved_info(cls, metadata_store, resource):
+        return None
 
 
 class FakeCheckpoint(object):
@@ -199,12 +231,10 @@ class FakeProvider(provider.PluggableProtectionProvider):
         self._name = 'provider'
         self._description = 'fake_provider'
         self._extend_info_schema = {}
-
-    def build_task_flow(self, plan):
-        status_getters = []
-        return {'status_getters': status_getters,
-                'task_flow': graph_flow.Flow('fake_flow')
-                }
+        self._config = None
+        self._plugin_map = {
+            'fake': FakeProtectionPlugin,
+        }
 
     def get_checkpoint_collection(self):
         return FakeCheckpointCollection()
@@ -214,10 +244,31 @@ class FakeFlowEngine(object):
     def __init__(self):
         super(FakeFlowEngine, self).__init__()
 
+    def create_task(self, function, requires=None, provides=None,
+                    inject=None, **kwargs):
+        name = kwargs.get('name', None)
+        auto_extract = kwargs.get('auto_extract', True)
+        rebind = kwargs.get('rebind', None)
+        revert = kwargs.get('revert', None)
+        version = kwargs.get('version', None)
+        if function:
+            return task.FunctorTask(function,
+                                    name=name,
+                                    provides=provides,
+                                    requires=requires,
+                                    auto_extract=auto_extract,
+                                    rebind=rebind,
+                                    revert=revert,
+                                    version=version,
+                                    inject=inject)
+
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
             LOG.error(_LE("The flow is None, get it first"))
         flow.add(*nodes, **kwargs)
+
+    def link_task(self, flow, u, v):
+        flow.link(u, v)
 
     def build_flow(self, flow_name, flow_type='graph'):
         if flow_type == 'linear':

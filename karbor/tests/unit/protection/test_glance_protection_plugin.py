@@ -87,16 +87,6 @@ class GlanceProtectionPluginTest(base.TestCase):
         self.glance_client = ClientFactory.create_client("glance", self.cntxt)
         self.checkpoint = CheckpointCollection()
 
-    def test_get_resource_stats(self):
-        fake_resource_id = "123"
-
-        fake_bank_section.get_object = mock.MagicMock()
-        fake_bank_section.get_object.return_value = \
-            constants.RESOURCE_STATUS_PROTECTING
-        status = self.plugin.get_resource_stats(self.checkpoint,
-                                                fake_resource_id)
-        self.assertEqual(status, constants.RESOURCE_STATUS_PROTECTING)
-
     def test_get_options_schema(self):
         options_schema = self.plugin.get_options_schema(
             constants.IMAGE_RESOURCE_TYPE)

@@ -12,78 +12,58 @@
 
 from karbor.common import constants
 from karbor.i18n import _LI
-from oslo_config import cfg
+from karbor.services.protection import resource_flow
 from oslo_log import log as logging
-from oslo_service import loopingcall
 from taskflow import task
-
-sync_status_opts = [
-    cfg.IntOpt('sync_status_interval',
-               default=60,
-               help='update protection status interval')
-]
-
-CONF = cfg.CONF
-CONF.register_opts(sync_status_opts)
 
 LOG = logging.getLogger(__name__)
 
 
-class SyncCheckpointStatusTask(task.Task):
-    def __init__(self, checkpoint, status_getters):
-        super(SyncCheckpointStatusTask, self).__init__()
-        self._status_getters = status_getters
-        self._checkpoint = checkpoint
+class InitiateDeleteTask(task.Task):
+    def __init__(self):
+        super(InitiateDeleteTask, self).__init__()
 
-    def execute(self):
-        LOG.info(_LI("Start sync checkpoint status,checkpoint_id:%s"),
-                 self._checkpoint.id)
-        sync_status = loopingcall.FixedIntervalLoopingCall(
-            self._sync_status, self._checkpoint, self._status_getters)
-        sync_status.start(interval=CONF.sync_status_interval)
+    def execute(self, checkpoint, *args, **kwargs):
+        LOG.debug("Initiate delete checkpoint_id: %s", checkpoint.id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_DELETING
+        checkpoint.commit()
 
-    def _sync_status(self, checkpoint, status_getters):
-        statuses = set()
-        for s in status_getters:
-            resource_id = s.get('resource_id')
-            get_resource_stats = s.get('get_resource_stats')
-            statuses.add(get_resource_stats(checkpoint, resource_id))
-        LOG.info(_LI("Start sync checkpoint status,checkpoint_id:"
-                     "%(checkpoint_id)s, resource_status:"
-                     "%(resource_status)s") %
-                 {"checkpoint_id": checkpoint.id,
-                  "resource_status": statuses})
-        if constants.RESOURCE_STATUS_ERROR in statuses:
-            checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
-            checkpoint.commit()
-            raise loopingcall.LoopingCallDone()
-        elif statuses == {constants.RESOURCE_STATUS_DELETED, }:
-            checkpoint.delete()
-            LOG.info(_LI("Stop sync checkpoint status,checkpoint_id: "
-                         "%(checkpoint_id)s,checkpoint status: "
-                         "%(checkpoint_status)s"),
-                     {"checkpoint_id": checkpoint.id,
-                      "checkpoint_status": checkpoint.status})
-            raise loopingcall.LoopingCallDone()
+    def revert(self, checkpoint, *args, **kwargs):
+        LOG.debug("Failed to delete checkpoint_id: %s", checkpoint.id)
+        checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
+        checkpoint.commit()
+
+
+class CompleteDeleteTask(task.Task):
+    def __init__(self, *args, **kwargs):
+        super(CompleteDeleteTask, self).__init__(*args, **kwargs)
+
+    def execute(self, checkpoint):
+        LOG.debug("Complete delete checkpoint_id: %s", checkpoint.id)
+        checkpoint.delete()
 
 
 def get_flow(context, workflow_engine, operation_type, checkpoint, provider):
-
-    ctx = {'context': context,
-           'checkpoint': checkpoint,
-           'workflow_engine': workflow_engine,
-           'operation_type': operation_type,
-           }
-    LOG.info(_LI("Start get checkpoint flow,checkpoint_id: %s"),
+    LOG.info(_LI("Start get checkpoint flow, checkpoint_id: %s"),
              checkpoint.id)
-    flow_name = "delete_checkpoint_" + checkpoint.id
+    flow_name = "Delete_Checkpoint_" + checkpoint.id
     delete_flow = workflow_engine.build_flow(flow_name, 'linear')
-    result = provider.build_task_flow(ctx)
-    status_getters = result.get('status_getters')
-    resource_flow = result.get('task_flow')
-    workflow_engine.add_tasks(delete_flow,
-                              resource_flow,
-                              SyncCheckpointStatusTask(checkpoint,
-                                                       status_getters))
-    flow_engine = workflow_engine.get_engine(delete_flow)
+    resource_graph = checkpoint.resource_graph
+    plugins = provider.load_plugins()
+    resources_task_flow = resource_flow.build_resource_flow(
+        operation_type=operation_type,
+        context=context,
+        workflow_engine=workflow_engine,
+        resource_graph=resource_graph,
+        plugins=plugins,
+        parameters=None
+    )
+    workflow_engine.add_tasks(
+        delete_flow,
+        InitiateDeleteTask(),
+        resources_task_flow,
+        CompleteDeleteTask(),
+    )
+    flow_engine = workflow_engine.get_engine(delete_flow,
+                                             store={'checkpoint': checkpoint})
     return flow_engine

@@ -23,6 +23,7 @@ class FakeBankPlugin(bank_plugin.BankPlugin):
     def __init__(self, config=None):
         super(FakeBankPlugin, self).__init__(config)
         config.register_opts(fake_bank_opts, 'fake_bank')
+        self.fake_host = config['fake_bank']['fake_host']
 
     def create_object(self, key, value):
         return

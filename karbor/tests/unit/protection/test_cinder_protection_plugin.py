@@ -88,15 +88,6 @@ class CinderProtectionPluginTest(base.TestCase):
         self.cinder_client = ClientFactory.create_client("cinder", self.cntxt)
         self.checkpoint = FakeCheckpoint()
 
-    def test_get_resource_stats(self):
-        fake_resource_id = "123"
-        fake_bank_section.get_object = mock.MagicMock()
-        fake_bank_section.get_object.return_value = \
-            constants.RESOURCE_STATUS_AVAILABLE
-        status = self.plugin.get_resource_stats(self.checkpoint,
-                                                fake_resource_id)
-        self.assertEqual(status, constants.RESOURCE_STATUS_AVAILABLE)
-
     def test_get_options_schema(self):
         options_schema = self.plugin.get_options_schema(
             'OS::Cinder::Volume')
