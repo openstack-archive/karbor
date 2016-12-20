@@ -12,6 +12,7 @@
 
 """Implementation of SQLAlchemy backend."""
 
+import datetime as dt
 import functools
 import re
 import six
@@ -28,14 +29,16 @@ from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
+from sqlalchemy import MetaData
 from sqlalchemy.orm import joinedload
+from sqlalchemy.schema import Table
 from sqlalchemy.sql import expression
 from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.sql import func
 
 from karbor.db.sqlalchemy import models
 from karbor import exception
-from karbor.i18n import _, _LW
+from karbor.i18n import _, _LW, _LE, _LI
 
 
 CONF = cfg.CONF
@@ -1585,3 +1588,60 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
             result_dirs.append(default_dir_value)
 
     return result_keys, result_dirs
+
+
+@require_admin_context
+def purge_deleted_rows(context, age_in_days):
+    """Purge deleted rows older than age from karbor tables."""
+    try:
+        age_in_days = int(age_in_days)
+    except ValueError:
+        msg = _('Invalid valude for age, %(age)s')
+        LOG.exception(msg, {'age': age_in_days})
+        raise exception.InvalidParameterValue(msg % {'age': age_in_days})
+    if age_in_days <= 0:
+        msg = _('Must supply a positive value for age')
+        LOG.exception(msg)
+        raise exception.InvalidParameterValue(msg)
+
+    engine = get_engine()
+    session = get_session()
+    metadata = MetaData()
+    metadata.bind = engine
+    tables = []
+
+    for model_class in models.__dict__.values():
+        if hasattr(model_class, "__tablename__") and hasattr(
+                model_class, "deleted"):
+            tables.append(model_class.__tablename__)
+
+    # Reorder the list so the tables are last to avoid ForeignKey constraints
+    # get rid of FK constraints
+    for tbl in ('plans', 'scheduled_operations'):
+        try:
+            tables.remove(tbl)
+        except ValueError:
+            LOG.warning(_LW('Expected table %(tbl)s was not found in DB.'),
+                        **locals())
+        else:
+            tables.append(tbl)
+
+    for table in tables:
+        t = Table(table, metadata, autoload=True)
+        LOG.info(_LI('Purging deleted rows older than age=%(age)d days '
+                     'from table=%(table)s'), {'age': age_in_days,
+                                               'table': table})
+        deleted_age = timeutils.utcnow() - dt.timedelta(days=age_in_days)
+        try:
+            with session.begin():
+                result = session.execute(
+                    t.delete()
+                    .where(t.c.deleted_at < deleted_age))
+        except db_exc.DBReferenceError:
+            LOG.exception(_LE('DBError detected when purging from '
+                              'table=%(table)s'), {'table': table})
+            raise
+
+        rows_purged = result.rowcount
+        LOG.info(_LI("Deleted %(row)d rows from table=%(table)s"),
+                 {'row': rows_purged, 'table': table})
