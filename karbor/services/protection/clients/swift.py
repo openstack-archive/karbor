@@ -12,8 +12,6 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from karbor.i18n import _LE, _LI
-from karbor.services.protection import utils
 from swiftclient import client as swift
 
 LOG = logging.getLogger(__name__)
@@ -70,31 +68,16 @@ def register_opts(conf):
 def create(context, conf):
     register_opts(conf)
 
-    if hasattr(conf.swift_client, 'swift_auth_url') and \
-            conf.swift_client.swift_auth_url:
-        connection = swift.Connection(
-            authurl=conf.swift_client.swift_auth_url,
-            auth_version=conf.swift_client.swift_auth_version,
-            tenant_name=conf.swift_client.swift_tenant_name,
-            user=conf.swift_client.swift_user,
-            key=conf.swift_client.swift_key,
-            retries=conf.swift_client.swift_retry_attempts,
-            starting_backoff=conf.swift_client.swift_retry_backoff,
-            insecure=conf.swift_client.swift_auth_insecure,
-            cacert=conf.swift_client.swift_ca_cert_file)
-    else:
-        try:
-            url = utils.get_url(SERVICE, context, conf,
-                                append_project_fmt='%(url)s/AUTH_%(project)s')
-        except Exception:
-            LOG.error(_LE("Get swift service endpoint url failed"))
-            raise
-        LOG.info(_LI("Creating swift client with url %s."), url)
-        connection = swift.Connection(
-            preauthurl=url,
-            preauthtoken=context.auth_token,
-            retries=conf.swift_client.swift_retry_attempts,
-            starting_backoff=conf.swift_client.swift_retry_backoff,
-            insecure=conf.swift_client.swift_auth_insecure,
-            cacert=conf.swift_client.swift_ca_cert_file)
+    client_config = conf.swift_client
+    connection = swift.Connection(
+        authurl=client_config.swift_auth_url,
+        auth_version=client_config.swift_auth_version,
+        tenant_name=client_config.swift_tenant_name,
+        user=client_config.swift_user,
+        key=client_config.swift_key,
+        retries=client_config.swift_retry_attempts,
+        starting_backoff=client_config.swift_retry_backoff,
+        insecure=client_config.swift_auth_insecure,
+        cacert=client_config.swift_ca_cert_file)
+
     return connection

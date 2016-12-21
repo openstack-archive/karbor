@@ -10,11 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_config import cfg
 
 from karbor.context import RequestContext
 from karbor.services.protection.clients import swift
 from karbor.tests import base
-from oslo_config import cfg
 
 
 class SwiftClientTest(base.TestCase):
@@ -29,7 +29,6 @@ class SwiftClientTest(base.TestCase):
                 'name': 'swift',
             },
         ]
-
         self._context = RequestContext(user_id='admin',
                                        project_id='abcd',
                                        auth_token='efgh',
@@ -37,18 +36,6 @@ class SwiftClientTest(base.TestCase):
 
         self.conf = cfg.ConfigOpts()
         swift.register_opts(self.conf)
-
-    def test_create_client_by_endpoint(self):
-        self.conf.set_default('swift_endpoint',
-                              'http://127.0.0.1:8080/v1',
-                              'swift_client')
-
-        sc = swift.create(self._context, self.conf)
-        self.assertEqual('http://127.0.0.1:8080/v1/AUTH_abcd', sc.url)
-
-    def test_create_client_by_catalog(self):
-        sc = swift.create(self._context, cfg.CONF)
-        self.assertEqual('http://127.0.0.1:8080/v1/AUTH_abcd', sc.url)
 
     def test_create_client_by_keystone(self):
         self.conf.set_default('swift_auth_url',
