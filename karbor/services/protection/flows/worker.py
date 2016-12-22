@@ -16,10 +16,11 @@ from oslo_log import log as logging
 from oslo_utils import importutils
 
 from karbor.common import constants
+from karbor import exception
 from karbor.i18n import _LE
-from karbor.services.protection.flows import create_protection
-from karbor.services.protection.flows import create_restoration
-from karbor.services.protection.flows import delete_checkpoint
+from karbor.services.protection.flows import delete as flow_delete
+from karbor.services.protection.flows import protect as flow_protect
+from karbor.services.protection.flows import restore as flow_restore
 
 workflow_opts = [
     cfg.StrOpt(
@@ -48,39 +49,41 @@ class Worker(object):
         engine = importutils.import_object(engine_path)
         return engine
 
-    def get_flow(self, context, operation_type, **kwargs):
+    def get_flow(self, context, operation_type, checkpoint, provider,
+                 **kwargs):
         if operation_type == constants.OPERATION_PROTECT:
             plan = kwargs.get('plan', None)
-            provider = kwargs.get('provider', None)
-            checkpoint = kwargs.get('checkpoint')
-            protection_flow = create_protection.get_flow(context,
-                                                         self.workflow_engine,
-                                                         operation_type,
-                                                         plan,
-                                                         provider,
-                                                         checkpoint)
-            return protection_flow
+            flow = flow_protect.get_flow(
+                context,
+                self.workflow_engine,
+                plan,
+                provider,
+                checkpoint,
+            )
+        elif operation_type == constants.OPERATION_RESTORE:
+            restore = kwargs.get('restore')
+            restore_auth = kwargs.get('restore_auth')
+            flow = flow_restore.get_flow(
+                context,
+                self.workflow_engine,
+                checkpoint,
+                provider,
+                restore,
+                restore_auth,
+            )
+        elif operation_type == constants.OPERATION_DELETE:
+            flow = flow_delete.get_flow(
+                context,
+                self.workflow_engine,
+                checkpoint,
+                provider,
+            )
+        else:
+            raise exception.InvalidParameterValue(
+                err='unknown operation type %s' % operation_type
+            )
 
-    def get_restoration_flow(self, context, operation_type, checkpoint,
-                             provider, restore, restore_auth):
-        restoration_flow = create_restoration.get_flow(context,
-                                                       self.workflow_engine,
-                                                       operation_type,
-                                                       checkpoint,
-                                                       provider,
-                                                       restore,
-                                                       restore_auth)
-        return restoration_flow
-
-    def get_delete_checkpoint_flow(self, context, operation_type, checkpoint,
-                                   provider):
-        delete_checkpoint_flow = delete_checkpoint.get_flow(
-            context,
-            self.workflow_engine,
-            operation_type,
-            checkpoint,
-            provider)
-        return delete_checkpoint_flow
+        return flow
 
     def run_flow(self, flow_engine):
         self.workflow_engine.run_engine(flow_engine)

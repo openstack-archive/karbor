@@ -111,18 +111,19 @@ class ProtectionManager(manager.Manager):
                                       error="Error creating checkpoint")
             six.raise_from(exc, e)
         try:
-            protection_flow = self.worker.get_flow(context,
-                                                   constants.OPERATION_PROTECT,
-                                                   plan=plan,
-                                                   provider=provider,
-                                                   checkpoint=checkpoint)
+            flow = self.worker.get_flow(
+                context=context,
+                operation_type=constants.OPERATION_PROTECT,
+                plan=plan,
+                provider=provider,
+                checkpoint=checkpoint)
         except Exception as e:
             LOG.exception(_LE("Failed to create protection flow, plan: %s"),
                           plan_id)
             raise exception.FlowError(
                 flow="protect",
                 error=e.msg if hasattr(e, 'msg') else 'Internal error')
-        self._spawn(self.worker.run_flow, protection_flow)
+        self._spawn(self.worker.run_flow, flow)
         return checkpoint.id
 
     @messaging.expected_exceptions(exception.ProviderNotFound,
@@ -146,21 +147,21 @@ class ProtectionManager(manager.Manager):
                 checkpoint_id=checkpoint_id)
 
         try:
-            restoration_flow = self.worker.get_restoration_flow(
-                context,
-                constants.OPERATION_RESTORE,
-                checkpoint,
-                provider,
-                restore,
-                restore_auth)
+            flow = self.worker.get_flow(
+                context=context,
+                operation_type=constants.OPERATION_RESTORE,
+                checkpoint=checkpoint,
+                provider=provider,
+                restore=restore,
+                restore_auth=restore_auth)
         except Exception:
             LOG.exception(
-                _LE("Failed to create restoration flow checkpoint: %s"),
+                _LE("Failed to create restore flow checkpoint: %s"),
                 checkpoint_id)
             raise exception.FlowError(
                 flow="restore",
                 error=_("Failed to create flow"))
-        self._spawn(self.worker.run_flow, restoration_flow)
+        self._spawn(self.worker.run_flow, flow)
 
     def delete(self, context, provider_id, checkpoint_id):
         LOG.info(_LI("Starting protection service:delete action"))
@@ -186,11 +187,11 @@ class ProtectionManager(manager.Manager):
         checkpoint.commit()
 
         try:
-            delete_checkpoint_flow = self.worker.get_delete_checkpoint_flow(
-                context,
-                constants.OPERATION_DELETE,
-                checkpoint,
-                provider)
+            flow = self.worker.get_flow(
+                context=context,
+                operation_type=constants.OPERATION_DELETE,
+                checkpoint=checkpoint,
+                provider=provider)
         except Exception:
             LOG.exception(
                 _LE("Failed to create delete checkpoint flow, checkpoint:%s."),
@@ -198,7 +199,7 @@ class ProtectionManager(manager.Manager):
             raise exception.KarborException(_(
                 "Failed to create delete checkpoint flow."
             ))
-        self._spawn(self.worker.run_flow, delete_checkpoint_flow)
+        self._spawn(self.worker.run_flow, flow)
 
     def start(self, plan):
         # TODO(wangliuan)

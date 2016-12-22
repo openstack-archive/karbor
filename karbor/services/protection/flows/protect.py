@@ -45,8 +45,7 @@ class CompleteProtectTask(task.Task):
         checkpoint.commit()
 
 
-def get_flow(context, workflow_engine, operation_type, plan, provider,
-             checkpoint):
+def get_flow(context, workflow_engine, plan, provider, checkpoint):
     protectable_registry = ProtectableRegistry()
     resources = set(Resource(**item) for item in plan.get("resources"))
     resource_graph = protectable_registry.build_graph(context,
@@ -57,7 +56,7 @@ def get_flow(context, workflow_engine, operation_type, plan, provider,
     protection_flow = workflow_engine.build_flow(flow_name, 'linear')
     plugins = provider.load_plugins()
     resources_task_flow = resource_flow.build_resource_flow(
-        operation_type=operation_type,
+        operation_type=constants.OPERATION_PROTECT,
         context=context,
         workflow_engine=workflow_engine,
         resource_graph=resource_graph,

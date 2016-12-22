@@ -43,7 +43,7 @@ class CompleteDeleteTask(task.Task):
         checkpoint.delete()
 
 
-def get_flow(context, workflow_engine, operation_type, checkpoint, provider):
+def get_flow(context, workflow_engine, checkpoint, provider):
     LOG.info(_LI("Start get checkpoint flow, checkpoint_id: %s"),
              checkpoint.id)
     flow_name = "Delete_Checkpoint_" + checkpoint.id
@@ -51,7 +51,7 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider):
     resource_graph = checkpoint.resource_graph
     plugins = provider.load_plugins()
     resources_task_flow = resource_flow.build_resource_flow(
-        operation_type=operation_type,
+        operation_type=constants.OPERATION_DELETE,
         context=context,
         workflow_engine=workflow_engine,
         resource_graph=resource_graph,

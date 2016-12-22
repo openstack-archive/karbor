@@ -129,8 +129,8 @@ class SyncRestoreStatusTask(task.Task):
         raise loopingcall.LoopingCallDone()
 
 
-def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
-             restore, restore_auth):
+def get_flow(context, workflow_engine, checkpoint, provider, restore,
+             restore_auth):
     target = restore.get('restore_target', None)
 
     heat_conf = {}
@@ -145,10 +145,10 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
     resource_graph = checkpoint.resource_graph
     parameters = restore.parameters
     flow_name = "Restore_" + checkpoint.id
-    restoration_flow = workflow_engine.build_flow(flow_name, 'linear')
+    restore_flow = workflow_engine.build_flow(flow_name, 'linear')
     plugins = provider.load_plugins()
     resources_task_flow = resource_flow.build_resource_flow(
-        operation_type=operation_type,
+        operation_type=constants.OPERATION_RESTORE,
         context=context,
         workflow_engine=workflow_engine,
         resource_graph=resource_graph,
@@ -157,7 +157,7 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
     )
 
     workflow_engine.add_tasks(
-        restoration_flow,
+        restore_flow,
         InitiateRestoreTask(),
         CreateHeatTask(inject={'context': context, 'heat_conf': heat_conf}),
         resources_task_flow,
@@ -165,7 +165,7 @@ def get_flow(context, workflow_engine, operation_type, checkpoint, provider,
         SyncRestoreStatusTask(),
         CompleteRestoreTask()
     )
-    flow_engine = workflow_engine.get_engine(restoration_flow,
+    flow_engine = workflow_engine.get_engine(restore_flow,
                                              store={'checkpoint': checkpoint,
                                                     'restore': restore})
     return flow_engine
