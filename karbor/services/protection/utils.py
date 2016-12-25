@@ -36,8 +36,10 @@ def _parse_service_catalog_info(config, context):
 def _parse_service_endpoint(endpoint_url, context, append_project_fmt=None):
     if not append_project_fmt:
         return endpoint_url
-    return append_project_fmt \
-        % {'url': endpoint_url, 'project': context.project_id}
+    return append_project_fmt % {
+        'url': endpoint_url,
+        'project': context.project_id,
+    }
 
 
 def get_url(service, context, conf, append_project_fmt=None):

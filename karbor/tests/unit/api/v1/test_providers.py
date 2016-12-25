@@ -41,8 +41,7 @@ class ProvidersApiTest(base.TestCase):
         'karbor.services.protection.api.API.show_provider')
     def test_providers_show(self, moak_show_provider):
         req = fakes.HTTPRequest.blank('/v1/providers')
-        self.controller.\
-            show(req, '2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.controller.show(req, '2220f8b1-975d-4621-a872-fa9afb43cb6c')
         self.assertTrue(moak_show_provider.called)
 
     def test_providers_show_Invalid(self):
@@ -61,9 +60,11 @@ class ProvidersApiTest(base.TestCase):
             "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
             "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
         }
-        self.controller.\
-            checkpoints_show(req, '2220f8b1-975d-4621-a872-fa9afb43cb6c',
-                             '2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.controller.checkpoints_show(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c'
+        )
         self.assertTrue(moak_show_checkpoint.called)
 
     @mock.patch(

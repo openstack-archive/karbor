@@ -230,9 +230,8 @@ def _service_get(context, service_id, session=None):
     result = model_query(
         context,
         models.Service,
-        session=session).\
-        filter_by(id=service_id).\
-        first()
+        session=session
+    ).filter_by(id=service_id).first()
     if not result:
         raise exception.ServiceNotFound(service_id=service_id)
 
@@ -257,8 +256,10 @@ def service_get_all(context, disabled=None):
 @require_admin_context
 def service_get_all_by_topic(context, topic, disabled=None):
     query = model_query(
-        context, models.Service, read_deleted="no").\
-        filter_by(topic=topic)
+        context,
+        models.Service,
+        read_deleted="no"
+    ).filter_by(topic=topic)
 
     if disabled is not None:
         query = query.filter_by(disabled=disabled)
@@ -269,11 +270,16 @@ def service_get_all_by_topic(context, topic, disabled=None):
 @require_admin_context
 def service_get_by_host_and_topic(context, host, topic):
     result = model_query(
-        context, models.Service, read_deleted="no").\
-        filter_by(disabled=False).\
-        filter_by(host=host).\
-        filter_by(topic=topic).\
-        first()
+        context,
+        models.Service,
+        read_deleted="no"
+    ).filter_by(
+        disabled=False
+    ).filter_by(
+        host=host
+    ).filter_by(
+        topic=topic
+    ).first()
     if not result:
         raise exception.ServiceNotFound(service_id=None)
     return result
@@ -282,22 +288,33 @@ def service_get_by_host_and_topic(context, host, topic):
 @require_admin_context
 def _service_get_all_topic_subquery(context, session, topic, subq, label):
     sort_value = getattr(subq.c, label)
-    return model_query(context, models.Service,
-                       func.coalesce(sort_value, 0),
-                       session=session, read_deleted="no").\
-        filter_by(topic=topic).\
-        filter_by(disabled=False).\
-        outerjoin((subq, models.Service.host == subq.c.host)).\
-        order_by(sort_value).\
-        all()
+    return model_query(
+        context,
+        models.Service,
+        func.coalesce(sort_value, 0),
+        session=session,
+        read_deleted="no"
+    ).filter_by(
+        topic=topic
+    ).filter_by(
+        disabled=False
+    ).outerjoin(
+        (subq, models.Service.host == subq.c.host)
+    ).order_by(
+        sort_value
+    ).all()
 
 
 @require_admin_context
 def service_get_by_args(context, host, binary):
-    results = model_query(context, models.Service).\
-        filter_by(host=host).\
-        filter_by(binary=binary).\
-        all()
+    results = model_query(
+        context,
+        models.Service
+    ).filter_by(
+        host=host
+    ).filter_by(
+        binary=binary
+    ).all()
 
     for result in results:
         if host == result['host']:
@@ -747,8 +764,12 @@ def _plan_get_query(context, session=None, project_only=False,
 
 
 def _plan_resources_get_query(context, plan_id, model, session=None):
-    return model_query(context, model, session=session, read_deleted="no").\
-        filter_by(plan_id=plan_id)
+    return model_query(
+        context,
+        model,
+        session=session,
+        read_deleted="no"
+    ).filter_by(plan_id=plan_id)
 
 
 @require_context
@@ -766,11 +787,17 @@ def _plan_resources_update(context, plan_id, resources, session=None):
     session = session or get_session()
     now = timeutils.utcnow()
     with session.begin():
-        model_query(context, models.Resource, session=session).\
-            filter_by(plan_id=plan_id).\
-            update({'deleted': True,
-                    'deleted_at': now,
-                    'updated_at': literal_column('updated_at')})
+        model_query(
+            context,
+            models.Resource,
+            session=session
+        ).filter_by(
+            plan_id=plan_id
+        ).update({
+            'deleted': True,
+            'deleted_at': now,
+            'updated_at': literal_column('updated_at')
+        })
     resources_list = []
     for resource in resources:
         resource['plan_id'] = plan_id
@@ -823,16 +850,28 @@ def plan_destroy(context, plan_id):
     session = get_session()
     now = timeutils.utcnow()
     with session.begin():
-        model_query(context, models.Plan, session=session).\
-            filter_by(id=plan_id).\
-            update({'deleted': True,
-                    'deleted_at': now,
-                    'updated_at': literal_column('updated_at')})
-        model_query(context, models.Resource, session=session).\
-            filter_by(plan_id=plan_id).\
-            update({'deleted': True,
-                    'deleted_at': now,
-                    'updated_at': literal_column('updated_at')})
+        model_query(
+            context,
+            models.Plan,
+            session=session
+        ).filter_by(
+            id=plan_id
+        ).update({
+            'deleted': True,
+            'deleted_at': now,
+            'updated_at': literal_column('updated_at')
+        })
+        model_query(
+            context,
+            models.Resource,
+            session=session
+        ).filter_by(
+            plan_id=plan_id
+        ).update({
+            'deleted': True,
+            'deleted_at': now,
+            'updated_at': literal_column('updated_at')
+        })
 
 
 @require_context
@@ -974,9 +1013,10 @@ def _restore_get(context, restore_id, session=None):
     result = model_query(
         context,
         models.Restore,
-        session=session).\
-        filter_by(id=restore_id).\
-        first()
+        session=session
+    ).filter_by(
+        id=restore_id
+    ).first()
     if not result:
         raise exception.RestoreNotFound(restore_id=restore_id)
 
@@ -1138,9 +1178,10 @@ def _operation_log_get(context, operation_log_id, session=None):
     result = model_query(
         context,
         models.OperationLog,
-        session=session).\
-        filter_by(id=operation_log_id).\
-        first()
+        session=session
+    ).filter_by(
+        id=operation_log_id
+    ).first()
     if not result:
         raise exception.OperationLogNotFound(restore_id=operation_log_id)
 

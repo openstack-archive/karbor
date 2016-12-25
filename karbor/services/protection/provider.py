@@ -65,8 +65,8 @@ class PluggableProtectionProvider(object):
         self._bank_plugin = None
         self._plugin_map = {}
 
-        if hasattr(self._config.provider, 'bank') \
-                and not self._config.provider.bank:
+        if (hasattr(self._config.provider, 'bank') and
+                not self._config.provider.bank):
             raise ImportError(_("Empty bank"))
 
         self._load_bank(self._config.provider.bank)

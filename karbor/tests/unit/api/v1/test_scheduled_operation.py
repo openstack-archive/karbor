@@ -197,8 +197,7 @@ class ScheduledOperationApiTest(base.TestCase):
             }
         }
         controller = trigger_api.TriggersController()
-        controller.operationengine_api = test_triggers.\
-            FakeRemoteOperationApi()
+        controller.operationengine_api = test_triggers.FakeRemoteOperationApi()
         req = fakes.HTTPRequest.blank('/v1/triggers')
         return controller.create(req, create_trigger_param)
 

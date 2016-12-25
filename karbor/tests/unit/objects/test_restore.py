@@ -44,9 +44,8 @@ class TestRestore(test_objects.BaseObjectsTestCase):
     @mock.patch('karbor.db.sqlalchemy.api.restore_update')
     def test_save(self, restore_update):
         db_restore = fake_restore.fake_db_restore()
-        restore = objects.Restore.\
-            _from_db_object(self.context,
-                            objects.Restore(), db_restore)
+        restore = objects.Restore._from_db_object(
+            self.context, objects.Restore(), db_restore)
         restore.status = 'FAILED'
         restore.save()
         restore_update.assert_called_once_with(self.context, restore.id,
@@ -55,9 +54,8 @@ class TestRestore(test_objects.BaseObjectsTestCase):
     @mock.patch('karbor.db.sqlalchemy.api.restore_destroy')
     def test_destroy(self, restore_destroy):
         db_restore = fake_restore.fake_db_restore()
-        restore = objects.Restore.\
-            _from_db_object(self.context,
-                            objects.Restore(), db_restore)
+        restore = objects.Restore._from_db_object(
+            self.context, objects.Restore(), db_restore)
         restore.destroy()
         self.assertTrue(restore_destroy.called)
         admin_context = restore_destroy.call_args[0][0]

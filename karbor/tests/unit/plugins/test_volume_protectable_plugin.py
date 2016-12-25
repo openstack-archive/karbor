@@ -70,8 +70,10 @@ class VolumeProtectablePluginTest(base.TestCase):
     def test_list_resources(self, mock_volume_list):
         plugin = VolumeProtectablePlugin(self._context)
 
-        mock_volume_list.return_value = \
-            [vol_info('123', [], 'name123'), vol_info('456', [], 'name456')]
+        mock_volume_list.return_value = [
+            vol_info('123', [], 'name123'),
+            vol_info('456', [], 'name456'),
+        ]
         self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123'),
                           Resource('OS::Cinder::Volume', '456', 'name456')],
                          plugin.list_resources(self._context))
@@ -81,8 +83,7 @@ class VolumeProtectablePluginTest(base.TestCase):
         plugin = VolumeProtectablePlugin(self._context)
 
         vol_info = namedtuple('vol_info', ['id', 'name'])
-        mock_volume_get.return_value = \
-            vol_info(id='123', name='name123')
+        mock_volume_get.return_value = vol_info(id='123', name='name123')
         self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123'),
                          plugin.show_resource(self._context, "123"))
 

@@ -89,8 +89,8 @@ class RestoreApiTest(base.TestCase):
         '_restore_get')
     def test_restore_show(self, moak_restore_get):
         req = fakes.HTTPRequest.blank('/v1/restores')
-        self.controller.\
-            show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
+        self.controller.show(
+            req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
         self.assertTrue(moak_restore_get.called)
 
     def test_restore_show_Invalid(self):
@@ -104,8 +104,8 @@ class RestoreApiTest(base.TestCase):
         '_restore_get')
     def test_restore_delete(self, moak_restore_get):
         req = fakes.HTTPRequest.blank('/v1/restores')
-        self.controller.\
-            show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
+        self.controller.show(
+            req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
         self.assertTrue(moak_restore_get.called)
 
     def test_restore_delete_Invalid(self):

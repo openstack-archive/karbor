@@ -25,8 +25,11 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-(parent_type, child_type, grandchild_type) = \
-    fakes.FakeProtectionPlugin.SUPPORTED_RESOURCES
+(
+    parent_type,
+    child_type,
+    grandchild_type,
+) = fakes.FakeProtectionPlugin.SUPPORTED_RESOURCES
 
 parent = Resource(id='A1', name='parent', type=parent_type)
 child = Resource(id='B1', name='child', type=child_type)
@@ -77,8 +80,8 @@ class ResourceFlowTest(base.TestCase):
     @mock.patch('karbor.tests.unit.protection.fakes.FakeProtectionPlugin')
     def test_resource_no_impl(self, mock_protection):
         for operation in constants.OPERATION_TYPES:
-            heat_template = restore_heat.HeatTemplate() \
-                if operation == constants.OPERATION_RESTORE else None
+            heat_template = restore_heat.HeatTemplate() if (
+                operation == constants.OPERATION_RESTORE) else None
             self._walk_operation(mock_protection, operation,
                                  heat_template=heat_template)
 
@@ -87,11 +90,13 @@ class ResourceFlowTest(base.TestCase):
         for operation in constants.OPERATION_TYPES:
             mock_operation = fakes.MockOperation()
             get_operation_attr = 'get_{}_operation'.format(operation)
-            getattr(mock_protection, get_operation_attr).return_value = \
-                mock_operation
+            getattr(
+                mock_protection,
+                get_operation_attr
+            ).return_value = mock_operation
 
-            heat_template = restore_heat.HeatTemplate() \
-                if operation == constants.OPERATION_RESTORE else None
+            heat_template = restore_heat.HeatTemplate() if (
+                operation == constants.OPERATION_RESTORE) else None
 
             self._walk_operation(mock_protection, operation,
                                  heat_template=heat_template)
@@ -118,8 +123,10 @@ class ResourceFlowTest(base.TestCase):
         for operation in constants.OPERATION_TYPES:
             mock_operation = fakes.MockOperation()
             get_operation_attr = 'get_{}_operation'.format(operation)
-            getattr(mock_protection, get_operation_attr).return_value = \
-                mock_operation
+            getattr(
+                mock_protection,
+                get_operation_attr
+            ).return_value = mock_operation
 
             kwargs = {
                 'checkpoint': 'A',
@@ -161,8 +168,10 @@ class ResourceFlowTest(base.TestCase):
         operation = constants.OPERATION_PROTECT
         mock_operation = fakes.MockOperation()
         get_operation_attr = 'get_{}_operation'.format(operation)
-        getattr(mock_protection, get_operation_attr).return_value = \
-            mock_operation
+        getattr(
+            mock_protection,
+            get_operation_attr
+        ).return_value = mock_operation
 
         order_list = []
         mock_operation.on_prepare_begin = partial(test_order, order_list,

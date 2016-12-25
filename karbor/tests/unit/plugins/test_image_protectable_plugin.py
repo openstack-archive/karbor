@@ -86,11 +86,10 @@ class ImageProtectablePluginTest(base.TestCase):
     @mock.patch.object(images.Controller, 'list')
     def test_list_resources(self, mokc_image_list):
         plugin = ImageProtectablePlugin(self._context)
-        mokc_image_list.return_value = \
-            [
-                image_info(id='123', name='name123', owner='abcd'),
-                image_info(id='456', name='name456', owner='efgh'),
-            ]
+        mokc_image_list.return_value = [
+            image_info(id='123', name='name123', owner='abcd'),
+            image_info(id='456', name='name456', owner='efgh'),
+        ]
         self.assertEqual(plugin.list_resources(self._context),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                             id='123', name='name123'),
@@ -102,8 +101,7 @@ class ImageProtectablePluginTest(base.TestCase):
     def test_show_resource(self, mock_image_get):
         image_info = namedtuple('image_info', field_names=['id', 'name'])
         plugin = ImageProtectablePlugin(self._context)
-        mock_image_get.return_value = \
-            image_info(id='123', name='name123')
+        mock_image_get.return_value = image_info(id='123', name='name123')
         self.assertEqual(plugin.show_resource(self._context, '123'),
                          resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                            id='123', name='name123'))
@@ -129,11 +127,10 @@ class ImageProtectablePluginTest(base.TestCase):
         project = project_info(id='abcd', type=constants.PROJECT_RESOURCE_TYPE,
                                name='nameabcd')
         plugin = ImageProtectablePlugin(self._context)
-        mock_image_list.return_value = \
-            [
-                image_info('123', 'abcd', 'nameabcd'),
-                image_info('456', 'efgh', 'nameefgh'),
-            ]
+        mock_image_list.return_value = [
+            image_info('123', 'abcd', 'nameabcd'),
+            image_info('456', 'efgh', 'nameefgh'),
+        ]
         self.assertEqual(
             plugin.get_dependent_resources(self._context, project),
             [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,

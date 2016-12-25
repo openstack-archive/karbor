@@ -27,15 +27,18 @@ from karbor import utils
 
 import six
 
-query_instance_filters_opt = \
-    cfg.ListOpt('query_instance_filters',
-                default=['status'],
-                help="Instance filter options which "
-                     "non-admin user could use to "
-                     "query instances. Default values "
-                     "are: ['status']")
+query_instance_filters_opts = [
+    cfg.ListOpt(
+        'query_instance_filters',
+        default=['status'],
+        help=(
+            "Instance filter options which non-admin user could use to "
+            "query instances. Default values are: ['status']"
+        )
+    ),
+]
 CONF = cfg.CONF
-CONF.register_opt(query_instance_filters_opt)
+CONF.register_opts(query_instance_filters_opts)
 LOG = logging.getLogger(__name__)
 
 
@@ -210,9 +213,8 @@ class ProtectablesController(wsgi.Controller):
             instance["type"] = protectable_type
             if protectable_id is None:
                 raise exception.InvalidProtectableInstance()
-            dependents = self.protection_api.\
-                list_protectable_dependents(context, protectable_id,
-                                            protectable_type)
+            dependents = self.protection_api.list_protectable_dependents(
+                context, protectable_id, protectable_type)
             instance["dependent_resources"] = dependents
 
         retval_instances = self._view_builder.detail_list(req, instances)
@@ -277,15 +279,13 @@ class ProtectablesController(wsgi.Controller):
             msg = _("Invalid protectable type provided.")
             raise exception.InvalidInput(reason=msg)
 
-        instance = self.protection_api.\
-            show_protectable_instance(context, protectable_type,
-                                      protectable_id, parameters=parameters)
+        instance = self.protection_api.show_protectable_instance(
+            context, protectable_type, protectable_id, parameters=parameters)
         if instance is None:
             raise exception.InvalidProtectableInstance()
 
-        dependents = self.protection_api.\
-            list_protectable_dependents(context, protectable_id,
-                                        protectable_type)
+        dependents = self.protection_api.list_protectable_dependents(
+            context, protectable_id, protectable_type)
         instance["dependent_resources"] = dependents
 
         retval_instance = self._view_builder.detail(req, instance)

@@ -44,8 +44,7 @@ class ProtectablesApiTest(base.TestCase):
             self, moak_get_all, moak_show_protectable_type):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         moak_get_all.return_value = ["OS::Keystone::Project"]
-        self.controller.\
-            show(req, 'OS::Keystone::Project')
+        self.controller.show(req, 'OS::Keystone::Project')
         self.assertTrue(moak_get_all.called)
         self.assertTrue(moak_show_protectable_type.called)
 
@@ -67,8 +66,7 @@ class ProtectablesApiTest(base.TestCase):
                                           moak_list_protectable_instances):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         moak_get_all.return_value = ["OS::Keystone::Project"]
-        self.controller.\
-            instances_index(req, 'OS::Keystone::Project')
+        self.controller.instances_index(req, 'OS::Keystone::Project')
         self.assertTrue(moak_get_all.called)
         self.assertTrue(moak_list_protectable_instances.called)
 
@@ -85,9 +83,11 @@ class ProtectablesApiTest(base.TestCase):
                                          moak_list_protectable_dependents):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         moak_get_all.return_value = ["OS::Keystone::Project"]
-        self.controller.\
-            instances_show(req, 'OS::Keystone::Project',
-                           'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+        self.controller.instances_show(
+            req,
+            'OS::Keystone::Project',
+            'efc6a88b-9096-4bb6-8634-cda182a6e12a',
+        )
         self.assertTrue(moak_get_all.called)
         self.assertTrue(moak_show_protectable_instance.called)
         self.assertTrue(moak_list_protectable_dependents.called)

@@ -306,12 +306,14 @@ class ProtectionManager(manager.Manager):
         LOG.info(_LI("Start to show protectable instance of type: %s"),
                  protectable_type)
 
+        registry = self.protectable_registry
         try:
-            resource_instance = \
-                self.protectable_registry.show_resource(context,
-                                                        protectable_type,
-                                                        protectable_id,
-                                                        parameters=parameters)
+            resource_instance = registry.show_resource(
+                context,
+                protectable_type,
+                protectable_id,
+                parameters=parameters
+            )
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("Show resources of type %(type)s id %(id)s "
                           "failed: %(err)s"),
@@ -335,10 +337,10 @@ class ProtectionManager(manager.Manager):
         parent_resource = Resource(type=protectable_type, id=protectable_id,
                                    name="")
 
+        registry = self.protectable_registry
         try:
-            dependent_resources = \
-                self.protectable_registry.fetch_dependent_resources(
-                    context, parent_resource)
+            dependent_resources = registry.fetch_dependent_resources(
+                context, parent_resource)
         except exception.ListProtectableResourceFailed as err:
             LOG.error(_LE("List dependent resources of (%(res)s) "
                           "failed: %(err)s"),
