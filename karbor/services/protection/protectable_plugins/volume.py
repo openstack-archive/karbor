@@ -77,8 +77,10 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 return any([s.get('server_id') == parent_resource.id
                             for s in vol.attachments])
             if parent_resource.type == constants.PROJECT_RESOURCE_TYPE:
-                return getattr(vol, 'os-vol-tenant-attr:tenant_id') == \
-                    parent_resource.id
+                return getattr(
+                    vol,
+                    'os-vol-tenant-attr:tenant_id'
+                ) == parent_resource.id
 
         try:
             volumes = self._client(context).volumes.list(detailed=True)

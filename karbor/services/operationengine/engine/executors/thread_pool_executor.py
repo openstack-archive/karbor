@@ -17,7 +17,7 @@ from oslo_log import log as logging
 from threading import RLock
 
 from karbor.i18n import _LE
-from karbor.services.operationengine.engine.executors import\
+from karbor.services.operationengine.engine.executors import \
     scheduled_operation_executor as base_executor
 
 executor_opts = [

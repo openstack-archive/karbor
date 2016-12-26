@@ -142,8 +142,8 @@ class OperationEngineManager(manager.Manager):
     def delete_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Delete scheduled operation.")
 
-        operation_state = objects.ScheduledOperationState.\
-            get_by_operation_id(context, operation_id)
+        operation_state = objects.ScheduledOperationState.get_by_operation_id(
+            context, operation_id)
         if constants.OPERATION_STATE_DELETED != operation_state.state:
             operation_state.state = constants.OPERATION_STATE_DELETED
             operation_state.save()

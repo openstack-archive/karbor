@@ -998,10 +998,10 @@ class OverLimitFault(webob.exc.HTTPException):
             locale = request.best_match_language()
             return i18n.translate(msg, locale)
 
-        self.content['overLimitFault']['message'] = \
-            translate(self.content['overLimitFault']['message'])
-        self.content['overLimitFault']['details'] = \
-            translate(self.content['overLimitFault']['details'])
+        self.content['overLimitFault']['message'] = translate(
+            self.content['overLimitFault']['message'])
+        self.content['overLimitFault']['details'] = translate(
+            self.content['overLimitFault']['details'])
 
         serializer = {
             'application/json': JSONDictSerializer(),

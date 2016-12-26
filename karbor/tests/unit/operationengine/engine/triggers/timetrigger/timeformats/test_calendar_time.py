@@ -96,9 +96,11 @@ class CalendarTimeTestCase(base.TestCase):
                                     pattern)
 
     def test_compute_next_time(self):
-        pattern = "BEGIN:VEVENT\n" \
-                  "RRULE:FREQ=WEEKLY;INTERVAL=1;BYHOUR=17;BYMINUTE=1\n" \
-                  "END:VEVENT"
+        pattern = (
+            "BEGIN:VEVENT\n"
+            "RRULE:FREQ=WEEKLY;INTERVAL=1;BYHOUR=17;BYMINUTE=1\n"
+            "END:VEVENT"
+        )
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
         now = datetime(2016, 2, 20, 15, 11, 0)
@@ -110,10 +112,12 @@ class CalendarTimeTestCase(base.TestCase):
         time2 = datetime(2016, 3, 26, 17, 1, 0)
         self.assertEqual(time2, time1)
 
-        pattern = "BEGIN:VEVENT\n" \
-                  "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=10;BYMINUTE=0\n" \
-                  "RRULE:FREQ=WEEKLY;BYDAY=TU,TH,SA;BYHOUR=20;BYMINUTE=0\n" \
-                  "END:VEVENT"
+        pattern = (
+            "BEGIN:VEVENT\n"
+            "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=10;BYMINUTE=0\n"
+            "RRULE:FREQ=WEEKLY;BYDAY=TU,TH,SA;BYHOUR=20;BYMINUTE=0\n"
+            "END:VEVENT"
+        )
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
         now = datetime(2016, 7, 31, 15, 11, 0)
@@ -128,16 +132,20 @@ class CalendarTimeTestCase(base.TestCase):
         self.assertEqual(time2, time1)
 
     def test_get_min_interval(self):
-        pattern = "BEGIN:VEVENT\n" \
-                  "RRULE:FREQ=WEEKLY;INTERVAL=1;BYHOUR=17;BYMINUTE=1\n" \
-                  "END:VEVENT"
+        pattern = (
+            "BEGIN:VEVENT\n"
+            "RRULE:FREQ=WEEKLY;INTERVAL=1;BYHOUR=17;BYMINUTE=1\n"
+            "END:VEVENT"
+        )
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
         self.assertEqual(604800, time_obj.get_min_interval())
 
-        pattern = "BEGIN:VEVENT\n" \
-                  "RRULE:FREQ=WEEKLY;COUNT=1\n" \
-                  "END:VEVENT"
+        pattern = (
+            "BEGIN:VEVENT\n"
+            "RRULE:FREQ=WEEKLY;COUNT=1\n"
+            "END:VEVENT"
+        )
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
         self.assertEqual(None, time_obj.get_min_interval())

@@ -79,8 +79,9 @@ class ResourceFlowGraphWalkerListener(graph.GraphWalkerListener):
 
     def _create_hook_task(self, operation_obj, resource, hook_type):
         method = getattr(operation_obj, hook_type, noop_handle)
-        assert callable(method), 'Resource {} method "{}" is not callable' \
-            .format(resource.type, hook_type)
+        assert callable(method), (
+            'Resource {} method "{}" is not callable'
+        ).format(resource.type, hook_type)
 
         task_name = "{operation_type}_{hook_type}_{type}_{id}".format(
             type=resource.type,

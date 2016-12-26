@@ -44,9 +44,8 @@ class TestOperationLog(test_objects.BaseObjectsTestCase):
     @mock.patch('karbor.db.sqlalchemy.api.operation_log_update')
     def test_save(self, operation_log_update):
         db_operation_log = fake_operation_log.fake_db_operation_log()
-        operation_log = objects.OperationLog.\
-            _from_db_object(self.context,
-                            objects.OperationLog(), db_operation_log)
+        operation_log = objects.OperationLog._from_db_object(
+            self.context, objects.OperationLog(), db_operation_log)
         operation_log.state = 'finished'
         operation_log.save()
         operation_log_update.assert_called_once_with(
@@ -55,9 +54,8 @@ class TestOperationLog(test_objects.BaseObjectsTestCase):
     @mock.patch('karbor.db.sqlalchemy.api.operation_log_destroy')
     def test_destroy(self, operation_log_destroy):
         db_operation_log = fake_operation_log.fake_db_operation_log()
-        operation_log = objects.OperationLog.\
-            _from_db_object(self.context,
-                            objects.OperationLog(), db_operation_log)
+        operation_log = objects.OperationLog._from_db_object(
+            self.context, objects.OperationLog(), db_operation_log)
         operation_log.destroy()
         self.assertTrue(operation_log_destroy.called)
         admin_context = operation_log_destroy.call_args[0][0]

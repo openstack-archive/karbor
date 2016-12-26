@@ -19,7 +19,7 @@ import time
 from karbor.common import constants
 from karbor import context
 from karbor import objects
-from karbor.services.operationengine.engine.executors import\
+from karbor.services.operationengine.engine.executors import \
     thread_pool_executor
 from karbor.services.operationengine import operation_manager
 from karbor.tests import base

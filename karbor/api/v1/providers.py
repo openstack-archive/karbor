@@ -31,27 +31,32 @@ from karbor import utils
 
 import six
 
-query_provider_filters_opt = \
-    cfg.ListOpt('query_provider_filters',
-                default=['name', 'description'],
-                help="Provider filter options which "
-                     "non-admin user could use to "
-                     "query providers. Default values "
-                     "are: ['name', 'description']")
+query_provider_filters_opts = [
+    cfg.ListOpt(
+        'query_provider_filters',
+        default=['name', 'description'],
+        help=(
+            "Provider filter options which non-admin user could use to "
+            "query providers. Default values are: ['name', 'description']"
+        )
+    ),
+]
 
-query_checkpoint_filters_opt = \
-    cfg.ListOpt('query_checkpoint_filters',
-                default=['project_id', 'plan_id',
-                         'start_date', 'end_date'],
-                help="Checkpoint filter options which "
-                     "non-admin user could use to "
-                     "query checkpoints. Default values "
-                     "are: ['project_id', 'plan_id', "
-                     "'start_date', 'end_date']")
+query_checkpoint_filters_opts = [
+    cfg.ListOpt(
+        'query_checkpoint_filters',
+        default=['project_id', 'plan_id', 'start_date', 'end_date'],
+        help=(
+            "Checkpoint filter options which non-admin user could use to "
+            "query checkpoints. Default values are: ['project_id', "
+            "'plan_id', 'start_date', 'end_date']"
+        )
+    ),
+]
 
 CONF = cfg.CONF
-CONF.register_opt(query_provider_filters_opt)
-CONF.register_opt(query_checkpoint_filters_opt)
+CONF.register_opts(query_provider_filters_opts)
+CONF.register_opts(query_checkpoint_filters_opts)
 
 LOG = logging.getLogger(__name__)
 

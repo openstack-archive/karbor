@@ -78,8 +78,7 @@ class ServerProtectablePluginTest(base.TestCase):
         plugin = ServerProtectablePlugin(self._context)
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
-        mock_server_get.return_value = \
-            server_info(id='123', name='name123')
+        mock_server_get.return_value = server_info(id='123', name='name123')
         self.assertEqual(Resource('OS::Nova::Server', '123', 'name123'),
                          plugin.show_resource(self._context, '123'))
 

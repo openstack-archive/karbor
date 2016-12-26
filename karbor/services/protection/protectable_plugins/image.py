@@ -27,13 +27,13 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
     _SUPPORT_RESOURCE_TYPE = constants.IMAGE_RESOURCE_TYPE
 
     def _glance_client(self, context):
-        self._glance_client_instance = \
-            ClientFactory.create_client('glance', context)
+        self._glance_client_instance = ClientFactory.create_client(
+            'glance', context)
         return self._glance_client_instance
 
     def _nova_client(self, context):
-        self._nova_client_instance = \
-            ClientFactory.create_client('nova', context)
+        self._nova_client_instance = ClientFactory.create_client(
+            'nova', context)
         return self._nova_client_instance
 
     def get_resource_type(self):

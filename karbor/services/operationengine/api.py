@@ -16,7 +16,7 @@
 from oslo_log import log as logging
 
 from karbor.db import base
-from karbor.services.operationengine import rpcapi as operationengine_rpcapi
+from karbor.services.operationengine import rpcapi as oe_rpcapi
 
 
 LOG = logging.getLogger(__name__)
@@ -26,8 +26,7 @@ class API(base.Base):
     """API for interacting with the OperationEngine manager."""
 
     def __init__(self, db_driver=None):
-        self.operationengine_rpcapi = operationengine_rpcapi.\
-            OperationEngineAPI()
+        self.operationengine_rpcapi = oe_rpcapi.OperationEngineAPI()
         super(API, self).__init__(db_driver)
 
     def create_scheduled_operation(self, context, operation_id, trigger_id):

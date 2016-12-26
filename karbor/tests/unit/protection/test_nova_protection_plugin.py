@@ -17,8 +17,8 @@ from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
-from karbor.services.protection.protection_plugins.server.nova_protection_plugin \
-    import NovaProtectionPlugin
+from karbor.services.protection.protection_plugins.server. \
+    nova_protection_plugin import NovaProtectionPlugin
 from karbor.services.protection.protection_plugins.server \
     import server_plugin_schemas
 from karbor.tests import base

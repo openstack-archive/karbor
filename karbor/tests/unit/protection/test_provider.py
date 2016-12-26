@@ -20,8 +20,11 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-(parent_type, child_type, grandchild_type) = \
-    fakes.FakeProtectionPlugin.SUPPORTED_RESOURCES
+(
+    parent_type,
+    child_type,
+    grandchild_type,
+) = fakes.FakeProtectionPlugin.SUPPORTED_RESOURCES
 
 parent = Resource(id='A1', name='parent', type=parent_type)
 child = Resource(id='B1', name='child', type=child_type)

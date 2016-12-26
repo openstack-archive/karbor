@@ -37,8 +37,10 @@ class SwiftBankPluginTest(base.TestCase):
         self.fake_connection = FakeSwiftClient.connection()
         swift.create = mock.MagicMock()
         swift.create.return_value = self.fake_connection
-        import_str = "karbor.services.protection.bank_plugins." \
-                     "swift_bank_plugin.SwiftBankPlugin"
+        import_str = (
+            "karbor.services.protection.bank_plugins."
+            "swift_bank_plugin.SwiftBankPlugin"
+        )
         self.object_container = "objects"
         swift_bank_plugin_cls = importutils.import_class(
             import_str=import_str)

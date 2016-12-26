@@ -56,18 +56,15 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                    "swift_bank_plugin")
         self._config.register_opts(lease_opt,
                                    "swift_bank_plugin")
-        self.bank_object_container = \
-            self._config.swift_bank_plugin.bank_swift_object_container
-        self.lease_expire_window = \
-            self._config.swift_bank_plugin.lease_expire_window
-        self.lease_renew_window = \
-            self._config.swift_bank_plugin.lease_renew_window
+        plugin_cfg = self._config.swift_bank_plugin
+        self.bank_object_container = plugin_cfg.bank_swift_object_container
+        self.lease_expire_window = plugin_cfg.lease_expire_window
+        self.lease_renew_window = plugin_cfg.lease_renew_window
         self.context = context
         # TODO(luobin):
         # init lease_validity_window
         # according to lease_renew_window if not configured
-        self.lease_validity_window = \
-            self._config.swift_bank_plugin.lease_validity_window
+        self.lease_validity_window = plugin_cfg.lease_validity_window
 
         # TODO(luobin): create a uuid of this bank_plugin
         self.owner_id = uuidutils.generate_uuid()

@@ -18,7 +18,7 @@ from oslo_utils import timeutils
 
 from karbor import exception
 from karbor.i18n import _
-from karbor.services.operationengine.engine.triggers.timetrigger import\
+from karbor.services.operationengine.engine.triggers.timetrigger import \
     timeformats
 
 
