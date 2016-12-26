@@ -10,9 +10,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
+import eventlet
 
+from croniter import croniter
+from datetime import datetime
+from functools import partial
+
+from karbor.common import constants
 from karbor.tests.fullstack import karbor_base
 from karbor.tests.fullstack import karbor_objects as objects
+from karbor.tests.fullstack import utils
 
 DEFAULT_PROPERTY = {'pattern': '0 20 * * 2', 'format': 'crontab'}
 
@@ -77,9 +85,57 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         after_num = len(operation_items)
         self.assertEqual(1, after_num - before_num)
 
+    @staticmethod
+    def _wait_timestamp(pattern, start_time, freq):
+        if not isinstance(freq, int) or freq <= 0:
+            return 0
+
+        cur_time = copy.deepcopy(start_time)
+        for i in range(freq):
+            next_time = croniter(pattern, cur_time).get_next(datetime)
+            cur_time = next_time
+        return (next_time - start_time).seconds
+
+    def _checkpoint_status(self, checkpoint_id, status):
+        try:
+            cp = self.karbor_client.checkpoints.get(self.provider_id,
+                                                    checkpoint_id)
+        except Exception:
+            return False
+
+        if status is None or cp.status == status:
+            return True
+        else:
+            return False
+
     def test_scheduled_operations_create_and_scheduled(self):
-        # TODO(zhang shuai)
-        pass
+        freq = 2
+        pattern = '*/15 * * * *'
+        cur_property = {'pattern': pattern, 'format': 'crontab'}
+
+        before_items = self.karbor_client.checkpoints.list(self.provider_id)
+        before_num = len(before_items)
+
+        start_time = datetime.now().replace(microsecond=0)
+        self.store(self._create_scheduled_operation_for_volume(cur_property))
+        sleep_time = self._wait_timestamp(pattern, start_time, freq)
+        self.assertNotEqual(0, sleep_time)
+        eventlet.sleep(sleep_time)
+
+        after_items = self.karbor_client.checkpoints.list(self.provider_id)
+        after_num = len(after_items)
+        self.assertEqual(freq, after_num - before_num)
+
+        for item in after_items:
+            if item not in before_items:
+                utils.wait_until_true(
+                    partial(self._checkpoint_status,
+                            item.id,
+                            constants.CHECKPOINT_STATUS_AVAILABLE),
+                    timeout=objects.LONG_TIMEOUT, sleep=objects.LONG_SLEEP
+                )
+                self.karbor_client.checkpoints.delete(self.provider_id,
+                                                      item.id)
 
     def test_scheduled_operations_list(self):
         operation_items = self.karbor_client.scheduled_operations.list()
