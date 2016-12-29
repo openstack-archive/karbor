@@ -9,8 +9,8 @@ your local.conf, under [[local|localrc]]:
 
 .. code-block:: none
 
-        enable_plugin karbor http://git.openstack.org/openstack/karbor master
-        enable_plugin karbor-dashboard http://git.openstack.org/openstack/karbor-dashboard master
+        enable_plugin karbor https://git.openstack.org/openstack/karbor master
+        enable_plugin karbor-dashboard https://git.openstack.org/openstack/karbor-dashboard master
         enable_service karbor-api
         enable_service karbor-operationengine
         enable_service karbor-protection
@@ -25,6 +25,7 @@ Heat
 
 .. code-block:: none
 
+        enable_plugin heat https://git.openstack.org/openstack/heat master
         enable_service h-eng h-api h-api-cfn h-api-cw
 
 Swift (recommended)

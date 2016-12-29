@@ -6,8 +6,9 @@ SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 ADMIN_PASSWORD=password
 
-enable_plugin karbor http://git.openstack.org/openstack/karbor master
-enable_plugin karbor-dashboard http://git.openstack.org/openstack/karbor-dashboard master
+enable_plugin karbor https://git.openstack.org/openstack/karbor master
+enable_plugin karbor-dashboard https://git.openstack.org/openstack/karbor-dashboard master
+enable_plugin heat https://http://git.openstack.org/openstack/heat master
 
 #run the services you want to use
 ENABLED_SERVICES=rabbit,mysql,key
