@@ -85,6 +85,9 @@ class CreateStackTask(task.Task):
 
     def execute(self, heat_client, heat_template):
         stack_name = "restore_%s" % uuidutils.generate_uuid()
+        if heat_template.len() == 0:
+            LOG.info(_LI('Not creating Heat stack, no resources in template'))
+            return None
         LOG.info(_LI('Creating Heat stack, stack_name: %s'), stack_name)
         try:
             body = heat_client.stacks.create(
@@ -103,6 +106,10 @@ class SyncRestoreStatusTask(task.Task):
         super(SyncRestoreStatusTask, self).__init__(*args, **kwargs)
 
     def execute(self, stack_id, heat_client):
+        if stack_id is None:
+            LOG.info(_LI('Not syncing Heat stack status, stack is empty'))
+            return
+
         LOG.info(_LI('Syncing Heat stack status, stack_id: %s'), stack_id)
         sync_status_loop = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, heat_client, stack_id)

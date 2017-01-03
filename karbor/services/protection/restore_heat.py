@@ -68,6 +68,9 @@ class HeatTemplate(object):
                       original_id)
             raise InvalidOriginalId
 
+    def len(self):
+        return len(self._resources)
+
     def to_dict(self):
         resources_dict = {}
         for resource in self._resources:
