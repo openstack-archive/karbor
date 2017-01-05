@@ -10,15 +10,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from functools import partial
 import six
 
-from cinderclient.exceptions import NotFound
+from cinderclient import exceptions as cinder_exc
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
-from karbor.services.protection.protection_plugins.base_protection_plugin \
-    import BaseProtectionPlugin
+from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
 from karbor.services.protection.restore_heat import HeatResource
@@ -27,30 +27,226 @@ from oslo_log import log as logging
 from oslo_service import loopingcall
 from oslo_utils import uuidutils
 
-
-protection_opts = [
-    cfg.IntOpt('protection_sync_interval',
-               default=60,
-               help='update protection status interval')
-]
-CONF = cfg.CONF
-CONF.register_opts(protection_opts)
-
 LOG = logging.getLogger(__name__)
 
+cinder_backup_opts = [
+    cfg.IntOpt('poll_interval', default=30,
+               help='Poll interval for Cinder backup status'),
+]
 
-class CinderProtectionPlugin(BaseProtectionPlugin):
+CONF = cfg.CONF
+CONF.register_opts(cinder_backup_opts, 'cinder_backup_protection_plugin')
+
+
+def status_poll(get_status_func, interval, success_statuses=set(),
+                failure_statuses=set(), ignore_statuses=set(),
+                ignore_unexpected=False):
+    def _poll():
+        status = get_status_func()
+        if status in success_statuses:
+            raise loopingcall.LoopingCallDone(retvalue=True)
+        if status in failure_statuses:
+            raise loopingcall.LoopingCallDone(retvalue=False)
+        if status in ignore_statuses:
+            return
+        if ignore_unexpected is False:
+            raise loopingcall.LoopingCallDone(retvalue=False)
+
+    loop = loopingcall.FixedIntervalLoopingCall(_poll)
+    return loop.start(interval=interval, initial_delay=interval).wait()
+
+
+def get_backup_status(cinder_client, backup_id):
+    LOG.debug('Polling backup (id: %s)', backup_id)
+    try:
+        backup = cinder_client.backups.get(backup_id)
+        status = backup.status
+    except cinder_exc.NotFound:
+        status = 'not-found'
+    LOG.debug('Polled backup (id: %(backup_id)s) status: %(status)s',
+              {'backup_id': backup_id, 'status': status})
+    return status
+
+
+def get_volume_status(cinder_client, volume_id):
+    LOG.debug('Polling volume (id: %s)', volume_id)
+    try:
+        volume = cinder_client.volumes.get(volume_id)
+        status = volume.status
+    except cinder_exc.NotFound:
+        status = 'not-found'
+    LOG.debug('Polled volume (id: %(volume_id)s) status: %(status)s',
+              {'volume_id': volume_id, 'status': status})
+    return status
+
+
+class ProtectOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(ProtectOperation, self).__init__()
+        self._interval = CONF.cinder_backup_protection_plugin.poll_interval
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        volume_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(volume_id)
+        cinder_client = ClientFactory.create_client('cinder', context)
+        LOG.info(_LI('creating volume backup, volume_id: %s'), volume_id)
+        bank_section.create_object('status',
+                                   constants.RESOURCE_STATUS_PROTECTING)
+        resource_metadata = {
+            'volume_id': volume_id,
+        }
+        is_success = status_poll(
+            partial(get_volume_status, cinder_client, volume_id),
+            interval=self._interval,
+            success_statuses={'available', 'in-use', 'error_extending',
+                              'error_restoring'},
+            failure_statuses={'error', 'error_deleting', 'deleting',
+                              'not-found'},
+            ignore_statuses={'attaching', 'creating', 'backing-up',
+                             'restoring-backup'},
+        )
+        if not is_success:
+            raise exception.CreateBackupFailed(
+                reason='Volume is in errorneous state',
+                resource_id=volume_id,
+                resource_type=constants.VOLUME_RESOURCE_TYPE,
+            )
+
+        backup_name = parameters.get('backup_name')
+        backup = None
+        try:
+            backup = cinder_client.backups.create(
+                volume_id=volume_id,
+                name=backup_name,
+                force=True,
+            )
+        except Exception as e:
+            LOG.error(_LE('Error creating backup (volume_id: %(volume_id)s): '
+                          '%(reason)s'),
+                      {'volume_id': volume_id, 'reason': e})
+            bank_section.create_object('status',
+                                       constants.RESOURCE_STATUS_ERROR)
+            raise
+
+        backup_id = backup.id
+        resource_metadata['backup_id'] = backup_id
+        bank_section.create_object('metadata', resource_metadata)
+
+        is_success = status_poll(
+            partial(get_backup_status, cinder_client, backup_id),
+            interval=self._interval,
+            success_statuses={'available'},
+            failure_statuses={'error'},
+            ignore_statuses={'creating'},
+        )
+
+        if is_success is True:
+            LOG.info(
+                _LI('protecting volume (id: %(volume_id)s) to backup '
+                    '(id: %(backup_id)s) completed successfully'),
+                {'backup_id': backup_id, 'volume_id': volume_id}
+            )
+            bank_section.create_object('status',
+                                       constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = None
+            try:
+                backup = cinder_client.backups.get(backup_id)
+            except Exception:
+                reason = 'Unable to find backup'
+            else:
+                reason = backup.fail_reason
+            LOG.error(
+                _LE('protecting volume (id: %(volume_id)s) to backup '
+                    '(id: %(backup_id)s) failed. Reason: "%(reason)s"'),
+                {
+                    'backup_id': backup_id,
+                    'volume_id': volume_id,
+                    'reason': reason,
+                }
+            )
+            bank_section.create_object('status',
+                                       constants.RESOURCE_STATUS_ERROR)
+            raise exception.CreateBackupFailed(
+                reason=reason,
+                resource_id=volume_id,
+                resource_type=constants.VOLUME_RESOURCE_TYPE,
+            )
+
+
+class RestoreOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(RestoreOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, heat_template,
+                **kwargs):
+        resource_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(resource_id)
+        resource_metadata = bank_section.get_object('metadata')
+        name = parameters.get('restore_name',
+                              '%s@%s' % (checkpoint.id, resource_id))
+        heat_resource_id = uuidutils.generate_uuid()
+        heat_resource = HeatResource(heat_resource_id,
+                                     constants.VOLUME_RESOURCE_TYPE)
+        heat_resource.set_property('name', name)
+        if 'restore_description' in parameters:
+            heat_resource.set_property('description',
+                                       parameters['restore_description'])
+
+        heat_resource.set_property('backup_id', resource_metadata['backup_id'])
+        heat_template.put_resource(resource_id, heat_resource)
+
+
+class DeleteOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(DeleteOperation, self).__init__()
+        self._interval = CONF.cinder_backup_protection_plugin.poll_interval
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        resource_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(resource_id)
+        backup_id = None
+        try:
+            bank_section.update_object('status',
+                                       constants.RESOURCE_STATUS_DELETING)
+            resource_metadata = bank_section.get_object('metadata')
+            backup_id = resource_metadata['backup_id']
+            cinder_client = ClientFactory.create_client('cinder', context)
+            try:
+                backup = cinder_client.backups.get(backup_id)
+                cinder_client.backups.delete(backup)
+            except cinder_exc.NotFound:
+                LOG.info(_LI('Backup id: %s not found. Assuming deleted'),
+                         backup_id)
+            is_success = status_poll(
+                partial(get_backup_status, cinder_client, backup_id),
+                interval=self._interval,
+                success_statuses={'deleted', 'not-found'},
+                failure_statuses={'error', 'error_deleting'},
+                ignore_statuses={'deleting'},
+            )
+            if not is_success:
+                raise exception.NotFound()
+            bank_section.delete_object('metadata')
+            bank_section.update_object('status',
+                                       constants.RESOURCE_STATUS_DELETED)
+        except Exception as e:
+            LOG.error(_LE('delete volume backup failed, backup_id: %s'),
+                      backup_id)
+            bank_section.update_object('status',
+                                       constants.RESOURCE_STATUS_ERROR)
+            raise exception.DeleteBackupFailed(
+                reason=six.text_type(e),
+                resource_id=resource_id,
+                resource_type=constants.VOLUME_RESOURCE_TYPE
+            )
+
+
+class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
     _SUPPORT_RESOURCE_TYPES = [constants.VOLUME_RESOURCE_TYPE]
 
     def __init__(self, config=None):
-        super(CinderProtectionPlugin, self).__init__(config)
-        self.protection_resource_map = {}
-        self.protection_sync_interval = CONF.protection_sync_interval
-
-        sync_status_loop = loopingcall.FixedIntervalLoopingCall(
-            self.sync_status)
-        sync_status_loop.start(interval=self.protection_sync_interval,
-                               initial_delay=self.protection_sync_interval)
+        super(CinderBackupProtectionPlugin, self).__init__(config)
 
     @classmethod
     def get_supported_resources_types(cls):
@@ -73,141 +269,11 @@ class CinderProtectionPlugin(BaseProtectionPlugin):
         # TODO(hurong)
         pass
 
-    def _cinder_client(self, cntxt):
-        return ClientFactory.create_client("cinder", cntxt)
+    def get_protect_operation(self, resource):
+        return ProtectOperation()
 
-    def create_backup(self, cntxt, checkpoint, **kwargs):
-        resource_node = kwargs.get("node")
-        backup_name = kwargs.get("backup_name")
-        resource = resource_node.value
-        volume_id = resource.id
+    def get_restore_operation(self, resource):
+        return RestoreOperation()
 
-        bank_section = checkpoint.get_resource_bank_section(volume_id)
-
-        resource_definition = {"volume_id": volume_id}
-        cinder_client = self._cinder_client(cntxt)
-
-        LOG.info(_LI("creating volume backup, volume_id: %s."), volume_id)
-        try:
-            bank_section.create_object("status",
-                                       constants.RESOURCE_STATUS_PROTECTING)
-
-            backup = cinder_client.backups.create(volume_id=volume_id,
-                                                  name=backup_name,
-                                                  force=True)
-            resource_definition["backup_id"] = backup.id
-            bank_section.create_object("metadata", resource_definition)
-            self.protection_resource_map[volume_id] = {
-                "bank_section": bank_section,
-                "backup_id": backup.id,
-                "cinder_client": cinder_client,
-                "operation": "create"
-            }
-        except Exception as e:
-            LOG.error(_LE("create volume backup failed, volume_id: %s."),
-                      volume_id)
-            bank_section.update_object("status",
-                                       constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
-                reason=six.text_type(e),
-                resource_id=volume_id,
-                resource_type=constants.VOLUME_RESOURCE_TYPE
-            )
-
-    def delete_backup(self, cntxt, checkpoint, **kwargs):
-        resource_node = kwargs.get("node")
-        resource_id = resource_node.value.id
-
-        bank_section = checkpoint.get_resource_bank_section(resource_id)
-        cinder_client = self._cinder_client(cntxt)
-        LOG.info(_LI("deleting volume backup, volume_id: %s."), resource_id)
-        try:
-            bank_section.update_object("status",
-                                       constants.RESOURCE_STATUS_DELETING)
-            resource_definition = bank_section.get_object("metadata")
-            backup_id = resource_definition["backup_id"]
-            cinder_client.backups.delete(backup_id)
-            bank_section.delete_object("metadata")
-            self.protection_resource_map[resource_id] = {
-                "bank_section": bank_section,
-                "backup_id": backup_id,
-                "cinder_client": cinder_client,
-                "operation": "delete"
-            }
-        except Exception as e:
-            LOG.error(_LE("delete volume backup failed, volume_id: %s."),
-                      resource_id)
-            bank_section.update_object("status",
-                                       constants.CHECKPOINT_STATUS_ERROR)
-
-            raise exception.DeleteBackupFailed(
-                reason=six.text_type(e),
-                resource_id=resource_id,
-                resource_type=constants.VOLUME_RESOURCE_TYPE
-            )
-
-    def sync_status(self):
-        for resource_id, resource_info in self.protection_resource_map.items():
-            backup_id = resource_info["backup_id"]
-            bank_section = resource_info["bank_section"]
-            cinder_client = resource_info["cinder_client"]
-            operation = resource_info["operation"]
-            try:
-                backup = cinder_client.backups.get(backup_id)
-                if backup.status == "available":
-                    bank_section.update_object(
-                        "status", constants.RESOURCE_STATUS_AVAILABLE)
-                    self.protection_resource_map.pop(resource_id)
-                elif backup.status in ["error", "error-deleting"]:
-                    bank_section.update_object(
-                        "status", constants.RESOURCE_STATUS_ERROR)
-                    self.protection_resource_map.pop(resource_id)
-                else:
-                    continue
-            except Exception as exc:
-                if operation == "delete" and type(exc) == NotFound:
-                    bank_section.update_object(
-                        "status",
-                        constants.RESOURCE_STATUS_DELETED)
-                    LOG.info(_LI("deleting volume backup finished, "
-                                 "backup id: %s"), backup_id)
-                else:
-                    LOG.error(_LE("deleting volume backup error.exc: %s"),
-                              six.text_type(exc))
-                self.protection_resource_map.pop(resource_id)
-
-    def restore_backup(self, cntxt, checkpoint, **kwargs):
-        resource_node = kwargs.get("node")
-        resource_id = resource_node.value.id
-        heat_template = kwargs.get("heat_template")
-
-        name = kwargs.get("restore_name",
-                          "%s@%s" % (checkpoint.id, resource_id))
-        description = kwargs.get("restore_description")
-
-        heat_resource_id = uuidutils.generate_uuid()
-        heat_resource = HeatResource(heat_resource_id,
-                                     constants.VOLUME_RESOURCE_TYPE)
-
-        bank_section = checkpoint.get_resource_bank_section(resource_id)
-        try:
-            resource_definition = bank_section.get_object("metadata")
-            backup_id = resource_definition["backup_id"]
-            properties = {"backup_id": backup_id,
-                          "name": name}
-
-            if description is not None:
-                properties["description"] = description
-
-            for key, value in properties.items():
-                heat_resource.set_property(key, value)
-
-            heat_template.put_resource(resource_id, heat_resource)
-        except Exception as e:
-            LOG.error(_LE("restore volume backup failed, volume_id: %s."),
-                      resource_id)
-            raise exception.RestoreBackupFailed(
-                reason=six.text_type(e),
-                resource_id=resource_id,
-                resource_type=constants.VOLUME_RESOURCE_TYPE
-            )
+    def get_delete_operation(self, resource):
+        return DeleteOperation()
