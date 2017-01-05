@@ -25,6 +25,7 @@ from karbor.services.protection.protection_plugins.image \
 from karbor.tests import base
 import mock
 from oslo_config import cfg
+from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):
@@ -37,7 +38,8 @@ class FakeBankPlugin(BankPlugin):
     def get_object(self, key):
         return
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None):
         return
 
     def delete_object(self, key):
@@ -65,6 +67,21 @@ Image = collections.namedtuple(
 )
 
 
+def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
+    def noop(*args, **kwargs):
+        pass
+
+    hooks = (
+        'on_prepare_begin',
+        'on_prepare_finish',
+        'on_main',
+        'on_complete',
+    )
+    for hook_name in hooks:
+        hook = getattr(operation, hook_name, noop)
+        hook(checkpoint, resource, context, parameters, **kwargs)
+
+
 class CheckpointCollection(object):
     def __init__(self):
         self.bank_section = fake_bank_section
@@ -76,11 +93,22 @@ class CheckpointCollection(object):
 class GlanceProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(GlanceProtectionPluginTest, self).setUp()
+
+        plugin_config = cfg.ConfigOpts()
+        plugin_config_fixture = self.useFixture(fixture.Config(plugin_config))
+        plugin_config_fixture.load_raw_values(
+            group='image_backup_plugin',
+            poll_interval=0,
+        )
+        plugin_config_fixture.load_raw_values(
+            group='image_backup_plugin',
+            backup_image_object_size=65536,
+        )
         cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
         with mock.patch.object(cls, '_do_init'):
             client_factory.init()
+        self.plugin = GlanceProtectionPlugin(plugin_config)
 
-        self.plugin = GlanceProtectionPlugin()
         cfg.CONF.set_default('glance_endpoint',
                              'http://127.0.0.1:9292',
                              'glance_client')
@@ -108,17 +136,18 @@ class GlanceProtectionPluginTest(base.TestCase):
         self.assertEqual(options_schema,
                          image_plugin_schemas.SAVED_INFO_SCHEMA)
 
-    def test_create_backup(self):
+    @mock.patch('karbor.services.protection.protection_plugins.image.'
+                'image_protection_plugin.status_poll')
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    def test_create_backup(self, mock_glance_create, mock_status_poll):
         resource = Resource(id="123",
                             type=constants.IMAGE_RESOURCE_TYPE,
                             name='fake')
-        resource_node = ResourceNode(value=resource,
-                                     child_nodes=[])
 
         fake_bank_section.create_object = mock.MagicMock()
 
-        self.plugin._glance_client = mock.MagicMock()
-        self.plugin._glance_client.return_value = self.glance_client
+        protect_operation = self.plugin.get_protect_operation(resource)
+        mock_glance_create.return_value = self.glance_client
 
         self.glance_client.images.get = mock.MagicMock()
         self.glance_client.images.return_value = Image(
@@ -128,25 +157,23 @@ class GlanceProtectionPluginTest(base.TestCase):
         )
 
         fake_bank_section.update_object = mock.MagicMock()
-
         self.glance_client.images.data = mock.MagicMock()
-        self.glance_client.images.data.return_value = "image-data"
-
-        self.plugin.create_backup(self.cntxt, self.checkpoint,
-                                  node=resource_node)
+        self.glance_client.images.data.return_value = []
+        mock_status_poll.return_value = True
+        call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
+                   {})
 
     def test_delete_backup(self):
         resource = Resource(id="123",
                             type=constants.IMAGE_RESOURCE_TYPE,
                             name='fake')
-        resource_node = ResourceNode(value=resource,
-                                     child_nodes=[])
 
         fake_bank_section.list_objects = mock.MagicMock()
         fake_bank_section.list_objects.return_value = ["data_1", "data_2"]
         fake_bank_section.delete_object = mock.MagicMock()
-        self.plugin.delete_backup(self.cntxt, self.checkpoint,
-                                  node=resource_node)
+        delete_operation = self.plugin.get_delete_operation(resource)
+        call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
+                   {})
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
