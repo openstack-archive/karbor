@@ -12,7 +12,6 @@
 
 from karbor.common import constants
 from karbor.resource import Resource
-from karbor.services.protection.protectable_registry import ProtectableRegistry
 from karbor.services.protection import resource_flow
 from oslo_log import log as logging
 from taskflow import task
@@ -45,8 +44,8 @@ class CompleteProtectTask(task.Task):
         checkpoint.commit()
 
 
-def get_flow(context, workflow_engine, plan, provider, checkpoint):
-    protectable_registry = ProtectableRegistry()
+def get_flow(context, protectable_registry, workflow_engine, plan, provider,
+             checkpoint):
     resources = set(Resource(**item) for item in plan.get("resources"))
     resource_graph = protectable_registry.build_graph(context,
                                                       resources)

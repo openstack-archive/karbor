@@ -53,8 +53,10 @@ class Worker(object):
                  **kwargs):
         if operation_type == constants.OPERATION_PROTECT:
             plan = kwargs.get('plan', None)
+            protectable_registry = kwargs.get('protectable_registry', None)
             flow = flow_protect.get_flow(
                 context,
+                protectable_registry,
                 self.workflow_engine,
                 plan,
                 provider,

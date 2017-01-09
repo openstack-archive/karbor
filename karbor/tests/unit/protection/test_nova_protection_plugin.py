@@ -11,16 +11,18 @@
 #    under the License.
 
 import collections
+
+from collections import namedtuple
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
-from karbor.services.protection.protection_plugins.server. \
-    nova_protection_plugin import NovaProtectionPlugin
 from karbor.services.protection.protection_plugins.server \
     import server_plugin_schemas
+from karbor.services.protection.protection_plugins.server. \
+    nova_protection_plugin import NovaProtectionPlugin
 from karbor.tests import base
 import mock
 
@@ -37,11 +39,14 @@ class Server(object):
 
 
 class Volume(object):
-    def __init__(self, id, volume_type, status, attachments):
+    def __init__(self, id, volume_type, status, bootable,
+                 attachments, name=None):
         self.id = id
         self.volume_type = volume_type
         self.status = status
+        self.bootable = bootable
         self.attachments = attachments
+        self.name = name
 
 
 class Image(object):
@@ -108,12 +113,14 @@ FakeVolumes = {
     "vol_id_1": Volume(id="vol_id_1",
                        volume_type="",
                        status="in-use",
+                       bootable="",
                        attachments=[{'server_id': 'vm_id_2',
                                      'attachment_id': '',
                                      'host_name': '',
                                      'volume_id': 'vol_id_1',
                                      'device': '/dev/vdb',
-                                     'id': 'attach_id_1'}])
+                                     'id': 'attach_id_1'}],
+                       name="vol_id_1_name")
 }
 
 FakeImages = {
@@ -122,6 +129,11 @@ FakeImages = {
                         container_format="",
                         status="active")
 }
+
+FakeGraphNode = namedtuple("GraphNode", (
+    "value",
+    "child_nodes",
+))
 
 
 class FakeNovaClient(object):
@@ -166,6 +178,9 @@ class FakeCinderClient(object):
     class Volumes(object):
         def get(self, volume_id):
             return FakeVolumes[volume_id]
+
+        def list(self, detailed=True, search_opts=None, limit=None):
+            return [FakeVolumes['vol_id_1'], ]
 
         def __getattr__(self, item):
             return None
@@ -227,12 +242,36 @@ ResourceNode = collections.namedtuple(
 class Checkpoint(object):
     def __init__(self):
         self.id = "checkpoint_id"
+        self.graph = []
+
+    @property
+    def resource_graph(self):
+        return self.graph
+
+    @resource_graph.setter
+    def resource_graph(self, resource_graph):
+        self.graph = resource_graph
 
     def get_resource_bank_section(self, resource_id):
         return BankSection(
             bank=fake_bank,
             section="/resource_data/%s/%s" % (self.id, resource_id)
         )
+
+
+def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
+    def noop(*args, **kwargs):
+        pass
+
+    hooks = (
+        'on_prepare_begin',
+        'on_prepare_finish',
+        'on_main',
+        'on_complete',
+    )
+    for hook_name in hooks:
+        hook = getattr(operation, hook_name, noop)
+        hook(checkpoint, resource, context, parameters, **kwargs)
 
 
 class NovaProtectionPluginTest(base.TestCase):
@@ -264,38 +303,36 @@ class NovaProtectionPluginTest(base.TestCase):
         self.assertEqual(options_schema,
                          server_plugin_schemas.SAVED_INFO_SCHEMA)
 
-    def test_create_backup_without_volumes(self):
+    @mock.patch('karbor.services.protection.clients.neutron.create')
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    @mock.patch('karbor.services.protection.clients.nova.create')
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    def test_create_backup_without_volumes(self, mock_cinder_client,
+                                           mock_nova_client,
+                                           mock_glance_client,
+                                           mock_neutron_client):
         resource = Resource(id="vm_id_1",
                             type=constants.SERVER_RESOURCE_TYPE,
                             name="fake_vm")
-        resource_node = ResourceNode(value=resource,
-                                     child_nodes=[])
-        backup_name = "fake_backup"
 
-        self.plugin._cinder_client = mock.MagicMock()
-        self.plugin._cinder_client.return_value = self.cinder_client
+        protect_operation = self.plugin.get_protect_operation(resource)
+        mock_cinder_client.return_value = self.cinder_client
+        mock_nova_client.return_value = self.nova_client
+        mock_glance_client.return_value = self.glance_client
+        mock_neutron_client.return_value = self.neutron_client
 
-        self.plugin._nova_client = mock.MagicMock()
-        self.plugin._nova_client.return_value = self.nova_client
-
-        self.plugin._glance_client = mock.MagicMock()
-        self.plugin._glance_client.return_value = self.glance_client
-
-        self.plugin._neutron_client = mock.MagicMock()
-        self.plugin._neutron_client.return_value = self.neutron_client
-
-        self.plugin.create_backup(self.cntxt, self.checkpoint,
-                                  node=resource_node,
-                                  backup_name=backup_name)
+        call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
+                   {})
 
         self.assertEqual(
-            constants.RESOURCE_STATUS_PROTECTING,
+            constants.RESOURCE_STATUS_AVAILABLE,
             fake_bank._plugin._objects[
                 "/resource_data/checkpoint_id/vm_id_1/status"]
         )
         resource_definition = {
             "resource_id": "vm_id_1",
             "attach_metadata": {},
+            'boot_metadata': {'boot_device_type': 'volume'},
             "server_metadata": {
                 "availability_zone": "nova",
                 "networks": ["network_id_1"],
@@ -311,43 +348,42 @@ class NovaProtectionPluginTest(base.TestCase):
                 "/resource_data/checkpoint_id/vm_id_1/metadata"]
         )
 
-    def test_create_backup_with_volumes(self):
+    @mock.patch('karbor.services.protection.clients.neutron.create')
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    @mock.patch('karbor.services.protection.clients.nova.create')
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    def test_create_backup_with_volumes(self, mock_cinder_client,
+                                        mock_nova_client,
+                                        mock_glance_client,
+                                        mock_neutron_client):
         vm_resource = Resource(id="vm_id_2",
                                type=constants.SERVER_RESOURCE_TYPE,
                                name="fake_vm")
-        vol_resource = Resource(id="vol_id_1",
-                                type=constants.VOLUME_RESOURCE_TYPE,
-                                name="fake_vol")
-        vol_node = ResourceNode(value=vol_resource,
-                                child_nodes=[])
-        vm_node = ResourceNode(value=vm_resource,
-                               child_nodes=[vol_node])
-        backup_name = "fake_backup"
 
-        self.plugin._cinder_client = mock.MagicMock()
-        self.plugin._cinder_client.return_value = self.cinder_client
+        protect_operation = self.plugin.get_protect_operation(vm_resource)
+        mock_cinder_client.return_value = self.cinder_client
+        mock_nova_client.return_value = self.nova_client
+        mock_glance_client.return_value = self.glance_client
+        mock_neutron_client.return_value = self.neutron_client
+        checkpoint = Checkpoint()
+        checkpoint.resource_graph = [FakeGraphNode(value=Resource(
+            type='OS::Nova::Server', id='vm_id_2', name='None'),
+            child_nodes=[FakeGraphNode(value=Resource(
+                type='OS::Cinder::Volume', id='vol_id_1', name=None),
+                child_nodes=())])]
 
-        self.plugin._nova_client = mock.MagicMock()
-        self.plugin._nova_client.return_value = self.nova_client
-
-        self.plugin._glance_client = mock.MagicMock()
-        self.plugin._glance_client.return_value = self.glance_client
-
-        self.plugin._neutron_client = mock.MagicMock()
-        self.plugin._neutron_client.return_value = self.neutron_client
-
-        self.plugin.create_backup(self.cntxt, self.checkpoint,
-                                  node=vm_node,
-                                  backup_name=backup_name)
+        call_hooks(protect_operation, checkpoint, vm_resource, self.cntxt,
+                   {})
 
         self.assertEqual(
             fake_bank._plugin._objects[
                 "/resource_data/checkpoint_id/vm_id_2/status"],
-            constants.RESOURCE_STATUS_PROTECTING
+            constants.RESOURCE_STATUS_AVAILABLE
         )
         resource_definition = {
             "resource_id": "vm_id_2",
             "attach_metadata": {"vol_id_1": "/dev/vdb"},
+            'boot_metadata': {'boot_device_type': 'volume'},
             "server_metadata": {
                 "availability_zone": "nova",
                 "networks": ["network_id_2"],
@@ -356,6 +392,15 @@ class NovaProtectionPluginTest(base.TestCase):
                 "key_name": None,
                 "security_groups": "default",
             },
+            'attach_metadata': {
+                'vol_id_1': {'attachment_id': '',
+                             'bootable': '',
+                             'device': '/dev/vdb',
+                             'host_name': '',
+                             'id': 'attach_id_1',
+                             'server_id': 'vm_id_2',
+                             'volume_id': 'vol_id_1'}
+            },
         }
         self.assertEqual(
             fake_bank._plugin._objects[
@@ -363,12 +408,11 @@ class NovaProtectionPluginTest(base.TestCase):
             resource_definition
         )
 
-    def test_delete_backup(self):
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    def test_delete_backup(self, mock_glance_client):
         resource = Resource(id="vm_id_1",
                             type=constants.SERVER_RESOURCE_TYPE,
                             name="fake_vm")
-        resource_node = ResourceNode(value=resource,
-                                     child_nodes=[])
 
         fake_bank._plugin._objects[
             "/resource_data/checkpoint_id/vm_id_1/metadata"] = {
@@ -390,8 +434,8 @@ class NovaProtectionPluginTest(base.TestCase):
             }
         }
 
-        self.plugin._glance_client = mock.MagicMock()
-        self.plugin._glance_client.return_value = self.glance_client
+        delete_operation = self.plugin.get_delete_operation(resource)
+        mock_glance_client.return_value = self.glance_client
 
         fake_bank._plugin._objects[
             "/resource_data/checkpoint_id/vm_id_1/data_0"
@@ -400,8 +444,8 @@ class NovaProtectionPluginTest(base.TestCase):
             "/resource_data/checkpoint_id/vm_id_1/data_1"
         ] = "image_data_1"
 
-        self.plugin.delete_backup(self.cntxt, self.checkpoint,
-                                  node=resource_node)
+        call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
+                   {})
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
