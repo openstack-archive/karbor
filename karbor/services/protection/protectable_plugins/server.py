@@ -22,6 +22,9 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
+INVALID_SERVER_STATUS = [
+    'DELETED', 'ERROR', 'UNKNOWN', 'SOFT_DELETED', 'RESCUED']
+
 
 class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
     """Protectable plugin implementation for server from nova.
@@ -45,7 +48,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     def list_resources(self, context, parameters=None):
         try:
-            servers = self._client(context).servers.list(detailed=False)
+            servers = self._client(context).servers.list(detailed=True)
         except Exception as e:
             LOG.exception(_LE("List all servers from nova failed."))
             raise exception.ListProtectableResourceFailed(
@@ -55,17 +58,23 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                       id=server.id,
                                       name=server.name)
-                    for server in servers]
+                    for server in servers
+                    if server.status not in INVALID_SERVER_STATUS]
 
     def show_resource(self, context, resource_id, parameters=None):
         try:
             server = self._client(context).servers.get(resource_id)
         except Exception as e:
             LOG.exception(_LE("Show a server from nova failed."))
-            raise exception.ListProtectableResourceFailed(
+            raise exception.ProtectableResourceNotFound(
+                id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
         else:
+            if server.status in INVALID_SERVER_STATUS:
+                raise exception.ProtectableResourceInvalidStatus(
+                    id=resource_id, type=self._SUPPORT_RESOURCE_TYPE,
+                    status=server.status)
             return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                      id=server.id,
                                      name=server.name)

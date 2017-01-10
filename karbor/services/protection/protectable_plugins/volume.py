@@ -22,6 +22,8 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
+INVALID_VOLUME_STATUS = ['error', 'deleting', 'error_deleting']
+
 
 class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
     """Protectable plugin implementation for volume from cinder.
@@ -46,7 +48,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
 
     def list_resources(self, context, parameters=None):
         try:
-            volumes = self._client(context).volumes.list(detailed=False)
+            volumes = self._client(context).volumes.list(detailed=True)
         except Exception as e:
             LOG.exception(_LE("List all summary volumes "
                               "from cinder failed."))
@@ -56,7 +58,8 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                       id=vol.id, name=vol.name)
-                    for vol in volumes]
+                    for vol in volumes
+                    if vol.status not in INVALID_VOLUME_STATUS]
 
     def show_resource(self, context, resource_id, parameters=None):
         try:
@@ -64,10 +67,15 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         except Exception as e:
             LOG.exception(_LE("Show a summary volume "
                               "from cinder failed."))
-            raise exception.ListProtectableResourceFailed(
+            raise exception.ProtectableResourceNotFound(
+                id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
         else:
+            if volume.status in INVALID_VOLUME_STATUS:
+                raise exception.ProtectableResourceInvalidStatus(
+                    id=resource_id, type=self._SUPPORT_RESOURCE_TYPE,
+                    status=volume.status)
             return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                      id=volume.id, name=volume.name)
 
