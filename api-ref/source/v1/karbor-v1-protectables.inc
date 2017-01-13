@@ -57,7 +57,7 @@ Response Example
 Show protectable type
 =====================
 
-.. rest_method:: GET /v1/{tenant_id}/plans/{protectable_type}
+.. rest_method:: GET /v1/{tenant_id}/protectables/{protectable_type}
 
 Shows the information of a given protectable type.
 
@@ -101,7 +101,7 @@ Response Example
 List protectable instances
 ==========================
 
-.. rest_method:: GET /v1/{tenant_id}/plans/{protectable_type}/instances
+.. rest_method:: GET /v1/{tenant_id}/protectables/{protectable_type}/instances
 
 List all the available instances for the given protectable type.
 
@@ -148,7 +148,7 @@ Response Example
 Show protectable instance
 =========================
 
-.. rest_method::  GET /v1/{tenant_id}/plans/{protectable_type}/instances/{resource_id}
+.. rest_method::  GET /v1/{tenant_id}/protectables/{protectable_type}/instances/{resource_id}
 
 Show the information about a specific instance and its immediate dependencies.
 
