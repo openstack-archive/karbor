@@ -10,8 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from cinderclient.v2 import client as cinder_client
-from karborclient.v1 import client as karbor_client
+from cinderclient import client as cinder_client
+from karborclient import client as karbor_client
 from novaclient import client as nova_client
 
 import os_client_config
@@ -38,20 +38,24 @@ def _credentials(cloud='devstack-admin'):
     return _get_cloud_config(cloud=cloud).get_auth_args()
 
 
-def _get_karbor_client_from_creds():
-    api_version = ""
+def _get_endpoint(service_type):
     cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client("data-protect")
+    keystone_session = cloud_config.get_session_client(service_type)
     keystone_auth = cloud_config.get_auth()
     region_name = cloud_config.get_region_name()
-    service_type = "data-protect"
-    endpoint_type = "publicURL"
-    endpoint = keystone_auth.get_endpoint(
+    return keystone_auth.get_endpoint(
         keystone_session,
         service_type=service_type,
-        region_name=region_name)
+        region_name=region_name,
+    )
 
-    kwargs = {
+
+def _get_client_args(service_type, endpoint_type="publicURL"):
+    cloud_config = _get_cloud_config()
+    keystone_session = cloud_config.get_session_client(service_type)
+    keystone_auth = cloud_config.get_auth()
+    region_name = cloud_config.get_region_name()
+    return {
         'session': keystone_session,
         'auth': keystone_auth,
         'service_type': service_type,
@@ -59,71 +63,23 @@ def _get_karbor_client_from_creds():
         'region_name': region_name,
     }
 
-    client = karbor_client.Client(api_version, endpoint, **kwargs)
+
+def _get_karbor_client(api_version='1'):
+    kwargs = _get_client_args('data-protect')
+    client = karbor_client.Client(api_version, **kwargs)
     return client
 
 
-def _get_cinder_client_from_creds():
-    api_version = ""
-    cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client("volumev3")
-    keystone_auth = cloud_config.get_auth()
-    region_name = cloud_config.get_region_name()
-    service_type = "volumev3"
-    endpoint_type = "publicURL"
-    endpoint = keystone_auth.get_endpoint(
-        keystone_session,
-        service_type=service_type,
-        region_name=region_name)
-
-    kwargs = {
-        'session': keystone_session,
-        'auth': keystone_auth,
-        'service_type': service_type,
-        'endpoint_type': endpoint_type,
-        'region_name': region_name,
-    }
-
-    client = cinder_client.Client(api_version, endpoint, **kwargs)
+def _get_cinder_client(api_version='3'):
+    kwargs = _get_client_args('volumev3')
+    client = cinder_client.Client(api_version, **kwargs)
     return client
 
 
-def _get_nova_client_from_creds():
-    api_version = "2.26"
-    cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client("compute")
-    keystone_auth = cloud_config.get_auth()
-    region_name = cloud_config.get_region_name()
-    service_type = "compute"
-    endpoint_type = "publicURL"
-    endpoint = keystone_auth.get_endpoint(
-        keystone_session,
-        service_type=service_type,
-        region_name=region_name)
-
-    kwargs = {
-        'session': keystone_session,
-        'auth': keystone_auth,
-        'service_type': service_type,
-        'endpoint_type': endpoint_type,
-        'region_name': region_name,
-    }
-
-    client = nova_client.Client(api_version, endpoint, **kwargs)
+def _get_nova_client(api_version='2.26'):
+    kwargs = _get_client_args('compute')
+    client = nova_client.Client(api_version, **kwargs)
     return client
-
-
-def _get_keystone_endpoint_from_creds():
-    cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client("identity")
-    keystone_auth = cloud_config.get_auth()
-    region_name = cloud_config.get_region_name()
-    service_type = "identity"
-    endpoint = keystone_auth.get_endpoint(
-        keystone_session,
-        service_type=service_type,
-        region_name=region_name)
-    return endpoint
 
 
 class ObjectStore(object):
@@ -165,10 +121,10 @@ class KarborBaseTest(base.BaseTestCase):
 
     def setUp(self):
         super(KarborBaseTest, self).setUp()
-        self.cinder_client = _get_cinder_client_from_creds()
-        self.nova_client = _get_nova_client_from_creds()
-        self.karbor_client = _get_karbor_client_from_creds()
-        self.keystone_endpoint = _get_keystone_endpoint_from_creds()
+        self.cinder_client = _get_cinder_client()
+        self.nova_client = _get_nova_client()
+        self.karbor_client = _get_karbor_client()
+        self.keystone_endpoint = _get_endpoint('identity')
         self._testcase_store = ObjectStore()
         self.provider_id_noop = 'b766f37c-d011-4026-8228-28730d734a3f'
         self.provider_id_os = 'cf56bd3e-97a7-4078-b6d5-f36246333fd9'
