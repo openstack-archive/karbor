@@ -31,7 +31,7 @@ class Checkpoint(object):
     def __init__(self):
         self.id = None
         self._provider_id = None
-        self.karbor_client = base._get_karbor_client_from_creds()
+        self.karbor_client = base._get_karbor_client()
 
     def _checkpoint_status(self, status=None):
         try:
@@ -69,7 +69,7 @@ class Plan(object):
 
     def __init__(self):
         self.id = None
-        self.karbor_client = base._get_karbor_client_from_creds()
+        self.karbor_client = base._get_karbor_client()
 
     def create(self, provider_id, resources,
                parameters={"dummy": {"dummy": "dummy"}}, name=None):
@@ -102,7 +102,7 @@ class Plan(object):
 class Restore(object):
     def __init__(self):
         self.id = None
-        self.karbor_client = base._get_karbor_client_from_creds()
+        self.karbor_client = base._get_karbor_client()
 
     def _restore_status(self, status=None):
         try:
@@ -136,7 +136,7 @@ class Trigger(object):
 
     def __init__(self):
         self.id = None
-        self.karbor_client = base._get_karbor_client_from_creds()
+        self.karbor_client = base._get_karbor_client()
 
     def create(self, type, properties, name=None):
         if name is None:
@@ -159,7 +159,7 @@ class ScheduledOperation(object):
 
     def __init__(self):
         self.id = None
-        self.karbor_client = base._get_karbor_client_from_creds()
+        self.karbor_client = base._get_karbor_client()
 
     def create(self, operation_type, trigger_id,
                operation_definition, name=None):
@@ -191,8 +191,8 @@ class Server(object):
     def __init__(self):
         self.id = None
         self._name = None
-        self.nova_client = base._get_nova_client_from_creds()
-        self.cinder_client = base._get_cinder_client_from_creds()
+        self.nova_client = base._get_nova_client()
+        self.cinder_client = base._get_cinder_client()
 
     def _server_status(self, status=None):
         try:
@@ -272,7 +272,7 @@ class Volume(object):
     def __init__(self):
         self.id = None
         self._name = None
-        self.cinder_client = base._get_cinder_client_from_creds()
+        self.cinder_client = base._get_cinder_client()
 
     def _volume_status(self, status=None):
         try:
