@@ -31,3 +31,8 @@ def set_defaults(conf):
         os.path.join(os.path.dirname(__file__), '..', '..', '..')))
     conf.set_default('provider_config_dir',
                      os.path.join(os.path.dirname(__file__), 'fake_providers'))
+    conf.set_default(
+        name='poll_interval',
+        group='cinder_backup_protection_plugin',
+        default=0.3,
+    )

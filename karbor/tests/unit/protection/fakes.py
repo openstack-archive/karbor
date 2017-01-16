@@ -81,8 +81,9 @@ class FakeBankPlugin(BankPlugin):
         fake_bank_opts = [
             cfg.StrOpt('fake_host'),
         ]
-        config.register_opts(fake_bank_opts, 'fake_bank')
-        self.fake_host = config['fake_bank']['fake_host']
+        if config:
+            config.register_opts(fake_bank_opts, 'fake_bank')
+            self.fake_host = config['fake_bank']['fake_host']
 
     def create_object(self, key, value):
         self._objects[key] = value
@@ -108,6 +109,9 @@ class FakeBankPlugin(BankPlugin):
 
     def delete_object(self, key):
         self._objects.pop(key)
+
+    def get_owner_id(self):
+        return
 
 
 def fake_restore():
