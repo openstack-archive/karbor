@@ -13,13 +13,8 @@
 """Handles all requests relating to OperationEngine."""
 
 
-from oslo_log import log as logging
-
 from karbor.db import base
 from karbor.services.operationengine import rpcapi as oe_rpcapi
-
-
-LOG = logging.getLogger(__name__)
 
 
 class API(base.Base):

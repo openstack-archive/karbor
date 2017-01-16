@@ -14,9 +14,6 @@
 from karbor.common import constants
 from karbor import resource
 from karbor.services.protection import protectable_plugin
-from oslo_log import log as logging
-
-LOG = logging.getLogger(__name__)
 
 
 class ProjectProtectablePlugin(protectable_plugin.ProtectablePlugin):

@@ -14,11 +14,7 @@ import abc
 import os
 import six
 
-from oslo_log import log as logging
-
 from karbor import exception
-
-LOG = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)

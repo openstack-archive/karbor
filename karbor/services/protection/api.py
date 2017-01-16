@@ -13,13 +13,8 @@
 """Handles all requests relating to protection service."""
 
 
-from oslo_log import log as logging
-
 from karbor.db import base
 from karbor.services.protection import rpcapi as protection_rpcapi
-
-
-LOG = logging.getLogger(__name__)
 
 
 class API(base.Base):

@@ -15,10 +15,7 @@ from karbor.i18n import _
 from karbor.services.protection.graph import build_graph
 import six
 
-from oslo_log import log as logging
 from stevedore import extension
-
-LOG = logging.getLogger(__name__)
 
 
 class ProtectablePluginLoadFailed(exception.KarborException):

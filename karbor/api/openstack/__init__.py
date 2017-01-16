@@ -18,11 +18,7 @@
 WSGI middleware for OpenStack API controllers.
 """
 
-from oslo_log import log as logging
 import routes
-
-
-LOG = logging.getLogger(__name__)
 
 
 class APIMapper(routes.Mapper):

@@ -12,13 +12,9 @@
 
 import httplib
 from karbor.api.openstack import wsgi
-from oslo_log import log as logging
 import webob.dec
 
 from oslo_serialization import jsonutils
-
-
-LOG = logging.getLogger(__name__)
 
 
 class Versions(object):
