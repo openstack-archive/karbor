@@ -18,7 +18,6 @@ import copy
 
 from oslo_config import cfg
 from oslo_context import context
-from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 
@@ -26,8 +25,6 @@ from karbor.i18n import _
 from karbor import policy
 
 CONF = cfg.CONF
-
-LOG = logging.getLogger(__name__)
 
 
 class RequestContext(context.RequestContext):

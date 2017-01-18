@@ -12,10 +12,6 @@
 
 from karbor.common import constants
 from karbor.services.protection import protection_plugin
-from oslo_log import log as logging
-
-
-LOG = logging.getLogger(__name__)
 
 
 class NoopOperation(protection_plugin.Operation):

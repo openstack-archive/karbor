@@ -40,7 +40,6 @@ This module provides Manager, a base class for managers.
 
 
 from oslo_config import cfg
-from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import periodic_task
 
@@ -49,7 +48,6 @@ from karbor import version
 
 
 CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
 
 
 class PeriodicTasks(periodic_task.PeriodicTasks):
