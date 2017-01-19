@@ -61,14 +61,14 @@ def _build_graph_rec(context, node):
     LOG.trace("Change to gray: %s", node)
     encountered_set.add(node)
     child_nodes = context.get_child_nodes(node)
-    LOG.trace("Child nodes are ", child_nodes)
+    LOG.trace("Child nodes are %s", child_nodes)
     # If we found a parent than this is not a source
     source_set.difference_update(child_nodes)
     child_list = []
     for child_node in child_nodes:
         child_list.append(_build_graph_rec(context, child_node))
 
-    LOG.trace("Change to black: ", node)
+    LOG.trace("Change to black: %s", node)
     encountered_set.discard(node)
     graph_node = GraphNode(value=node, child_nodes=tuple(child_list))
     finished_nodes[node] = graph_node

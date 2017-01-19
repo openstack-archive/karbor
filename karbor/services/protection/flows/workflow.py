@@ -116,11 +116,22 @@ class TaskFlowEngine(WorkFlowEngine):
                                    store=store)
         return flow_engine
 
+    def karbor_flow_watch(self, state, details):
+        LOG.trace("The Flow [%s] OldState[%s] changed to State[%s]: ",
+                  details.get('task_name'), details.get('old_state'), state)
+
+    def karbor_atom_watch(self, state, details):
+        LOG.trace("The Task [%s] OldState[%s] changed to State[%s]: ",
+                  details.get('task_name'), details.get('old_state'), state)
+
     def run_engine(self, flow_engine):
         if flow_engine is None:
             LOG.error(_LE("Flow engine is None,get it first"))
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow_engine is None"))
+
+        flow_engine.notifier.register('*', self.karbor_flow_watch)
+        flow_engine.atom_notifier.register('*', self.karbor_atom_watch)
         flow_engine.run()
 
     def output(self, flow_engine, target=None):
