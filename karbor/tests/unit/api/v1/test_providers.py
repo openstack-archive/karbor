@@ -126,7 +126,8 @@ class ProvidersApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
         mock_plan_create.return_value = {
-            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
+            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6",
+            "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
         }
         mock_protect.return_value = {
             "checkpoint_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"

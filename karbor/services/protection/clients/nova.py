@@ -63,9 +63,9 @@ def create(context, conf):
         'extensions': extensions,
         'cacert': conf.nova_client.nova_ca_cert_file,
         'insecure': conf.nova_client.nova_auth_insecure,
+        'endpoint_override': url
     }
 
     client = nc.Client(NOVACLIENT_VERSION, **args)
-    client.client.set_management_url(url)
 
     return client

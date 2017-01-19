@@ -385,6 +385,12 @@ class ProvidersController(wsgi.Controller):
         if not plan:
             raise exception.PlanNotFound(plan_id=plan_id)
 
+        # check the provider_id
+        if provider_id != plan.get("provider_id"):
+            msg = _("The parameter provider_id is not the same as "
+                    "the value in the plan.")
+            raise exception.InvalidPlan(reason=msg)
+
         checkpoint_properties = {
             'project_id': context.project_id,
             'status': constants.CHECKPOINT_STATUS_PROTECTING,
