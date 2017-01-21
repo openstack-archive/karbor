@@ -1554,10 +1554,13 @@ def _generate_paginate_query(context, session, marker, limit, sort_keys,
     if marker is not None:
         marker_object = get(context, marker, session=session)
 
-    return sqlalchemyutils.paginate_query(query, paginate_type, limit,
-                                          sort_keys,
-                                          marker=marker_object,
-                                          sort_dirs=sort_dirs)
+    query = sqlalchemyutils.paginate_query(query, paginate_type, limit,
+                                           sort_keys,
+                                           marker=marker_object,
+                                           sort_dirs=sort_dirs)
+    if offset:
+        query = query.offset(offset)
+    return query
 
 
 def process_sort_params(sort_keys, sort_dirs, default_keys=None,
