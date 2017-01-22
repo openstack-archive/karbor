@@ -13,6 +13,8 @@
 from novaclient import client as nc
 from oslo_config import cfg
 from oslo_log import log as logging
+
+from karbor import exception
 from karbor.i18n import _LI, _LE
 from karbor.services.protection.clients import utils
 
@@ -56,16 +58,11 @@ def create(context, conf, **kwargs):
     LOG.info(_LI('Creating nova client with url %s.'), url)
 
     extensions = nc.discover_extensions(NOVACLIENT_VERSION)
+    session = kwargs.get('session')
+    if session is None:
+        LOG.error(_LE('Creating nova client failed with url %s.'), url)
+        raise exception.InvalidParameterValue(
+            err="The parameter session is None.")
 
-    args = {
-        'project_id': context.project_id,
-        'auth_token': context.auth_token,
-        'extensions': extensions,
-        'cacert': conf.nova_client.nova_ca_cert_file,
-        'insecure': conf.nova_client.nova_auth_insecure,
-        'endpoint_override': url
-    }
-
-    client = nc.Client(NOVACLIENT_VERSION, **args)
-
-    return client
+    return nc.Client(NOVACLIENT_VERSION, extensions=extensions,
+                     session=kwargs.get('session'), endpoint_override=url)

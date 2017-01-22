@@ -19,6 +19,7 @@ from karbor.services.protection import client_factory
 from karbor.services.protection.protectable_plugins.image import \
     ImageProtectablePlugin
 from karbor.tests import base
+from keystoneauth1 import session as keystone_session
 import mock
 from novaclient.v2 import servers
 from oslo_config import cfg
@@ -52,12 +53,16 @@ class ImageProtectablePluginTest(base.TestCase):
                                        auth_token='efgh',
                                        service_catalog=service_catalog)
 
-    def test_create_client_by_endpoint(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_create_client_by_endpoint(self, mock_generate_session):
         CONF.set_default('glance_endpoint', 'http://127.0.0.1:9292',
                          'glance_client')
         CONF.set_default('nova_endpoint', 'http://127.0.0.1:8774/v2.1',
                          'nova_client')
         plugin = ImageProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual(
             plugin._glance_client(self._context).http_client.endpoint,
             'http://127.0.0.1:9292')
@@ -65,12 +70,16 @@ class ImageProtectablePluginTest(base.TestCase):
             plugin._nova_client(self._context).client.management_url,
             'http://127.0.0.1:8774/v2.1/abcd')
 
-    def test_create_client_by_catalog(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_create_client_by_catalog(self, mock_generate_session):
         CONF.set_default('glance_catalog_info', 'image:glance:publicURL',
                          'glance_client')
         CONF.set_default('nova_catalog_info', 'compute:nova:publicURL',
                          'nova_client')
         plugin = ImageProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual(
             plugin._glance_client(self._context).http_client.endpoint,
             'http://127.0.0.1:9292')
@@ -115,7 +124,10 @@ class ImageProtectablePluginTest(base.TestCase):
 
     @mock.patch.object(images.Controller, 'get')
     @mock.patch.object(servers.ServerManager, 'get')
-    def test_get_server_dependent_resources(self, mock_server_get,
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_get_server_dependent_resources(self, mock_generate_session,
+                                            mock_server_get,
                                             mock_image_get):
         vm = server_info(id='server1',
                          type=constants.SERVER_RESOURCE_TYPE,
@@ -123,6 +135,8 @@ class ImageProtectablePluginTest(base.TestCase):
                          image=dict(id='123', name='name123'))
         image = image_info(id='123', name='name123', owner='abcd')
         plugin = ImageProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         mock_server_get.return_value = vm
         mock_image_get.return_value = image
         self.assertEqual(plugin.get_dependent_resources(self._context, vm),

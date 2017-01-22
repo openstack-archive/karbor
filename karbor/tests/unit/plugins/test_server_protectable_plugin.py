@@ -18,6 +18,7 @@ from karbor.services.protection.protectable_plugins.server \
     import ServerProtectablePlugin
 
 from karbor.tests import base
+from keystoneauth1 import session as keystone_session
 import mock
 from novaclient.v2 import servers
 from oslo_config import cfg
@@ -41,36 +42,55 @@ class ServerProtectablePluginTest(base.TestCase):
                                        auth_token='efgh',
                                        service_catalog=service_catalog)
 
-    def test_create_client_by_endpoint(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_create_client_by_endpoint(self, mock_generate_session):
         cfg.CONF.set_default('nova_endpoint',
                              'http://127.0.0.1:8774/v2.1',
                              'nova_client')
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual('compute',
                          plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
                          plugin._client(self._context).client.management_url)
 
-    def test_create_client_by_catalog(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_create_client_by_catalog(self, mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual('compute',
                          plugin._client(self._context).client.service_type)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
                          plugin._client(self._context).client.management_url)
 
-    def test_get_resource_type(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_get_resource_type(self, mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual("OS::Nova::Server", plugin.get_resource_type())
 
-    def test_get_parent_resource_types(self):
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    def test_get_parent_resource_types(self, mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         self.assertEqual(("OS::Keystone::Project", ),
                          plugin.get_parent_resource_types())
 
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
     @mock.patch.object(servers.ServerManager, 'list')
-    def test_list_resources(self, mock_server_list):
+    def test_list_resources(self, mock_server_list, mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
-
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
         server_info = collections.namedtuple('server_info', ['id', 'name'])
         mock_server_list.return_value = [
             server_info(id='123', name='name123'),
@@ -79,18 +99,27 @@ class ServerProtectablePluginTest(base.TestCase):
                           Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.list_resources(self._context))
 
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
     @mock.patch.object(servers.ServerManager, 'get')
-    def test_show_resource(self, mock_server_get):
+    def test_show_resource(self, mock_server_get, mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
         mock_server_get.return_value = server_info(id='123', name='name123')
         self.assertEqual(Resource('OS::Nova::Server', '123', 'name123'),
                          plugin.show_resource(self._context, '123'))
 
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
     @mock.patch.object(servers.ServerManager, 'list')
-    def test_get_dependent_resources(self, mock_server_list):
+    def test_get_dependent_resources(self, mock_server_list,
+                                     mock_generate_session):
         plugin = ServerProtectablePlugin(self._context)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
 
         server_info = collections.namedtuple('server_info', ['id', 'name'])
         mock_server_list.return_value = [
