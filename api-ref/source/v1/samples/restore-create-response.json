@@ -16,6 +16,12 @@
       "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": {
       }
     },
+    "resource_status": {
+      "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": "restoring",
+      "OS::Cinder::Volume#98eb847f-9f59-4d54-8b7b-5047bd2fa4c7": "restoring"
+    },
+    "resource_reason": {
+    },
     "status": "success"
   }
 }
