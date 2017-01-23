@@ -28,6 +28,7 @@ from karbor.tests import base
 from karbor.tests.unit.protection import fakes
 import mock
 from oslo_config import cfg
+from oslo_config import fixture
 
 
 ResourceNode = collections.namedtuple(
@@ -95,7 +96,13 @@ class CinderProtectionPluginTest(base.TestCase):
         with mock.patch.object(cls, '_do_init'):
             client_factory.init()
 
-        self.plugin = CinderBackupProtectionPlugin()
+        plugin_config = cfg.ConfigOpts()
+        plugin_config_fixture = self.useFixture(fixture.Config(plugin_config))
+        plugin_config_fixture.load_raw_values(
+            group='cinder_backup_protection_plugin',
+            poll_interval=0,
+        )
+        self.plugin = CinderBackupProtectionPlugin(plugin_config)
         cfg.CONF.set_default('cinder_endpoint',
                              'http://127.0.0.1:8776/v2',
                              'cinder_client')
@@ -145,7 +152,8 @@ class CinderProtectionPluginTest(base.TestCase):
         with mock.patch.multiple(
             self.cinder_client,
             volumes=mock.DEFAULT,
-            backups=mock.DEFAULT
+            backups=mock.DEFAULT,
+            volume_snapshots=mock.DEFAULT,
         ) as mocks:
             mocks['volumes'].get.return_value = mock.Mock()
             mocks['volumes'].get.return_value.status = 'available'
@@ -153,6 +161,10 @@ class CinderProtectionPluginTest(base.TestCase):
                 '456', 'creating', '---', 0)
             mocks['backups'].get = BackupResponse(
                 '456', 'available', 'creating', 2)
+            mocks['volume_snapshots'].get.return_value = BackupResponse(
+                '789', 'creating', '---', 0)
+            mocks['volume_snapshots'].get = BackupResponse(
+                '789', 'available', 'creating', 2)
             call_hooks(operation, checkpoint, resource, self.cntxt, {})
 
     @mock.patch('karbor.services.protection.clients.cinder.create')
@@ -168,7 +180,8 @@ class CinderProtectionPluginTest(base.TestCase):
         with mock.patch.multiple(
             self.cinder_client,
             volumes=mock.DEFAULT,
-            backups=mock.DEFAULT
+            backups=mock.DEFAULT,
+            volume_snapshots=mock.DEFAULT,
         ) as mocks:
             mocks['volumes'].get.return_value = mock.Mock()
             mocks['volumes'].get.return_value.status = 'available'
@@ -176,6 +189,46 @@ class CinderProtectionPluginTest(base.TestCase):
                 '456', 'creating', '---', 0)
             mocks['backups'].backups.get = BackupResponse(
                 '456', 'error', 'creating', 2)
+            mocks['volume_snapshots'].get.return_value = BackupResponse(
+                '789', 'creating', '---', 0)
+            mocks['volume_snapshots'].get = BackupResponse(
+                '789', 'available', 'creating', 2)
+            self.assertRaises(
+                exception.CreateBackupFailed,
+                call_hooks,
+                operation,
+                checkpoint,
+                resource,
+                self.cntxt,
+                {}
+            )
+
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    def test_protect_fail_snapshot(self, mock_cinder_create):
+        resource = Resource(
+            id="123",
+            type=constants.VOLUME_RESOURCE_TYPE,
+            name="test",
+        )
+        checkpoint = self._get_checkpoint()
+        operation = self.plugin.get_protect_operation(resource)
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            volumes=mock.DEFAULT,
+            backups=mock.DEFAULT,
+            volume_snapshots=mock.DEFAULT,
+        ) as mocks:
+            mocks['volumes'].get.return_value = mock.Mock()
+            mocks['volumes'].get.return_value.status = 'available'
+            mocks['backups'].backups.create = BackupResponse(
+                '456', 'creating', '---', 0)
+            mocks['backups'].backups.get = BackupResponse(
+                '456', 'available', 'creating', 2)
+            mocks['volume_snapshots'].get.return_value = BackupResponse(
+                '789', 'creating', '---', 0)
+            mocks['volume_snapshots'].get = BackupResponse(
+                '789', 'error', 'creating', 2)
             self.assertRaises(
                 exception.CreateBackupFailed,
                 call_hooks,
@@ -199,7 +252,8 @@ class CinderProtectionPluginTest(base.TestCase):
         with mock.patch.multiple(
             self.cinder_client,
             volumes=mock.DEFAULT,
-            backups=mock.DEFAULT
+            backups=mock.DEFAULT,
+            volume_snapshots=mock.DEFAULT,
         ) as mocks:
             mocks['volumes'].get.return_value = mock.Mock()
             mocks['volumes'].get.return_value.status = 'error'
@@ -207,6 +261,10 @@ class CinderProtectionPluginTest(base.TestCase):
                 '456', 'creating', '---', 0)
             mocks['backups'].backups.get = BackupResponse(
                 '456', 'error', 'creating', 2)
+            mocks['volume_snapshots'].get.return_value = BackupResponse(
+                '789', 'creating', '---', 0)
+            mocks['volume_snapshots'].get = BackupResponse(
+                '789', 'available', 'creating', 2)
             self.assertRaises(
                 exception.CreateBackupFailed,
                 call_hooks,
