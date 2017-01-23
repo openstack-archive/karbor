@@ -38,7 +38,7 @@ KEYSTONECLIENT_VERSION = (3, 0)
 TRUSTEE_CONF_GROUP = 'trustee'
 loading.register_auth_conf_options(CONF, TRUSTEE_CONF_GROUP)
 CONF.import_group('keystone_authtoken',
-                  'keystonemiddleware.auth_token.__init__')
+                  'keystonemiddleware.auth_token')
 
 
 class KarborKeystonePlugin(object):
@@ -56,6 +56,7 @@ class KarborKeystonePlugin(object):
         self._auth_uri = ""
         self._karbor_user_id = ""
         self._service_auth_plugin = None
+        self._keystone_trust_url = ""
 
         self._do_init()
 
@@ -77,6 +78,9 @@ class KarborKeystonePlugin(object):
         except Exception:
             msg = 'get keystone auth url failed'
             raise exception.AuthorizationFailure(obj=msg)
+
+        if self._auth_uri:
+            self._keystone_trust_url = self._auth_uri + 'OS-TRUST'
 
     @property
     def service_auth_plugin(self):
@@ -121,7 +125,8 @@ class KarborKeystonePlugin(object):
                                           trustee_user=self._karbor_user_id,
                                           project=context.project_id,
                                           impersonation=True,
-                                          role_names=context.roles)
+                                          role_names=context.roles,
+                                          base_url=self._keystone_trust_url)
             return trust.id
 
         except Exception as e:
