@@ -146,6 +146,7 @@ class Checkpoint(object):
         timestamp = timeutils.utcnow_ts()
         created_at = timeutils.utcnow().strftime('%Y-%m-%d')
 
+        provider_id = plan.get("provider_id")
         checkpoint_section.create_object(
             key=_INDEX_FILE_NAME,
             value={
@@ -153,7 +154,7 @@ class Checkpoint(object):
                 "id": checkpoint_id,
                 "status": constants.CHECKPOINT_STATUS_PROTECTING,
                 "owner_id": owner_id,
-                "provider_id": plan.get("provider_id"),
+                "provider_id": provider_id,
                 "project_id": plan.get("project_id"),
                 "protection_plan": {
                     "id": plan.get("id"),
@@ -167,7 +168,8 @@ class Checkpoint(object):
         )
 
         indices_section.create_object(
-            key="/by-provider/%s@%s" % (timestamp, checkpoint_id),
+            key="/by-provider/%s/%s@%s" % (provider_id, timestamp,
+                                           checkpoint_id),
             value=checkpoint_id
         )
 
@@ -203,8 +205,9 @@ class Checkpoint(object):
             created_at = self._md_cache["created_at"]
             timestamp = self._md_cache["timestamp"]
             plan_id = self._md_cache["protection_plan"]["id"]
+            provider_id = self._md_cache["protection_plan"]["provider_id"]
             self._indices_section.delete_object(
-                "/by-provider/%s@%s" % (timestamp, self.id))
+                "/by-provider/%s/%s@%s" % (provider_id, timestamp, self.id))
             self._indices_section.delete_object(
                 "/by-date/%s/%s@%s" % (created_at, timestamp, self.id))
             self._indices_section.delete_object(
@@ -222,8 +225,9 @@ class Checkpoint(object):
         created_at = self._md_cache["created_at"]
         timestamp = self._md_cache["timestamp"]
         plan_id = self._md_cache["protection_plan"]["id"]
+        provider_id = self._md_cache["protection_plan"]["provider_id"]
         self._indices_section.delete_object(
-            "/by-provider/%s@%s" % (timestamp, self.id))
+            "/by-provider/%s/%s@%s" % (provider_id, timestamp, self.id))
         self._indices_section.delete_object(
             "/by-date/%s/%s@%s" % (created_at, timestamp, self.id))
         self._indices_section.delete_object(
@@ -244,8 +248,8 @@ class CheckpointCollection(object):
         self._checkpoints_section = bank.get_sub_section("/checkpoints")
         self._indices_section = bank.get_sub_section("/indices")
 
-    def list_ids(self, limit=None, marker=None, plan_id=None, start_date=None,
-                 end_date=None, sort_dir=None):
+    def list_ids(self, provider_id, limit=None, marker=None, plan_id=None,
+                 start_date=None, end_date=None, sort_dir=None):
         marker_checkpoint = None
         if marker is not None:
             checkpoint_section = self._checkpoints_section.get_sub_section(
@@ -259,7 +263,7 @@ class CheckpointCollection(object):
                 end_date = timeutils.utcnow()
 
         if plan_id is None and start_date is None:
-            prefix = "/by-provider/"
+            prefix = "/by-provider/%s/" % provider_id
             if marker is not None:
                 marker = "/%s" % marker
         elif plan_id is not None:

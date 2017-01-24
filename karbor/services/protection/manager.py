@@ -231,7 +231,7 @@ class ProtectionManager(manager.Manager):
         sort_dir = None if sort_dirs is None else sort_dirs[0]
         provider = self.provider_registry.show_provider(provider_id)
         checkpoint_ids = provider.list_checkpoints(
-            limit=limit, marker=marker, plan_id=plan_id,
+            provider_id, limit=limit, marker=marker, plan_id=plan_id,
             start_date=start_date, end_date=end_date, sort_dir=sort_dir)
         checkpoints = []
         for checkpoint_id in checkpoint_ids:

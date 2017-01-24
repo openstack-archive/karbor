@@ -40,22 +40,29 @@ class CheckpointCollectionTest(base.TestCase):
 
     def test_list_checkpoints(self):
         collection = self._create_test_collection()
-        result = {
-            collection.create(fake_protection_plan()).id for i in range(10)}
-        self.assertEqual(set(collection.list_ids()), result)
+        plan = fake_protection_plan()
+        provider_id = plan['provider_id']
+        result = {collection.create(plan).id for i in range(10)}
+        self.assertEqual(set(collection.list_ids(provider_id)), result)
 
     def test_list_checkpoints_by_plan_id(self):
         collection = self._create_test_collection()
         plan_1 = fake_protection_plan()
         plan_1["id"] = "fake_plan_id_1"
+        plan_1['provider_id'] = "fake_provider_id_1"
+        provider_id_1 = plan_1['provider_id']
         checkpoints_plan_1 = {collection.create(plan_1).id for i in range(10)}
 
         plan_2 = fake_protection_plan()
         plan_2["id"] = "fake_plan_id_2"
+        plan_2['provider_id'] = "fake_provider_id_2"
+        provider_id_2 = plan_1['provider_id']
         checkpoints_plan_2 = {collection.create(plan_2).id for i in range(10)}
-        self.assertEqual(set(collection.list_ids(plan_id="fake_plan_id_1")),
+        self.assertEqual(set(collection.list_ids(provider_id=provider_id_1,
+                                                 plan_id="fake_plan_id_1")),
                          checkpoints_plan_1)
-        self.assertEqual(set(collection.list_ids(plan_id="fake_plan_id_2")),
+        self.assertEqual(set(collection.list_ids(provider_id=provider_id_2,
+                                                 plan_id="fake_plan_id_2")),
                          checkpoints_plan_2)
 
     def test_list_checkpoints_by_date(self):
@@ -63,27 +70,30 @@ class CheckpointCollectionTest(base.TestCase):
         date1 = datetime.strptime("2016-06-12", "%Y-%m-%d")
         timeutils.utcnow = mock.MagicMock()
         timeutils.utcnow.return_value = date1
-        checkpoints_date_1 = {
-            collection.create(fake_protection_plan()).id for i in range(10)}
+        plan = fake_protection_plan()
+        provider_id = plan['provider_id']
+        checkpoints_date_1 = {collection.create(plan).id for i in range(10)}
         date2 = datetime.strptime("2016-06-13", "%Y-%m-%d")
         timeutils.utcnow = mock.MagicMock()
         timeutils.utcnow.return_value = date2
-        checkpoints_date_2 = {
-            collection.create(fake_protection_plan()).id for i in range(10)}
-        self.assertEqual(set(collection.list_ids(start_date=date1,
+        checkpoints_date_2 = {collection.create(plan).id for i in range(10)}
+        self.assertEqual(set(collection.list_ids(provider_id=provider_id,
+                                                 start_date=date1,
                                                  end_date=date1)),
                          checkpoints_date_1)
-        self.assertEqual(set(collection.list_ids(start_date=date2,
+        self.assertEqual(set(collection.list_ids(provider_id=provider_id,
+                                                 start_date=date2,
                                                  end_date=date2)),
                          checkpoints_date_2)
 
     def test_delete_checkpoint(self):
         collection = self._create_test_collection()
-        result = {
-            collection.create(fake_protection_plan()).id for i in range(10)}
+        plan = fake_protection_plan()
+        provider_id = plan['provider_id']
+        result = {collection.create(plan).id for i in range(10)}
         checkpoint = collection.get(result.pop())
         checkpoint.purge()
-        self.assertEqual(set(collection.list_ids()), result)
+        self.assertEqual(set(collection.list_ids(provider_id)), result)
 
     def test_write_checkpoint_with_invalid_lease(self):
         collection = self._create_test_collection()
