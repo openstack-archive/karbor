@@ -68,6 +68,8 @@ Response
    - restore_target: restore_target
    - parameters: restore_parameters
    - status: restore_status
+   - resource_status: restore_resource_status
+   - resource_reason: restore_resource_reason
    - restores_links: links
 
 Response Example
@@ -130,6 +132,8 @@ Response
    - restore_auth: restore_auth
    - parameters: restore_parameters
    - status: restore_status
+   - resource_status: restore_resource_status
+   - resource_reason: restore_resource_reason
 
 Response Example
 ----------------
@@ -179,6 +183,8 @@ Response
    - restore_target: restore_target
    - parameters: restore_parameters
    - status: restore_status
+   - resource_status: restore_resource_status
+   - resource_reason: restore_resource_reason
 
 Response Example
 ----------------

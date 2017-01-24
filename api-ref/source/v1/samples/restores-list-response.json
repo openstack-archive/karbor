@@ -7,8 +7,22 @@
       "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
       "restore_target": "http://192.168.1.2:35357/v2.0/",
       "parameters": {
+        "OS::Cinder::Volume": {
+        },
+        "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": {
+        }
+      },
+      "restore_auth": {
+        "type": "password",
         "username": "admin",
         "password": "***"
+      },
+      "resource_status": {
+        "OS::Nova::Server#3f8af6c6-ecea-42bd-b44c-724785bbe5ea": "restoring",
+        "OS::Cinder::Volume#98eb847f-9f59-4d54-8b7b-5047bd2fa4c7": "error"
+      },
+      "resource_reason": {
+        "OS::Cinder::Volume#98eb847f-9f59-4d54-8b7b-5047bd2fa4c7": "Backup not found"
       },
       "status": "success"
     }
