@@ -200,7 +200,7 @@ class Operation(object):
         ctx.auth_token = token
         ctx.project_id = project_id
 
-        karbor_url = cls.KARBOR_ENDPOINT.replace("$(tenant_id)s", project_id)
+        karbor_url = cls.KARBOR_ENDPOINT % {"project_id": project_id}
         return karbor_client.create(ctx, endpoint=karbor_url)
 
     @classmethod

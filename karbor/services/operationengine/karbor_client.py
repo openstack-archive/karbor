@@ -29,8 +29,10 @@ def get_karbor_endpoint():
     try:
         sc_cfg = CONF[CONFIG_GROUP]
         kc_plugin = karbor_keystone_plugin.KarborKeystonePlugin()
-        return kc_plugin.get_service_endpoint(
+        url = kc_plugin.get_service_endpoint(
             sc_cfg.service_name, sc_cfg.service_type, sc_cfg.region_id)
+
+        return url.replace("$(", "%(")
     except Exception:
         raise
 
@@ -38,8 +40,7 @@ def get_karbor_endpoint():
 def create(context, **kwargs):
     endpoint = kwargs.get('endpoint')
     if not endpoint:
-        endpoint = get_karbor_endpoint()
-        endpoint = endpoint.replace("$(tenant_id)s", context.project_id)
+        endpoint = get_karbor_endpoint() % {"project_id": context.project_id}
 
     LOG.debug("Creating karbor client with url %s.", endpoint)
 
