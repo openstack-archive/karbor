@@ -28,7 +28,7 @@ Proposed change
 ===============
 
 Recently, Keystone has merged a new spec[2] that resolves the issue of token
-expiration which happens in access between mutiple openstack services. Simply,
+expiration which happens in access between multiple openstack services. Simply,
 the principle is like this. When the Keystone Middleware validates the user
 token, it will check the service token first. If it is passed and valid, then
 Keystone allows user token to be fetched even if it is expired unless the time

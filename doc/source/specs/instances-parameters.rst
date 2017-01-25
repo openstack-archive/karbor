@@ -13,7 +13,7 @@ https://blueprints.launchpad.net/cinder/+spec/custom-checkpoint-metadata
 Problem description
 ===================
 
-Now the resource instances only can be queried from defaut region. If there are
+Now the resource instances only can be queried from default region. If there are
 several regions in one site/keystone, we can not query resource instances
 from different region endpoint. We may need a parameter for the region name.
 
