@@ -157,7 +157,7 @@ the main phase since will allow for the most efficient execution of the
 operation.
 
 It's important to note that a developer doesn't have to do any action during a
-phase. It's completly valid to only use the main or preparation phase. In
+phase. It's completely valid to only use the main or preparation phase. In
 fact, we think it's going to be very rare that a Protection Plugin will need
 to use all the phases.
 
