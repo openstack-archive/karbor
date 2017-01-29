@@ -25,6 +25,7 @@ LONG_SLEEP = 10
 
 DEFAULT_IMAGE = "cirros-0.3.4-x86_64-uec"
 DEFAULT_FLAVOR = "cirros256"
+DEFAULT_NETWORK = "private"
 
 
 class Checkpoint(object):
@@ -192,6 +193,7 @@ class Server(object):
         self.id = None
         self._name = None
         self.nova_client = base._get_nova_client()
+        self.neutron_client = base._get_neutron_client()
         self.cinder_client = base._get_cinder_client()
 
     def _server_status(self, status=None):
@@ -213,7 +215,7 @@ class Server(object):
         }
 
     def create(self, name=None, image=DEFAULT_IMAGE, flavor=DEFAULT_FLAVOR,
-               timeout=MEDIUM_TIMEOUT):
+               network=DEFAULT_NETWORK, timeout=MEDIUM_TIMEOUT):
         image = self.nova_client.images.find(name=image)
         flavor = self.nova_client.flavors.find(name=flavor)
         if name is None:
@@ -221,8 +223,16 @@ class Server(object):
             self._name_id += 1
             self._name = name
 
-        server = self.nova_client.servers.create(name=name, image=image,
-                                                 flavor=flavor)
+        networks = self.neutron_client.list_networks(name=network)
+        assert len(networks['networks']) > 0
+        network_id = networks['networks'][0]['id']
+
+        server = self.nova_client.servers.create(
+            name=name,
+            image=image,
+            flavor=flavor,
+            nics=[{"net-id": network_id}],
+        )
         self.id = server.id
 
         utils.wait_until_true(partial(self._server_status, 'ACTIVE'),

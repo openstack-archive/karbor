@@ -12,6 +12,7 @@
 
 from cinderclient import client as cinder_client
 from karborclient import client as karbor_client
+from neutronclient.v2_0 import client as neutron_client
 from novaclient import client as nova_client
 
 import os_client_config
@@ -82,6 +83,12 @@ def _get_nova_client(api_version='2.26'):
     return client
 
 
+def _get_neutron_client(api_version='2'):
+    kwargs = _get_client_args('network')
+    client = neutron_client.Client(**kwargs)
+    return client
+
+
 class ObjectStore(object):
     """Stores objects for later closing.
 
@@ -123,6 +130,7 @@ class KarborBaseTest(base.BaseTestCase):
         super(KarborBaseTest, self).setUp()
         self.cinder_client = _get_cinder_client()
         self.nova_client = _get_nova_client()
+        self.neutron_client = _get_neutron_client()
         self.karbor_client = _get_karbor_client()
         self.keystone_endpoint = _get_endpoint('identity')
         self._testcase_store = ObjectStore()
