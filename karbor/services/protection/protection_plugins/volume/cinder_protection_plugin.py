@@ -16,7 +16,7 @@ import six
 from cinderclient import exceptions as cinder_exc
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE, _LI
+from karbor.i18n import _LE, _LI, _LW
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.volume \
@@ -30,12 +30,16 @@ from oslo_utils import uuidutils
 LOG = logging.getLogger(__name__)
 
 cinder_backup_opts = [
-    cfg.IntOpt('poll_interval', default=30,
-               help='Poll interval for Cinder backup status'),
+    cfg.IntOpt(
+        'poll_interval', default=15,
+        help='Poll interval for Cinder backup status'
+    ),
+    cfg.BoolOpt(
+        'backup_from_snapshot', default=True,
+        help='First take a snapshot of the volume, and backup from '
+        'it. Minimizes the time the volume is unavailable.'
+    ),
 ]
-
-CONF = cfg.CONF
-CONF.register_opts(cinder_backup_opts, 'cinder_backup_protection_plugin')
 
 
 def status_poll(get_status_func, interval, success_statuses=set(),
@@ -57,33 +61,128 @@ def status_poll(get_status_func, interval, success_statuses=set(),
 
 
 def get_backup_status(cinder_client, backup_id):
-    LOG.debug('Polling backup (id: %s)', backup_id)
-    try:
-        backup = cinder_client.backups.get(backup_id)
-        status = backup.status
-    except cinder_exc.NotFound:
-        status = 'not-found'
-    LOG.debug('Polled backup (id: %(backup_id)s) status: %(status)s',
-              {'backup_id': backup_id, 'status': status})
-    return status
+    return get_resource_status(cinder_client.backups, backup_id, 'backup')
 
 
 def get_volume_status(cinder_client, volume_id):
-    LOG.debug('Polling volume (id: %s)', volume_id)
+    return get_resource_status(cinder_client.volumes, volume_id, 'volume')
+
+
+def get_snapshot_status(cinder_client, snapshot_id):
+    return get_resource_status(cinder_client.volume_snapshots, snapshot_id,
+                               'snapshot')
+
+
+def get_resource_status(resource_manager, resource_id, resource_type):
+    LOG.debug('Polling %(resource_type)s (id: %(resource_id)s)', {
+        'resource_type': resource_type,
+        'resource_id': resource_id,
+    })
     try:
-        volume = cinder_client.volumes.get(volume_id)
-        status = volume.status
+        resource = resource_manager.get(resource_id)
+        status = resource.status
     except cinder_exc.NotFound:
         status = 'not-found'
-    LOG.debug('Polled volume (id: %(volume_id)s) status: %(status)s',
-              {'volume_id': volume_id, 'status': status})
+    LOG.debug(
+        'Polled %(resource_type)s (id: %(resource_id)s) status: %(status)s',
+        {
+            'resource_type': resource_type,
+            'resource_id': resource_id,
+            'status': status
+        }
+    )
     return status
 
 
 class ProtectOperation(protection_plugin.Operation):
-    def __init__(self):
+    def __init__(self, poll_interval, backup_from_snapshot):
         super(ProtectOperation, self).__init__()
-        self._interval = CONF.cinder_backup_protection_plugin.poll_interval
+        self._interval = poll_interval
+        self._backup_from_snapshot = backup_from_snapshot
+        self.snapshot_id = None
+
+    def _create_snapshot(self, cinder_client, volume_id):
+        snapshot = cinder_client.volume_snapshots.create(volume_id)
+
+        snapshot_id = snapshot.id
+        is_success = status_poll(
+            partial(get_snapshot_status, cinder_client, snapshot_id),
+            interval=self._interval,
+            success_statuses={'available', },
+            failure_statuses={'error', 'error_deleting', 'deleting',
+                              'not-found'},
+            ignore_statuses={'creating', },
+        )
+        if not is_success:
+            raise Exception
+
+        return snapshot_id
+
+    def _delete_snapshot(self, cinder_client, snapshot_id):
+        LOG.info(_LI('Cleaning up snapshot (snapshot_id: %s)'),
+                 snapshot_id)
+        cinder_client.volume_snapshots.delete(snapshot_id)
+        return status_poll(
+            partial(get_snapshot_status, cinder_client, snapshot_id),
+            interval=self._interval,
+            success_statuses={'not-found', },
+            failure_statuses={'error', 'error_deleting', 'creating'},
+            ignore_statuses={'deleting', },
+        )
+
+    def _create_backup(self, cinder_client, volume_id, backup_name,
+                       snapshot_id=None):
+        backup = cinder_client.backups.create(
+            volume_id=volume_id,
+            name=backup_name,
+            force=True,
+            snapshot_id=snapshot_id
+        )
+
+        backup_id = backup.id
+        is_success = status_poll(
+            partial(get_backup_status, cinder_client, backup_id),
+            interval=self._interval,
+            success_statuses={'available'},
+            failure_statuses={'error'},
+            ignore_statuses={'creating'},
+        )
+
+        if not is_success:
+            reason = None
+            try:
+                backup = cinder_client.backups.get(backup_id)
+            except Exception:
+                reason = 'Unable to find backup'
+            else:
+                reason = backup.fail_reason
+            raise Exception(reason)
+
+        return backup_id
+
+    def on_prepare_finish(self, checkpoint, resource, context, parameters,
+                          **kwargs):
+        volume_id = resource.id
+        if not self._backup_from_snapshot:
+            LOG.info(_LI('Skipping taking snapshot of volume %s - backing up '
+                         'directly'), volume_id)
+            return
+
+        LOG.info(_LI('Taking snapshot of volume %s'), volume_id)
+        bank_section = checkpoint.get_resource_bank_section(volume_id)
+        bank_section.create_object('status',
+                                   constants.RESOURCE_STATUS_PROTECTING)
+        cinder_client = ClientFactory.create_client('cinder', context)
+        try:
+            self.snapshot_id = self._create_snapshot(cinder_client, volume_id)
+        except Exception:
+            bank_section.create_object('status',
+                                       constants.RESOURCE_STATUS_ERROR)
+            raise exception.CreateBackupFailed(
+                reason='Error creating snapshot for volume',
+                resource_id=volume_id,
+                resource_type=constants.VOLUME_RESOURCE_TYPE,
+            )
 
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         volume_id = resource.id
@@ -106,6 +205,8 @@ class ProtectOperation(protection_plugin.Operation):
                              'restoring-backup'},
         )
         if not is_success:
+            bank_section.create_object('status',
+                                       constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
                 reason='Volume is in errorneous state',
                 resource_id=volume_id,
@@ -113,65 +214,51 @@ class ProtectOperation(protection_plugin.Operation):
             )
 
         backup_name = parameters.get('backup_name')
-        backup = None
         try:
-            backup = cinder_client.backups.create(
-                volume_id=volume_id,
-                name=backup_name,
-                force=True,
-            )
+            backup_id = self._create_backup(cinder_client, volume_id,
+                                            backup_name, self.snapshot_id)
         except Exception as e:
-            LOG.error(_LE('Error creating backup (volume_id: %(volume_id)s): '
-                          '%(reason)s'),
-                      {'volume_id': volume_id, 'reason': e})
-            bank_section.create_object('status',
-                                       constants.RESOURCE_STATUS_ERROR)
-            raise
-
-        backup_id = backup.id
-        resource_metadata['backup_id'] = backup_id
-        bank_section.create_object('metadata', resource_metadata)
-
-        is_success = status_poll(
-            partial(get_backup_status, cinder_client, backup_id),
-            interval=self._interval,
-            success_statuses={'available'},
-            failure_statuses={'error'},
-            ignore_statuses={'creating'},
-        )
-
-        if is_success is True:
-            LOG.info(
-                _LI('protecting volume (id: %(volume_id)s) to backup '
-                    '(id: %(backup_id)s) completed successfully'),
-                {'backup_id': backup_id, 'volume_id': volume_id}
-            )
-            bank_section.create_object('status',
-                                       constants.RESOURCE_STATUS_AVAILABLE)
-        else:
-            reason = None
-            try:
-                backup = cinder_client.backups.get(backup_id)
-            except Exception:
-                reason = 'Unable to find backup'
-            else:
-                reason = backup.fail_reason
             LOG.error(
-                _LE('protecting volume (id: %(volume_id)s) to backup '
-                    '(id: %(backup_id)s) failed. Reason: "%(reason)s"'),
+                _LE('Error creating backup (volume_id: %(volume_id)s '
+                    'snapshot_id: %(snapshot_id)s): %(reason)s'),
                 {
-                    'backup_id': backup_id,
                     'volume_id': volume_id,
-                    'reason': reason,
+                    'snapshot_id': self.snapshot_id,
+                    'reason': e,
                 }
             )
             bank_section.create_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
-                reason=reason,
+                reason=e,
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
             )
+
+        resource_metadata['backup_id'] = backup_id
+        bank_section.create_object('metadata', resource_metadata)
+        LOG.info(
+            _LI('Backed up volume (volume_id: %(volume_id)s snapshot_id: '
+                '%(snapshot_id)s backup_id: %(backup_id)s) successfully'),
+            {
+                'backup_id': backup_id,
+                'snapshot_id': self.snapshot_id,
+                'volume_id': volume_id
+            }
+        )
+
+        if self.snapshot_id:
+            try:
+                self._delete_snapshot(cinder_client, self.snapshot_id)
+            except Exception as e:
+                LOG.warn(
+                    _LW('Failed deleting snapshot: %(snapshot_id)s. '
+                        'Reason: %(reason)s'),
+                    {
+                        'snapshot_id': self.snapshot_id,
+                        'reason': e,
+                    }
+                )
 
 
 class RestoreOperation(protection_plugin.Operation):
@@ -198,9 +285,9 @@ class RestoreOperation(protection_plugin.Operation):
 
 
 class DeleteOperation(protection_plugin.Operation):
-    def __init__(self):
+    def __init__(self, poll_interval):
         super(DeleteOperation, self).__init__()
-        self._interval = CONF.cinder_backup_protection_plugin.poll_interval
+        self._interval = poll_interval
 
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         resource_id = resource.id
@@ -247,6 +334,11 @@ class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def __init__(self, config=None):
         super(CinderBackupProtectionPlugin, self).__init__(config)
+        self._config.register_opts(cinder_backup_opts,
+                                   'cinder_backup_protection_plugin')
+        self._plugin_config = self._config.cinder_backup_protection_plugin
+        self._poll_interval = self._plugin_config.poll_interval
+        self._backup_from_snapshot = self._plugin_config.backup_from_snapshot
 
     @classmethod
     def get_supported_resources_types(cls):
@@ -270,10 +362,11 @@ class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
         pass
 
     def get_protect_operation(self, resource):
-        return ProtectOperation()
+        return ProtectOperation(self._poll_interval,
+                                self._backup_from_snapshot)
 
     def get_restore_operation(self, resource):
         return RestoreOperation()
 
     def get_delete_operation(self, resource):
-        return DeleteOperation()
+        return DeleteOperation(self._poll_interval)
