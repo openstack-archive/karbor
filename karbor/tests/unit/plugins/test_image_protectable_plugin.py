@@ -64,7 +64,7 @@ class ImageProtectablePluginTest(base.TestCase):
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
         self.assertEqual(
-            plugin._glance_client(self._context).http_client.endpoint,
+            plugin._glance_client(self._context).http_client.endpoint_override,
             'http://127.0.0.1:9292')
         self.assertEqual(
             plugin._nova_client(self._context).client.endpoint_override,
@@ -81,7 +81,7 @@ class ImageProtectablePluginTest(base.TestCase):
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
         self.assertEqual(
-            plugin._glance_client(self._context).http_client.endpoint,
+            plugin._glance_client(self._context).http_client.endpoint_override,
             'http://127.0.0.1:9292')
         self.assertEqual(
             plugin._nova_client(self._context).client.endpoint_override,

@@ -57,14 +57,16 @@ def create(context, conf, **kwargs):
                         append_project_fmt='%(url)s/%(project)s', **kwargs)
     LOG.debug('Creating cinder client with url %s.', url)
 
+    if kwargs.get('session'):
+        return cc.Client(CINDERCLIENT_VERSION, session=kwargs.get('session'),
+                         endpoint_override=url)
+
     args = {
         'project_id': context.project_id,
         'cacert': client_config.cinder_ca_cert_file,
         'insecure': client_config.cinder_auth_insecure,
     }
-
     client = cc.Client(CINDERCLIENT_VERSION, **args)
     client.client.auth_token = context.auth_token
     client.client.management_url = url
-
     return client
