@@ -26,6 +26,15 @@ Using Karbor
    contributing
    releasenotes
 
+Available Plugins
+=================
+.. toctree::
+   :maxdepth: 2
+
+   bank_plugins
+   protectable_plugins
+   protection_plugins
+
 Karbor Specs
 ===========
 .. toctree::
@@ -37,5 +46,6 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
+* :ref:`modindex`
 * :ref:`search`
 

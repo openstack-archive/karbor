@@ -17,6 +17,7 @@ from karbor.services.protection import protectable_plugin
 
 
 class ProjectProtectablePlugin(protectable_plugin.ProtectablePlugin):
+    """Keystone project protectable plugin"""
     _SUPPORT_RESOURCE_TYPE = constants.PROJECT_RESOURCE_TYPE
 
     def get_resource_type(self):

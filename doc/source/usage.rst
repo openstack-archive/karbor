@@ -10,7 +10,6 @@ This example will show protecting volume.
    the default bank plugin.  The admin also needs to configure the basic Swift
    client account configuration::
 
-    cat providers.d/openstack-infra.conf
     [provider]
     name = OS Infra Provider
     description = This provider uses OpenStack's own services (swift, cinder) as storage
