@@ -24,6 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
+    """Glance image protectable plugin"""
     _SUPPORT_RESOURCE_TYPE = constants.IMAGE_RESOURCE_TYPE
 
     def _glance_client(self, context):

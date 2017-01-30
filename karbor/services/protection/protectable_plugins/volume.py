@@ -24,9 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
-    """Protectable plugin implementation for volume from cinder.
-
-    """
+    """Cinder volume protectable plugin"""
 
     _SUPPORT_RESOURCE_TYPE = constants.VOLUME_RESOURCE_TYPE
 

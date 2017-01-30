@@ -24,9 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
-    """Protectable plugin implementation for server from nova.
-
-    """
+    """Nova server protectable plugin"""
 
     _SUPPORT_RESOURCE_TYPE = constants.SERVER_RESOURCE_TYPE
 

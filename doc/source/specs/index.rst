@@ -10,14 +10,14 @@ Contents:
     :maxdepth: 3
 
     api-service
+    bank-plugin-lease
+    pluggable_protection_provider
 
 Spec Template
 --------------
 .. toctree::
     :maxdepth: 3
 
-    bank-plugin-lease
-    pluggable_protection_provider
     skeleton
     template
 

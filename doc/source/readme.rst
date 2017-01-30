@@ -12,11 +12,6 @@ Karbor is an OpenStack project that provides a pluggable framework for
 protecting and restoring Data and Metadata that comprises an OpenStack-deployed
 application - Application Data Protection as a Service.
 
-.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/Karbor.png
-    :alt: Karbor
-    :align: center
-    :height: 150px
-
 
 Mission Statement
 ~~~~~~~~~~~~~~~~~
@@ -288,7 +283,6 @@ Communication and Meetings
   and on **odd** Tuesday at 0900 UTC in
   #openstack-meeting at freenode: \
   https://wiki.openstack.org/wiki/Meetings/karbor
-- Karbor Trello Board: \ https://trello.com/b/Sudr4fKT/karbor
 
 Additional references
 =====================

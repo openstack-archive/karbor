@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
-    #'sphinx.ext.intersphinx',
+    # 'sphinx.ext.intersphinx',
     'oslosphinx',
     'reno.sphinxext'
 ]
@@ -29,6 +29,17 @@ extensions = [
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
 # execute "export SPHINX_DEBUG=1" in your terminal to disable
+modindex_common_prefix = [
+    'karbor.',
+    'karbor.services.',
+]
+exclude_patterns = [
+    'api/karbor.tests.*',
+    'api/karbor.wsgi.*',
+    'api/karbor.services.protection.bank_plugins.*',
+    'api/karbor.services.protection.protectable_plugins.*',
+    'api/karbor.services.protection.protection_plugins.*',
+]
 
 # The suffix of source filenames.
 source_suffix = '.rst'

@@ -25,6 +25,7 @@ from oslo_service import loopingcall
 from oslo_utils import uuidutils
 from swiftclient import ClientException
 
+
 swift_bank_plugin_opts = [
     cfg.StrOpt('bank_swift_object_container',
                default='karbor',
@@ -50,6 +51,7 @@ class SwiftConnectionFailed(exception.KarborException):
 
 
 class SwiftBankPlugin(BankPlugin, LeasePlugin):
+    """Swift bank plugin"""
     def __init__(self, config, context=None):
         super(SwiftBankPlugin, self).__init__(config)
         self._config.register_opts(swift_bank_plugin_opts,
