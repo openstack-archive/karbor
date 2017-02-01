@@ -1,11 +1,11 @@
-Welcome to Karbor Agent Release Notes documentation!
-====================================================
+Welcome to Karbor Release Notes documentation!
+==============================================
 
 Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    unreleased
    newton

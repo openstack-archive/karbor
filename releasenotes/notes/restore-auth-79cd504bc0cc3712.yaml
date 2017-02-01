@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    Restore auth parameters now reside in restore_auth instead of restore
+    parameters.

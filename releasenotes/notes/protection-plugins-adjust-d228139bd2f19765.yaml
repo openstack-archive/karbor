@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Revised Cinder protection plugin, which takes a snapshot, backs up from the
+    snapshot, and deletes the snapshot afterwards.
+  - |
+    Revised Glance protection plugin, which uploads the glance image in chunks
+    to the bank.

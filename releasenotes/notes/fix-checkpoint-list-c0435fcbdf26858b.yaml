@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fix checkpoint listing bug, which caused results to be not filtered
+    correctly according to set filters.

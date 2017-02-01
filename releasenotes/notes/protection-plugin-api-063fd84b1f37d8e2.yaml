@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Revised Protection Plugin interface which now supports multiple hooks for
+    each operation. Hooks dictate when specific parts of the protection plugin
+    code runs in relation to the operation phase and other resource's state.
+deprecations:
+  - |
+    Old Protection Plugin interface and BaseProtectionPlugin are deprecated.
