@@ -57,6 +57,7 @@ RESOURCE_STATUS_STARTED = 'started'
 RESOURCE_STATUS_AVAILABLE = 'available'
 RESOURCE_STATUS_DELETING = 'deleting'
 RESOURCE_STATUS_DELETED = 'deleted'
+RESOURCE_STATUS_RESTORING = 'restoring'  # use in restore object only
 RESOURCE_STATUS_UNDEFINED = 'undefined'
 
 # scheduled operation state

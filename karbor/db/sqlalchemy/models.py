@@ -183,6 +183,8 @@ class Restore(BASE, KarborBase):
     restore_target = Column(String(255))
     parameters = Column(Text)
     status = Column(String(64))
+    resources_status = Column(Text)
+    resources_reason = Column(Text)
 
 
 class OperationLog(BASE, KarborBase):

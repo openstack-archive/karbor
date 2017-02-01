@@ -27,7 +27,6 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
     def setUp(self):
         super(RestoresTest, self).setUp()
-        self.provider_id = self.provider_id_noop
 
     def _store_volume(self, volumes_pre, volumes_post):
         volumes = list(set(volumes_post).difference(set(volumes_pre)))
@@ -50,9 +49,9 @@ class RestoresTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
+        plan.create(self.provider_id_noop, [volume, ])
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id_noop, plan.id)
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
@@ -60,7 +59,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
-        restore.create(self.provider_id, checkpoint.id,
+        restore.create(self.provider_id_noop, checkpoint.id,
                        restore_target, self.parameters, self.restore_auth)
 
         restores = self.karbor_client.restores.list()
@@ -74,16 +73,16 @@ class RestoresTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
+        plan.create(self.provider_id_noop, [volume, ])
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id_noop, plan.id)
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
         volumes_pre = self.cinder_client.volumes.list()
 
         restore = self.store(objects.Restore())
-        restore.create(self.provider_id, checkpoint.id,
+        restore.create(self.provider_id_noop, checkpoint.id,
                        None, self.parameters, None)
 
         restores = self.karbor_client.restores.list()
@@ -97,15 +96,15 @@ class RestoresTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
+        plan.create(self.provider_id_noop, [volume, ])
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id_noop, plan.id)
 
         volumes_pre = self.cinder_client.volumes.list()
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
-        restore.create(self.provider_id, checkpoint.id,
+        restore.create(self.provider_id_noop, checkpoint.id,
                        restore_target, self.parameters, self.restore_auth)
 
         restore_item = self.karbor_client.restores.get(restore.id)
@@ -118,9 +117,9 @@ class RestoresTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
+        plan.create(self.provider_id_noop, [volume, ])
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id_noop, plan.id)
 
         restores = self.karbor_client.restores.list()
         before_num = len(restores)
@@ -128,15 +127,37 @@ class RestoresTest(karbor_base.KarborBaseTest):
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore1 = self.store(objects.Restore())
-        restore1.create(self.provider_id, checkpoint.id,
+        restore1.create(self.provider_id_noop, checkpoint.id,
                         restore_target, self.parameters, self.restore_auth)
         restore2 = self.store(objects.Restore())
-        restore2.create(self.provider_id, checkpoint.id,
+        restore2.create(self.provider_id_noop, checkpoint.id,
                         restore_target, self.parameters, self.restore_auth)
 
         restores = self.karbor_client.restores.list()
         after_num = len(restores)
         self.assertEqual(2, after_num - before_num)
 
+        volumes_post = self.cinder_client.volumes.list()
+        self._store_volume(volumes_pre, volumes_post)
+
+    def test_restore_resources(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id_os, [volume, ])
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id_os, plan.id)
+        volumes_pre = self.cinder_client.volumes.list()
+        restore = self.store(objects.Restore())
+        restore_target = self.get_restore_target(self.keystone_endpoint)
+        restore_id = restore.create(
+            self.provider_id_os,
+            checkpoint.id,
+            restore_target,
+            self.parameters,
+            self.restore_auth,
+        )
+        restore_obj = self.karbor_client.restores.get(restore_id)
+        self.assertEqual(len(restore_obj.resources_status), 1)
         volumes_post = self.cinder_client.volumes.list()
         self._store_volume(volumes_pre, volumes_post)
