@@ -47,7 +47,7 @@ class FakeBankPlugin(BankPlugin):
 
 
 fake_bank = Bank(FakeBankPlugin())
-fake_bank_section = BankSection(bank=fake_bank, prefix="fake")
+fake_bank_section = BankSection(bank=fake_bank, section="fake")
 
 ResourceNode = collections.namedtuple(
     "ResourceNode",
