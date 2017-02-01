@@ -117,7 +117,7 @@ class CinderProtectionPluginTest(base.TestCase):
         fake_bank = bank_plugin.Bank(fakes.FakeBankPlugin())
         fake_bank_section = bank_plugin.BankSection(
             bank=fake_bank,
-            prefix="fake"
+            section="fake"
         )
         return FakeCheckpoint(fake_bank_section)
 

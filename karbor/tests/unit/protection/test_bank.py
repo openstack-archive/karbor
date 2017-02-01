@@ -32,7 +32,10 @@ class _InMemoryBankPlugin(BankPlugin):
         self._data[key] = value
 
     def get_object(self, key):
-        return deepcopy(self._data[key])
+        try:
+            return deepcopy(self._data[key])
+        except KeyError:
+            raise exception.BankGetObjectFailed('no such object')
 
     def list_objects(self, prefix=None, limit=None, marker=None,
                      sort_dir=None):
@@ -69,6 +72,23 @@ class _InMemoryLeasePlugin(LeasePlugin):
 
 
 class BankSectionTest(base.TestCase):
+    INVALID_PATHS = (
+        '/',
+        '/a$',
+        '/path/',
+        '/path/path/',
+        'space space',
+        '/path/../dots/',
+        '/,',
+    )
+
+    VALID_PATHS = (
+        '/key',
+        '/top/key',
+        '/top/middle/bottom/key',
+        '/all_kinds/of-char.acters/@path1',
+    )
+
     def _create_test_bank(self):
         return Bank(_InMemoryBankPlugin())
 
@@ -88,6 +108,41 @@ class BankSectionTest(base.TestCase):
             "value",
         )
 
+    def test_update_invalid_object(self):
+        bank = self._create_test_bank()
+        for path in self.INVALID_PATHS:
+            self.assertRaises(
+                exception.InvalidParameterValue,
+                bank.update_object,
+                path,
+                "value",
+            )
+
+    def test_get_invalid_object(self):
+        bank = self._create_test_bank()
+        for path in self.INVALID_PATHS:
+            self.assertRaises(
+                exception.InvalidParameterValue,
+                bank.get_object,
+                path,
+            )
+
+    def test_valid_object(self):
+        value1 = 'value1'
+        value2 = 'value2'
+        bank = self._create_test_bank()
+        for path in self.VALID_PATHS:
+            bank.update_object(path, value1)
+            bank.update_object(path, value2)
+            res = bank.get_object(path)
+            self.assertEqual(res, value2)
+            bank.delete_object(path)
+            self.assertRaises(
+                exception.BankGetObjectFailed,
+                bank.get_object,
+                path,
+            )
+
     def test_delete_object(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=True)
@@ -101,20 +156,22 @@ class BankSectionTest(base.TestCase):
     def test_list_objects(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=True)
-        bank.update_object("/prefix/a", "value")
-        bank.update_object("/prefixd", "value")  # Should not appear
-        section.update_object("/b", "value")
-        section.update_object("c", "value")
-        expected_result = ["a", "b", "c"]
+        bank.update_object("/prefix/KeyA", "value")
+        bank.update_object("/prefix", "value")
+        bank.update_object("/prefixKeyD", "value")  # Should not appear
+        section.update_object("/KeyB", "value")
+        section.update_object("KeyC", "value")
+        expected_result = ["KeyA", "KeyB", "KeyC"]
         self.assertEqual(list(section.list_objects("/")), expected_result)
         self.assertEqual(list(section.list_objects("///")), expected_result)
         self.assertEqual(list(section.list_objects(None)), expected_result)
+        self.assertEqual(list(section.list_objects("Key")), expected_result)
         self.assertEqual(
             list(section.list_objects("/", limit=2)),
             expected_result[:2],
         )
         self.assertEqual(
-            list(section.list_objects("/", limit=2, marker="b")),
+            list(section.list_objects("/", limit=2, marker="KeyB")),
             expected_result[2:4],
         )
 
@@ -159,13 +216,34 @@ class BankSectionTest(base.TestCase):
             '/../../',
         )
 
-    def test_nested_sections(self):
+    def test_nested_sections_get(self):
         bank = self._create_test_bank()
         top_section = BankSection(bank, "/top")
         mid_section = top_section.get_sub_section("/mid")
         bottom_section = mid_section.get_sub_section("/bottom")
         bottom_section.update_object("key", "value")
         self.assertEqual(bank.get_object("/top/mid/bottom/key"), "value")
+        self.assertEqual(bottom_section.get_object("key"), "value")
+
+    def test_nested_sections_list(self):
+        bank = self._create_test_bank()
+        top_section = BankSection(bank, "/top")
+        mid_section = top_section.get_sub_section("/mid")
+        bottom_section = mid_section.get_sub_section("/bottom")
+        keys = ["KeyA", "KeyB", "KeyC"]
+        for key in keys:
+            bottom_section.update_object(key, "value")
+
+        list_result = set(bottom_section.list_objects(prefix="Key"))
+        self.assertEqual(list_result, set(keys))
+        self.assertEqual(
+            list(bottom_section.list_objects("/", limit=2)),
+            keys[:2],
+        )
+        self.assertEqual(
+            list(bottom_section.list_objects("/", limit=2, marker="KeyB")),
+            keys[2:4],
+        )
 
     def test_nested_sections_read_only(self):
         bank = self._create_test_bank()

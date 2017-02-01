@@ -231,7 +231,7 @@ class Checkpoint(object):
     def get_resource_bank_section(self, resource_id):
         return BankSection(
             bank=fake_bank,
-            prefix="/resource_data/%s/%s" % (self.id, resource_id)
+            section="/resource_data/%s/%s" % (self.id, resource_id)
         )
 
 
