@@ -28,9 +28,6 @@ class _InMemoryBankPlugin(BankPlugin):
         super(_InMemoryBankPlugin, self).__init__(config)
         self._data = OrderedDict()
 
-    def create_object(self, key, value):
-        self._data[key] = value
-
     def update_object(self, key, value):
         self._data[key] = value
 
@@ -80,13 +77,13 @@ class BankSectionTest(base.TestCase):
         section = BankSection(bank, "/prefix", is_writable=True)
         self.assertRaises(
             exception.InvalidParameterValue,
-            section.create_object,
+            section.update_object,
             "",
             "value",
         )
         self.assertRaises(
             exception.InvalidParameterValue,
-            section.create_object,
+            section.update_object,
             None,
             "value",
         )
@@ -94,9 +91,9 @@ class BankSectionTest(base.TestCase):
     def test_delete_object(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=True)
-        bank.create_object("/prefix/a", "value")
-        bank.create_object("/prefix/b", "value")
-        bank.create_object("/prefix/c", "value")
+        bank.update_object("/prefix/a", "value")
+        bank.update_object("/prefix/b", "value")
+        bank.update_object("/prefix/c", "value")
         section.delete_object("a")
         section.delete_object("/b")
         section.delete_object("//c")
@@ -104,10 +101,10 @@ class BankSectionTest(base.TestCase):
     def test_list_objects(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=True)
-        bank.create_object("/prefix/a", "value")
-        bank.create_object("/prefixd", "value")  # Should not appear
-        section.create_object("/b", "value")
-        section.create_object("c", "value")
+        bank.update_object("/prefix/a", "value")
+        bank.update_object("/prefixd", "value")  # Should not appear
+        section.update_object("/b", "value")
+        section.update_object("c", "value")
         expected_result = ["a", "b", "c"]
         self.assertEqual(list(section.list_objects("/")), expected_result)
         self.assertEqual(list(section.list_objects("///")), expected_result)
@@ -126,11 +123,11 @@ class BankSectionTest(base.TestCase):
         section = BankSection(bank, "/prefix", is_writable=False)
         self.assertRaises(
             exception.BankReadonlyViolation,
-            section.create_object,
+            section.update_object,
             "object",
             "value",
         )
-        bank.create_object("/prefix/object", "value")
+        bank.update_object("/prefix/object", "value")
         self.assertRaises(
             exception.BankReadonlyViolation,
             section.update_object,
@@ -148,7 +145,7 @@ class BankSectionTest(base.TestCase):
         section = BankSection(bank, "/prefix")
         self.assertRaises(
             exception.InvalidParameterValue,
-            section.create_object,
+            section.update_object,
             "/../../",
             "",
         )
@@ -167,7 +164,7 @@ class BankSectionTest(base.TestCase):
         top_section = BankSection(bank, "/top")
         mid_section = top_section.get_sub_section("/mid")
         bottom_section = mid_section.get_sub_section("/bottom")
-        bottom_section.create_object("key", "value")
+        bottom_section.update_object("key", "value")
         self.assertEqual(bank.get_object("/top/mid/bottom/key"), "value")
 
     def test_nested_sections_read_only(self):

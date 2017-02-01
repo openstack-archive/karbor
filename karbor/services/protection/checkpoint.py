@@ -147,7 +147,7 @@ class Checkpoint(object):
         created_at = timeutils.utcnow().strftime('%Y-%m-%d')
 
         provider_id = plan.get("provider_id")
-        checkpoint_section.create_object(
+        checkpoint_section.update_object(
             key=_INDEX_FILE_NAME,
             value={
                 "version": cls.VERSION,
@@ -167,18 +167,18 @@ class Checkpoint(object):
             }
         )
 
-        indices_section.create_object(
+        indices_section.update_object(
             key="/by-provider/%s/%s@%s" % (provider_id, timestamp,
                                            checkpoint_id),
             value=checkpoint_id
         )
 
-        indices_section.create_object(
+        indices_section.update_object(
             key="/by-date/%s/%s@%s" % (created_at, timestamp, checkpoint_id),
             value=checkpoint_id
         )
 
-        indices_section.create_object(
+        indices_section.update_object(
             key="/by-plan/%s/%s/%s@%s" % (
                 plan.get("id"), created_at, timestamp, checkpoint_id),
             value=checkpoint_id)
@@ -189,7 +189,7 @@ class Checkpoint(object):
                           checkpoint_id)
 
     def commit(self):
-        self._checkpoint_section.create_object(
+        self._checkpoint_section.update_object(
             key=_INDEX_FILE_NAME,
             value=self._md_cache,
         )

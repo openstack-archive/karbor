@@ -100,7 +100,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
         LOG.info(_LI("creating server backup, server_id: %s."), server_id)
 
         try:
-            bank_section.create_object("status",
+            bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
 
             for child_node in child_nodes:
@@ -149,11 +149,11 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
             snapshot_id = nova_client.servers.create_image(
                 server_id, "snapshot_%s" % server_id)
 
-            bank_section.create_object("metadata", resource_definition)
+            bank_section.update_object("metadata", resource_definition)
         except Exception as err:
             # update resource_definition backup_status
             LOG.error(_LE("create backup failed, server_id: %s."), server_id)
-            bank_section.create_object("status",
+            bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
                 reason=err,
@@ -204,7 +204,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
 
             resource_definition["snapshot_metadata"] = snapshot_metadata
             # write resource_definition in bank
-            bank_section.create_object("metadata", resource_definition)
+            bank_section.update_object("metadata", resource_definition)
 
             image = glance_client.images.get(snapshot_id)
             # TODO(luobin): config retry_attempts
@@ -230,7 +230,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                     data = kernel_response_data.read(self.image_object_size)
                     if data == '':
                         break
-                    bank_section.create_object("kernel_" + str(chunks), data)
+                    bank_section.update_object("kernel_" + str(chunks), data)
                     chunks += 1
 
             # store ramdisk_data if need
@@ -247,7 +247,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                     data = ramdisk_response_data.read(self.image_object_size)
                     if data == '':
                         break
-                    bank_section.create_object("ramdisk_" + str(chunks), data)
+                    bank_section.update_object("ramdisk_" + str(chunks), data)
                     chunks += 1
 
             # store snapshot_data
@@ -262,7 +262,7 @@ class NovaProtectionPlugin(BaseProtectionPlugin):
                 data = image_response_data.read(self.image_object_size)
                 if data == '':
                     break
-                bank_section.create_object("snapshot_" + str(chunks), data)
+                bank_section.update_object("snapshot_" + str(chunks), data)
                 chunks += 1
 
             glance_client.images.delete(snapshot_id)

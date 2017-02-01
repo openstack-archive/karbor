@@ -147,7 +147,7 @@ class CinderProtectionPluginTest(base.TestCase):
         checkpoint = self._get_checkpoint()
         section = checkpoint.get_resource_bank_section()
         operation = self.plugin.get_protect_operation(resource)
-        section.create_object = mock.MagicMock()
+        section.update_object = mock.MagicMock()
         mock_cinder_create.return_value = self.cinder_client
         with mock.patch.multiple(
             self.cinder_client,
@@ -284,7 +284,7 @@ class CinderProtectionPluginTest(base.TestCase):
         )
         checkpoint = self._get_checkpoint()
         section = checkpoint.get_resource_bank_section()
-        section.create_object('metadata', {
+        section.update_object('metadata', {
             'backup_id': '456',
         })
         operation = self.plugin.get_delete_operation(resource)
@@ -303,7 +303,7 @@ class CinderProtectionPluginTest(base.TestCase):
         )
         checkpoint = self._get_checkpoint()
         section = checkpoint.get_resource_bank_section()
-        section.create_object('metadata', {
+        section.update_object('metadata', {
             'backup_id': '456',
         })
         operation = self.plugin.get_delete_operation(resource)
@@ -330,7 +330,7 @@ class CinderProtectionPluginTest(base.TestCase):
         )
         checkpoint = self._get_checkpoint()
         section = checkpoint.get_resource_bank_section()
-        section.create_object('metadata', {
+        section.update_object('metadata', {
             'backup_id': '456',
         })
 

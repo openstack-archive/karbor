@@ -29,9 +29,6 @@ from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):
-    def create_object(self, key, value):
-        return
-
     def update_object(self, key, value):
         return
 
@@ -144,7 +141,7 @@ class GlanceProtectionPluginTest(base.TestCase):
                             type=constants.IMAGE_RESOURCE_TYPE,
                             name='fake')
 
-        fake_bank_section.create_object = mock.MagicMock()
+        fake_bank_section.update_object = mock.MagicMock()
 
         protect_operation = self.plugin.get_protect_operation(resource)
         mock_glance_create.return_value = self.glance_client
