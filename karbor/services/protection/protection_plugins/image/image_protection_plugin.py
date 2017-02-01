@@ -83,7 +83,7 @@ class ProtectOperation(protection_plugin.Operation):
         glance_client = ClientFactory.create_client('glance', context)
         LOG.info(_LI("Creating image backup, image_id: %s."), image_id)
         try:
-            bank_section.create_object("status",
+            bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
             image_info = glance_client.images.get(image_id)
             if image_info.status != "active":
@@ -109,7 +109,7 @@ class ProtectOperation(protection_plugin.Operation):
             }
             resource_definition["image_metadata"] = image_metadata
 
-            bank_section.create_object("metadata", resource_definition)
+            bank_section.update_object("metadata", resource_definition)
         except Exception as err:
             LOG.error(_LE("Create image backup failed, image_id: %s."),
                       image_id)
@@ -141,7 +141,7 @@ class ProtectOperation(protection_plugin.Operation):
                     image_response_data.seek(0, os.SEEK_SET)
                     data = image_response_data.read(
                         self._data_block_size_bytes)
-                    bank_section.create_object("data_" + str(chunks_num), data)
+                    bank_section.update_object("data_" + str(chunks_num), data)
                     image_response_data.truncate(0)
                     image_response_data.seek(0, os.SEEK_SET)
                     chunks_num += 1
@@ -149,7 +149,7 @@ class ProtectOperation(protection_plugin.Operation):
             image_response_data.seek(0, os.SEEK_SET)
             data = image_response_data.read()
             if data != '':
-                bank_section.create_object("data_" + str(chunks_num), data)
+                bank_section.update_object("data_" + str(chunks_num), data)
 
             # Save the chunks_num to metadata
             resource_definition = bank_section.get_object("metadata")

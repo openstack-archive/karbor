@@ -73,17 +73,8 @@ class SwiftBankPluginTest(base.TestCase):
         is_valid = self.swift_bank_plugin.check_lease_validity()
         self.assertEqual(is_valid, True)
 
-    def test_create_object(self):
-        self.swift_bank_plugin.create_object("key-1", "value-1")
-        object_file = os.path.join(self.fake_connection.swiftdir,
-                                   "karbor",
-                                   "key-1")
-        with open(object_file, "r") as f:
-            contents = f.read()
-        self.assertEqual(contents, "value-1")
-
     def test_delete_object(self):
-        self.swift_bank_plugin.create_object("key", "value")
+        self.swift_bank_plugin.update_object("key", "value")
         self.swift_bank_plugin.delete_object("key")
         object_file = os.path.join(self.fake_connection.swiftdir,
                                    "karbor",
@@ -91,18 +82,18 @@ class SwiftBankPluginTest(base.TestCase):
         self.assertEqual(os.path.isfile(object_file), False)
 
     def test_get_object(self):
-        self.swift_bank_plugin.create_object("key", "value")
+        self.swift_bank_plugin.update_object("key", "value")
         value = self.swift_bank_plugin.get_object("key")
         self.assertEqual(value, "value")
 
     def test_list_objects(self):
-        self.swift_bank_plugin.create_object("key-1", "value-1")
-        self.swift_bank_plugin.create_object("key-2", "value-2")
+        self.swift_bank_plugin.update_object("key-1", "value-1")
+        self.swift_bank_plugin.update_object("key-2", "value-2")
         objects = self.swift_bank_plugin.list_objects(prefix=None)
         self.assertEqual(len(objects), 2)
 
     def test_update_object(self):
-        self.swift_bank_plugin.create_object("key-1", "value-1")
+        self.swift_bank_plugin.update_object("key-1", "value-1")
         self.swift_bank_plugin.update_object("key-1", "value-2")
         object_file = os.path.join(self.fake_connection.swiftdir,
                                    "karbor",
@@ -112,6 +103,6 @@ class SwiftBankPluginTest(base.TestCase):
         self.assertEqual(contents, "value-2")
 
     def test_create_get_dict_object(self):
-        self.swift_bank_plugin.create_object("dict_object", {"key": "value"})
+        self.swift_bank_plugin.update_object("dict_object", {"key": "value"})
         value = self.swift_bank_plugin.get_object("dict_object")
         self.assertEqual(value, {"key": "value"})

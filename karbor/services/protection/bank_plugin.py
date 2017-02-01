@@ -41,10 +41,6 @@ class BankPlugin(object):
         self._config = config
 
     @abc.abstractmethod
-    def create_object(self, key, value):
-        return
-
-    @abc.abstractmethod
     def update_object(self, key, value):
         return
 
@@ -84,9 +80,6 @@ class Bank(object):
             key = "/" + key
 
         return key
-
-    def create_object(self, key, value):
-        return self._plugin.create_object(self._normalize_key(key), value)
 
     def update_object(self, key, value):
         return self._plugin.update_object(self._normalize_key(key), value)
@@ -166,13 +159,6 @@ class BankSection(object):
     def _validate_writable(self):
         if not self.is_writable:
             raise exception.BankReadonlyViolation()
-
-    def create_object(self, key, value):
-        self._validate_writable()
-        return self._bank.create_object(
-            self._prepend_prefix(key),
-            value,
-        )
 
     def update_object(self, key, value):
         self._validate_writable()

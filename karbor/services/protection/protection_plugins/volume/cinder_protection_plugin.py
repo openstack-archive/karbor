@@ -170,13 +170,13 @@ class ProtectOperation(protection_plugin.Operation):
 
         LOG.info(_LI('Taking snapshot of volume %s'), volume_id)
         bank_section = checkpoint.get_resource_bank_section(volume_id)
-        bank_section.create_object('status',
+        bank_section.update_object('status',
                                    constants.RESOURCE_STATUS_PROTECTING)
         cinder_client = ClientFactory.create_client('cinder', context)
         try:
             self.snapshot_id = self._create_snapshot(cinder_client, volume_id)
         except Exception:
-            bank_section.create_object('status',
+            bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
                 reason='Error creating snapshot for volume',
@@ -189,7 +189,7 @@ class ProtectOperation(protection_plugin.Operation):
         bank_section = checkpoint.get_resource_bank_section(volume_id)
         cinder_client = ClientFactory.create_client('cinder', context)
         LOG.info(_LI('creating volume backup, volume_id: %s'), volume_id)
-        bank_section.create_object('status',
+        bank_section.update_object('status',
                                    constants.RESOURCE_STATUS_PROTECTING)
         resource_metadata = {
             'volume_id': volume_id,
@@ -205,7 +205,7 @@ class ProtectOperation(protection_plugin.Operation):
                              'restoring-backup'},
         )
         if not is_success:
-            bank_section.create_object('status',
+            bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
                 reason='Volume is in errorneous state',
@@ -227,7 +227,7 @@ class ProtectOperation(protection_plugin.Operation):
                     'reason': e,
                 }
             )
-            bank_section.create_object('status',
+            bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
                 reason=e,
@@ -236,7 +236,7 @@ class ProtectOperation(protection_plugin.Operation):
             )
 
         resource_metadata['backup_id'] = backup_id
-        bank_section.create_object('metadata', resource_metadata)
+        bank_section.update_object('metadata', resource_metadata)
         LOG.info(
             _LI('Backed up volume (volume_id: %(volume_id)s snapshot_id: '
                 '%(snapshot_id)s backup_id: %(backup_id)s) successfully'),

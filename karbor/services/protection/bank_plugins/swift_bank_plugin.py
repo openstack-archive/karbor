@@ -103,23 +103,6 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
     def get_owner_id(self):
         return self.owner_id
 
-    def create_object(self, key, value):
-        serialized = False
-        try:
-            if not isinstance(value, str):
-                value = json.dumps(value)
-                serialized = True
-            self._put_object(container=self.bank_object_container,
-                             obj=key,
-                             contents=value,
-                             headers={
-                                 'x-object-meta-serialized': str(serialized)
-                             })
-        except SwiftConnectionFailed as err:
-            LOG.error(_LE("create object failed, err: %s."), err)
-            raise exception.BankCreateObjectFailed(reason=err,
-                                                   key=key)
-
     def update_object(self, key, value):
         serialized = False
         try:

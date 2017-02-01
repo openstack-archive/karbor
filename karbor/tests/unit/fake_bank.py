@@ -25,9 +25,6 @@ class FakeBankPlugin(bank_plugin.BankPlugin):
         config.register_opts(fake_bank_opts, 'fake_bank')
         self.fake_host = config['fake_bank']['fake_host']
 
-    def create_object(self, key, value):
-        return
-
     def update_object(self, key, value):
         return
 

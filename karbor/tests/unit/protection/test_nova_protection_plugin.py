@@ -188,9 +188,6 @@ class FakeBankPlugin(BankPlugin):
         super(FakeBankPlugin, self).__init__(config)
         self._objects = {}
 
-    def create_object(self, key, value):
-        self._objects[key] = value
-
     def update_object(self, key, value):
         self._objects[key] = value
 
