@@ -17,7 +17,7 @@ from oslo_service import loopingcall
 from oslo_utils import uuidutils
 
 from karbor.common import constants
-from karbor.i18n import _LE, _LI
+from karbor.i18n import _LE, _LI, _LW
 from karbor.services.protection import client_factory
 from karbor.services.protection import resource_flow
 from karbor.services.protection import restore_heat
@@ -105,12 +105,13 @@ class SyncRestoreStatusTask(task.Task):
     def __init__(self, *args, **kwargs):
         super(SyncRestoreStatusTask, self).__init__(*args, **kwargs)
 
-    def execute(self, stack_id, heat_client):
+    def execute(self, stack_id, heat_client, restore):
         if stack_id is None:
             LOG.info(_LI('Not syncing Heat stack status, stack is empty'))
             return
 
         LOG.info(_LI('Syncing Heat stack status, stack_id: %s'), stack_id)
+        self._restore = restore
         sync_status_loop = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, heat_client, stack_id)
         sync_status_loop.start(interval=CONF.sync_status_interval)
@@ -126,14 +127,43 @@ class SyncRestoreStatusTask(task.Task):
         if stack_status == 'CREATE_IN_PROGRESS':
             LOG.debug('Heat stack status: in progress, stack_id: %s',
                       stack_id)
-            return
-        if stack_status == 'CREATE_COMPLETE':
+        elif stack_status == 'CREATE_COMPLETE':
             LOG.info(_LI('Heat stack status: complete, stack_id: %s'),
                      stack_id)
+            self._update_resource_status(heat_client, stack_id)
+            raise loopingcall.LoopingCallDone()
         else:
             LOG.info(_LI('Heat stack status: failure, stack_id: %s'), stack_id)
+            self._update_resource_status(heat_client, stack_id)
             raise
-        raise loopingcall.LoopingCallDone()
+
+    def _update_resource_status(self, heat_client, stack_id):
+        LOG.debug('Updating resources status from heat stack (stack_id: %s)',
+                  stack_id)
+        try:
+            resources = heat_client.resources.list(stack_id)
+            for resource in resources:
+                heat_to_karbor_map = {
+                    'CREATE_COMPLETE': constants.RESOURCE_STATUS_AVAILABLE,
+                    'CREATE_IN_PROGRESS': constants.RESOURCE_STATUS_RESTORING,
+                    'CREATE_FAILED': constants.RESOURCE_STATUS_ERROR,
+                }
+                reason = resource.resource_status_reason if (
+                    resource.resource_status == 'CREATE_FAILED'
+                ) else None
+                self._restore.update_resource_status(
+                    resource.resource_type,
+                    resource.physical_resource_id,
+                    heat_to_karbor_map[resource.resource_status],
+                    reason,
+                )
+            self._restore.save()
+        except Exception as e:
+            LOG.warning(
+                _LW('Unable to update resources status from heat stack. '
+                    'Reason: %s'),
+                e,
+            )
 
 
 def get_flow(context, workflow_engine, checkpoint, provider, restore,

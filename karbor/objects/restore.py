@@ -12,6 +12,7 @@
 
 from oslo_serialization import jsonutils
 from oslo_versionedobjects import fields
+import six
 
 from karbor import db
 from karbor import exception
@@ -35,23 +36,34 @@ class Restore(base.KarborPersistentObject, base.KarborObject,
         'restore_target': fields.StringField(nullable=True),
         'parameters': base.DictOfDictOfStringsField(nullable=True),
         'status': fields.StringField(nullable=True),
+        'resources_status': fields.DictOfStringsField(nullable=True),
+        'resources_reason': fields.DictOfStringsField(nullable=True),
     }
 
-    @staticmethod
-    def _from_db_object(context, restore, db_restore):
+    json_fields = ('parameters', 'resources_status', 'resources_reason')
+
+    @classmethod
+    def _from_db_object(cls, context, restore, db_restore):
         for name, field in restore.fields.items():
             value = db_restore.get(name)
             if isinstance(field, fields.IntegerField):
                 value = value or 0
             elif isinstance(field, fields.DateTimeField):
                 value = value or None
-            if name == "parameters" and value is not None:
-                value = jsonutils.loads(value)
+            if name in cls.json_fields:
+                value = jsonutils.loads(value) if value else {}
             restore[name] = value
 
         restore._context = context
         restore.obj_reset_changes()
         return restore
+
+    @classmethod
+    def _convert_properties_to_db_format(cls, updates):
+        for attr in cls.json_fields:
+            value = updates.pop(attr, None)
+            if value:
+                updates[attr] = jsonutils.dumps(value)
 
     @base.remotable
     def create(self):
@@ -59,20 +71,14 @@ class Restore(base.KarborPersistentObject, base.KarborObject,
             raise exception.ObjectActionError(action='create',
                                               reason=_('already created'))
         updates = self.karbor_obj_get_changes()
-
-        parameters = updates.pop('parameters', None)
-        if parameters is not None:
-            updates['parameters'] = jsonutils.dumps(parameters)
-
+        self._convert_properties_to_db_format(updates)
         db_restore = db.restore_create(self._context, updates)
         self._from_db_object(self._context, self, db_restore)
 
     @base.remotable
     def save(self):
         updates = self.karbor_obj_get_changes()
-        parameters = updates.pop('parameters', None)
-        if parameters is not None:
-            updates['parameters'] = jsonutils.dumps(parameters)
+        self._convert_properties_to_db_format(updates)
         if updates:
             db.restore_update(self._context, self.id, updates)
             self.obj_reset_changes()
@@ -81,6 +87,20 @@ class Restore(base.KarborPersistentObject, base.KarborObject,
     def destroy(self):
         with self.obj_as_admin():
             db.restore_destroy(self._context, self.id)
+
+    @base.remotable
+    def update_resource_status(self, resource_type, resource_id, status,
+                               reason=None):
+        key = '{}#{}'.format(resource_type, resource_id)
+        if not self.obj_attr_is_set('resources_status'):
+            self.resources_status = {}
+        self.resources_status[key] = status
+        self._changed_fields.add('resources_status')
+        if isinstance(reason, six.string_types):
+            if not self.obj_attr_is_set('resources_reason'):
+                self.resources_reason = {}
+            self.resources_reason[key] = reason
+            self._changed_fields.add('resources_reason')
 
 
 @base.KarborObjectRegistry.register

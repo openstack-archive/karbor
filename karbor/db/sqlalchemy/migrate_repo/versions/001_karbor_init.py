@@ -79,6 +79,8 @@ def define_tables(meta):
         Column('restore_target', String(length=255)),
         Column('parameters', String(length=255)),
         Column('status', String(length=64)),
+        Column('resources_status', Text),
+        Column('resources_reason', Text),
         mysql_engine='InnoDB'
     )
 

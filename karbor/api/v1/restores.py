@@ -83,6 +83,8 @@ class RestoreViewBuilder(common.ViewBuilder):
                 'restore_target': restore.get('restore_target'),
                 'parameters': restore.get('parameters'),
                 'status': restore.get('status'),
+                'resources_status': restore.get('resources_status'),
+                'resources_reason': restore.get('resources_reason'),
             }
         }
         return restore_ref
