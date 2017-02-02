@@ -59,7 +59,7 @@ Nova (optional)
 
 .. code-block:: none
 
-        enable_service n-cpu n-api n-crt n-cond n-sch n-novnc n-cauth
+        enable_service n-cpu n-api n-crt n-cond n-sch n-novnc n-cauth placement-api
 
 
 Neutron (optional)
