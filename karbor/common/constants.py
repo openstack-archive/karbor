@@ -29,6 +29,21 @@ OPERATION_TYPES = (
 #  plugin type
 PLUGIN_BANK = 'bank'
 
+# supported network resource types
+NETWORK_RESOURCE_TYPES = (NET_RESOURCE_TYPE,
+                          SUBNET_RESOURCE_TYPE,
+                          ROUTER_RESOURCE_TYPE,
+                          ROUTERINTERFACE_RESOURCE_TYPE,
+                          PORT_RESOURCE_TYPE,
+                          SECURITYGROUP_RESOURCE_TYPE,
+                          ) = ('OS::Neutron::Net',
+                               'OS::Neutron::Subnet',
+                               'OS::Neutron::Router',
+                               'OS::Neutron::RouterInterface',
+                               'OS::Neutron::Port',
+                               'OS::Neutron::SecurityGroup',
+                               )
+
 # supported resource types
 RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   SERVER_RESOURCE_TYPE,

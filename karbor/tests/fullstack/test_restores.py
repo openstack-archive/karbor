@@ -170,6 +170,25 @@ class RestoresTest(karbor_base.KarborBaseTest):
         self.assertEqual(1, len(item.resources_status))
         self._store(item.resources_status)
 
+    def test_restore_network_resources(self):
+        network = self.store(objects.Network())
+        network.create()
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id_os, [network, ])
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id_os, plan.id)
+        network.close()
+
+        restore_target = self.get_restore_target(self.keystone_endpoint)
+        restore = self.store(objects.Restore())
+        restore.create(self.provider_id_os, checkpoint.id,
+                       restore_target, self.parameters, self.restore_auth)
+
+        item = self.karbor_client.restores.get(restore.id)
+        self.assertEqual(constants.RESTORE_STATUS_SUCCESS,
+                         item.status)
+        self._store(item.resources_status)
+
     def test_restore_resources_with_fs_bank(self):
         volume = self.store(objects.Volume())
         volume.create(1)

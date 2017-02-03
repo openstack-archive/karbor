@@ -383,3 +383,8 @@ class CheckpointNotAvailable(KarborException):
 
 class CheckpointNotBeDeleted(KarborException):
     message = _("The checkpoint %(checkpoint_id)s can not be deleted.")
+
+
+class GetProtectionNetworkSubResourceFailed(KarborException):
+    message = _("Get protection network sub-resources of type %(type)s failed:"
+                " %(reason)s")
