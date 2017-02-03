@@ -32,6 +32,10 @@ class ProtectablesTest(karbor_base.KarborBaseTest):
         res = self.karbor_client.protectables.get(protectable_type)
         self.assertEqual(protectable_type, res.name)
 
+        protectable_type = 'OS::Neutron::Network'
+        res = self.karbor_client.protectables.get(protectable_type)
+        self.assertEqual(protectable_type, res.name)
+
     def test_protectables_list_instances(self):
         volume = self.store(objects.Volume())
         volume.create(1)
@@ -46,6 +50,12 @@ class ProtectablesTest(karbor_base.KarborBaseTest):
             'OS::Nova::Server')
         ids = [item.id for item in items]
         self.assertTrue(server.id in ids)
+
+        network = self.store(objects.Network())
+        network.create()
+        items = self.karbor_client.protectables.list_instances(
+            'OS::Neutron::Network')
+        self.assertEqual(items[0].id, network.project_id)
 
     def test_protectables_get_instance(self):
         volume = self.store(objects.Volume())

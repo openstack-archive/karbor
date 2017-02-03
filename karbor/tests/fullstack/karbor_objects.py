@@ -416,3 +416,55 @@ class Share(object):
             return
         utils.wait_until_none(self._share_status, timeout=timeout,
                               sleep=MEDIUM_SLEEP)
+
+
+class Network(object):
+    def __init__(self):
+        super(Network, self).__init__()
+        self.id = None
+        self.project_id = None
+        self._name = "private-net"
+        self.neutron_client = base._get_neutron_client()
+
+    def _network_status(self, status=None):
+        try:
+            networks = self.neutron_client.list_networks(name=self._name)
+            assert len(networks['networks']) > 0
+            network = networks['networks'][0]
+        except Exception:
+            return False
+
+        if status is None or status == network['status']:
+            return True
+        else:
+            return False
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": constants.NETWORK_RESOURCE_TYPE,
+            "name": self._name,
+        }
+
+    def create(self, timeout=MEDIUM_TIMEOUT):
+        network = {'name': self._name, 'admin_state_up': True}
+        self.neutron_client.create_network({'network': network})
+
+        networks = self.neutron_client.list_networks(name=self._name)
+        assert len(networks['networks']) > 0
+        network_id = networks['networks'][0]['id']
+        self.id = network_id
+        self.project_id = networks['networks'][0]['tenant_id']
+
+        utils.wait_until_true(partial(self._network_status, 'ACTIVE'),
+                              timeout=timeout, sleep=MEDIUM_SLEEP)
+
+        return self.id
+
+    def close(self, timeout=LONG_TIMEOUT):
+        try:
+            self.neutron_client.delete_network(self.id)
+        except Exception:
+            return
+        utils.wait_until_none(self._network_status, timeout=timeout,
+                              sleep=MEDIUM_SLEEP)
