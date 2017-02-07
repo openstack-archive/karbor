@@ -72,33 +72,38 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         self.owner_id = uuidutils.generate_uuid()
         self.lease_expire_time = 0
         self.bank_leases_container = "leases"
-        self.connection = self._setup_connection()
-
-        # create container
-        try:
-            self._put_container(self.bank_object_container)
-            self._put_container(self.bank_leases_container)
-        except SwiftConnectionFailed as err:
-            LOG.error(_LE("bank plugin create container failed."))
-            raise exception.CreateContainerFailed(reason=err)
-
-        # acquire lease
-        try:
-            self.acquire_lease()
-        except exception.AcquireLeaseFailed:
-            LOG.error(_LE("bank plugin acquire lease failed."))
-            raise
-
-        # start renew lease
-        renew_lease_loop = loopingcall.FixedIntervalLoopingCall(
-            self.renew_lease)
-        renew_lease_loop.start(interval=self.lease_renew_window,
-                               initial_delay=self.lease_renew_window)
+        self._connection = None
 
     def _setup_connection(self):
         return client_factory.ClientFactory.create_client('swift',
                                                           self.context,
                                                           self._config)
+
+    @property
+    def connection(self):
+        if not self._connection:
+            self._connection = self._setup_connection()
+            # create container
+            try:
+                self._put_container(self.bank_object_container)
+                self._put_container(self.bank_leases_container)
+            except SwiftConnectionFailed as err:
+                LOG.error(_LE("bank plugin create container failed."))
+                raise exception.CreateContainerFailed(reason=err)
+
+            # acquire lease
+            try:
+                self.acquire_lease()
+            except exception.AcquireLeaseFailed:
+                LOG.error(_LE("bank plugin acquire lease failed."))
+                raise
+
+            # start renew lease
+            renew_lease_loop = loopingcall.FixedIntervalLoopingCall(
+                self.renew_lease)
+            renew_lease_loop.start(interval=self.lease_renew_window,
+                                   initial_delay=self.lease_renew_window)
+        return self._connection
 
     def get_owner_id(self):
         return self.owner_id
