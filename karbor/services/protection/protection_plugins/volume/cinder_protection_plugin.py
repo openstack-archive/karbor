@@ -102,7 +102,7 @@ class ProtectOperation(protection_plugin.Operation):
         self.snapshot_id = None
 
     def _create_snapshot(self, cinder_client, volume_id):
-        snapshot = cinder_client.volume_snapshots.create(volume_id)
+        snapshot = cinder_client.volume_snapshots.create(volume_id, force=True)
 
         snapshot_id = snapshot.id
         is_success = status_poll(
