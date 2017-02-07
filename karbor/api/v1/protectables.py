@@ -279,10 +279,19 @@ class ProtectablesController(wsgi.Controller):
             msg = _("Invalid protectable type provided.")
             raise exception.InvalidInput(reason=msg)
 
-        instance = self.protection_api.show_protectable_instance(
-            context, protectable_type, protectable_id, parameters=parameters)
+        try:
+            instance = self.protection_api.show_protectable_instance(
+                context, protectable_type, protectable_id,
+                parameters=parameters)
+        except exception.ProtectableResourceNotFound as error:
+            raise exc.HTTPNotFound(explanation=error.msg)
+        except Exception as err:
+            raise exc.HTTPInternalServerError(
+                explanation=six.text_type(err))
+
         if instance is None:
-            raise exception.InvalidProtectableInstance()
+            msg = _("The instance doesn't exist.")
+            raise exc.HTTPInternalServerError(explanation=msg)
 
         dependents = self.protection_api.list_protectable_dependents(
             context, protectable_id, protectable_type)

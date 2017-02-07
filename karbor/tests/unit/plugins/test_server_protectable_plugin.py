@@ -93,10 +93,12 @@ class ServerProtectablePluginTest(base.TestCase):
         plugin = ServerProtectablePlugin(self._context)
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
-        server_info = collections.namedtuple('server_info', ['id', 'name'])
+
+        server_info = collections.namedtuple('server_info', ['id', 'name',
+                                                             'status'])
         mock_server_list.return_value = [
-            server_info(id='123', name='name123'),
-            server_info(id='456', name='name456')]
+            server_info(id='123', name='name123', status='ACTIVE'),
+            server_info(id='456', name='name456', status='ACTIVE')]
         self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
                           Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.list_resources(self._context))
@@ -109,8 +111,10 @@ class ServerProtectablePluginTest(base.TestCase):
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
 
-        server_info = collections.namedtuple('server_info', ['id', 'name'])
-        mock_server_get.return_value = server_info(id='123', name='name123')
+        server_info = collections.namedtuple('server_info', ['id', 'name',
+                                                             'status'])
+        mock_server_get.return_value = server_info(id='123', name='name123',
+                                                   status='ACTIVE')
         self.assertEqual(Resource('OS::Nova::Server', '123', 'name123'),
                          plugin.show_resource(self._context, '123'))
 
@@ -123,10 +127,11 @@ class ServerProtectablePluginTest(base.TestCase):
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
 
-        server_info = collections.namedtuple('server_info', ['id', 'name'])
+        server_info = collections.namedtuple('server_info', ['id', 'name',
+                                                             'status'])
         mock_server_list.return_value = [
-            server_info(id='123', name='name123'),
-            server_info(id='456', name='name456')]
+            server_info(id='123', name='name123', status='ACTIVE'),
+            server_info(id='456', name='name456', status='ACTIVE')]
         self.assertEqual([Resource('OS::Nova::Server', '123', 'name123'),
                           Resource('OS::Nova::Server', '456', 'name456')],
                          plugin.get_dependent_resources(self._context, None))

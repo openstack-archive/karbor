@@ -22,6 +22,9 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
+INVALID_IMAGE_STATUS = ['killed', 'deleted', 'pending_delete',
+                        'deactivated']
+
 
 class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
     """Glance image protectable plugin"""
@@ -55,7 +58,8 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         else:
             return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                       id=image.id, name=image.name)
-                    for image in images]
+                    for image in images
+                    if image.status not in INVALID_IMAGE_STATUS]
 
     def _get_dependent_resources_by_server(self,
                                            context,
@@ -77,7 +81,6 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
-
         return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                   id=server.image['id'],
                                   name=image.name)]
@@ -97,17 +100,23 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                       id=image.id,
                                       name=image.name)
                     for image in images
-                    if image.owner == parent_resource.id]
+                    if image.owner == parent_resource.id
+                    and image.status not in INVALID_IMAGE_STATUS]
 
     def show_resource(self, context, resource_id, parameters=None):
         try:
             image = self._glance_client(context).images.get(resource_id)
         except Exception as e:
             LOG.exception(_LE("Show a image from glance failed."))
-            raise exception.ListProtectableResourceFailed(
+            raise exception.ProtectableResourceNotFound(
+                id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
         else:
+            if image.status in INVALID_IMAGE_STATUS:
+                raise exception.ProtectableResourceInvalidStatus(
+                    id=image.id, type=self._SUPPORT_RESOURCE_TYPE,
+                    status=image.status)
             return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                      id=image.id, name=image.name)
 

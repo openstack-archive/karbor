@@ -26,7 +26,8 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-image_info = namedtuple('image_info', field_names=['id', 'owner', 'name'])
+image_info = namedtuple('image_info', field_names=['id', 'owner', 'name',
+                                                   'status'])
 server_info = namedtuple('server_info', field_names=['id', 'type', 'name',
                                                      'image'])
 project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
@@ -103,8 +104,10 @@ class ImageProtectablePluginTest(base.TestCase):
     def test_list_resources(self, mokc_image_list):
         plugin = ImageProtectablePlugin(self._context)
         mokc_image_list.return_value = [
-            image_info(id='123', name='name123', owner='abcd'),
-            image_info(id='456', name='name456', owner='efgh'),
+            image_info(id='123', name='name123', owner='abcd',
+                       status='active'),
+            image_info(id='456', name='name456', owner='efgh',
+                       status='active'),
         ]
         self.assertEqual(plugin.list_resources(self._context),
                          [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
@@ -115,9 +118,11 @@ class ImageProtectablePluginTest(base.TestCase):
 
     @mock.patch.object(images.Controller, 'get')
     def test_show_resource(self, mock_image_get):
-        image_info = namedtuple('image_info', field_names=['id', 'name'])
+        image_info = namedtuple('image_info', field_names=['id', 'name',
+                                                           'status'])
         plugin = ImageProtectablePlugin(self._context)
-        mock_image_get.return_value = image_info(id='123', name='name123')
+        mock_image_get.return_value = image_info(id='123', name='name123',
+                                                 status='active')
         self.assertEqual(plugin.show_resource(self._context, '123'),
                          resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
                                            id='123', name='name123'))
@@ -133,7 +138,8 @@ class ImageProtectablePluginTest(base.TestCase):
                          type=constants.SERVER_RESOURCE_TYPE,
                          name='nameserver1',
                          image=dict(id='123', name='name123'))
-        image = image_info(id='123', name='name123', owner='abcd')
+        image = image_info(id='123', name='name123', owner='abcd',
+                           status='active')
         plugin = ImageProtectablePlugin(self._context)
         mock_generate_session.return_value = keystone_session.Session(
             auth=None)
@@ -149,8 +155,8 @@ class ImageProtectablePluginTest(base.TestCase):
                                name='nameabcd')
         plugin = ImageProtectablePlugin(self._context)
         mock_image_list.return_value = [
-            image_info('123', 'abcd', 'nameabcd'),
-            image_info('456', 'efgh', 'nameefgh'),
+            image_info('123', 'abcd', 'nameabcd', 'active'),
+            image_info('456', 'efgh', 'nameefgh', 'active'),
         ]
         self.assertEqual(
             plugin.get_dependent_resources(self._context, project),

@@ -221,6 +221,16 @@ class ListProtectableResourceFailed(KarborException):
                 "%(reason)s")
 
 
+class ProtectableResourceNotFound(NotFound):
+    message = _("The resource %(id)s of type %(type)s could not be found: "
+                "%(reason)s")
+
+
+class ProtectableResourceInvalidStatus(KarborException):
+    message = _("The resource %(id)s of type %(type)s has a invalid "
+                "status: %(status)s")
+
+
 class InvalidOperationObject(Invalid):
     message = _("The operation %(operation_id)s is invalid")
 

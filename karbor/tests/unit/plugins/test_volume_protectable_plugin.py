@@ -25,7 +25,7 @@ from karbor.tests import base
 from oslo_config import cfg
 
 project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
-vol_info = namedtuple('vol_info', ['id', 'attachments', 'name'])
+vol_info = namedtuple('vol_info', ['id', 'attachments', 'name', 'status'])
 
 
 class VolumeProtectablePluginTest(base.TestCase):
@@ -78,8 +78,8 @@ class VolumeProtectablePluginTest(base.TestCase):
         plugin = VolumeProtectablePlugin(self._context)
 
         mock_volume_list.return_value = [
-            vol_info('123', [], 'name123'),
-            vol_info('456', [], 'name456'),
+            vol_info('123', [], 'name123', 'available'),
+            vol_info('456', [], 'name456', 'available'),
         ]
         self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123'),
                           Resource('OS::Cinder::Volume', '456', 'name456')],
@@ -89,8 +89,9 @@ class VolumeProtectablePluginTest(base.TestCase):
     def test_show_resource(self, mock_volume_get):
         plugin = VolumeProtectablePlugin(self._context)
 
-        vol_info = namedtuple('vol_info', ['id', 'name'])
-        mock_volume_get.return_value = vol_info(id='123', name='name123')
+        vol_info = namedtuple('vol_info', ['id', 'name', 'status'])
+        mock_volume_get.return_value = vol_info(id='123', name='name123',
+                                                status='available')
         self.assertEqual(Resource('OS::Cinder::Volume', '123', 'name123'),
                          plugin.show_resource(self._context, "123"))
 
@@ -100,8 +101,8 @@ class VolumeProtectablePluginTest(base.TestCase):
 
         attached = [{'server_id': 'abcdef', 'name': 'name'}]
         mock_volume_list.return_value = [
-            vol_info('123', attached, 'name123'),
-            vol_info('456', [], 'name456'),
+            vol_info('123', attached, 'name123', 'available'),
+            vol_info('456', [], 'name456', 'available'),
         ]
         self.assertEqual([Resource('OS::Cinder::Volume', '123', 'name123')],
                          plugin.get_dependent_resources(
