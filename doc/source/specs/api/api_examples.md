@@ -755,7 +755,7 @@ None
       "project_id": "e486a2f49695423ca9c47e589b948108",
       "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
       "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
-      "restore_target": "http://192.168.1.2:35357/v2.0/",
+      "restore_target": "http://192.168.1.2/identity/",
       "parameters": {
         "username": "admin",
         "password": "***"
@@ -780,7 +780,7 @@ None
   "restore": {
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
     "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
-    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "restore_target": "http://192.168.1.2/identity/",
     "restore_auth": {
       "type": "password",
       "username": "admin",
@@ -804,7 +804,7 @@ None
     "project_id": "e486a2f49695423ca9c47e589b948108",
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
     "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
-    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "restore_target": "http://192.168.1.2/identity/v3",
     "restore_auth": {
       "type": "password",
       "username": "admin",
@@ -831,7 +831,7 @@ None
     "project_id": "e486a2f49695423ca9c47e589b948108",
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
     "checkpoint_id": "dcb20606-ad71-40a3-80e4-ef0fafdad0c3",
-    "restore_target": "http://192.168.1.2:35357/v2.0/",
+    "restore_target": "http://192.168.1.2/identity/",
     "parameters": {
       "username": "admin",
       "password": "***"

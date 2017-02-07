@@ -32,7 +32,7 @@ class NeutronClientTest(base.TestCase):
                 'name': 'neutron',
             },
         ]
-        self._context = RequestContext(user_id='admin',
+        self._context = RequestContext(user_id='demo',
                                        project_id='abcd',
                                        auth_token='efgh',
                                        service_catalog=service_catalog)

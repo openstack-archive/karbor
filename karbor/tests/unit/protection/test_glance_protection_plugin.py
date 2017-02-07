@@ -110,7 +110,7 @@ class GlanceProtectionPluginTest(base.TestCase):
                              'http://127.0.0.1:9292',
                              'glance_client')
 
-        self.cntxt = RequestContext(user_id='admin',
+        self.cntxt = RequestContext(user_id='demo',
                                     project_id='abcd',
                                     auth_token='efgh')
         self.glance_client = client_factory.ClientFactory.create_client(

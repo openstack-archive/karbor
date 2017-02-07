@@ -33,7 +33,7 @@ class ClientUtilsTest(base.TestCase):
              'endpoints': [{'publicURL': self._public_url}],
              },
         ]
-        self._context = RequestContext(user_id='admin',
+        self._context = RequestContext(user_id='demo',
                                        project_id='abcd',
                                        auth_token='efgh',
                                        service_catalog=service_catalog)

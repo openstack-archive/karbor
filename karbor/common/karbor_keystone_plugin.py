@@ -152,9 +152,8 @@ class KarborKeystonePlugin(object):
 
             return users[0].id if users else None
 
-        except Exception:
-            msg = ("get service's user(%s) endpoint failed" % user_name)
-            raise exception.AuthorizationFailure(obj=msg)
+        except Exception as e:
+            raise exception.AuthorizationFailure(obj=e)
 
     def _get_karbor_auth_plugin(self, trust_id=None):
         auth_plugin = loading.load_auth_from_conf_options(

@@ -107,7 +107,7 @@ class CinderProtectionPluginTest(base.TestCase):
                              'http://127.0.0.1:8776/v2',
                              'cinder_client')
 
-        self.cntxt = RequestContext(user_id='admin',
+        self.cntxt = RequestContext(user_id='demo',
                                     project_id='abcd',
                                     auth_token='efgh')
         self.cinder_client = client_factory.ClientFactory.create_client(

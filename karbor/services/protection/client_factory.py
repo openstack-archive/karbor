@@ -79,7 +79,8 @@ class ClientFactory(object):
             raise exception.KarborException(_('Unknown service(%s)') % service)
 
         kwargs['keystone_plugin'] = cls._keystone_plugin
-        kwargs['session'] = cls._generate_session(context, service)
+        if context:
+            kwargs['session'] = cls._generate_session(context, service)
         return module.create(context, conf, **kwargs)
 
 

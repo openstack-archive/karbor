@@ -238,7 +238,7 @@ class Checkpoint(object):
 class NovaProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(NovaProtectionPluginTest, self).setUp()
-        self.cntxt = RequestContext(user_id='admin',
+        self.cntxt = RequestContext(user_id='demo',
                                     project_id='abcd',
                                     auth_token='efgh')
         self.plugin = NovaProtectionPlugin()

@@ -18,8 +18,7 @@ This example will show protecting volume.
     bank=karbor-swift-bank-plugin
 
     [swift_client]
-    swift_auth_url=http://10.229.47.230:5000/v2.0/
-    swift_auth_version=2
+    swift_auth_url=http://10.229.47.230/identity/
     swift_user=admin
     swift_key=123456
     swift_tenant_name=admin
@@ -37,7 +36,7 @@ This example will show protecting volume.
     export OS_USERNAME=admin
     export OS_PASSWORD=123456
     export OS_TENANT_NAME=admin
-    export OS_AUTH_URL=http://10.229.47.230:35357/v2.0/
+    export OS_AUTH_URL=http://10.229.47.230/identity/
 
 #. Show the provider information::
 
@@ -131,7 +130,7 @@ This example will show protecting volume.
 
 #. Execute a restore operation manually with a checkpoint id::
 
-    karbor --debug restore-create cf56bd3e-97a7-4078-b6d5-f36246333fd9 2c14b9d6-529b-4308-bb17-7334eb351fd7 'http://10.229.47.230:35357/v2.0/' --parameters 'username'='admin' 'password'='123456'
+    karbor --debug restore-create cf56bd3e-97a7-4078-b6d5-f36246333fd9 2c14b9d6-529b-4308-bb17-7334eb351fd7 'http://10.229.47.230/identity/' --parameters 'username'='admin' 'password'='123456'
     +----------------+-------------------------------------------------+
     |    Property    |                      Value                      |
     +----------------+-------------------------------------------------+
@@ -140,7 +139,7 @@ This example will show protecting volume.
     |   parameters   | {u'username': u'admin', u'password': u'123456'} |
     |   project_id   |         8ea0fc3673794f1492b875d349400181        |
     |  provider_id   |       cf56bd3e-97a7-4078-b6d5-f36246333fd9      |
-    | restore_target |         http://10.229.47.230:35357/v2.0/        |
+    | restore_target |         http://10.229.47.230/identity/          |
     |     status     |                     success                     |
     +----------------+-------------------------------------------------+
 

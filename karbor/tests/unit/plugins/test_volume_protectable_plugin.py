@@ -42,7 +42,7 @@ class VolumeProtectablePluginTest(base.TestCase):
              'endpoints': [{'publicURL': 'http://127.0.0.1:8776/v3/abcd'}],
              },
         ]
-        self._context = RequestContext(user_id='admin',
+        self._context = RequestContext(user_id='demo',
                                        project_id='abcd',
                                        auth_token='efgh',
                                        service_catalog=service_catalog)

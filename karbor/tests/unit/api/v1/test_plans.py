@@ -37,7 +37,7 @@ class PlanApiTest(base.TestCase):
     def setUp(self):
         super(PlanApiTest, self).setUp()
         self.controller = plans.PlansController()
-        self.ctxt = context.RequestContext('admin', 'fakeproject', True)
+        self.ctxt = context.RequestContext('demo', 'fakeproject', True)
 
     @mock.patch(
         'karbor.objects.plan.Plan.create')

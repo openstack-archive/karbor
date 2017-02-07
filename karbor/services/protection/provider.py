@@ -14,7 +14,7 @@ import os
 import six
 
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _, _LE, _LI
 from karbor.services.protection import bank_plugin
 from karbor.services.protection.checkpoint import CheckpointCollection
 from karbor import utils
@@ -183,6 +183,8 @@ class ProviderRegistry(object):
                           {'provider': provider_config.provider.name,
                            'reason': e})
             else:
+                LOG.info(_LI('Loaded provider: %s successully.'),
+                         provider_config.provider.name)
                 self.providers[provider.id] = provider
 
     def list_providers(self, marker=None, limit=None, sort_keys=None,
