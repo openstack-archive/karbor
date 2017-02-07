@@ -20,11 +20,11 @@ import os_client_config
 from oslotest import base
 
 
-def _get_cloud_config(cloud='devstack-admin'):
+def _get_cloud_config(cloud='devstack'):
     return os_client_config.OpenStackConfig().get_one_cloud(cloud=cloud)
 
 
-def _credentials(cloud='devstack-admin'):
+def _credentials(cloud='devstack'):
     """Retrieves credentials to run functional tests
 
     Credentials are either read via os-client-config from the environment

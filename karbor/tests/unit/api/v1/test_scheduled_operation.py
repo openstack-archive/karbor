@@ -46,7 +46,7 @@ class ScheduledOperationApiTest(base.TestCase):
         self.controller = operation_api.ScheduledOperationController()
         self.controller.operationengine_api = self.remote_operation_api
 
-        self.ctxt = context.RequestContext('admin', 'fakeproject', True)
+        self.ctxt = context.RequestContext('demo', 'fakeproject', True)
         self.req = fakes.HTTPRequest.blank('/v1/scheduled_operations')
 
         trigger = self._create_trigger()

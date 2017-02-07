@@ -40,7 +40,7 @@ class EisooClient(object):
 class ABClientTest(base.TestCase):
     def setUp(self):
         super(ABClientTest, self).setUp()
-        self._context = RequestContext(user_id='admin',
+        self._context = RequestContext(user_id='demo',
                                        project_id='asdf',
                                        auth_token='qwe',
                                        service_catalog=None)

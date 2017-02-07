@@ -43,7 +43,7 @@ class TriggerApiTest(base.TestCase):
         super(TriggerApiTest, self).setUp()
         self.controller = trigger_api.TriggersController()
         self.controller.operationengine_api = FakeRemoteOperationApi()
-        self.ctxt = context.RequestContext('admin', 'fakeproject',
+        self.ctxt = context.RequestContext('demo', 'fakeproject',
                                            True)
         self.req = fakes.HTTPRequest.blank('/v1/triggers')
         self.default_create_trigger_param = {

@@ -32,7 +32,7 @@ class GlanceClientTest(base.TestCase):
                 'name': 'glance',
             },
         ]
-        self._context = RequestContext(user_id='admin',
+        self._context = RequestContext(user_id='demo',
                                        project_id='abcd',
                                        auth_token='efgh',
                                        service_catalog=service_catalog)

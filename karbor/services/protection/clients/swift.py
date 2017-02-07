@@ -10,8 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import identity
+from keystoneauth1 import session as keystone_session
 from oslo_config import cfg
+from oslo_log import log as logging
 from swiftclient import client as swift
+
+LOG = logging.getLogger(__name__)
 
 SERVICE = 'swift'
 swift_client_opts = [
@@ -27,11 +32,6 @@ swift_client_opts = [
                     'are unset'),
     cfg.StrOpt('swift_auth_url',
                help='The URL of the Keystone endpoint'),
-    cfg.StrOpt('swift_auth_version',
-               default='1',
-               help='Swift authentication version. '
-                    'Specify "1" for auth 1.0, or "2" for auth 2.0. '
-                    'Only used if swift_auth_url is set.'),
     cfg.StrOpt('swift_tenant_name',
                help='Swift tenant/account name. '
                     'Required when connecting to an auth 2.0 system'),
@@ -66,15 +66,21 @@ def create(context, conf, **kwargs):
     register_opts(conf)
 
     client_config = conf.swift_client
-    connection = swift.Connection(
-        authurl=client_config.swift_auth_url,
-        auth_version=client_config.swift_auth_version,
-        tenant_name=client_config.swift_tenant_name,
-        user=client_config.swift_user,
-        key=client_config.swift_key,
+    session = kwargs.get('session')
+
+    if not session:
+        auth = identity.Password(
+            auth_url=client_config.swift_auth_url,
+            username=client_config.swift_user,
+            password=client_config.swift_key,
+            project_name=client_config.swift_tenant_name,
+        )
+        session = keystone_session.Session(auth=auth)
+
+    return swift.Connection(
+        session=session,
+        insecure=client_config.swift_auth_insecure,
+        cacert=client_config.swift_ca_cert_file,
         retries=client_config.swift_retry_attempts,
         starting_backoff=client_config.swift_retry_backoff,
-        insecure=client_config.swift_auth_insecure,
-        cacert=client_config.swift_ca_cert_file)
-
-    return connection
+    )

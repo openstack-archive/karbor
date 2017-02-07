@@ -21,7 +21,7 @@ def fake_db_restore(**updates):
         "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
         "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
         "checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
-        "restore_target": "192.168.1.2:35357/v2.0",
+        "restore_target": "192.168.1.2/identity/",
         "parameters": '{}',
         "restore_auth": '{"type": "password", "username": "admin",'
                         '"password": "test" }',

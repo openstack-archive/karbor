@@ -28,7 +28,7 @@ class ProvidersApiTest(base.TestCase):
     def setUp(self):
         super(ProvidersApiTest, self).setUp()
         self.controller = providers.ProvidersController()
-        self.ctxt = context.RequestContext('admin', 'fakeproject', True)
+        self.ctxt = context.RequestContext('demo', 'fakeproject', True)
 
     @mock.patch(
         'karbor.api.v1.providers.ProvidersController._get_all')
