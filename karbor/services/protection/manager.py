@@ -117,6 +117,7 @@ class ProtectionManager(manager.Manager):
         try:
             flow = self.worker.get_flow(
                 context=context,
+                protectable_registry=self.protectable_registry,
                 operation_type=constants.OPERATION_PROTECT,
                 plan=plan,
                 provider=provider,

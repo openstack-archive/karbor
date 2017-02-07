@@ -94,7 +94,6 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
 
     def test_checkpoint_for_server_attached_volume(self):
         """Test checkpoint for server which has attached some volumes"""
-        self.skipTest('Requires server protection plugin adjustment')
         volume = self.store(objects.Volume())
         volume.create(1)
         server = self.store(objects.Server())
