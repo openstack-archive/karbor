@@ -43,12 +43,19 @@ class ClientFactory(object):
                 yield '%s.clients.%s' % (__package__, name)
 
     @classmethod
-    def _generate_session(cls, context, service):
+    def _generate_session(cls, context, service, privileged_user=False):
+        LOG.debug("Generate an auth session. privileged_user: %s",
+                  privileged_user)
         plugin = cls._keystone_plugin
         try:
-            auth_plugin = service_token.ServiceTokenAuthWrapper(
-                plugin.create_user_auth_plugin(context),
-                plugin.service_auth_plugin)
+            if privileged_user is True:
+                auth_plugin = service_token.ServiceTokenAuthWrapper(
+                    plugin.service_auth_plugin,
+                    plugin.service_auth_plugin)
+            else:
+                auth_plugin = service_token.ServiceTokenAuthWrapper(
+                    plugin.create_user_auth_plugin(context),
+                    plugin.service_auth_plugin)
         except Exception:
             return None
 
@@ -73,14 +80,17 @@ class ClientFactory(object):
             cls._factory[module.SERVICE] = module
 
     @classmethod
-    def create_client(cls, service, context, conf=cfg.CONF, **kwargs):
+    def create_client(cls, service, context, conf=cfg.CONF,
+                      privileged_user=False, **kwargs):
         module = cls._factory.get(service)
         if module is None:
             raise exception.KarborException(_('Unknown service(%s)') % service)
 
+        kwargs['privileged_user'] = privileged_user
         kwargs['keystone_plugin'] = cls._keystone_plugin
-        if context:
-            kwargs['session'] = cls._generate_session(context, service)
+        if context or privileged_user:
+            kwargs['session'] = cls._generate_session(context, service,
+                                                      privileged_user)
         return module.create(context, conf, **kwargs)
 
 

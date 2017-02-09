@@ -47,24 +47,26 @@ def get_url(service, context, client_config,
     '''Return the url of given service endpoint.'''
 
     url = ""
-
+    privileged_user = kwargs.get('privileged_user')
     # get url by endpoint
-    try:
-        url = _parse_service_endpoint(client_config['%s_endpoint' % service],
-                                      context, append_project_fmt)
-        if url:
-            return url
-    except Exception:
-        pass
+    if privileged_user is not True:
+        try:
+            url = _parse_service_endpoint(
+                client_config['%s_endpoint' % service],
+                context, append_project_fmt)
+            if url:
+                return url
+        except Exception:
+            pass
 
-    # get url by catalog
-    try:
-        url = _parse_service_catalog_info(
-            client_config['%s_catalog_info' % service], context)
-        if url:
-            return url
-    except Exception:
-        pass
+        # get url by catalog
+        try:
+            url = _parse_service_catalog_info(
+                client_config['%s_catalog_info' % service], context)
+            if url:
+                return url
+        except Exception:
+            pass
 
     # get url by accessing keystone
     try:
