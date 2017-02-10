@@ -110,7 +110,7 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
 
     def test_scheduled_operations_create_and_scheduled(self):
         freq = 2
-        pattern = '*/15 * * * *'
+        pattern = '*/5 * * * *'
         cur_property = {'pattern': pattern, 'format': 'crontab'}
 
         before_items = self.karbor_client.checkpoints.list(self.provider_id)
