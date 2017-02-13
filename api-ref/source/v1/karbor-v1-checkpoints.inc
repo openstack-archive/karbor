@@ -112,6 +112,7 @@ Request
    - provider_id: provider_id_1
    - checkpoint: checkpoint
    - plan_id: plan_id
+   - extra_info: extra_info
 
 Request Example
 ---------------

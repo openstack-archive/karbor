@@ -1451,6 +1451,10 @@ definitions:
         type: string
         format: UUID
         description: Unique identifier representing a specific protection protection plan.
+      extra_info:
+        readOnly: true
+        type: dict
+        description: The extra info parameter of the checkpoint.
 
   Resource:
     type: object

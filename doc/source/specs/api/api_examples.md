@@ -205,7 +205,11 @@
 ```json
 {
   "checkpoint": {
-    "plan_id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb"
+    "plan_id": "3523a271-68aa-42f5-b9ba-56e5200a2ebb",
+    "extra_info": {
+      "create-by": "operation-engine",
+      "trigger_id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+    }
   }
 }
 ```

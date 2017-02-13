@@ -140,6 +140,12 @@ enabled:
   in: body
   required: true
   type: int
+extra_info:
+  description: |
+    The extra information for checkpoint.
+  in: body
+  required: false
+  type: dict
 links:
   description: |
     Links for transfer.
