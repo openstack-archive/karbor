@@ -13,7 +13,7 @@ Karbor
 
 Application Data Protection as a Service for OpenStack
 
-.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/Karbor.png
+.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/mascot/OpenStack_Project_Karbor_vertical.png
     :alt: Karbor
     :width: 300
     :height: 525
@@ -57,12 +57,6 @@ Links
 * Documentation: http://docs.openstack.org/developer/karbor
 * Source: http://git.openstack.org/cgit/openstack/karbor
 * Bugs: http://bugs.launchpad.net/karbor
-
-.. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/KarborInPieces.png
-    :alt: Karbor
-    :width: 200
-    :height: 525
-    :align: center
 
 ********
 Features
