@@ -11,6 +11,7 @@
 # under the License.
 
 from cinderclient import client as cinder_client
+from glanceclient import client as glance_client
 from karborclient import client as karbor_client
 from neutronclient.v2_0 import client as neutron_client
 from novaclient import client as nova_client
@@ -77,6 +78,13 @@ def _get_cinder_client(api_version='3'):
     return client
 
 
+def _get_glance_client(api_version='2'):
+    kwargs = _get_client_args('image')
+    kwargs.pop('endpoint_type')
+    client = glance_client.Client(api_version, **kwargs)
+    return client
+
+
 def _get_nova_client(api_version='2.26'):
     kwargs = _get_client_args('compute')
     client = nova_client.Client(api_version, **kwargs)
@@ -129,6 +137,7 @@ class KarborBaseTest(base.BaseTestCase):
     def setUp(self):
         super(KarborBaseTest, self).setUp()
         self.cinder_client = _get_cinder_client()
+        self.glance_client = _get_glance_client()
         self.nova_client = _get_nova_client()
         self.neutron_client = _get_neutron_client()
         self.karbor_client = _get_karbor_client()

@@ -23,7 +23,6 @@ SHORT_SLEEP = 2
 MEDIUM_SLEEP = 5
 LONG_SLEEP = 10
 
-DEFAULT_IMAGE = "cirros-0.3.4-x86_64-uec"
 DEFAULT_FLAVOR = "cirros256"
 DEFAULT_NETWORK = "private"
 
@@ -195,6 +194,7 @@ class Server(object):
         self.nova_client = base._get_nova_client()
         self.neutron_client = base._get_neutron_client()
         self.cinder_client = base._get_cinder_client()
+        self.glance_client = base._get_glance_client()
 
     def _server_status(self, status=None):
         try:
@@ -214,9 +214,15 @@ class Server(object):
             "name": self._name,
         }
 
-    def create(self, name=None, image=DEFAULT_IMAGE, flavor=DEFAULT_FLAVOR,
+    def create(self, name=None, image=None, flavor=DEFAULT_FLAVOR,
                network=DEFAULT_NETWORK, timeout=MEDIUM_TIMEOUT):
-        image = self.nova_client.images.find(name=image)
+        if not image:
+            images = self.glance_client.images.list()
+            for image_iter in images:
+                if image_iter['disk_format'] not in ('aki', 'ari'):
+                    image = image_iter['id']
+                    break
+        assert image
         flavor = self.nova_client.flavors.find(name=flavor)
         if name is None:
             name = "KarborFullstack-Server-{id}".format(id=self._name_id)
