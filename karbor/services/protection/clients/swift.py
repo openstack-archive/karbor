@@ -13,10 +13,7 @@
 from keystoneauth1 import identity
 from keystoneauth1 import session as keystone_session
 from oslo_config import cfg
-from oslo_log import log as logging
 from swiftclient import client as swift
-
-LOG = logging.getLogger(__name__)
 
 SERVICE = 'swift'
 swift_client_opts = [

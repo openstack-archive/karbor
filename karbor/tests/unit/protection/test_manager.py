@@ -13,7 +13,6 @@
 import mock
 
 from oslo_config import cfg
-from oslo_log import log as logging
 import oslo_messaging
 
 from karbor import exception
@@ -25,8 +24,6 @@ from karbor.services.protection import provider
 
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
-
-LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
