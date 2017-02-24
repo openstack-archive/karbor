@@ -16,19 +16,18 @@ from karbor.tests.fullstack import karbor_objects as objects
 
 
 class TriggersTest(karbor_base.KarborBaseTest):
-    """Test Triggers operation
+    """Test Triggers operation"""
 
-    """
     def test_triggers_list(self):
-        trigger_items = self.karbor_client.triggers.list()
-        before_num = len(trigger_items)
         trigger1 = self.store(objects.Trigger())
         trigger1.create('time', {'pattern': '0 20 * * 2', 'format': 'crontab'})
         trigger2 = self.store(objects.Trigger())
         trigger2.create('time', {'pattern': '0 10 * * *', 'format': 'crontab'})
-        trigger_items = self.karbor_client.triggers.list()
-        after_num = len(trigger_items)
-        self.assertEqual(2, after_num - before_num)
+
+        items = self.karbor_client.triggers.list()
+        ids = [item.id for item in items]
+        self.assertTrue(trigger1.id in ids)
+        self.assertTrue(trigger2.id in ids)
 
     def test_triggers_get(self):
         trigger_name = "FullStack Trigger Test Get"
@@ -40,10 +39,8 @@ class TriggersTest(karbor_base.KarborBaseTest):
 
     def test_triggers_delete(self):
         trigger = objects.Trigger()
-        trigger_items = self.karbor_client.triggers.list()
-        before_num = len(trigger_items)
         trigger.create('time', {'pattern': '0 12 * * 2', 'format': 'crontab'})
         self.karbor_client.triggers.delete(trigger.id)
-        trigger_items = self.karbor_client.triggers.list()
-        after_num = len(trigger_items)
-        self.assertEqual(0, after_num - before_num)
+        items = self.karbor_client.triggers.list()
+        ids = [item.id for item in items]
+        self.assertTrue(trigger.id not in ids)

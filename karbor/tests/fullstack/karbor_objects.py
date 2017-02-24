@@ -15,13 +15,14 @@ from karbor.common import constants
 from karbor.tests.fullstack import karbor_base as base
 from karbor.tests.fullstack import utils
 
-SHORT_TIMEOUT = 30
-MEDIUM_TIMEOUT = 90
-LONG_TIMEOUT = 360
+SHORT_TIMEOUT = 150
+MEDIUM_TIMEOUT = 450
+LONG_TIMEOUT = 900
 
-SHORT_SLEEP = 2
-MEDIUM_SLEEP = 5
-LONG_SLEEP = 10
+SHORT_SLEEP = 3
+MEDIUM_SLEEP = 15
+LONG_SLEEP = 30
+HUGE_SLEEP = 100
 
 DEFAULT_FLAVOR = "cirros256"
 DEFAULT_NETWORK = "private"
@@ -51,10 +52,10 @@ class Checkpoint(object):
         self.id = checkpoint.id
         utils.wait_until_true(partial(self._checkpoint_status,
                                       constants.CHECKPOINT_STATUS_AVAILABLE),
-                              timeout=timeout, sleep=LONG_SLEEP)
+                              timeout=timeout, sleep=HUGE_SLEEP)
         return self.id
 
-    def close(self, timeout=LONG_TIMEOUT):
+    def close(self, timeout=MEDIUM_TIMEOUT):
         try:
             self.karbor_client.checkpoints.delete(self._provider_id, self.id)
         except Exception:
@@ -80,8 +81,10 @@ class Plan(object):
                 return resource.to_dict()
 
         if name is None:
-            name = "KarborFullstack-Plan-{id}".format(id=self._name_id)
-            self._name_id += 1
+            name = "KarborFullstack-Plan-{id}".format(
+                id=self.__class__._name_id
+            )
+            self.__class__._name_id += 1
 
         resources = map(_transform_resource, resources)
         plan = self.karbor_client.plans.create(name, provider_id, resources,
@@ -124,7 +127,7 @@ class Restore(object):
                                                      restore_auth)
         self.id = restore.id
         utils.wait_until_true(partial(self._restore_status, 'success'),
-                              timeout=timeout, sleep=LONG_SLEEP)
+                              timeout=timeout, sleep=HUGE_SLEEP)
         return self.id
 
     def close(self):
@@ -140,8 +143,10 @@ class Trigger(object):
 
     def create(self, type, properties, name=None):
         if name is None:
-            name = "KarborFullstack-Trigger-{id}".format(id=self._name_id)
-            self._name_id += 1
+            name = "KarborFullstack-Trigger-{id}".format(
+                id=self.__class__._name_id
+            )
+            self.__class__._name_id += 1
 
         trigger = self.karbor_client.triggers.create(name, type, properties)
         self.id = trigger.id
@@ -165,9 +170,9 @@ class ScheduledOperation(object):
                operation_definition, name=None):
         if name is None:
             name = "KarborFullstack-Scheduled-Operation-{id}".format(
-                id=self._name_id
+                id=self.__class__._name_id
             )
-            self._name_id += 1
+            self.__class__._name_id += 1
 
         scheduled_operation = self.karbor_client.scheduled_operations.create(
             name,
@@ -215,7 +220,7 @@ class Server(object):
         }
 
     def create(self, name=None, image=None, flavor=DEFAULT_FLAVOR,
-               network=DEFAULT_NETWORK, timeout=MEDIUM_TIMEOUT):
+               network=DEFAULT_NETWORK, timeout=LONG_TIMEOUT):
         if not image:
             images = self.glance_client.images.list()
             for image_iter in images:
@@ -225,8 +230,10 @@ class Server(object):
         assert image
         flavor = self.nova_client.flavors.find(name=flavor)
         if name is None:
-            name = "KarborFullstack-Server-{id}".format(id=self._name_id)
-            self._name_id += 1
+            name = "KarborFullstack-Server-{id}".format(
+                id=self.__class__._name_id
+            )
+            self.__class__._name_id += 1
             self._name = name
 
         networks = self.neutron_client.list_networks(name=network)
@@ -257,7 +264,7 @@ class Server(object):
     def attach_volume(self, volume_id, timeout=MEDIUM_TIMEOUT):
         self.nova_client.volumes.create_server_volume(self.id, volume_id)
         utils.wait_until_true(partial(self._volume_attached, volume_id),
-                              timeout=timeout, sleep=MEDIUM_SLEEP)
+                              timeout=timeout, sleep=SHORT_SLEEP)
 
     def _volume_detached(self, volume_id):
         volume_item = self.cinder_client.volumes.get(volume_id)
@@ -271,7 +278,7 @@ class Server(object):
     def detach_volume(self, volume_id, timeout=MEDIUM_TIMEOUT):
         self.nova_client.volumes.delete_server_volume(self.id, volume_id)
         utils.wait_until_true(partial(self._volume_detached, volume_id),
-                              timeout=timeout, sleep=MEDIUM_SLEEP)
+                              timeout=timeout, sleep=SHORT_SLEEP)
 
     def close(self, timeout=MEDIUM_TIMEOUT):
         try:
@@ -308,10 +315,12 @@ class Volume(object):
             "name": self._name,
         }
 
-    def create(self, size, name=None, timeout=MEDIUM_TIMEOUT):
+    def create(self, size, name=None, timeout=LONG_TIMEOUT):
         if name is None:
-            name = "KarborFullstack-Volume-{id}".format(id=self._name_id)
-            self._name_id += 1
+            name = "KarborFullstack-Volume-{id}".format(
+                id=self.__class__._name_id
+            )
+            self.__class__._name_id += 1
 
         self._name = name
         volume = self.cinder_client.volumes.create(size, name=name)
@@ -320,7 +329,7 @@ class Volume(object):
                               timeout=timeout, sleep=MEDIUM_SLEEP)
         return self.id
 
-    def close(self, timeout=MEDIUM_TIMEOUT):
+    def close(self, timeout=LONG_TIMEOUT):
         try:
             self.cinder_client.volumes.delete(self.id)
         except Exception:

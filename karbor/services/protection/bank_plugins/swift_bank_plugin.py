@@ -82,14 +82,15 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
     @property
     def connection(self):
         if not self._connection:
-            self._connection = self._setup_connection()
+            _connection = self._setup_connection()
             # create container
             try:
-                self._put_container(self.bank_object_container)
-                self._put_container(self.bank_leases_container)
+                _connection.put_container(self.bank_object_container)
+                _connection.put_container(self.bank_leases_container)
             except SwiftConnectionFailed as err:
                 LOG.error("bank plugin create container failed.")
                 raise exception.CreateContainerFailed(reason=err)
+            self._connection = _connection
 
             # acquire lease
             try:

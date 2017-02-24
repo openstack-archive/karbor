@@ -27,15 +27,12 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         plan = self.store(objects.Plan())
         plan.create(self.provider_id_os, [volume, ])
 
-        backups = self.cinder_client.backups.list()
-        before_num = len(backups)
-
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
-        backups = self.cinder_client.backups.list()
-        after_num = len(backups)
-        self.assertEqual(1, after_num - before_num)
+        search_opts = {"volume_id": volume.id}
+        backups = self.cinder_client.backups.list(search_opts=search_opts)
+        self.assertEqual(1, len(backups))
 
     def test_checkpoint_delete(self):
         volume = self.store(objects.Volume())
@@ -43,22 +40,17 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         plan = self.store(objects.Plan())
         plan.create(self.provider_id, [volume, ])
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        before_num = len(checkpoints)
-
         checkpoint = objects.Checkpoint()
-        checkpoint.create(self.provider_id, plan.id)
-
-        # sanity
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
         checkpoint_item = self.karbor_client.checkpoints.get(self.provider_id,
                                                              checkpoint.id)
         self.assertEqual(constants.CHECKPOINT_STATUS_AVAILABLE,
                          checkpoint_item.status)
 
         checkpoint.close()
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        after_num = len(checkpoints)
-        self.assertEqual(before_num, after_num)
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        ids = [item.id for item in items]
+        self.assertTrue(checkpoint.id not in ids)
 
     def test_checkpoint_list(self):
         volume = self.store(objects.Volume())
@@ -66,15 +58,12 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         plan = self.store(objects.Plan())
         plan.create(self.provider_id, [volume, ])
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        before_num = len(checkpoints)
-
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        after_num = len(checkpoints)
-        self.assertEqual(1, after_num - before_num)
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        ids = [item.id for item in items]
+        self.assertTrue(checkpoint.id in ids)
 
     def test_checkpoint_get(self):
         volume = self.store(objects.Volume())
@@ -83,7 +72,7 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         plan.create(self.provider_id, [volume, ])
 
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan.id)
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
         # sanity
         checkpoint_item = self.karbor_client.checkpoints.get(self.provider_id,
@@ -92,50 +81,54 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
                          checkpoint_item.status)
         self.assertEqual(checkpoint.id, checkpoint_item.id)
 
-    def test_checkpoint_for_server_attached_volume(self):
-        """Test checkpoint for server which has attached some volumes"""
+    def test_server_attached_volume_only_protect_server(self):
+        """Test checkpoint for server with attached volume
+
+        Test checkpoint for server which has attached one volume,
+        but only add server in protect source
+        """
         volume = self.store(objects.Volume())
         volume.create(1)
         server = self.store(objects.Server())
         server.create()
         server.attach_volume(volume.id)
 
-        plan0 = self.store(objects.Plan())
-        plan0.create(self.provider_id, [server, ])
-
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        before_checkpoints_num = len(checkpoints)
-        backups = self.cinder_client.backups.list()
-        before_backups_num = len(backups)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [server, ])
 
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan0.id, timeout=900)
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        after_checkpoints_num = len(checkpoints)
-        self.assertEqual(1, after_checkpoints_num - before_checkpoints_num)
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        ids = [item.id for item in items]
+        self.assertTrue(checkpoint.id in ids)
+        search_opts = {"volume_id": volume.id}
+        backups = self.cinder_client.backups.list(search_opts=search_opts)
+        self.assertEqual(1, len(backups))
+        server.detach_volume(volume.id)
 
-        backups = self.cinder_client.backups.list()
-        after_backups_num = len(backups)
-        self.assertEqual(1, after_backups_num - before_backups_num)
+    def test_server_attached_volume_protect_both(self):
+        """Test checkpoint for server with attached volume
 
-        plan1 = self.store(objects.Plan())
-        plan1.create(self.provider_id, [server, volume])
+        Test checkpoint for server which has attached one volume,
+        and add server and volume both in protect source
+        """
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        server = self.store(objects.Server())
+        server.create()
+        server.attach_volume(volume.id)
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        before_checkpoints_num = len(checkpoints)
-        backups = self.cinder_client.backups.list()
-        before_backups_num = len(backups)
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [server, volume])
 
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id, plan1.id, timeout=720)
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
-        checkpoints = self.karbor_client.checkpoints.list(self.provider_id)
-        after_checkpoints_num = len(checkpoints)
-        self.assertEqual(1, after_checkpoints_num - before_checkpoints_num)
-
-        backups = self.cinder_client.backups.list()
-        after_backups_num = len(backups)
-        self.assertEqual(1, after_backups_num - before_backups_num)
-
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        ids = [item.id for item in items]
+        self.assertTrue(checkpoint.id in ids)
+        search_opts = {"volume_id": volume.id}
+        backups = self.cinder_client.backups.list(search_opts=search_opts)
+        self.assertEqual(1, len(backups))
         server.detach_volume(volume.id)

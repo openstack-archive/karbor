@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from karbor.common.constants import RESOURCE_TYPES
 from karbor.tests.fullstack import karbor_base
 from karbor.tests.fullstack import karbor_objects as objects
 
@@ -17,35 +18,49 @@ from karbor.tests.fullstack import karbor_objects as objects
 class ProtectablesTest(karbor_base.KarborBaseTest):
     """Test Protectables operation """
 
-    def test_protectables_get_with_project(self):
+    def test_protectables_list(self):
+        items = self.karbor_client.protectables.list()
+        query_types = [item.protectable_type for item in items]
+        self.assertItemsEqual(RESOURCE_TYPES, query_types)
+
+    def test_protectables_get(self):
         protectable_type = 'OS::Keystone::Project'
         res = self.karbor_client.protectables.get(protectable_type)
-        self.assertTrue(len(res.dependent_types))
+        self.assertEqual(protectable_type, res.name)
+
+        protectable_type = 'OS::Nova::Server'
+        res = self.karbor_client.protectables.get(protectable_type)
+        self.assertEqual(protectable_type, res.name)
 
     def test_protectables_list_instances(self):
-        res_list = self.karbor_client.protectables.list_instances(
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        items = self.karbor_client.protectables.list_instances(
             'OS::Cinder::Volume')
-        before_num = len(res_list)
-        volume1 = self.store(objects.Volume())
-        volume1.create(1)
-        res_list = self.karbor_client.protectables.list_instances(
-            'OS::Cinder::Volume')
-        after_num = len(res_list)
-        self.assertEqual(1, after_num - before_num)
+        ids = [item.id for item in items]
+        self.assertTrue(volume.id in ids)
 
-    def test_protectables_get_with_server(self):
-        server_list = self.karbor_client.protectables.list_instances(
-            'OS::Nova::Server')
-        before_num = len(server_list)
         server = self.store(objects.Server())
         server.create()
-
-        server_list = self.karbor_client.protectables.list_instances(
+        items = self.karbor_client.protectables.list_instances(
             'OS::Nova::Server')
-        after_num = len(server_list)
-        self.assertEqual(1, after_num - before_num)
+        ids = [item.id for item in items]
+        self.assertTrue(server.id in ids)
 
-    def test_protectables_get_with_attach_volume(self):
+    def test_protectables_get_instance(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        instance = self.karbor_client.protectables.get_instance(
+            'OS::Cinder::Volume', volume.id)
+        self.assertEqual(volume.id, instance.id)
+
+        server = self.store(objects.Server())
+        server.create()
+        instance = self.karbor_client.protectables.get_instance(
+            'OS::Nova::Server', server.id)
+        self.assertEqual(server.id, instance.id)
+
+    def test_protectables_get_attach_volume_instance(self):
         server = self.store(objects.Server())
         server.create()
 
