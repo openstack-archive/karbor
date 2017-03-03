@@ -19,10 +19,12 @@ class TriggersTest(karbor_base.KarborBaseTest):
     """Test Triggers operation"""
 
     def test_triggers_list(self):
+        pattern1 = "BEGIN:VEVENT\nRRULE:FREQ=HOURLY;INTERVAL=1;\nEND:VEVENT"
         trigger1 = self.store(objects.Trigger())
-        trigger1.create('time', {'pattern': '0 20 * * 2', 'format': 'crontab'})
+        trigger1.create('time', {'pattern': pattern1, 'format': 'calendar'})
+        pattern2 = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
         trigger2 = self.store(objects.Trigger())
-        trigger2.create('time', {'pattern': '0 10 * * *', 'format': 'crontab'})
+        trigger2.create('time', {'pattern': pattern2, 'format': 'calendar'})
 
         items = self.karbor_client.triggers.list()
         ids = [item.id for item in items]
@@ -31,15 +33,17 @@ class TriggersTest(karbor_base.KarborBaseTest):
 
     def test_triggers_get(self):
         trigger_name = "FullStack Trigger Test Get"
+        pattern = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
         trigger = self.store(objects.Trigger())
-        trigger.create('time', {'pattern': '0 15 * * 2', 'format': 'crontab'},
+        trigger.create('time', {'pattern': pattern, 'format': 'calendar'},
                        name=trigger_name)
         trigger = self.karbor_client.triggers.get(trigger.id)
         self.assertEqual(trigger_name, trigger.name)
 
     def test_triggers_delete(self):
+        pattern = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
         trigger = objects.Trigger()
-        trigger.create('time', {'pattern': '0 12 * * 2', 'format': 'crontab'})
+        trigger.create('time', {'pattern': pattern, 'format': 'calendar'})
         self.karbor_client.triggers.delete(trigger.id)
         items = self.karbor_client.triggers.list()
         ids = [item.id for item in items]

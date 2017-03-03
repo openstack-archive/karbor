@@ -488,31 +488,48 @@ This example will show protecting volume.
 
 #. Execute a protect operation automatically with a scheduler::
 
-    karbor trigger-create 'My Trigger' 'time' "pattern"="0 20 * * 2","format"="crontab"
-    +------------+---------------------------------------+
-    | Property   | Value                                 |
-    +------------+---------------------------------------+
-    | id         | b25e2ac8-a7a0-4466-aafe-9363839cfa60  |
-    | name       | My Trigger                            |
-    | properties | {                                     |
-    |            |   "format": "crontab",                |
-    |            |   "pattern": "0 20 * * 2",            |
-    |            |   "start_time": "2017-02-13 02:04:31" |
-    |            | }                                     |
-    | type       | time                                  |
-    +------------+---------------------------------------+
-    karbor scheduledoperation-create 'Protect with My Trigger' protect b25e2ac8-a7a0-4466-aafe-9363839cfa60 "plan_id"="ef8b83f3-d0c4-48ec-8949-5c72bbf14103","provider_id"="cf56bd3e-97a7-4078-b6d5-f36246333fd9"
+    karbor trigger-create 'My Trigger' 'time' "pattern"="BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=5;\nEND:VEVENT","format"="calendar"
+    +------------+------------------------------------------------------------------------------+
+    | Property   | Value                                                                        |
+    +------------+------------------------------------------------------------------------------+
+    | id         | b065836f-6485-429d-b12c-e04395c5f58e                                         |
+    | name       | My Trigger                                                                   |
+    | properties | {                                                                            |
+    |            |   "format": "calendar",                                                      |
+    |            |   "pattern": "BEGIN:VEVENT\\nRRULE:FREQ=MINUTELY;INTERVAL=5;\\nEND:VEVENT",  |
+    |            |   "start_time": "2017-03-02 22:56:42"                                        |
+    |            | }                                                                            |
+    | type       | time                                                                         |
+    +------------+------------------------------------------------------------------------------+
+    karbor scheduledoperation-create 'Protect with My Trigger' protect b065836f-6485-429d-b12c-e04395c5f58e "plan_id"="ca572b42-6d35-4d81-bb4e-c9b100a3387a","provider_id"="cf56bd3e-97a7-4078-b6d5-f36246333fd9"
     +----------------------+---------------------------------------------------------+
     | Property             | Value                                                   |
     +----------------------+---------------------------------------------------------+
     | description          | None                                                    |
     | enabled              | True                                                    |
-    | id                   | b3a1b864-31ef-4354-8b0a-1c7da2cf9a13                    |
-    | name                 | Protect with My Trigger                                 |
+    | id                   | 2ebcf7cc-d8fe-4a70-af71-8a13f20556fb                    |
+    | name                 | PMT                                                     |
     | operation_definition | {                                                       |
-    |                      |   "plan_id": "ef8b83f3-d0c4-48ec-8949-5c72bbf14103",    |
+    |                      |   "plan_id": "ca572b42-6d35-4d81-bb4e-c9b100a3387a",    |
     |                      |   "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9" |
     |                      | }                                                       |
     | operation_type       | protect                                                 |
-    | trigger_id           | b25e2ac8-a7a0-4466-aafe-9363839cfa60                    |
+    | trigger_id           | b065836f-6485-429d-b12c-e04395c5f58e                    |
     +----------------------+---------------------------------------------------------+
+    karbor checkpoint-list cf56bd3e-97a7-4078-b6d5-f36246333fd9
+    +--------------------------------------+----------------------------------+-----------+-----------------------------------------------------------+------------+
+    | Id                                   | Project id                       | Status    | Protection plan                                           | Created at |
+    +--------------------------------------+----------------------------------+-----------+-----------------------------------------------------------+------------+
+    | 92e74f0c-8519-4928-9bd5-0039e0fe92b0 | 9632a0c585c94d708c57a83190913c76 | available | {                                                         | 2017-03-03 |
+    |                                      |                                  |           |   "id": "ca572b42-6d35-4d81-bb4e-c9b100a3387a",           |            |
+    |                                      |                                  |           |   "name": "Plan1",                                        |            |
+    |                                      |                                  |           |   "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",  |            |
+    |                                      |                                  |           |   "resources": [                                          |            |
+    |                                      |                                  |           |     {                                                     |            |
+    |                                      |                                  |           |       "id": "d72e83c2-4083-4cc7-9283-4578332732ab",       |            |
+    |                                      |                                  |           |       "name": "Volume1",                                  |            |
+    |                                      |                                  |           |       "type": "OS::Cinder::Volume"                        |            |
+    |                                      |                                  |           |     }                                                     |            |
+    |                                      |                                  |           |   ]                                                       |            |
+    |                                      |                                  |           | }                                                         |            |
+    +--------------------------------------+----------------------------------+-----------+-----------------------------------------------------------+------------+
