@@ -22,6 +22,17 @@ from karbor.services.operationengine.operations import protect_operation
 from karbor.tests import base
 
 
+class FakeUserTrustManager(object):
+    def add_operation(self, context, operation_id):
+        return "123"
+
+    def delete_operation(self, context, operation_id):
+        pass
+
+    def resume_operation(self, operation_id, user_id, project_id, trust_id):
+        pass
+
+
 class FakeCheckPoint(object):
     def create(self, provider_id, plan_id):
         return
@@ -41,13 +52,16 @@ class ProtectOperationTestCase(base.TestCase):
 
     def setUp(self):
         super(ProtectOperationTestCase, self).setUp()
-        self._operation_class = protect_operation.ProtectOperation
+        self._user_trust_manager = FakeUserTrustManager()
+        self._operation = protect_operation.ProtectOperation(
+            self._user_trust_manager
+        )
         self._operation_db = self._create_operation()
         self._fake_karbor_client = FakeKarborClient()
 
     def test_check_operation_definition(self):
         self.assertRaises(exception.InvalidOperationDefinition,
-                          self._operation_class.check_operation_definition,
+                          self._operation.check_operation_definition,
                           {})
 
     @mock.patch.object(base_operation.Operation, '_create_karbor_client')
@@ -63,8 +77,8 @@ class ProtectOperationTestCase(base.TestCase):
             'user_id': self._operation_db.user_id,
             'project_id': self._operation_db.project_id
         }
-        self._operation_class.run(self._operation_db.operation_definition,
-                                  param=param)
+        self._operation.run(self._operation_db.operation_definition,
+                            param=param)
 
         logs = objects.ScheduledOperationLogList.get_by_filters(
             context.get_admin_context(),
@@ -90,8 +104,8 @@ class ProtectOperationTestCase(base.TestCase):
             'user_id': self._operation_db.user_id,
             'project_id': self._operation_db.project_id
         }
-        self._operation_class.run(self._operation_db.operation_definition,
-                                  param=param)
+        self._operation.run(self._operation_db.operation_definition,
+                            param=param)
 
         logs = objects.ScheduledOperationLogList.get_by_filters(
             context.get_admin_context(),

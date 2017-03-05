@@ -21,6 +21,8 @@ import six
 
 @six.add_metaclass(ABCMeta)
 class BaseExecutor(object):
+    def __init__(self, operation_manager):
+        self._operation_manager = operation_manager
 
     @abstractmethod
     def execute_operation(self, operation_id, triggered_time,

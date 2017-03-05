@@ -24,9 +24,9 @@ class API(base.Base):
         self.operationengine_rpcapi = oe_rpcapi.OperationEngineAPI()
         super(API, self).__init__(db_driver)
 
-    def create_scheduled_operation(self, context, operation_id, trigger_id):
+    def create_scheduled_operation(self, context, operation):
         self.operationengine_rpcapi.create_scheduled_operation(
-            context, operation_id, trigger_id)
+            context, operation)
 
     def delete_scheduled_operation(self, context, operation_id, trigger_id):
         self.operationengine_rpcapi.delete_scheduled_operation(

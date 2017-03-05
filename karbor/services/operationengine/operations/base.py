@@ -27,7 +27,6 @@ from karbor import context
 from karbor.i18n import _LE
 from karbor import objects
 from karbor.services.operationengine import karbor_client
-from karbor.services.operationengine import user_trust_manager
 
 
 record_operation_log_executor_opts = [
@@ -45,21 +44,27 @@ LOG = logging.getLogger(__name__)
 
 @six.add_metaclass(ABCMeta)
 class Operation(object):
-
     OPERATION_TYPE = ""
-    KARBOR_ENDPOINT = ""
 
-    @classmethod
+    def __init__(self, user_trust_manager):
+        self._user_trust_manager = user_trust_manager
+        self._karbor_endpoint = None
+
     @abc.abstractmethod
-    def check_operation_definition(cls, operation_definition):
+    def check_operation_definition(self, operation_definition):
         """Check operation definition
 
         :param operation_definition: the definition of operation
         """
         pass
 
-    @classmethod
-    def run(cls, operation_definition, **kwargs):
+    @property
+    def karbor_endpoint(self):
+        if not self._karbor_endpoint:
+            self._karbor_endpoint = karbor_client.get_karbor_endpoint()
+        return self._karbor_endpoint
+
+    def run(self, operation_definition, **kwargs):
         param = kwargs.get('param')
         operation_id = param.get('operation_id')
         window = param.get('window_time')
@@ -67,7 +72,7 @@ class Operation(object):
         is_operation_expired = datetime.utcnow() > end_time
 
         if constants.OPERATION_RUN_TYPE_RESUME == param['run_type']:
-            log_ref = cls._get_operation_log(
+            log_ref = self._get_operation_log(
                 operation_id, constants.OPERATION_EXE_STATE_IN_PROGRESS)
 
             if log_ref is None or len(log_ref) > 1:
@@ -76,13 +81,13 @@ class Operation(object):
             if 1 == len(log_ref):
                 log = log_ref[0]
                 if is_operation_expired:
-                    cls._update_log_when_operation_finished(
+                    self._update_log_when_operation_finished(
                         log,
                         constants.OPERATION_EXE_STATE_DROPPED_OUT_OF_WINDOW)
                 else:
-                    cls._resume(operation_definition, param, log)
+                    self._resume(operation_definition, param, log)
 
-                cls._delete_oldest_operation_log(operation_id)
+                self._delete_oldest_operation_log(operation_id)
                 return
 
         if is_operation_expired:
@@ -90,15 +95,14 @@ class Operation(object):
                 'state': constants.OPERATION_EXE_STATE_DROPPED_OUT_OF_WINDOW,
                 'end_time': datetime.utcnow()
             }
-            log_ref = cls._create_operation_log(param, log_info)
+            log_ref = self._create_operation_log(param, log_info)
         else:
-            cls._execute(operation_definition, param)
+            self._execute(operation_definition, param)
 
-        cls._delete_oldest_operation_log(operation_id)
+        self._delete_oldest_operation_log(operation_id)
 
-    @classmethod
     @abc.abstractmethod
-    def _execute(cls, operation_definition, param):
+    def _execute(self, operation_definition, param):
         """Execute operation.
 
         :param operation_definition: the definition of operation
@@ -106,9 +110,8 @@ class Operation(object):
         """
         pass
 
-    @classmethod
     @abc.abstractmethod
-    def _resume(cls, operation_definition, param, log_ref):
+    def _resume(self, operation_definition, param, log_ref):
         """Resume operation.
 
         :param operation_definition: the definition of operation
@@ -117,8 +120,7 @@ class Operation(object):
         """
         pass
 
-    @classmethod
-    def _create_operation_log(cls, param, updated_log_info=None):
+    def _create_operation_log(self, param, updated_log_info=None):
         log_info = {
             'operation_id': param['operation_id'],
             'expect_start_time': param['expect_start_time'],
@@ -139,8 +141,7 @@ class Operation(object):
             return
         return log_ref
 
-    @classmethod
-    def _delete_oldest_operation_log(cls, operation_id):
+    def _delete_oldest_operation_log(self, operation_id):
         # delete the oldest logs to keep the number of logs
         # in a reasonable range
         try:
@@ -150,8 +151,7 @@ class Operation(object):
         except Exception:
             pass
 
-    @classmethod
-    def _update_operation_log(cls, log_ref, updates):
+    def _update_operation_log(self, log_ref, updates):
         if not log_ref:
             return
 
@@ -163,8 +163,7 @@ class Operation(object):
             LOG.exception(_LE("Execute operation(%s), save log failed"),
                           log_ref.operation_id)
 
-    @classmethod
-    def _update_log_when_operation_finished(cls, log_ref, state,
+    def _update_log_when_operation_finished(self, log_ref, state,
                                             updated_log_info=None):
         if not log_ref:
             return
@@ -176,10 +175,9 @@ class Operation(object):
         if updated_log_info:
             updates.update(updated_log_info)
 
-        cls._update_operation_log(log_ref, updates)
+        self._update_operation_log(log_ref, updates)
 
-    @classmethod
-    def _get_operation_log(cls, operation_id, operation_state):
+    def _get_operation_log(self, operation_id, operation_state):
         try:
             logs = objects.ScheduledOperationLogList.get_by_filters(
                 context.get_admin_context(),
@@ -190,20 +188,13 @@ class Operation(object):
         except Exception:
             pass
 
-    @classmethod
-    def _create_karbor_client(cls, user_id, project_id):
-        token = user_trust_manager.UserTrustManager().get_token(
-            user_id, project_id)
+    def _create_karbor_client(self, user_id, project_id):
+        token = self._user_trust_manager.get_token(user_id, project_id)
         if not token:
             return None
         ctx = context.get_admin_context()
         ctx.auth_token = token
         ctx.project_id = project_id
 
-        karbor_url = cls.KARBOR_ENDPOINT % {"project_id": project_id}
+        karbor_url = self.karbor_endpoint % {"project_id": project_id}
         return karbor_client.create(ctx, endpoint=karbor_url)
-
-    @classmethod
-    def init_configuration(cls):
-        if not cls.KARBOR_ENDPOINT:
-            cls.KARBOR_ENDPOINT = karbor_client.get_karbor_endpoint()

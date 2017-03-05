@@ -60,7 +60,8 @@ class BaseLoader(object):
 
         return (inspect.isclass(obj) and
                 (not obj.__name__.startswith('_')) and
-                issubclass(obj, self.loadable_cls_type))
+                issubclass(obj, self.loadable_cls_type) and
+                (obj is not self.loadable_cls_type))
 
     def _get_classes_from_module(self, module_name):
         """Get the classes from a module that match the type we want."""

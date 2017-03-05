@@ -85,14 +85,37 @@ class OperationEngineManagerTestCase(base.TestCase):
         self.assertNotIn(op.id, trigger_manager._trigger[trigger_id])
 
     def test_create_operation(self):
-        operation_id = "1234"
-        self.manager.create_scheduled_operation(
-            self.ctxt, operation_id, self._trigger.id)
+        op = self._create_scheduled_operation(self._trigger.id, False)
+        with mock.patch(
+            'karbor.services.operationengine.operations.protect_operation.'
+            'ProtectOperation.check_operation_definition'
+        ):
+            self.manager.create_scheduled_operation(
+                self.ctxt, op)
 
         state_obj = objects.ScheduledOperationState.get_by_operation_id(
-            self.ctxt, operation_id)
+            self.ctxt, op.id)
 
         self.assertTrue(state_obj is not None)
+
+    def test_create_operation_invalid_operation_definition(self):
+        op = self._create_scheduled_operation(self._trigger.id, False)
+        self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.manager.create_scheduled_operation,
+            self.ctxt,
+            op,
+        )
+
+    def test_create_operation_invalid_operation_type(self):
+        op = self._create_scheduled_operation(self._trigger.id, False)
+        op.operation_type = "123"
+        self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.manager.create_scheduled_operation,
+            self.ctxt,
+            op,
+        )
 
     def test_delete_operation_get_state_failed(self):
         self.assertRaises(rpc_dispatcher.ExpectedException,

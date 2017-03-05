@@ -21,7 +21,6 @@ from karbor import context
 from karbor.i18n import _LE, _LW
 from karbor import objects
 from karbor.services.operationengine.engine.executors import base
-from karbor.services.operationengine import operation_manager
 
 
 LOG = logging.getLogger(__name__)
@@ -34,10 +33,8 @@ class ScheduledOperationExecutor(base.BaseExecutor):
         'is_canceled': 'is_canceled'
     }
 
-    def __init__(self):
-        super(ScheduledOperationExecutor, self).__init__()
-        self._operation_manager = operation_manager.OperationManager()
-        self._operation_manager.do_init()
+    def __init__(self, operation_manager):
+        super(ScheduledOperationExecutor, self).__init__(operation_manager)
 
     def execute_operation(self, operation_id, triggered_time,
                           expect_start_time, window_time, **kwargs):

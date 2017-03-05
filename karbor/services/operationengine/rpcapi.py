@@ -44,10 +44,9 @@ class OperationEngineAPI(object):
                                 serializer=serializer)
         self._client = client.prepare(version='1.0')
 
-    def create_scheduled_operation(self, ctxt, operation_id, trigger_id):
+    def create_scheduled_operation(self, ctxt, operation):
         return self._client.call(ctxt, 'create_scheduled_operation',
-                                 operation_id=operation_id,
-                                 trigger_id=trigger_id)
+                                 operation=operation)
 
     def delete_scheduled_operation(self, ctxt, operation_id, trigger_id):
         return self._client.call(ctxt, 'delete_scheduled_operation',

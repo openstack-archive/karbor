@@ -11,7 +11,6 @@
 #    under the License.
 
 import eventlet
-import mock
 
 from datetime import datetime
 from datetime import timedelta
@@ -21,7 +20,6 @@ from karbor import context
 from karbor import objects
 from karbor.services.operationengine.engine.executors import \
     green_thread_executor
-from karbor.services.operationengine import operation_manager
 from karbor.tests import base
 
 
@@ -39,10 +37,10 @@ class GreenThreadExecutorTestCase(base.TestCase):
     def setUp(self):
         super(GreenThreadExecutorTestCase, self).setUp()
 
-        with mock.patch.object(operation_manager.OperationManager, 'do_init'):
-            self._executor = green_thread_executor.GreenThreadExecutor()
-            self._executor._operation_manager = FakeOperationManager()
-            self.context = context.get_admin_context()
+        self._operation_manager = FakeOperationManager()
+        self._executor = green_thread_executor.GreenThreadExecutor(
+            self._operation_manager)
+        self.context = context.get_admin_context()
 
         operation = self._create_operation()
         self._create_operation_state(operation.id, 0)
@@ -63,8 +61,8 @@ class GreenThreadExecutorTestCase(base.TestCase):
 
         self.assertTrue(not self._executor._operation_thread_map)
 
-        self.assertEqual(self._op_id, self._executor._operation_manager._op_id)
-        self._executor._operation_manager._op_id = ''
+        self.assertEqual(self._op_id, self._operation_manager._op_id)
+        self._operation_manager._op_id = ''
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.context, self._op_id)
@@ -83,8 +81,8 @@ class GreenThreadExecutorTestCase(base.TestCase):
 
         self.assertTrue(not self._executor._operation_thread_map)
 
-        self.assertEqual(self._op_id, self._executor._operation_manager._op_id)
-        self._executor._operation_manager._op_id = ''
+        self.assertEqual(self._op_id, self._operation_manager._op_id)
+        self._operation_manager._op_id = ''
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.context, self._op_id)
@@ -99,11 +97,11 @@ class GreenThreadExecutorTestCase(base.TestCase):
 
         self._executor.cancel_operation(self._op_id)
 
-        self.assertTrue(not self._executor._operation_manager._op_id)
+        self.assertTrue(not self._operation_manager._op_id)
 
         eventlet.sleep(1)
 
-        self.assertTrue(not self._executor._operation_manager._op_id)
+        self.assertTrue(not self._operation_manager._op_id)
 
     def _create_operation(self, trigger_id='123'):
         operation_info = {

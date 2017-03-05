@@ -13,26 +13,16 @@
 """
 Manage all triggers.
 """
-from oslo_config import cfg
-from stevedore import driver as import_driver
 
 from karbor import exception
 from karbor.i18n import _
 from karbor.services.operationengine.engine import triggers as all_triggers
 
-trigger_manager_opts = [
-    cfg.StrOpt('executor',
-               default='green_thread',
-               help='The name of executor which is used to run operations')
-]
-
-cfg.CONF.register_opts(trigger_manager_opts, 'operationengine')
-
 
 class TriggerManager(object):
     """Manage all trigger classes which are defined at triggers dir."""
 
-    def __init__(self):
+    def __init__(self, executor):
         super(TriggerManager, self).__init__()
 
         all_cls = all_triggers.all_triggers()
@@ -47,10 +37,7 @@ class TriggerManager(object):
         # }
         self._trigger_obj_map = {}
 
-        executor_cls = import_driver.DriverManager(
-            'karbor.operationengine.engine.executor',
-            cfg.CONF.operationengine.executor).driver
-        self._executor = executor_cls()
+        self._executor = executor
 
     def shutdown(self):
 

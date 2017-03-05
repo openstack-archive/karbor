@@ -54,14 +54,6 @@ class UserTrustManagerTestCase(base.TestCase):
             self._manager = user_trust_manager.UserTrustManager()
             self._manager._skp = FakeSKP()
 
-    @mock.patch.object(karbor_keystone_plugin.KarborKeystonePlugin, '_do_init')
-    def test_singleton_user_trust_manager(self, do_init):
-        map_id = id(self._manager._user_trust_map)
-        new_manager = user_trust_manager.UserTrustManager()
-
-        self.assertEqual(id(self._manager), id(new_manager))
-        self.assertEqual(map_id, id(new_manager._user_trust_map))
-
     def test_add_operation(self):
         manager = self._manager
         operation_id = 'abc'
@@ -72,7 +64,7 @@ class UserTrustManagerTestCase(base.TestCase):
         self.assertIn(operation_id, info['operation_ids'])
 
         manager.add_operation(self._ctx, operation_id)
-        self.assertEqual(1,  len(info['operation_ids']))
+        self.assertEqual(1, len(info['operation_ids']))
 
     @mock.patch.object(FakeSKP, 'delete_trust_to_karbor')
     def test_delete_operation(self, del_trust):
@@ -82,13 +74,13 @@ class UserTrustManagerTestCase(base.TestCase):
             manager.add_operation(self._ctx, op_id)
 
         info = manager._get_user_trust_info(self._user_id, self._project_id)
-        self.assertEqual(2,  len(info['operation_ids']))
+        self.assertEqual(2, len(info['operation_ids']))
 
         manager.delete_operation(self._ctx, op_ids[0])
-        self.assertEqual(1,  len(info['operation_ids']))
+        self.assertEqual(1, len(info['operation_ids']))
 
         manager.delete_operation(self._ctx, op_ids[1])
-        self.assertEqual(0,  len(info['operation_ids']))
+        self.assertEqual(0, len(info['operation_ids']))
         del_trust.assert_called_once_with(G_TRUST_ID)
 
     def test_resume_operation(self):
@@ -102,7 +94,7 @@ class UserTrustManagerTestCase(base.TestCase):
 
         manager.resume_operation(operation_id, self._user_id,
                                  self._project_id, G_TRUST_ID)
-        self.assertEqual(1,  len(info['operation_ids']))
+        self.assertEqual(1, len(info['operation_ids']))
 
     def test_get_token(self):
         manager = self._manager

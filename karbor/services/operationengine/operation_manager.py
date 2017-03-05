@@ -21,32 +21,18 @@ from karbor.services.operationengine import operations
 
 class OperationManager(object):
     """Manage all operation classes which are defined at operations dir."""
+    def __init__(self, user_trust_manager):
+        self._user_trust_manager = user_trust_manager
+        all_ops = operations.all_operations()
+        self._ops_map = {op.OPERATION_TYPE: op(self._user_trust_manager)
+                         for op in all_ops}
 
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(
-                OperationManager, cls).__new__(
-                    cls, *args, **kwargs)
-            cls._instance._init()
-        return cls._instance
-
-    def _init(self):
-        all_cls = operations.all_operations()
-        self._operation_cls_map = {cls.OPERATION_TYPE: cls
-                                   for cls in all_cls}
-
-    def do_init(self):
-        for t, cls in self._operation_cls_map.items():
-            cls.init_configuration()
-
-    def _get_operation_cls(self, operation_type):
-        if operation_type not in self._operation_cls_map:
-            msg = (_("Invalid operation type:%s") % operation_type)
+    def _get_operation(self, operation_type):
+        if operation_type not in self._ops_map:
+            msg = (_("Invalid operation type: %s") % operation_type)
             raise exception.InvalidInput(msg)
 
-        return self._operation_cls_map[operation_type]
+        return self._ops_map[operation_type]
 
     def check_operation_definition(self, operation_type, operation_definition):
         """Check operation definition.
@@ -56,8 +42,8 @@ class OperationManager(object):
         :raise InvalidInput if the operation_type is invalid or
                InvalidOperationDefinition if operation_definition is invalid
         """
-        cls = self._get_operation_cls(operation_type)
-        cls.check_operation_definition(operation_definition)
+        op = self._get_operation(operation_type)
+        op.check_operation_definition(operation_definition)
 
     def run_operation(self, operation_type, operation_definition, **kwargs):
         """Run operation.
@@ -66,5 +52,5 @@ class OperationManager(object):
         :param operation_definition: the definition of operation
         :raise InvalidInput if the operation_type is invalid.
         """
-        cls = self._get_operation_cls(operation_type)
-        cls.run(operation_definition, **kwargs)
+        op = self._get_operation(operation_type)
+        op.run(operation_definition, **kwargs)

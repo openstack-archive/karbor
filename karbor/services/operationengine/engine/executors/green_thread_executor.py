@@ -24,7 +24,6 @@ from karbor import context
 from karbor.i18n import _LE, _LW
 from karbor import objects
 from karbor.services.operationengine.engine.executors import base
-from karbor.services.operationengine import operation_manager
 
 
 green_thread_executor_opts = [
@@ -43,12 +42,9 @@ LOG = logging.getLogger(__name__)
 
 class GreenThreadExecutor(base.BaseExecutor):
 
-    def __init__(self):
-        super(GreenThreadExecutor, self).__init__()
-
-        self._operation_manager = operation_manager.OperationManager()
+    def __init__(self, operation_manager):
+        super(GreenThreadExecutor, self).__init__(operation_manager)
         self._operation_thread_map = {}
-        self._operation_manager.do_init()
 
     def execute_operation(self, operation_id, triggered_time,
                           expect_start_time, window_time, **kwargs):

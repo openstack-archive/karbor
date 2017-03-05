@@ -23,12 +23,9 @@ from karbor.i18n import _, _LE
 from karbor import objects
 from karbor import policy
 from karbor.services.operationengine import api as operationengine_api
-from karbor.services.operationengine import operation_manager
 from karbor import utils
 
 LOG = logging.getLogger(__name__)
-
-OPERATION_MANAGER = operation_manager.OperationManager()
 
 
 def check_policy(context, action, target_obj=None):
@@ -108,14 +105,6 @@ class ScheduledOperationController(wsgi.Controller):
 
         self.validate_name_and_description(operation_info)
 
-        try:
-            OPERATION_MANAGER.check_operation_definition(
-                operation_type, operation_definition)
-        except exception.Invalid as ex:
-            raise exc.HTTPBadRequest(explanation=ex.msg)
-        except Exception as ex:
-            self._raise_unknown_exception(ex)
-
         trigger_id = operation_info.get("trigger_id", None)
         trigger = self._get_trigger_by_id(context, trigger_id)
         if context.project_id != trigger.project_id:
@@ -139,8 +128,7 @@ class ScheduledOperationController(wsgi.Controller):
             self._raise_unknown_exception(ex)
 
         try:
-            self._create_scheduled_operation(context, operation.id,
-                                             trigger_id)
+            self._create_scheduled_operation(context, operation)
         except Exception:
             try:
                 operation.destroy()
@@ -241,14 +229,15 @@ class ScheduledOperationController(wsgi.Controller):
 
         return trigger
 
-    def _create_scheduled_operation(self, context, operation_id, trigger_id):
+    def _create_scheduled_operation(self, context, operation):
         try:
             self.operationengine_api.create_scheduled_operation(
-                context, operation_id, trigger_id)
+                context, operation)
 
         except (exception.InvalidInput,
                 exception.ScheduledOperationExist,
-                exception.TriggerIsInvalid) as ex:
+                exception.TriggerIsInvalid,
+                exception.InvalidOperationDefinition) as ex:
             raise exc.HTTPBadRequest(explanation=ex.msg)
 
         except (exception.TriggerNotFound,

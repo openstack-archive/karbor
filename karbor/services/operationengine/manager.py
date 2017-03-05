@@ -14,8 +14,10 @@
 OperationEngine Service
 """
 
+from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from stevedore import driver as import_driver
 
 from karbor.common import constants
 from karbor import context as karbor_context
@@ -23,10 +25,20 @@ from karbor import exception
 from karbor import manager
 from karbor import objects
 from karbor.services.operationengine.engine.triggers import trigger_manager
+from karbor.services.operationengine import operation_manager
 from karbor.services.operationengine import user_trust_manager
 
 
 LOG = logging.getLogger(__name__)
+
+
+trigger_manager_opts = [
+    cfg.StrOpt('executor',
+               default='green_thread',
+               help='The name of executor which is used to run operations')
+]
+
+cfg.CONF.register_opts(trigger_manager_opts, 'operationengine')
 
 
 class OperationEngineManager(manager.Manager):
@@ -42,15 +54,48 @@ class OperationEngineManager(manager.Manager):
         self._service_id = None
         self._trigger_manager = None
         self._user_trust_manager = None
+        self._operation_manager = None
+        self._executor = None
+
+    @property
+    def operation_manager(self):
+        if not self._operation_manager:
+            self._operation_manager = operation_manager.OperationManager(
+                self.user_trust_manager
+            )
+        return self._operation_manager
+
+    @property
+    def executor(self):
+        if not self._executor:
+            executor_cls = import_driver.DriverManager(
+                'karbor.operationengine.engine.executor',
+                cfg.CONF.operationengine.executor).driver
+            self._executor = executor_cls(self.operation_manager)
+        return self._executor
+
+    @property
+    def user_trust_manager(self):
+        if not self._user_trust_manager:
+            self._user_trust_manager = user_trust_manager.UserTrustManager()
+        return self._user_trust_manager
+
+    @property
+    def trigger_manager(self):
+        if not self._trigger_manager:
+            self._trigger_manager = trigger_manager.TriggerManager(
+                self.executor
+            )
+        return self._trigger_manager
 
     def init_host(self, **kwargs):
-        self._trigger_manager = trigger_manager.TriggerManager()
         self._service_id = kwargs.get("service_id")
-        self._user_trust_manager = user_trust_manager.UserTrustManager()
         self._restore()
 
     def cleanup_host(self):
-        self._trigger_manager.shutdown()
+        if self._trigger_manager:
+            self._trigger_manager.shutdown()
+            self._trigger_manager = None
 
     def _restore(self):
         self._restore_triggers()
@@ -68,8 +113,8 @@ class OperationEngineManager(manager.Manager):
                 break
 
             for trigger in triggers:
-                self._trigger_manager.add_trigger(trigger.id, trigger.type,
-                                                  trigger.properties)
+                self.trigger_manager.add_trigger(trigger.id, trigger.type,
+                                                 trigger.properties)
             if len(triggers) < limit:
                 break
             marker = triggers[-1].id
@@ -97,11 +142,11 @@ class OperationEngineManager(manager.Manager):
                     continue
 
                 resume = (state.state in resume_states)
-                self._trigger_manager.register_operation(
+                self.trigger_manager.register_operation(
                     operation.trigger_id, operation.id,
                     resume=resume, end_time_for_run=state.end_time_for_run)
 
-                self._user_trust_manager.resume_operation(
+                self.user_trust_manager.resume_operation(
                     operation.id, operation.user_id,
                     operation.project_id, state.trust_id)
             if len(states) < limit:
@@ -112,18 +157,24 @@ class OperationEngineManager(manager.Manager):
                                    exception.InvalidInput,
                                    exception.TriggerIsInvalid,
                                    exception.AuthorizationFailure,
-                                   exception.ScheduledOperationExist)
-    def create_scheduled_operation(self, context, operation_id, trigger_id):
+                                   exception.ScheduledOperationExist,
+                                   exception.InvalidOperationDefinition)
+    def create_scheduled_operation(self, context, operation):
         LOG.debug("Create scheduled operation.")
+        self.operation_manager.check_operation_definition(
+            operation.operation_type,
+            operation.operation_definition,
+        )
 
         # register operation
-        self._trigger_manager.register_operation(trigger_id, operation_id)
-        trust_id = self._user_trust_manager.add_operation(
-            context, operation_id)
+        self.trigger_manager.register_operation(operation.trigger_id,
+                                                operation.id)
+        trust_id = self.user_trust_manager.add_operation(
+            context, operation.id)
 
         # create ScheduledOperationState record
         state_info = {
-            "operation_id": operation_id,
+            "operation_id": operation.id,
             "service_id": self._service_id,
             "trust_id": trust_id,
             "state": constants.OPERATION_STATE_REGISTERED
@@ -133,8 +184,8 @@ class OperationEngineManager(manager.Manager):
         try:
             operation_state.create()
         except Exception:
-            self._trigger_manager.unregister_operation(
-                trigger_id, operation_id)
+            self.trigger_manager.unregister_operation(
+                operation.trigger_id, operation.id)
             raise
 
     @messaging.expected_exceptions(exception.ScheduledOperationStateNotFound,
@@ -148,13 +199,13 @@ class OperationEngineManager(manager.Manager):
             operation_state.state = constants.OPERATION_STATE_DELETED
             operation_state.save()
 
-        self._trigger_manager.unregister_operation(trigger_id, operation_id)
-        self._user_trust_manager.delete_operation(context, operation_id)
+        self.trigger_manager.unregister_operation(trigger_id, operation_id)
+        self.user_trust_manager.delete_operation(context, operation_id)
 
     @messaging.expected_exceptions(exception.TriggerNotFound)
     def suspend_scheduled_operation(self, context, operation_id, trigger_id):
         LOG.debug("Suspend scheduled operation.")
-        self._trigger_manager.unregister_operation(trigger_id, operation_id)
+        self.trigger_manager.unregister_operation(trigger_id, operation_id)
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.TriggerIsInvalid)
@@ -162,7 +213,7 @@ class OperationEngineManager(manager.Manager):
         LOG.debug("Resume scheduled operation.")
 
         try:
-            self._trigger_manager.register_operation(
+            self.trigger_manager.register_operation(
                 trigger_id, operation_id)
         except exception.ScheduledOperationExist:
             pass
@@ -171,15 +222,15 @@ class OperationEngineManager(manager.Manager):
 
     @messaging.expected_exceptions(exception.InvalidInput)
     def create_trigger(self, context, trigger):
-        self._trigger_manager.add_trigger(trigger.id, trigger.type,
-                                          trigger.properties)
+        self.trigger_manager.add_trigger(trigger.id, trigger.type,
+                                         trigger.properties)
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.DeleteTriggerNotAllowed)
     def delete_trigger(self, context, trigger_id):
-        self._trigger_manager.remove_trigger(trigger_id)
+        self.trigger_manager.remove_trigger(trigger_id)
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput)
     def update_trigger(self, context, trigger):
-        self._trigger_manager.update_trigger(trigger.id, trigger.properties)
+        self.trigger_manager.update_trigger(trigger.id, trigger.properties)

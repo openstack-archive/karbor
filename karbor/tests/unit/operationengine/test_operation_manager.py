@@ -18,6 +18,17 @@ from karbor.services.operationengine import operations
 from karbor.tests import base
 
 
+class FakeUserTrustManager(object):
+    def add_operation(self, context, operation_id):
+        return "123"
+
+    def delete_operation(self, context, operation_id):
+        pass
+
+    def resume_operation(self, operation_id, user_id, project_id, trust_id):
+        pass
+
+
 class FakeOperation(operations.base.Operation):
     OPERATION_TYPE = 'fake'
 
@@ -41,43 +52,32 @@ class OperationManagerTestCase(base.TestCase):
         super(OperationManagerTestCase, self).setUp()
 
         self._operation_type = FakeOperation.OPERATION_TYPE
-        self.om = operation_manager.OperationManager()
-
-    def test_singleton_operation_manager(self):
-        map_id = id(self.om._operation_cls_map)
-        new_om = operation_manager.OperationManager()
-
-        self.assertEqual(id(self.om), id(new_om))
-        self.assertEqual(map_id, id(new_om._operation_cls_map))
-
-    @mock.patch.object(operations.base.Operation, 'init_configuration')
-    def test_do_init(self, init):
-        self._set_fake_op()
-        self.om.do_init()
-        init.assert_called_once()
+        self._mock_operations = (FakeOperation, )
+        with mock.patch(
+            'karbor.services.operationengine.operations.all_operations'
+        ) as mock_all_ops:
+            mock_all_ops.return_value = self._mock_operations
+            self._user_trust_manager = FakeUserTrustManager()
+            self._op_manager = operation_manager.OperationManager(
+                self._user_trust_manager)
 
     @mock.patch.object(FakeOperation, 'check_operation_definition')
-    def test_check_operation_definition(self, check):
-        self._set_fake_op()
-        self.om.check_operation_definition(self._operation_type, {})
-        check.assert_called_once_with({})
+    def test_check_operation_definition(self, mock_check):
+        self._op_manager.check_operation_definition(self._operation_type, {})
+        mock_check.assert_called_once_with({})
 
     @mock.patch.object(operations.base.Operation, 'run')
-    def test_run_operation(self, run):
-        self._set_fake_op()
-        self.om.run_operation(self._operation_type, {})
-        run.assert_called_once_with({})
+    def test_run_operation(self, mock_run):
+        self._op_manager.run_operation(self._operation_type, {})
+        mock_run.assert_called_once_with({})
 
     def test_invalid_operation_type(self):
         self.assertRaisesRegex(exception.InvalidInput,
                                'Invalid operation type:',
-                               self.om.check_operation_definition,
+                               self._op_manager.check_operation_definition,
                                "123", {})
 
         self.assertRaisesRegex(exception.InvalidInput,
                                'Invalid operation type:',
-                               self.om.run_operation,
+                               self._op_manager.run_operation,
                                "123", {})
-
-    def _set_fake_op(self):
-        self.om._operation_cls_map = {self._operation_type: FakeOperation}

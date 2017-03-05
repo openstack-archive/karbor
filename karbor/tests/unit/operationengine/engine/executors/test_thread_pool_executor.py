@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-
 from datetime import datetime
 from datetime import timedelta
 import time
@@ -21,7 +19,6 @@ from karbor import context
 from karbor import objects
 from karbor.services.operationengine.engine.executors import \
     thread_pool_executor
-from karbor.services.operationengine import operation_manager
 from karbor.tests import base
 
 
@@ -35,10 +32,10 @@ class ThreadPoolExecutorTestCase(base.TestCase):
     def setUp(self):
         super(ThreadPoolExecutorTestCase, self).setUp()
 
-        with mock.patch.object(operation_manager.OperationManager, 'do_init'):
-            self._executor = thread_pool_executor.ThreadPoolExecutor()
-            self._executor._operation_manager = FakeOperationManager()
-            self.context = context.get_admin_context()
+        self._operation_manager = FakeOperationManager()
+        self._executor = thread_pool_executor.ThreadPoolExecutor(
+            self._operation_manager)
+        self.context = context.get_admin_context()
 
     def tearDown(self):
         super(ThreadPoolExecutorTestCase, self).tearDown()

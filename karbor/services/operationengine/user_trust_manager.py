@@ -20,17 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 class UserTrustManager(object):
-
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(UserTrustManager, cls).__new__(
-                cls, *args, **kwargs)
-            cls._instance._init()
-        return cls._instance
-
-    def _init(self):
+    def __init__(self):
         self._user_trust_map = {}
         self._skp = karbor_keystone_plugin.KarborKeystonePlugin()
 

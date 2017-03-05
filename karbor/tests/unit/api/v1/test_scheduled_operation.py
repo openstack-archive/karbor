@@ -28,7 +28,7 @@ class FakeRemoteOperationApi(object):
         self._create_operation_exception = None
         self._delete_operation_exception = None
 
-    def create_scheduled_operation(self, context, operation_id, trigger_id):
+    def create_scheduled_operation(self, context, operation):
         if self._create_operation_exception:
             raise self._create_operation_exception
 
@@ -73,25 +73,9 @@ class ScheduledOperationApiTest(base.TestCase):
                           self.controller.create,
                           self.req, body)
 
-    def test_create_operation_invalid_operation_type(self):
-        param = self.default_create_operation_param.copy()
-        param['operation_type'] = "123"
-        body = self._get_create_operation_request_body(param)
-        self.assertRaises(exc.HTTPBadRequest,
-                          self.controller.create,
-                          self.req, body)
-
     def test_create_operation_invalid_trigger(self):
         param = self.default_create_operation_param.copy()
         param['trigger_id'] = 123
-        body = self._get_create_operation_request_body(param)
-        self.assertRaises(exc.HTTPBadRequest,
-                          self.controller.create,
-                          self.req, body)
-
-    def test_create_operation_invalid_operation_definition(self):
-        param = self.default_create_operation_param.copy()
-        param['operation_definition']['plan_id'] = ""
         body = self._get_create_operation_request_body(param)
         self.assertRaises(exc.HTTPBadRequest,
                           self.controller.create,

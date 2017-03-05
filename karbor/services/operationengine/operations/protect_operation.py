@@ -25,8 +25,10 @@ class ProtectOperation(base.Operation):
 
     OPERATION_TYPE = "protect"
 
-    @classmethod
-    def check_operation_definition(cls, operation_definition):
+    def __init__(self, user_trust_manager):
+        super(ProtectOperation, self).__init__(user_trust_manager)
+
+    def check_operation_definition(self, operation_definition):
         provider_id = operation_definition.get("provider_id")
         if not provider_id or not uuidutils.is_uuid_like(provider_id):
             reason = _("Provider_id is invalid")
@@ -42,18 +44,15 @@ class ProtectOperation(base.Operation):
             reason = _("Provider_id is invalid")
             raise exception.InvalidOperationDefinition(reason=reason)
 
-    @classmethod
-    def _execute(cls, operation_definition, param):
-        log_ref = cls._create_operation_log(param)
-        cls._run(operation_definition, param, log_ref)
+    def _execute(self, operation_definition, param):
+        log_ref = self._create_operation_log(param)
+        self._run(operation_definition, param, log_ref)
 
-    @classmethod
-    def _resume(cls, operation_definition, param, log_ref):
-        cls._run(operation_definition, param, log_ref)
+    def _resume(self, operation_definition, param, log_ref):
+        self._run(operation_definition, param, log_ref)
 
-    @classmethod
-    def _run(cls, operation_definition, param, log_ref):
-        client = cls._create_karbor_client(
+    def _run(self, operation_definition, param, log_ref):
+        client = self._create_karbor_client(
             param.get("user_id"), param.get("project_id"))
         try:
             client.checkpoints.create(operation_definition.get("provider_id"),
@@ -63,4 +62,4 @@ class ProtectOperation(base.Operation):
         else:
             state = constants.OPERATION_EXE_STATE_SUCCESS
 
-        cls._update_log_when_operation_finished(log_ref, state)
+        self._update_log_when_operation_finished(log_ref, state)

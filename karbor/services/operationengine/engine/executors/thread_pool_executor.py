@@ -24,7 +24,7 @@ executor_opts = [
     cfg.IntOpt('thread_count',
                default=10,
                help='The count of thread which executor will start')
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(executor_opts)
@@ -34,8 +34,8 @@ LOG = logging.getLogger(__name__)
 
 class ThreadPoolExecutor(base_executor.ScheduledOperationExecutor):
 
-    def __init__(self, thread_count=None):
-        super(ThreadPoolExecutor, self).__init__()
+    def __init__(self, operation_manager, thread_count=None):
+        super(ThreadPoolExecutor, self).__init__(operation_manager)
 
         if thread_count is None:
             thread_count = CONF.thread_count

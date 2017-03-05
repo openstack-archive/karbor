@@ -80,10 +80,10 @@ class TriggerManagerTestCase(base.TestCase):
                                '_load_plugins') as load_plugin:
             load_plugin.return_value = [FakeExecutor]
 
-            self._manager = trigger_manager.TriggerManager()
+            self._executor = FakeExecutor(None)
+            self._manager = trigger_manager.TriggerManager(self._executor)
             self._trigger_type = 'fake'
             self._manager._trigger_cls_map[self._trigger_type] = FakeTrigger
-            self._manager._executor = FakeExecutor()
 
     def tearDown(self):
         self._manager.shutdown()
