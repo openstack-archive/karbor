@@ -92,10 +92,6 @@ class BackupResponse(object):
 class CinderProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(CinderProtectionPluginTest, self).setUp()
-        cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
-        with mock.patch.object(cls, '_do_init'):
-            client_factory.init()
-
         plugin_config = cfg.ConfigOpts()
         plugin_config_fixture = self.useFixture(fixture.Config(plugin_config))
         plugin_config_fixture.load_raw_values(

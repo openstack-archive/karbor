@@ -101,9 +101,6 @@ class GlanceProtectionPluginTest(base.TestCase):
             group='image_backup_plugin',
             backup_image_object_size=65536,
         )
-        cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
-        with mock.patch.object(cls, '_do_init'):
-            client_factory.init()
         self.plugin = GlanceProtectionPlugin(plugin_config)
 
         cfg.CONF.set_default('glance_endpoint',

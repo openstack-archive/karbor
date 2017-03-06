@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from karbor.services.protection import client_factory
 from karbor.services.protection.clients import swift
 from karbor.tests import base
 from karbor.tests.unit.protection.fake_swift_client import FakeSwiftClient
@@ -34,10 +33,6 @@ class FakeConf(object):
 class SwiftBankPluginTest(base.TestCase):
     def setUp(self):
         super(SwiftBankPluginTest, self).setUp()
-        cls = client_factory.karbor_keystone_plugin.KarborKeystonePlugin
-        with mock.patch.object(cls, '_do_init'):
-            client_factory.init()
-
         self.conf = FakeConf()
         self.fake_connection = FakeSwiftClient.connection()
         swift.create = mock.MagicMock()

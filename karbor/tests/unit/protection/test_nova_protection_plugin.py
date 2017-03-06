@@ -19,7 +19,6 @@ from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
-from karbor.services.protection import client_factory
 from karbor.services.protection.protection_plugins.server \
     import server_plugin_schemas
 from karbor.services.protection.protection_plugins.server. \
@@ -278,10 +277,6 @@ def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
 class NovaProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(NovaProtectionPluginTest, self).setUp()
-        with mock.patch.object(
-                client_factory.karbor_keystone_plugin.KarborKeystonePlugin,
-                '_do_init'):
-            client_factory.init()
         self.cntxt = RequestContext(user_id='demo',
                                     project_id='abcd',
                                     auth_token='efgh')

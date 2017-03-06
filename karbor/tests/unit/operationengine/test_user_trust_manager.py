@@ -12,7 +12,6 @@
 
 import mock
 
-from karbor.common import karbor_keystone_plugin
 from karbor import context
 from karbor.services.operationengine import user_trust_manager
 from karbor.tests import base
@@ -48,11 +47,8 @@ class UserTrustManagerTestCase(base.TestCase):
         self._project_id = '456'
         self._ctx = context.RequestContext(user_id=self._user_id,
                                            project_id=self._project_id)
-
-        with mock.patch.object(karbor_keystone_plugin.KarborKeystonePlugin,
-                               '_do_init'):
-            self._manager = user_trust_manager.UserTrustManager()
-            self._manager._skp = FakeSKP()
+        self._manager = user_trust_manager.UserTrustManager()
+        self._manager._skp = FakeSKP()
 
     def test_add_operation(self):
         manager = self._manager

@@ -11,6 +11,8 @@
 #    under the License.
 
 import os
+
+from keystoneauth1 import loading
 from oslo_config import cfg
 
 
@@ -31,3 +33,13 @@ def set_defaults(conf):
         os.path.join(os.path.dirname(__file__), '..', '..', '..')))
     conf.set_default('provider_config_dir',
                      os.path.join(os.path.dirname(__file__), 'fake_providers'))
+    loading.register_auth_conf_options(conf, 'trustee')
+    opts = loading.get_auth_plugin_conf_options('password')
+    conf.register_opts(opts, 'trustee')
+    conf.set_default('auth_type', 'password', group='trustee')
+    conf.set_default('auth_section', None, group='trustee')
+    conf.set_default('auth_url', 'http://192.168.1.2/identity',
+                     group='trustee')
+    conf.set_default('username', 'karbor', group='trustee')
+    conf.set_default('password', 'password', group='trustee')
+    conf.set_default('user_domain_id', 'default', group='trustee')

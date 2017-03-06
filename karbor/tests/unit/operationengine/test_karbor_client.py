@@ -22,10 +22,9 @@ from karbor.tests import base
 
 class KarborClientTest(base.TestCase):
 
-    @mock.patch.object(karbor_keystone_plugin.KarborKeystonePlugin, '_do_init')
     @mock.patch.object(karbor_keystone_plugin.KarborKeystonePlugin,
                        'get_service_endpoint')
-    def test_create_client(self, get_service_endpoint, do_init):
+    def test_create_client(self, get_service_endpoint):
         ctx = context.get_admin_context()
         ctx.project_id = '123'
 

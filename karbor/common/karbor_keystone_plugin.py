@@ -51,36 +51,38 @@ class KarborKeystonePlugin(object):
     """
 
     def __init__(self):
-
         self._client = None
-        self._auth_uri = ""
-        self._karbor_user_id = ""
-        self._service_auth_plugin = None
-        self._keystone_trust_url = ""
-
-        self._do_init()
-
-    def _do_init(self):
+        self._auth_uri = None
+        self._karbor_user_id = None
         auth_plugin = self._get_karbor_auth_plugin()
         # set the project which karbor belongs to
         auth_plugin._project_name = "service"
         auth_plugin._project_domain_id = "default"
-
         self._service_auth_plugin = auth_plugin
-        self._client = self._get_keystone_client(auth_plugin)
 
-        lcfg = CONF[TRUSTEE_CONF_GROUP]
-        self._karbor_user_id = self._get_service_user(
-            lcfg.username, lcfg.user_domain_id)
+    @property
+    def karbor_user_id(self):
+        if not self._karbor_user_id:
+            lcfg = CONF[TRUSTEE_CONF_GROUP]
+            self._karbor_user_id = self._get_service_user(
+                lcfg.username, lcfg.user_domain_id)
+        return self._karbor_user_id
 
-        try:
-            self._auth_uri = utils.get_auth_uri()
-        except Exception:
-            msg = 'get keystone auth url failed'
-            raise exception.AuthorizationFailure(obj=msg)
+    @property
+    def client(self):
+        if not self._client:
+            self._client = self._get_keystone_client(self.service_auth_plugin)
+        return self._client
 
-        if self._auth_uri:
-            self._keystone_trust_url = self._auth_uri + 'OS-TRUST'
+    @property
+    def auth_uri(self):
+        if not self._auth_uri:
+            try:
+                self._auth_uri = utils.get_auth_uri()
+            except Exception:
+                msg = 'get keystone auth url failed'
+                raise exception.AuthorizationFailure(obj=msg)
+        return self._auth_uri
 
     @property
     def service_auth_plugin(self):
@@ -89,16 +91,16 @@ class KarborKeystonePlugin(object):
     def get_service_endpoint(self, service_name, service_type,
                              region_id, interface='public'):
         try:
-            service = self._client.services.list(
+            service = self.client.services.list(
                 name=service_name,
                 service_type=service_type,
-                base_url=self._auth_uri)
+                base_url=self.auth_uri)
 
-            endpoint = self._client.endpoints.list(
+            endpoint = self.client.endpoints.list(
                 service=service[0],
                 interface=interface,
                 region_id=region_id,
-                base_url=self._auth_uri)
+                base_url=self.auth_uri)
 
             return endpoint[0].url if endpoint else None
 
@@ -115,18 +117,19 @@ class KarborKeystonePlugin(object):
         auth_ref = access.create(body=context.auth_token_info,
                                  auth_token=context.auth_token)
         return access_plugin.AccessInfoPlugin(
-            auth_url=self._auth_uri, auth_ref=auth_ref)
+            auth_url=self.auth_uri, auth_ref=auth_ref)
 
     def create_trust_to_karbor(self, context):
         l_kc_v3 = self._get_keystone_client(
             self.create_user_auth_plugin(context))
+        keystone_trust_url = self.auth_uri + 'OS-TRUST'
         try:
             trust = l_kc_v3.trusts.create(trustor_user=context.user_id,
-                                          trustee_user=self._karbor_user_id,
+                                          trustee_user=self.karbor_user_id,
                                           project=context.project_id,
                                           impersonation=True,
                                           role_names=context.roles,
-                                          base_url=self._keystone_trust_url)
+                                          base_url=keystone_trust_url)
             return trust.id
 
         except Exception as e:
@@ -146,7 +149,7 @@ class KarborKeystonePlugin(object):
 
     def _get_service_user(self, user_name, user_domain_id):
         try:
-            users = self._client.users.list(
+            users = self.client.users.list(
                 name=user_name,
                 domain=user_domain_id)
 

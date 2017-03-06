@@ -15,7 +15,6 @@ from glanceclient.v2 import images
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor import resource
-from karbor.services.protection import client_factory
 from karbor.services.protection.protectable_plugins.image import \
     ImageProtectablePlugin
 from karbor.tests import base
@@ -36,12 +35,6 @@ project_info = namedtuple('project_info', field_names=['id', 'type', 'name'])
 class ImageProtectablePluginTest(base.TestCase):
     def setUp(self):
         super(ImageProtectablePluginTest, self).setUp()
-
-        with mock.patch.object(
-                client_factory.karbor_keystone_plugin.KarborKeystonePlugin,
-                '_do_init'):
-            client_factory.init()
-
         service_catalog = [{
             'type': 'image',
             'endpoints': [{'publicURL': 'http://127.0.0.1:9292'}]

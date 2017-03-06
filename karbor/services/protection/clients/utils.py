@@ -52,7 +52,7 @@ def get_url(service, context, client_config,
     if privileged_user is not True:
         try:
             url = _parse_service_endpoint(
-                client_config['%s_endpoint' % service],
+                getattr(client_config, '%s_endpoint' % service),
                 context, append_project_fmt)
             if url:
                 return url
@@ -62,7 +62,7 @@ def get_url(service, context, client_config,
         # get url by catalog
         try:
             url = _parse_service_catalog_info(
-                client_config['%s_catalog_info' % service], context)
+                getattr(client_config, '%s_catalog_info' % service), context)
             if url:
                 return url
         except Exception:

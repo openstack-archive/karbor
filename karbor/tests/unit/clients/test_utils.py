@@ -63,18 +63,18 @@ class ClientUtilsTest(base.TestCase):
             self._public_url,
             utils.get_url(self._service, self._context, cfg.CONF))
 
-    @mock.patch.object(cfg.ConfigOpts, '_get')
-    @mock.patch.object(kkp.KarborKeystonePlugin, '_do_init')
     @mock.patch.object(kkp.KarborKeystonePlugin, 'get_service_endpoint')
-    def test_get_url_by_keystone_plugin(self, get_endpoint, do_init, get_opt):
-        get_opt.return_value = None
+    def test_get_url_by_keystone_plugin(self, get_endpoint):
         endpoint = "http://127.0.0.1:8776"
         keystone_plugin = kkp.KarborKeystonePlugin()
         get_endpoint.return_value = endpoint
 
+        config = mock.Mock()
+        config.test_service_endpoint = None
+        config.test_service_catalog_info = None
         self.assertEqual(
             endpoint,
-            utils.get_url(self._service, self._context, cfg.CONF,
+            utils.get_url('test_service', self._context, config,
                           keystone_plugin=keystone_plugin))
 
     @mock.patch.object(cfg.ConfigOpts, '_get')

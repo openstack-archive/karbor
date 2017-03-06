@@ -37,8 +37,7 @@ class ProtectionServiceTest(base.TestCase):
         flow_manager.Worker._load_engine = mock.Mock()
         flow_manager.Worker._load_engine.return_value = fakes.FakeFlowEngine()
         super(ProtectionServiceTest, self).setUp()
-        with mock.patch('karbor.services.protection.client_factory.init'):
-            self.pro_manager = manager.ProtectionManager()
+        self.pro_manager = manager.ProtectionManager()
         self.protection_plan = fakes.fake_protection_plan()
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,

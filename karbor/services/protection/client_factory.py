@@ -46,7 +46,7 @@ class ClientFactory(object):
     def _generate_session(cls, context, service, privileged_user=False):
         LOG.debug("Generate an auth session. privileged_user: %s",
                   privileged_user)
-        plugin = cls._keystone_plugin
+        plugin = cls.get_keystone_plugin()
         try:
             if privileged_user is True:
                 auth_plugin = service_token.ServiceTokenAuthWrapper(
@@ -71,28 +71,31 @@ class ClientFactory(object):
         return keystone_session.Session(auth=auth_plugin, verify=verify)
 
     @classmethod
-    def init(cls):
-        cls._keystone_plugin = karbor_keystone_plugin.KarborKeystonePlugin()
+    def get_keystone_plugin(cls):
+        if not cls._keystone_plugin:
+            cls._keystone_plugin = \
+                karbor_keystone_plugin.KarborKeystonePlugin()
+        return cls._keystone_plugin
 
-        cls._factory = {}
-        for module in cls._list_clients():
-            module = importutils.import_module(module)
-            cls._factory[module.SERVICE] = module
+    @classmethod
+    def get_client_module(cls, service):
+        if not cls._factory:
+            cls._factory = {}
+            for module in cls._list_clients():
+                module = importutils.import_module(module)
+                cls._factory[module.SERVICE] = module
+        return cls._factory.get(service)
 
     @classmethod
     def create_client(cls, service, context, conf=cfg.CONF,
                       privileged_user=False, **kwargs):
-        module = cls._factory.get(service)
+        module = cls.get_client_module(service)
         if module is None:
             raise exception.KarborException(_('Unknown service(%s)') % service)
 
         kwargs['privileged_user'] = privileged_user
-        kwargs['keystone_plugin'] = cls._keystone_plugin
+        kwargs['keystone_plugin'] = cls.get_keystone_plugin()
         if context or privileged_user:
             kwargs['session'] = cls._generate_session(context, service,
                                                       privileged_user)
         return module.create(context, conf, **kwargs)
-
-
-def init():
-    ClientFactory.init()
