@@ -153,15 +153,19 @@ class KarborObjectDictCompat(base.VersionedObjectDictCompat):
                 return None
 
 
+def DateTimeField(**kwargs):
+    return fields.DateTimeField(tzinfo_aware=False, **kwargs)
+
+
 class KarborPersistentObject(object):
     """Mixin class for Persistent objects.
 
     This adds the fields that we use in common for all persistent objects.
     """
     fields = {
-        'created_at': fields.DateTimeField(nullable=True),
-        'updated_at': fields.DateTimeField(nullable=True),
-        'deleted_at': fields.DateTimeField(nullable=True),
+        'created_at': DateTimeField(nullable=True),
+        'updated_at': DateTimeField(nullable=True),
+        'deleted_at': DateTimeField(nullable=True),
         'deleted': fields.BooleanField(default=False),
     }
 

@@ -32,7 +32,7 @@ class ScheduledOperationState(base.KarborPersistentObject, base.KarborObject,
         'service_id': fields.IntegerField(),
         'trust_id': fields.StringField(),
         'state': fields.StringField(),
-        'end_time_for_run': fields.DateTimeField(nullable=True),
+        'end_time_for_run': base.DateTimeField(nullable=True),
 
         'operation': fields.ObjectField("ScheduledOperation")
     }

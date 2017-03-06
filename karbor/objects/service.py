@@ -34,7 +34,7 @@ class Service(base.KarborPersistentObject, base.KarborObject,
         'report_count': fields.IntegerField(default=0),
         'disabled': fields.BooleanField(default=False),
         'disabled_reason': fields.StringField(nullable=True),
-        'modified_at': fields.DateTimeField(nullable=True),
+        'modified_at': base.DateTimeField(nullable=True),
         'rpc_current_version': fields.StringField(nullable=True),
         'rpc_available_version': fields.StringField(nullable=True),
     }
