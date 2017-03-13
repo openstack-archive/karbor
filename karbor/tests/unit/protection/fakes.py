@@ -219,7 +219,7 @@ class FakeCheckpoint(object):
 
 
 class FakeCheckpointCollection(object):
-    def create(self, plan):
+    def create(self, plan, checkpoint_properties=None):
         return FakeCheckpoint()
 
     def get(self, checkpoint_id):

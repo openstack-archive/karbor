@@ -52,12 +52,13 @@ class ProtectionAPI(object):
             restore=restore,
             restore_auth=restore_auth)
 
-    def protect(self, ctxt, plan=None):
+    def protect(self, ctxt, plan=None, checkpoint_properties=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
             'protect',
-            plan=plan)
+            plan=plan,
+            checkpoint_properties=checkpoint_properties)
 
     def delete(self, ctxt, provider_id, checkpoint_id):
         cctxt = self.client.prepare(version='1.0')

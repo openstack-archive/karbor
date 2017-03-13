@@ -45,6 +45,7 @@ class Checkpoint(object):
             "id": self.id,
             "status": self.status,
             "protection_plan": self.protection_plan,
+            "extra_info": self._md_cache.get("extra_info", None),
             "project_id": self.project_id,
             "resource_graph": self._md_cache.get("resource_graph", None),
             "created_at": self._md_cache.get("created_at", None)
@@ -139,7 +140,8 @@ class Checkpoint(object):
 
     @classmethod
     def create_in_section(cls, checkpoints_section, indices_section,
-                          bank_lease, owner_id, plan, checkpoint_id=None):
+                          bank_lease, owner_id, plan,
+                          checkpoint_id=None, checkpoint_properties=None):
         checkpoint_id = checkpoint_id or cls._generate_id()
         checkpoint_section = checkpoints_section.get_sub_section(checkpoint_id)
 
@@ -147,6 +149,9 @@ class Checkpoint(object):
         created_at = timeutils.utcnow().strftime('%Y-%m-%d')
 
         provider_id = plan.get("provider_id")
+        extra_info = None
+        if checkpoint_properties:
+            extra_info = checkpoint_properties.get("extra_info", None)
         checkpoint_section.update_object(
             key=_INDEX_FILE_NAME,
             value={
@@ -162,6 +167,7 @@ class Checkpoint(object):
                     "provider_id": plan.get("provider_id"),
                     "resources": plan.get("resources")
                 },
+                "extra_info": extra_info,
                 "created_at": created_at,
                 "timestamp": timestamp
             }
@@ -308,11 +314,13 @@ class CheckpointCollection(object):
                                          self._bank_lease,
                                          checkpoint_id)
 
-    def create(self, plan):
+    def create(self, plan, checkpoint_properties=None):
         # TODO(saggi): Serialize plan to checkpoint. Will be done in
         # future patches.
-        return Checkpoint.create_in_section(self._checkpoints_section,
-                                            self._indices_section,
-                                            self._bank_lease,
-                                            self._bank.get_owner_id(),
-                                            plan)
+        return Checkpoint.create_in_section(
+            self._checkpoints_section,
+            self._indices_section,
+            self._bank_lease,
+            self._bank.get_owner_id(),
+            plan,
+            checkpoint_properties=checkpoint_properties)

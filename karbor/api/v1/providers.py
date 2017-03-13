@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -143,6 +144,7 @@ class CheckpointViewBuilder(common.ViewBuilder):
                 'protection_plan': checkpoint.get('protection_plan'),
                 'resource_graph': checkpoint.get('resource_graph'),
                 'created_at': checkpoint.get('created_at'),
+                'extra_info': checkpoint.get('extra_info'),
             }
         }
         return checkpoint_ref
@@ -391,6 +393,21 @@ class ProvidersController(wsgi.Controller):
                     "the value in the plan.")
             raise exception.InvalidPlan(reason=msg)
 
+        extra_info = checkpoint.get("extra_info", None)
+        if extra_info is not None:
+            if not isinstance(extra_info, dict):
+                msg = _("The extra_info in checkpoint must be a dict when "
+                        "creating a checkpoint.")
+                raise exception.InvalidInput(reason=msg)
+            elif not all(map(lambda s: isinstance(s, (str, unicode)),
+                             extra_info.keys())):
+                msg = _("Key of extra_info in checkpoint must be string when"
+                        "creating a checkpoint.")
+                raise exception.InvalidInput(reason=msg)
+
+        checkpoint_extra_info = None
+        if extra_info is not None:
+            checkpoint_extra_info = jsonutils.dumps(extra_info)
         checkpoint_properties = {
             'project_id': context.project_id,
             'status': constants.CHECKPOINT_STATUS_PROTECTING,
@@ -399,15 +416,19 @@ class ProvidersController(wsgi.Controller):
                 "id": plan.get("id"),
                 "name": plan.get("name"),
                 "resources": plan.get("resources"),
-            }
+            },
+            "extra_info": checkpoint_extra_info
         }
         try:
-            checkpoint_id = self.protection_api.protect(context, plan)
+            checkpoint_id = self.protection_api.protect(context, plan,
+                                                        checkpoint_properties)
         except Exception as error:
             msg = _("Create checkpoint failed: %s") % error.msg
             raise exc.HTTPBadRequest(explanation=msg)
         checkpoint_properties['id'] = checkpoint_id
 
+        LOG.info(_LI("Create the checkpoint successfully. checkpoint_id:%s"),
+                 checkpoint_id)
         returnval = self._checkpoint_view_builder.detail(
             req, checkpoint_properties)
         return returnval

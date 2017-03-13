@@ -86,14 +86,15 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.InvalidPlan,
                                    exception.ProviderNotFound,
                                    exception.FlowError)
-    def protect(self, context, plan):
+    def protect(self, context, plan, checkpoint_properties=None):
         """create protection for the given plan
 
         :param plan: Define that protection plan should be done
         """
 
         LOG.info(_LI("Starting protection service:protect action"))
-        LOG.debug("protecting: %s type: %s", plan, type(plan))
+        LOG.debug("protecting: %s checkpoint_properties:%s",
+                  plan, checkpoint_properties)
 
         if not plan:
             raise exception.InvalidPlan(
@@ -103,7 +104,8 @@ class ProtectionManager(manager.Manager):
         provider = self.provider_registry.show_provider(provider_id)
         checkpoint_collection = provider.get_checkpoint_collection()
         try:
-            checkpoint = checkpoint_collection.create(plan)
+            checkpoint = checkpoint_collection.create(plan,
+                                                      checkpoint_properties)
         except Exception as e:
             LOG.exception(_LE("Failed to create checkpoint, plan: %s"),
                           plan_id)
