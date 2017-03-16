@@ -86,7 +86,7 @@ class ProtectOperationTestCase(base.TestCase):
              'operation_id': self._operation_db.id}, 1,
             None, ['created_at'], ['desc'])
 
-        self.assertTrue(logs is not None)
+        self.assertIsNotNone(logs)
         log = logs.objects[0]
         self.assertTrue(now, log.triggered_time)
 
@@ -113,7 +113,7 @@ class ProtectOperationTestCase(base.TestCase):
              'operation_id': self._operation_db.id}, 1,
             None, ['created_at'], ['desc'])
 
-        self.assertTrue(logs is not None)
+        self.assertIsNotNone(logs)
         log1 = logs.objects[0]
         self.assertTrue(log.id, log1.id)
 

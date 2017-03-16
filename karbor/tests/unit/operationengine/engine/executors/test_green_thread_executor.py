@@ -66,7 +66,7 @@ class GreenThreadExecutorTestCase(base.TestCase):
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.context, self._op_id)
-        self.assertTrue(state.end_time_for_run is not None)
+        self.assertIsNotNone(state.end_time_for_run)
         self.assertEqual(constants.OPERATION_STATE_REGISTERED, state.state)
 
     def test_resume_operation(self):

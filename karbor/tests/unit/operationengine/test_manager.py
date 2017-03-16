@@ -96,7 +96,7 @@ class OperationEngineManagerTestCase(base.TestCase):
         state_obj = objects.ScheduledOperationState.get_by_operation_id(
             self.ctxt, op.id)
 
-        self.assertTrue(state_obj is not None)
+        self.assertIsNotNone(state_obj)
 
     def test_create_operation_invalid_operation_definition(self):
         op = self._create_scheduled_operation(self._trigger.id, False)
@@ -142,7 +142,7 @@ class OperationEngineManagerTestCase(base.TestCase):
                       self.manager._trigger_manager._trigger[trigger_id])
 
         self.manager.resume_scheduled_operation(self.ctxt, op_id, trigger_id)
-        self.assertTrue(1 == len(
+        self.assertEqual(1, len(
             self.manager._trigger_manager._trigger[trigger_id]))
 
         # resume
