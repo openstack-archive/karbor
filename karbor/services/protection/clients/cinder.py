@@ -34,7 +34,7 @@ cinder_client_opts = [
                help='Location of the CA certificate file '
                     'to use for client requests in SSL connections.'),
     cfg.BoolOpt(SERVICE + '_auth_insecure',
-                default=True,
+                default=False,
                 help='Bypass verification of server certificate when '
                      'making SSL connection to Cinder.'),
 ]
