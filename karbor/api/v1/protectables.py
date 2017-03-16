@@ -19,7 +19,7 @@ from webob import exc
 from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor import exception
-from karbor.i18n import _, _LI
+from karbor.i18n import _
 
 import karbor.policy
 from karbor.services.protection import api as protection_api
@@ -129,8 +129,8 @@ class ProtectablesController(wsgi.Controller):
         context = req.environ['karbor.context']
         protectable_type = id
 
-        LOG.info(_LI("Show the information of a given"
-                     " protectable type: %s"), protectable_type)
+        LOG.info("Show the information of a given protectable type: %s",
+                 protectable_type)
 
         protectable_types = self._get_all(context)
 
@@ -145,8 +145,7 @@ class ProtectablesController(wsgi.Controller):
         except exception.ProtectableTypeNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        LOG.info(_LI("Show the protectable type information"
-                     " issued successfully."))
+        LOG.info("Show the protectable type information issued successfully.")
         return self._view_builder.show(req, retval_protectable_type)
 
     def index(self, req):
@@ -155,15 +154,14 @@ class ProtectablesController(wsgi.Controller):
         transformed through view builder.
         """
         context = req.environ['karbor.context']
-        LOG.info(_LI("Show protectable type list"), context=context)
+        LOG.info("Show protectable type list", context=context)
 
         protectable_types = self._get_all(context)
         retval_protectable_types = {
             "protectable_type": protectable_types
         }
 
-        LOG.info(_LI("Show protectable type list request issued"
-                     " successfully."))
+        LOG.info("Show protectable type list request issued successfully.")
         return retval_protectable_types
 
     def _get_all(self, context):
@@ -171,14 +169,14 @@ class ProtectablesController(wsgi.Controller):
 
         protectable_types = self.protection_api.list_protectable_types(context)
 
-        LOG.info(_LI("Get all protectable types completed successfully."))
+        LOG.info("Get all protectable types completed successfully.")
         return protectable_types
 
     def instances_index(self, req, protectable_type):
         """Return data about the given protectable_type."""
         context = req.environ['karbor.context']
-        LOG.info(_LI("Show the instances of a given"
-                     " protectable type: %s"), protectable_type)
+        LOG.info("Show the instances of a given protectable type: %s",
+                 protectable_type)
 
         params = req.params.copy()
         marker, limit, offset = common.get_pagination_params(params)
@@ -250,7 +248,7 @@ class ProtectablesController(wsgi.Controller):
             offset=offset,
             parameters=parameters)
 
-        LOG.info(_LI("Get all instances completed successfully."))
+        LOG.info("Get all instances completed successfully.")
         return instances
 
     def _get_instance_filter_options(self):
@@ -265,8 +263,8 @@ class ProtectablesController(wsgi.Controller):
         utils.check_filters(params)
         parameters = params.get("parameters", None)
 
-        LOG.info(_LI("Show the instance of a given protectable"
-                     " type: %s"), protectable_type)
+        LOG.info("Show the instance of a given protectable type: %s",
+                 protectable_type)
 
         if parameters is not None:
             if not isinstance(parameters, dict):

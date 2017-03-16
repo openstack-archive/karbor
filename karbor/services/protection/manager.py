@@ -25,7 +25,7 @@ import oslo_messaging as messaging
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LI, _LE
+from karbor.i18n import _
 from karbor import manager
 from karbor.resource import Resource
 from karbor.services.protection.flows import worker as flow_manager
@@ -81,7 +81,7 @@ class ProtectionManager(manager.Manager):
     def init_host(self, **kwargs):
         """Handle initialization if this is a standalone service"""
         # TODO(wangliuan)
-        LOG.info(_LI("Starting protection service"))
+        LOG.info("Starting protection service")
 
     @messaging.expected_exceptions(exception.InvalidPlan,
                                    exception.ProviderNotFound,
@@ -92,7 +92,7 @@ class ProtectionManager(manager.Manager):
         :param plan: Define that protection plan should be done
         """
 
-        LOG.info(_LI("Starting protection service:protect action"))
+        LOG.info("Starting protection service:protect action")
         LOG.debug("protecting: %s checkpoint_properties:%s",
                   plan, checkpoint_properties)
 
@@ -107,8 +107,7 @@ class ProtectionManager(manager.Manager):
             checkpoint = checkpoint_collection.create(plan,
                                                       checkpoint_properties)
         except Exception as e:
-            LOG.exception(_LE("Failed to create checkpoint, plan: %s"),
-                          plan_id)
+            LOG.exception("Failed to create checkpoint, plan: %s", plan_id)
             exc = exception.FlowError(flow="protect",
                                       error="Error creating checkpoint")
             six.raise_from(exc, e)
@@ -121,7 +120,7 @@ class ProtectionManager(manager.Manager):
                 provider=provider,
                 checkpoint=checkpoint)
         except Exception as e:
-            LOG.exception(_LE("Failed to create protection flow, plan: %s"),
+            LOG.exception("Failed to create protection flow, plan: %s",
                           plan_id)
             raise exception.FlowError(
                 flow="protect",
@@ -134,7 +133,7 @@ class ProtectionManager(manager.Manager):
                                    exception.CheckpointNotAvailable,
                                    exception.FlowError)
     def restore(self, context, restore, restore_auth):
-        LOG.info(_LI("Starting restore service:restore action"))
+        LOG.info("Starting restore service:restore action")
 
         checkpoint_id = restore["checkpoint_id"]
         provider_id = restore["provider_id"]
@@ -158,16 +157,15 @@ class ProtectionManager(manager.Manager):
                 restore=restore,
                 restore_auth=restore_auth)
         except Exception:
-            LOG.exception(
-                _LE("Failed to create restore flow checkpoint: %s"),
-                checkpoint_id)
+            LOG.exception("Failed to create restore flow checkpoint: %s",
+                          checkpoint_id)
             raise exception.FlowError(
                 flow="restore",
                 error=_("Failed to create flow"))
         self._spawn(self.worker.run_flow, flow)
 
     def delete(self, context, provider_id, checkpoint_id):
-        LOG.info(_LI("Starting protection service:delete action"))
+        LOG.info("Starting protection service:delete action")
         LOG.debug('provider_id :%s checkpoint_id:%s', provider_id,
                   checkpoint_id)
         provider = self.provider_registry.show_provider(provider_id)
@@ -175,7 +173,7 @@ class ProtectionManager(manager.Manager):
             checkpoint_collection = provider.get_checkpoint_collection()
             checkpoint = checkpoint_collection.get(checkpoint_id)
         except Exception:
-            LOG.error(_LE("get checkpoint failed, checkpoint_id:%s"),
+            LOG.error("get checkpoint failed, checkpoint_id:%s",
                       checkpoint_id)
             raise exception.InvalidInput(
                 reason=_("Invalid checkpoint_id or provider_id"))
@@ -196,9 +194,8 @@ class ProtectionManager(manager.Manager):
                 checkpoint=checkpoint,
                 provider=provider)
         except Exception:
-            LOG.exception(
-                _LE("Failed to create delete checkpoint flow, checkpoint:%s."),
-                checkpoint_id)
+            LOG.exception("Failed to create delete checkpoint flow,"
+                          "checkpoint:%s.", checkpoint_id)
             raise exception.KarborException(_(
                 "Failed to create delete checkpoint flow."
             ))
@@ -216,8 +213,7 @@ class ProtectionManager(manager.Manager):
                                    exception.CheckpointNotFound)
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
                          sort_keys=None, sort_dirs=None, filters=None):
-        LOG.info(_LI("Starting list checkpoints. "
-                     "provider_id:%s"), provider_id)
+        LOG.info("Starting list checkpoints. provider_id:%s", provider_id)
         plan_id = filters.get("plan_id", None)
         start_date = None
         end_date = None
@@ -247,13 +243,12 @@ class ProtectionManager(manager.Manager):
         return checkpoint.to_dict()
 
     def list_protectable_types(self, context):
-        LOG.info(_LI("Start to list protectable types."))
+        LOG.info("Start to list protectable types.")
         return self.protectable_registry.list_resource_types()
 
     @messaging.expected_exceptions(exception.ProtectableTypeNotFound)
     def show_protectable_type(self, context, protectable_type):
-        LOG.info(_LI("Start to show protectable type %s"),
-                 protectable_type)
+        LOG.info("Start to show protectable type %s", protectable_type)
 
         plugin = self.protectable_registry.get_protectable_resource_plugin(
             protectable_type)
@@ -285,16 +280,15 @@ class ProtectionManager(manager.Manager):
                                    filters=None,
                                    parameters=None):
 
-        LOG.info(_LI("Start to list protectable instances of type: %s"),
+        LOG.info("Start to list protectable instances of type: %s",
                  protectable_type)
 
         try:
             resource_instances = self.protectable_registry.list_resources(
                 context, protectable_type, parameters)
         except exception.ListProtectableResourceFailed as err:
-            LOG.error(_LE("List resources of type %(type)s failed: %(err)s"),
-                      {'type': protectable_type,
-                       'err': six.text_type(err)})
+            LOG.error("List resources of type %(type)s failed: %(err)s",
+                      {'type': protectable_type, 'err': six.text_type(err)})
             raise
 
         result = []
@@ -306,7 +300,7 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def show_protectable_instance(self, context, protectable_type,
                                   protectable_id, parameters=None):
-        LOG.info(_LI("Start to show protectable instance of type: %s"),
+        LOG.info("Start to show protectable instance of type: %s",
                  protectable_type)
 
         registry = self.protectable_registry
@@ -318,8 +312,8 @@ class ProtectionManager(manager.Manager):
                 parameters=parameters
             )
         except exception.ListProtectableResourceFailed as err:
-            LOG.error(_LE("Show resources of type %(type)s id %(id)s "
-                          "failed: %(err)s"),
+            LOG.error("Show resources of type %(type)s id %(id)s "
+                      "failed: %(err)s",
                       {'type': protectable_type,
                        'id': protectable_id,
                        'err': six.text_type(err)})
@@ -332,8 +326,8 @@ class ProtectionManager(manager.Manager):
     def list_protectable_dependents(self, context,
                                     protectable_id,
                                     protectable_type):
-        LOG.info(_LI("Start to list dependents of resource "
-                     "(type:%(type)s, id:%(id)s)"),
+        LOG.info("Start to list dependents of resource (type:%(type)s, "
+                 "id:%(id)s)",
                  {'type': protectable_type,
                   'id': protectable_id})
 
@@ -345,8 +339,7 @@ class ProtectionManager(manager.Manager):
             dependent_resources = registry.fetch_dependent_resources(
                 context, parent_resource)
         except exception.ListProtectableResourceFailed as err:
-            LOG.error(_LE("List dependent resources of (%(res)s) "
-                          "failed: %(err)s"),
+            LOG.error("List dependent resources of (%(res)s) failed: %(err)s",
                       {'res': parent_resource,
                        'err': six.text_type(err)})
             raise

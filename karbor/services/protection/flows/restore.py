@@ -17,7 +17,6 @@ from oslo_service import loopingcall
 from oslo_utils import uuidutils
 
 from karbor.common import constants
-from karbor.i18n import _LE, _LI, _LW
 from karbor.services.protection import client_factory
 from karbor.services.protection import resource_flow
 from karbor.services.protection import restore_heat
@@ -67,7 +66,7 @@ class CreateHeatTask(task.Task):
         super(CreateHeatTask, self).__init__(*args, **kwargs)
 
     def execute(self, context, heat_conf):
-        LOG.info(_LI('Creating Heat template. Target: "%s"')
+        LOG.info('Creating Heat template. Target: "%s"'
                  % heat_conf.get('auth_url', '(None)'))
         heat_client = client_factory.ClientFactory.create_client(
             'heat', context=context, **heat_conf)
@@ -86,9 +85,9 @@ class CreateStackTask(task.Task):
     def execute(self, heat_client, heat_template):
         stack_name = "restore_%s" % uuidutils.generate_uuid()
         if heat_template.len() == 0:
-            LOG.info(_LI('Not creating Heat stack, no resources in template'))
+            LOG.info('Not creating Heat stack, no resources in template')
             return None
-        LOG.info(_LI('Creating Heat stack, stack_name: %s'), stack_name)
+        LOG.info('Creating Heat stack, stack_name: %s', stack_name)
         try:
             body = heat_client.stacks.create(
                 stack_name=stack_name,
@@ -96,7 +95,7 @@ class CreateStackTask(task.Task):
             LOG.debug('Created stack with id: %s', body['stack']['id'])
             return body['stack']['id']
         except Exception:
-            LOG.error(_LE("use heat to create stack failed"))
+            LOG.error("use heat to create stack failed")
             raise
 
 
@@ -107,10 +106,10 @@ class SyncRestoreStatusTask(task.Task):
 
     def execute(self, stack_id, heat_client, restore):
         if stack_id is None:
-            LOG.info(_LI('Not syncing Heat stack status, stack is empty'))
+            LOG.info('Not syncing Heat stack status, stack is empty')
             return
 
-        LOG.info(_LI('Syncing Heat stack status, stack_id: %s'), stack_id)
+        LOG.info('Syncing Heat stack status, stack_id: %s', stack_id)
         self._restore = restore
         sync_status_loop = loopingcall.FixedIntervalLoopingCall(
             self._sync_status, heat_client, stack_id)
@@ -128,12 +127,11 @@ class SyncRestoreStatusTask(task.Task):
             LOG.debug('Heat stack status: in progress, stack_id: %s',
                       stack_id)
         elif stack_status == 'CREATE_COMPLETE':
-            LOG.info(_LI('Heat stack status: complete, stack_id: %s'),
-                     stack_id)
+            LOG.info('Heat stack status: complete, stack_id: %s', stack_id)
             self._update_resource_status(heat_client, stack_id)
             raise loopingcall.LoopingCallDone()
         else:
-            LOG.info(_LI('Heat stack status: failure, stack_id: %s'), stack_id)
+            LOG.info('Heat stack status: failure, stack_id: %s', stack_id)
             self._update_resource_status(heat_client, stack_id)
             raise
 
@@ -159,11 +157,8 @@ class SyncRestoreStatusTask(task.Task):
                 )
             self._restore.save()
         except Exception as e:
-            LOG.warning(
-                _LW('Unable to update resources status from heat stack. '
-                    'Reason: %s'),
-                e,
-            )
+            LOG.warning('Unable to update resources status from heat stack. '
+                        'Reason: %s', e)
 
 
 def get_flow(context, workflow_engine, checkpoint, provider, restore,

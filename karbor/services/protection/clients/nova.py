@@ -16,7 +16,6 @@ from oslo_log import log as logging
 
 from karbor.common import config
 from karbor import exception
-from karbor.i18n import _LE
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -63,7 +62,7 @@ def create(context, conf, **kwargs):
     extensions = nc.discover_extensions(NOVACLIENT_VERSION)
     session = kwargs.get('session')
     if session is None:
-        LOG.error(_LE('Creating nova client failed with url %s.'), url)
+        LOG.error('Creating nova client failed with url %s.', url)
         raise exception.InvalidParameterValue(
             err="The parameter session is None.")
 

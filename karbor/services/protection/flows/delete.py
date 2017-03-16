@@ -11,7 +11,6 @@
 # under the License.
 
 from karbor.common import constants
-from karbor.i18n import _LI
 from karbor.services.protection import resource_flow
 from oslo_log import log as logging
 from taskflow import task
@@ -44,8 +43,7 @@ class CompleteDeleteTask(task.Task):
 
 
 def get_flow(context, workflow_engine, checkpoint, provider):
-    LOG.info(_LI("Start get checkpoint flow, checkpoint_id: %s"),
-             checkpoint.id)
+    LOG.info("Start get checkpoint flow, checkpoint_id: %s", checkpoint.id)
     flow_name = "Delete_Checkpoint_" + checkpoint.id
     delete_flow = workflow_engine.build_flow(flow_name, 'linear')
     resource_graph = checkpoint.resource_graph

@@ -23,7 +23,7 @@ from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LI
+from karbor.i18n import _
 
 from karbor import objects
 import karbor.policy
@@ -196,14 +196,14 @@ class ProvidersController(wsgi.Controller):
         """Return data about the given provider id."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show provider with id: %s"), id)
+        LOG.info("Show provider with id: %s", id)
 
         try:
             provider = self._provider_get(context, id)
         except exception.ProviderNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        LOG.info(_LI("Show provider request issued successfully."),
+        LOG.info("Show provider request issued successfully.",
                  resource={'id': provider.get("id")})
         return self._view_builder.detail(req, provider)
 
@@ -211,7 +211,7 @@ class ProvidersController(wsgi.Controller):
         """Returns a list of providers, transformed through view builder."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show provider list"), context=context)
+        LOG.info("Show provider list", context=context)
 
         params = req.params.copy()
         marker, limit, offset = common.get_pagination_params(params)
@@ -232,7 +232,7 @@ class ProvidersController(wsgi.Controller):
 
         retval_providers = self._view_builder.detail_list(req, providers)
 
-        LOG.info(_LI("Show provider list request issued successfully."))
+        LOG.info("Show provider list request issued successfully.")
 
         return retval_providers
 
@@ -263,7 +263,7 @@ class ProvidersController(wsgi.Controller):
             filters=filters,
             offset=offset)
 
-        LOG.info(_LI("Get all providers completed successfully."))
+        LOG.info("Get all providers completed successfully.")
         return providers
 
     def _get_provider_filter_options(self):
@@ -288,15 +288,14 @@ class ProvidersController(wsgi.Controller):
 
         provider = self.protection_api.show_provider(context, provider_id)
 
-        LOG.info(_LI("Provider info retrieved successfully."))
+        LOG.info("Provider info retrieved successfully.")
         return provider
 
     def checkpoints_index(self, req, provider_id):
         """Returns a list of checkpoints, transformed through view builder."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show checkpoints list. "
-                     "provider_id:%s"), provider_id)
+        LOG.info("Show checkpoints list. provider_id:%s", provider_id)
 
         params = req.params.copy()
         marker, limit, offset = common.get_pagination_params(params)
@@ -317,8 +316,7 @@ class ProvidersController(wsgi.Controller):
         retval_checkpoints = self._checkpoint_view_builder.detail_list(
             req, checkpoints)
 
-        LOG.info(_LI("Show checkpoints list request issued successfully."))
-
+        LOG.info("Show checkpoints list request issued successfully.")
         return retval_checkpoints
 
     def _checkpoints_get_all(self, context, provider_id, marker=None,
@@ -349,7 +347,7 @@ class ProvidersController(wsgi.Controller):
             filters=filters,
             offset=offset)
 
-        LOG.info(_LI("Get all checkpoints completed successfully."))
+        LOG.info("Get all checkpoints completed successfully.")
         return checkpoints
 
     def checkpoints_create(self, req, provider_id, body):
@@ -427,7 +425,7 @@ class ProvidersController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
         checkpoint_properties['id'] = checkpoint_id
 
-        LOG.info(_LI("Create the checkpoint successfully. checkpoint_id:%s"),
+        LOG.info("Create the checkpoint successfully. checkpoint_id:%s",
                  checkpoint_id)
         returnval = self._checkpoint_view_builder.detail(
             req, checkpoint_properties)
@@ -437,9 +435,8 @@ class ProvidersController(wsgi.Controller):
         """Return data about the given checkpoint id."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show checkpoint with id: %s."),
-                 checkpoint_id)
-        LOG.info(_LI("provider_id: %s."), provider_id)
+        LOG.info("Show checkpoint with id: %s.", checkpoint_id)
+        LOG.info("provider_id: %s.", provider_id)
 
         try:
             checkpoint = self._checkpoint_get(context, provider_id,
@@ -447,10 +444,10 @@ class ProvidersController(wsgi.Controller):
         except exception.CheckpointNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        LOG.info(_LI("Show checkpoint request issued successfully."))
-        LOG.info(_LI("checkpoint: %s"), checkpoint)
+        LOG.info("Show checkpoint request issued successfully.")
+        LOG.info("checkpoint: %s", checkpoint)
         retval = self._checkpoint_view_builder.detail(req, checkpoint)
-        LOG.info(_LI("retval: %s"), retval)
+        LOG.info("retval: %s", retval)
         return retval
 
     def _checkpoint_get(self, context, provider_id, checkpoint_id):
@@ -475,16 +472,15 @@ class ProvidersController(wsgi.Controller):
         if checkpoint is None:
             raise exception.CheckpointNotFound(checkpoint_id=checkpoint_id)
 
-        LOG.info(_LI("Checkpoint info retrieved successfully."))
+        LOG.info("Checkpoint info retrieved successfully.")
         return checkpoint
 
     def checkpoints_delete(self, req, provider_id, checkpoint_id):
         """Delete a checkpoint."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Delete checkpoint with id: %s."),
-                 checkpoint_id)
-        LOG.info(_LI("provider_id: %s."), provider_id)
+        LOG.info("Delete checkpoint with id: %s.", checkpoint_id)
+        LOG.info("provider_id: %s.", provider_id)
 
         if not uuidutils.is_uuid_like(provider_id):
             msg = _("Invalid provider id provided.")
@@ -499,7 +495,7 @@ class ProvidersController(wsgi.Controller):
                                    provider_id,
                                    checkpoint_id)
 
-        LOG.info(_LI("Delete checkpoint request issued successfully."))
+        LOG.info("Delete checkpoint request issued successfully.")
         return {}
 
 

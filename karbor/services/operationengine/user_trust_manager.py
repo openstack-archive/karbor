@@ -13,7 +13,6 @@
 from oslo_log import log as logging
 
 from karbor.common import karbor_keystone_plugin
-from karbor.i18n import _LE
 
 
 LOG = logging.getLogger(__name__)
@@ -52,8 +51,8 @@ class UserTrustManager(object):
         try:
             return auth_info['session'].get_token()
         except Exception:
-            LOG.exception(_LE("Get token failed, "
-                              "user_id=%(user_id)s, project_id=%(proj_id)s"),
+            LOG.exception("Get token failed, user_id=%(user_id)s, "
+                          "project_id=%(proj_id)s",
                           {'user_id': user_id, 'proj_id': project_id})
         return None
 

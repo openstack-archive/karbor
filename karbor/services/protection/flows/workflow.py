@@ -15,7 +15,7 @@ import futurist
 import six
 
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from oslo_log import log as logging
 
 from taskflow import engines
@@ -100,7 +100,7 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def get_engine(self, flow, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None, build it first"))
+            LOG.error("The flow is None, build it first")
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow is None"))
         executor = kwargs.get('executor', None)
@@ -126,7 +126,7 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def run_engine(self, flow_engine):
         if flow_engine is None:
-            LOG.error(_LE("Flow engine is None,get it first"))
+            LOG.error("Flow engine is None,get it first")
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow_engine is None"))
 
@@ -136,7 +136,7 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def output(self, flow_engine, target=None):
         if flow_engine is None:
-            LOG.error(_LE("Flow engine is None,return nothing"))
+            LOG.error("Flow engine is None,return nothing")
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow_engine is None"))
         if target:
@@ -163,7 +163,7 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def link_task(self, flow, u, v):
         if flow is None:
-            LOG.error(_LE("The flow is None, build it first"))
+            LOG.error("The flow is None, build it first")
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow is None"))
         if u and v:
@@ -171,14 +171,14 @@ class TaskFlowEngine(WorkFlowEngine):
 
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None, get it first"))
+            LOG.error("The flow is None, get it first")
             raise exception.InvalidTaskFlowObject(
                 reason=_("The flow is None"))
         flow.add(*nodes, **kwargs)
 
     def search_task(self, flow, task_id):
         if not isinstance(flow, graph_flow.Flow):
-            LOG.error(_LE("this is not a graph flow,flow name:%s"), flow.name)
+            LOG.error("this is not a graph flow,flow name:%s", flow.name)
             return
         for node, meta in flow.iter_nodes():
             if not isinstance(node, task.FunctorTask):

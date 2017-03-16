@@ -16,7 +16,6 @@ import os
 from io import BytesIO
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.image \
@@ -81,7 +80,7 @@ class ProtectOperation(protection_plugin.Operation):
 
         resource_definition = {"resource_id": image_id}
         glance_client = ClientFactory.create_client('glance', context)
-        LOG.info(_LI("Creating image backup, image_id: %s."), image_id)
+        LOG.info("Creating image backup, image_id: %s.", image_id)
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
@@ -95,7 +94,7 @@ class ProtectOperation(protection_plugin.Operation):
                                       'deactivated', 'NotFound'}
                 )
                 if is_success is not True:
-                    LOG.error(_LE("The status of image (id: %s) is invalid."),
+                    LOG.error("The status of image (id: %s) is invalid.",
                               image_id)
                     raise exception.CreateBackupFailed(
                         reason="The status of image is invalid.",
@@ -111,8 +110,7 @@ class ProtectOperation(protection_plugin.Operation):
 
             bank_section.update_object("metadata", resource_definition)
         except Exception as err:
-            LOG.error(_LE("Create image backup failed, image_id: %s."),
-                      image_id)
+            LOG.error("Create image backup failed, image_id: %s.", image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
@@ -160,11 +158,11 @@ class ProtectOperation(protection_plugin.Operation):
             # Update resource_definition backup_status
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_AVAILABLE)
-            LOG.info(_LI('Protecting image (id: %s) to bank completed '
-                         'successfully'), image_id)
+            LOG.info('Protecting image (id: %s) to bank completed '
+                     'successfully', image_id)
         except Exception as err:
             # update resource_definition backup_status
-            LOG.exception(_LE('Protecting image (id: %s) to bank failed.'),
+            LOG.exception('Protecting image (id: %s) to bank failed.',
                           image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
@@ -182,8 +180,7 @@ class DeleteOperation(protection_plugin.Operation):
         image_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(image_id)
 
-        LOG.info(_LI("Deleting image backup failed, image_id: %s."),
-                 image_id)
+        LOG.info("Deleting image backup failed, image_id: %s.", image_id)
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETING)
@@ -195,8 +192,7 @@ class DeleteOperation(protection_plugin.Operation):
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETED)
         except Exception as err:
-            LOG.error(_LE("delete image backup failed, image_id: %s."),
-                      image_id)
+            LOG.error("delete image backup failed, image_id: %s.", image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.DeleteBackupFailed(
@@ -215,8 +211,7 @@ class RestoreOperation(protection_plugin.Operation):
         heat_template = kwargs.get("heat_template")
 
         name = parameters.get("restore_name", "karbor-restore-image")
-        LOG.info(_LI("Restoring image backup, image_id: %s."),
-                 original_image_id)
+        LOG.info("Restoring image backup, image_id: %s.", original_image_id)
 
         glance_client = ClientFactory.create_client('glance', context)
         bank_section = checkpoint.get_resource_bank_section(original_image_id)
@@ -255,7 +250,7 @@ class RestoreOperation(protection_plugin.Operation):
                                       'deactivated', 'not-found'}
                 )
                 if is_success is not True:
-                    LOG.error(_LE('The status of image is invalid. status:%s'),
+                    LOG.error('The status of image is invalid. status:%s',
                               image_info.status)
                     raise exception.RestoreBackupFailed(
                         resource_id=image_info.id,
@@ -269,12 +264,12 @@ class RestoreOperation(protection_plugin.Operation):
                     resource_type=constants.IMAGE_RESOURCE_TYPE)
             heat_template.put_parameter(original_image_id, image.id)
         except Exception as e:
-            LOG.error(_LE("Restore image backup failed, image_id: %s."),
+            LOG.error("Restore image backup failed, image_id: %s.",
                       original_image_id)
             raise exception.RestoreBackupFailed(
                 reason=e, resource_id=original_image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
-        LOG.info(_LI("Finish restoring image backup, image_id: %s."),
+        LOG.info("Finish restoring image backup, image_id: %s.",
                  original_image_id)
 
 

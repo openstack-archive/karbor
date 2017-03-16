@@ -14,7 +14,6 @@ import six
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE
 from karbor import resource
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protectable_plugin
@@ -51,7 +50,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             images = self._glance_client(context).images.list()
         except Exception as e:
-            LOG.exception(_LE("List all images from glance failed."))
+            LOG.exception("List all images from glance failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -67,7 +66,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             server = self._nova_client(context).servers.get(parent_resource.id)
         except Exception as e:
-            LOG.exception(_LE("List all server from nova failed."))
+            LOG.exception("List all server from nova failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -77,7 +76,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             image = self._glance_client(context).images.get(server.image['id'])
         except Exception as e:
-            LOG.exception(_LE("Getting image from glance failed."))
+            LOG.exception("Getting image from glance failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -91,7 +90,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             images = self._glance_client(context).images.list()
         except Exception as e:
-            LOG.exception(_LE("List all images from glance failed."))
+            LOG.exception("List all images from glance failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -107,7 +106,7 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             image = self._glance_client(context).images.get(resource_id)
         except Exception as e:
-            LOG.exception(_LE("Show a image from glance failed."))
+            LOG.exception("Show a image from glance failed.")
             raise exception.ProtectableResourceNotFound(
                 id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,

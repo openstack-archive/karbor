@@ -12,13 +12,11 @@
 
 import os
 
+from abclient import client
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from karbor.i18n import _LI
 from karbor import utils
-
-from abclient import client
 
 EISOO_JOB_TYPE = (ORACLE_JOB_TYPE) = (1)
 EISOO_JOB_STATUS = (RUNNING, SUCCESS, FAILED) = (4, 32, 64)
@@ -48,7 +46,7 @@ def create(context, conf):
     config.register_opts(eisoo_client_opts,
                          group=SERVICE + '_client')
 
-    LOG.info(_LI('Creating eisoo client with url %s.'),
+    LOG.info('Creating eisoo client with url %s.',
              config.eisoo_client.eisoo_endpoint)
     abclient = client.ABClient(config.eisoo_client.eisoo_endpoint,
                                config.eisoo_client.eisoo_app_id,

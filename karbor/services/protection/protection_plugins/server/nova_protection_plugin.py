@@ -12,7 +12,6 @@
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE, _LI
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.server \
@@ -52,7 +51,7 @@ class ProtectOperation(protection_plugin.Operation):
             if resource.id == server_id:
                 server_child_nodes = resource_node.child_nodes
 
-        LOG.info(_LI("Creating server backup, server_id: %s. "), server_id)
+        LOG.info("Creating server backup, server_id: %s. ", server_id)
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_PROTECTING)
@@ -132,11 +131,10 @@ class ProtectOperation(protection_plugin.Operation):
             # update resource_definition backup_status
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_AVAILABLE)
-            LOG.info(_LI("Finish backup server, server_id: %s."), server_id)
+            LOG.info("Finish backup server, server_id: %s.", server_id)
         except Exception as err:
             # update resource_definition backup_status
-            LOG.exception(_LE("Create backup failed, server_id: %s."),
-                          server_id)
+            LOG.exception("Create backup failed, server_id: %s.", server_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
@@ -153,7 +151,7 @@ class DeleteOperation(protection_plugin.Operation):
         resource_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(resource_id)
 
-        LOG.info(_LI("deleting server backup, server_id: %s."), resource_id)
+        LOG.info("deleting server backup, server_id: %s.", resource_id)
 
         try:
             bank_section.update_object("status",
@@ -165,10 +163,10 @@ class DeleteOperation(protection_plugin.Operation):
                 bank_section.delete_object(obj)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETED)
-            LOG.info(_LI("finish delete server, server_id: %s."), resource_id)
+            LOG.info("finish delete server, server_id: %s.", resource_id)
         except Exception as err:
             # update resource_definition backup_status
-            LOG.error(_LE("Delete backup failed, server_id: %s."), resource_id)
+            LOG.error("Delete backup failed, server_id: %s.", resource_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.DeleteBackupFailed(
@@ -187,8 +185,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         restore_name = parameters.get("restore_name", "karbor-restore-server")
 
-        LOG.info(_LI("Restoring server backup, server_id: %s."),
-                 original_server_id)
+        LOG.info("Restoring server backup, server_id: %s.", original_server_id)
 
         bank_section = checkpoint.get_resource_bank_section(original_server_id)
         try:
@@ -208,10 +205,10 @@ class RestoreOperation(protection_plugin.Operation):
                 heat_template, original_server_id, resource_definition)
             LOG.debug("Restoring server backup, heat_template: %s.",
                       heat_template)
-            LOG.info(_LI("Finish restore server, server_id: %s."),
+            LOG.info("Finish restore server, server_id: %s.",
                      original_server_id)
         except Exception as e:
-            LOG.exception(_LE("restore server backup failed, server_id: %s."),
+            LOG.exception("restore server backup failed, server_id: %s.",
                           original_server_id)
             raise exception.RestoreBackupFailed(
                 reason=e,
@@ -246,7 +243,7 @@ class RestoreOperation(protection_plugin.Operation):
                 "boot_index": 0,
             }]
         else:
-            LOG.exception(_LE("Restore server backup failed, server_id: %s."),
+            LOG.exception("Restore server backup failed, server_id: %s.",
                           original_id)
             raise exception.RestoreBackupFailed(
                 reason="Can not find the boot device of the server.",

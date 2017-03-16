@@ -23,7 +23,7 @@ from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LI
+from karbor.i18n import _
 
 from karbor import objects
 from karbor.objects import base as objects_base
@@ -132,7 +132,7 @@ class PlansController(wsgi.Controller):
         """Return data about the given plan."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show plan with id: %s"), id, context=context)
+        LOG.info("Show plan with id: %s", id, context=context)
 
         if not uuidutils.is_uuid_like(id):
             msg = _("Invalid plan id provided.")
@@ -143,7 +143,7 @@ class PlansController(wsgi.Controller):
         except exception.PlanNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        LOG.info(_LI("Show plan request issued successfully."),
+        LOG.info("Show plan request issued successfully.",
                  resource={'id': plan.id})
         return self._view_builder.detail(req, plan)
 
@@ -151,7 +151,7 @@ class PlansController(wsgi.Controller):
         """Delete a plan."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Delete plan with id: %s"), id, context=context)
+        LOG.info("Delete plan with id: %s", id, context=context)
 
         try:
             plan = self._plan_get(context, id)
@@ -160,14 +160,14 @@ class PlansController(wsgi.Controller):
 
         check_policy(context, 'delete', plan)
         plan.destroy()
-        LOG.info(_LI("Delete plan request issued successfully."),
+        LOG.info("Delete plan request issued successfully.",
                  resource={'id': plan.id})
 
     def index(self, req):
         """Returns a list of plans, transformed through view builder."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show plan list"), context=context)
+        LOG.info("Show plan list", context=context)
 
         params = req.params.copy()
         marker, limit, offset = common.get_pagination_params(params)
@@ -187,7 +187,7 @@ class PlansController(wsgi.Controller):
 
         retval_plans = self._view_builder.detail_list(req, plans)
 
-        LOG.info(_LI("Show plan list request issued successfully."))
+        LOG.info("Show plan list request issued successfully.")
 
         return retval_plans
 
@@ -227,7 +227,7 @@ class PlansController(wsgi.Controller):
                 sort_keys=sort_keys, sort_dirs=sort_dirs, filters=filters,
                 offset=offset)
 
-        LOG.info(_LI("Get all plans completed successfully."))
+        LOG.info("Get all plans completed successfully.")
         return plans
 
     def _get_plan_filter_options(self):
@@ -341,13 +341,13 @@ class PlansController(wsgi.Controller):
             # raise PlanNotFound instead to make sure karbor behaves
             # as it used to
             raise exception.PlanNotFound(plan_id=plan_id)
-        LOG.info(_LI("Plan info retrieved successfully."), resource=plan)
+        LOG.info("Plan info retrieved successfully.", resource=plan)
         return plan
 
     def _plan_update(self, context, plan, fields):
         if plan['status'] != constants.PLAN_STATUS_SUSPENDED:
-            LOG.info(_LI("Unable to update plan, "
-                         "because it is in %s state."), plan['status'])
+            LOG.info("Unable to update plan, because it is in %s state.",
+                     plan['status'])
             msg = _("The plan can be only updated in suspended status.")
             raise exception.InvalidPlan(reason=msg)
         # TODO(chenying) replication scene: need call rpc API when
@@ -355,7 +355,7 @@ class PlansController(wsgi.Controller):
         if isinstance(plan, objects_base.KarborObject):
             plan.update(fields)
             plan.save()
-            LOG.info(_LI("Plan updated successfully."), resource=plan)
+            LOG.info("Plan updated successfully.", resource=plan)
         else:
             msg = _("The parameter plan must be a object of "
                     "KarborObject class.")

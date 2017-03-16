@@ -16,7 +16,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor.common import config
-from karbor.i18n import _LE
 from karbor.services.protection.clients import utils
 
 LOG = logging.getLogger(__name__)
@@ -93,7 +92,7 @@ def _create_client_with_auth_url(context, client_config, **kwargs):
                          token=auth_token, cacert=cacert, insecure=insecure)
         return heat
     except Exception:
-        LOG.error(_LE('Creating heat client with url %s.'), auth_url)
+        LOG.error('Creating heat client with url %s.', auth_url)
         raise
 
 

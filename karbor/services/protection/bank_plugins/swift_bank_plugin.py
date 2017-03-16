@@ -15,7 +15,7 @@ import math
 import time
 
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import LeasePlugin
 from karbor.services.protection import client_factory
@@ -88,14 +88,14 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                 self._put_container(self.bank_object_container)
                 self._put_container(self.bank_leases_container)
             except SwiftConnectionFailed as err:
-                LOG.error(_LE("bank plugin create container failed."))
+                LOG.error("bank plugin create container failed.")
                 raise exception.CreateContainerFailed(reason=err)
 
             # acquire lease
             try:
                 self.acquire_lease()
             except exception.AcquireLeaseFailed:
-                LOG.error(_LE("bank plugin acquire lease failed."))
+                LOG.error("bank plugin acquire lease failed.")
                 raise
 
             # start renew lease
@@ -121,27 +121,24 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                                  'x-object-meta-serialized': str(serialized)
                              })
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("update object failed, err: %s."), err)
-            raise exception.BankUpdateObjectFailed(reason=err,
-                                                   key=key)
+            LOG.error("update object failed, err: %s.", err)
+            raise exception.BankUpdateObjectFailed(reason=err, key=key)
 
     def delete_object(self, key):
         try:
             self._delete_object(container=self.bank_object_container,
                                 obj=key)
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("delete object failed, err: %s."), err)
-            raise exception.BankDeleteObjectFailed(reason=err,
-                                                   key=key)
+            LOG.error("delete object failed, err: %s.", err)
+            raise exception.BankDeleteObjectFailed(reason=err, key=key)
 
     def get_object(self, key):
         try:
             return self._get_object(container=self.bank_object_container,
                                     obj=key)
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("get object failed, err: %s."), err)
-            raise exception.BankGetObjectFailed(reason=err,
-                                                key=key)
+            LOG.error("get object failed, err: %s.", err)
+            raise exception.BankGetObjectFailed(reason=err, key=key)
 
     def list_objects(self, prefix=None, limit=None, marker=None,
                      sort_dir=None):
@@ -158,7 +155,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                     prefix=prefix, limit=limit, marker=marker)
                 return [obj.get("name") for obj in body]
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("list objects failed, err: %s."), err)
+            LOG.error("list objects failed, err: %s.", err)
             raise exception.BankListObjectsFailed(reason=err)
 
     def acquire_lease(self):
@@ -174,7 +171,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self.lease_expire_time = math.floor(
                 time.time()) + self.lease_expire_window
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("acquire lease failed, err:%s."), err)
+            LOG.error("acquire lease failed, err:%s.", err)
             raise exception.AcquireLeaseFailed(reason=err)
 
     def renew_lease(self):
@@ -188,7 +185,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             self.lease_expire_time = math.floor(
                 time.time()) + self.lease_expire_window
         except SwiftConnectionFailed as err:
-            LOG.error(_LE("acquire lease failed, err:%s."), err)
+            LOG.error("acquire lease failed, err:%s.", err)
 
     def check_lease_validity(self):
         if (self.lease_expire_time - math.floor(time.time()) >=

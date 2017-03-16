@@ -17,7 +17,6 @@ from oslo_utils import importutils
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE
 from karbor.services.protection.flows import delete as flow_delete
 from karbor.services.protection.flows import protect as flow_protect
 from karbor.services.protection.flows import restore as flow_restore
@@ -40,7 +39,7 @@ class Worker(object):
         try:
             self.workflow_engine = self._load_engine(engine_path)
         except Exception:
-            LOG.error(_LE("load work flow engine failed"))
+            LOG.error("load work flow engine failed")
             raise
 
     def _load_engine(self, engine_path):

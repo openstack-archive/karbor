@@ -21,7 +21,7 @@ import six
 from stevedore import driver as import_driver
 
 from karbor import exception
-from karbor.i18n import _, _LE, _LW
+from karbor.i18n import _
 from karbor.services.operationengine.engine import triggers
 
 time_trigger_opts = [
@@ -226,17 +226,16 @@ class TimeTrigger(triggers.BaseTrigger):
             if operation_id not in self._operation_ids:
                 # Maybe, when traversing this operation_id, it has been
                 # removed by self.unregister_operation
-                LOG.warn(_LW("Execuete operation %s which is not exist, "
-                             "ignore it"), operation_id)
+                LOG.warn("Execuete operation %s which is not exist, "
+                         "ignore it", operation_id)
                 continue
 
             now = datetime.utcnow()
             if now >= end_time:
-                LOG.error(_LE("Can not trigger operations to run. "
-                              "Because it is out of window time. "
-                              "now=%(now)s, end time=%(end_time)s, "
-                              "expect run time=%(expect)s, "
-                              "wating operations=%(ops)s"),
+                LOG.error("Can not trigger operations to run. Because it is "
+                          "out of window time. now=%(now)s, "
+                          "end time=%(end_time)s, expect run time=%(expect)s,"
+                          " wating operations=%(ops)s",
                           {'now': now, 'end_time': end_time,
                            'expect': expect_run_time,
                            'ops': operation_ids - sent_ops})
@@ -246,8 +245,8 @@ class TimeTrigger(triggers.BaseTrigger):
                 self._executor.execute_operation(
                     operation_id, now, expect_run_time, window)
             except Exception:
-                LOG.exception(_LE("Submit operation to executor "
-                                  "failed, operation id=%s"), operation_id)
+                LOG.exception("Submit operation to executor failed, operation"
+                              " id=%s", operation_id)
 
             sent_ops.add(operation_id)
 
@@ -255,10 +254,10 @@ class TimeTrigger(triggers.BaseTrigger):
             expect_run_time, trigger_property['end_time'], timer)
         now = datetime.utcnow()
         if next_time and next_time <= now:
-            LOG.error(_LE("Next run time:%(next_time)s <= now:%(now)s. Maybe "
-                          "the entry time=%(entry)s is too late, even exceeds "
-                          "the end time of window=%(end)s, or it was blocked "
-                          "where sending the operation to executor."),
+            LOG.error("Next run time:%(next_time)s <= now:%(now)s. Maybe the "
+                      "entry time=%(entry)s is too late, even exceeds the end"
+                      " time of window=%(end)s, or it was blocked where "
+                      "sending the operation to executor.",
                       {'next_time': next_time, 'now': now,
                        'entry': entry_time, 'end': end_time})
         return next_time

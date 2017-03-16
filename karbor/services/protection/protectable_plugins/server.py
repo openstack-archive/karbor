@@ -14,7 +14,6 @@ import six
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE
 from karbor import resource
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protectable_plugin
@@ -48,7 +47,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             servers = self._client(context).servers.list(detailed=True)
         except Exception as e:
-            LOG.exception(_LE("List all servers from nova failed."))
+            LOG.exception("List all servers from nova failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -63,7 +62,7 @@ class ServerProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             server = self._client(context).servers.get(resource_id)
         except Exception as e:
-            LOG.exception(_LE("Show a server from nova failed."))
+            LOG.exception("Show a server from nova failed.")
             raise exception.ProtectableResourceNotFound(
                 id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,

@@ -25,7 +25,7 @@ import webob.dec
 import webob.exc
 
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from karbor import utils
 
 CONF = cfg.CONF
@@ -286,5 +286,5 @@ class Loader(object):
         try:
             return deploy.loadapp("config:%s" % self.config_path, name=name)
         except LookupError:
-            LOG.exception(_LE("Error loading app %s"), name)
+            LOG.exception("Error loading app %s", name)
             raise exception.PasteAppNotFound(name=name, path=self.config_path)

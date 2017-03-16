@@ -29,7 +29,7 @@ from oslo_utils import importutils
 from karbor import context
 from karbor import db
 from karbor import exception
-from karbor.i18n import _, _LE, _LI, _LW
+from karbor.i18n import _
 from karbor.objects import base as objects_base
 from karbor import rpc
 from karbor import version
@@ -99,7 +99,7 @@ class Service(service.Service):
 
     def start(self):
         version_string = version.version_string()
-        LOG.info(_LI('Starting %(topic)s node (version %(version_string)s)'),
+        LOG.info('Starting %(topic)s node (version %(version_string)s)',
                  {'topic': self.topic, 'version_string': version_string})
         self.model_disconnected = False
         ctxt = context.get_admin_context()
@@ -150,11 +150,11 @@ class Service(service.Service):
             if CONF.service_down_time <= self.report_interval:
                 new_down_time = int(self.report_interval * 2.5)
                 LOG.warning(
-                    _LW("Report interval must be less than service down "
-                        "time. Current config service_down_time: "
-                        "%(service_down_time)s, report_interval for this: "
-                        "service is: %(report_interval)s. Setting global "
-                        "service_down_time to: %(new_down_time)s"),
+                    "Report interval must be less than service down "
+                    "time. Current config service_down_time: "
+                    "%(service_down_time)s, report_interval for this: "
+                    "service is: %(report_interval)s. Setting global "
+                    "service_down_time to: %(new_down_time)s",
                     {'service_down_time': CONF.service_down_time,
                      'report_interval': self.report_interval,
                      'new_down_time': new_down_time})
@@ -217,7 +217,7 @@ class Service(service.Service):
         try:
             db.service_destroy(context.get_admin_context(), self.service_id)
         except exception.NotFound:
-            LOG.warning(_LW('Service killed that has no database entry'))
+            LOG.warning('Service killed that has no database entry')
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
@@ -253,9 +253,9 @@ class Service(service.Service):
         if not self.manager.is_working():
             # NOTE(dulek): If manager reports a problem we're not sending
             # heartbeats - to indicate that service is actually down.
-            LOG.error(_LE('Manager for service %(binary)s %(host)s is '
-                          'reporting problems, not sending heartbeat. '
-                          'Service will appear "down".'),
+            LOG.error('Manager for service %(binary)s %(host)s is '
+                      'reporting problems, not sending heartbeat. '
+                      'Service will appear "down".',
                       {'binary': self.binary,
                        'host': self.host})
             return
@@ -279,24 +279,24 @@ class Service(service.Service):
             # TODO(termie): make this pattern be more elegant.
             if getattr(self, 'model_disconnected', False):
                 self.model_disconnected = False
-                LOG.error(_LE('Recovered model server connection!'))
+                LOG.error('Recovered model server connection!')
 
         except db_exc.DBConnectionError:
             if not getattr(self, 'model_disconnected', False):
                 self.model_disconnected = True
-                LOG.exception(_LE('model server went away'))
+                LOG.exception('model server went away')
 
         # NOTE(jsbryant) Other DB errors can happen in HA configurations.
         # such errors shouldn't kill this thread, so we handle them here.
         except db_exc.DBError:
             if not getattr(self, 'model_disconnected', False):
                 self.model_disconnected = True
-                LOG.exception(_LE('DBError encountered: '))
+                LOG.exception('DBError encountered: ')
 
         except Exception:
             if not getattr(self, 'model_disconnected', False):
                 self.model_disconnected = True
-                LOG.exception(_LE('Exception encountered: '))
+                LOG.exception('Exception encountered: ')
 
 
 class WSGIService(service.ServiceBase):
