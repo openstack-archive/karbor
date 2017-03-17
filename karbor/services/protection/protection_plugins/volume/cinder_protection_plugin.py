@@ -149,7 +149,6 @@ class ProtectOperation(protection_plugin.Operation):
         )
 
         if not is_success:
-            reason = None
             try:
                 backup = cinder_client.backups.get(backup_id)
             except Exception:
