@@ -11,7 +11,6 @@
 #    under the License.
 
 import os
-import six
 
 from karbor import exception
 from karbor.i18n import _
@@ -107,7 +106,7 @@ class PluggableProtectionProvider(object):
     def load_plugins(self):
         return {
             plugin_type: plugin_class(self._config)
-            for plugin_type, plugin_class in six.iteritems(self.plugins)
+            for plugin_type, plugin_class in self.plugins.items()
         }
 
     def _load_bank(self, bank_name):
