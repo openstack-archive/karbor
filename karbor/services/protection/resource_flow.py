@@ -13,7 +13,6 @@ from collections import namedtuple
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LI
 from karbor.services.protection import graph
 from oslo_log import log as logging
 
@@ -164,7 +163,7 @@ class ResourceFlowGraphWalkerListener(graph.GraphWalkerListener):
 
 def build_resource_flow(operation_type, context, workflow_engine,
                         plugins, resource_graph, parameters):
-    LOG.info(_LI("Build resource flow for operation %s"), operation_type)
+    LOG.info("Build resource flow for operation %s", operation_type)
 
     resource_graph_flow = workflow_engine.build_flow(
         'ResourceGraphFlow_{}'.format(operation_type),

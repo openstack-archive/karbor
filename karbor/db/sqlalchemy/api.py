@@ -38,7 +38,7 @@ from sqlalchemy.sql import func
 
 from karbor.db.sqlalchemy import models
 from karbor import exception
-from karbor.i18n import _, _LW, _LE, _LI
+from karbor.i18n import _
 
 
 CONF = cfg.CONF
@@ -89,7 +89,7 @@ def get_backend():
 def is_admin_context(context):
     """Indicates if the request context is an administrator."""
     if not context:
-        LOG.warning(_LW('Use of empty request context is deprecated'),
+        LOG.warning('Use of empty request context is deprecated',
                     DeprecationWarning)
         raise Exception('die')
     return context.is_admin
@@ -177,9 +177,8 @@ def _retry_on_deadlock(f):
             try:
                 return f(*args, **kwargs)
             except db_exc.DBDeadlock:
-                LOG.warning(_LW("Deadlock detected when running "
-                                "'%(func_name)s': Retrying..."),
-                            dict(func_name=f.__name__))
+                LOG.warning("Deadlock detected when running '%(func_name)s':"
+                            " Retrying...", dict(func_name=f.__name__))
                 # Retry!
                 time.sleep(0.5)
                 continue
@@ -1665,16 +1664,15 @@ def purge_deleted_rows(context, age_in_days):
         try:
             tables.remove(tbl)
         except ValueError:
-            LOG.warning(_LW('Expected table %(tbl)s was not found in DB.'),
+            LOG.warning('Expected table %(tbl)s was not found in DB.',
                         **locals())
         else:
             tables.append(tbl)
 
     for table in tables:
         t = Table(table, metadata, autoload=True)
-        LOG.info(_LI('Purging deleted rows older than age=%(age)d days '
-                     'from table=%(table)s'), {'age': age_in_days,
-                                               'table': table})
+        LOG.info('Purging deleted rows older than age=%(age)d days from '
+                 'table=%(table)s', {'age': age_in_days, 'table': table})
         deleted_age = timeutils.utcnow() - dt.timedelta(days=age_in_days)
         try:
             with session.begin():
@@ -1682,10 +1680,10 @@ def purge_deleted_rows(context, age_in_days):
                     t.delete()
                     .where(t.c.deleted_at < deleted_age))
         except db_exc.DBReferenceError:
-            LOG.exception(_LE('DBError detected when purging from '
-                              'table=%(table)s'), {'table': table})
+            LOG.exception('DBError detected when purging from '
+                          'table=%(table)s', {'table': table})
             raise
 
         rows_purged = result.rowcount
-        LOG.info(_LI("Deleted %(row)d rows from table=%(table)s"),
+        LOG.info("Deleted %(row)d rows from table=%(table)s",
                  {'row': rows_purged, 'table': table})

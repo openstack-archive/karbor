@@ -23,7 +23,7 @@ import webob
 
 from karbor import exception
 from karbor import i18n
-from karbor.i18n import _, _LE, _LI
+from karbor.i18n import _
 from karbor.wsgi import common as wsgi
 
 
@@ -363,15 +363,14 @@ class ResourceExceptionHandler(object):
                 code=ex_value.code, explanation=ex_value.msg))
         elif isinstance(ex_value, TypeError):
             exc_info = (ex_type, ex_value, ex_traceback)
-            LOG.error(_LE(
-                'Exception handling resource: %s'),
-                ex_value, exc_info=exc_info)
+            LOG.error('Exception handling resource: %s',
+                      ex_value, exc_info=exc_info)
             raise Fault(webob.exc.HTTPBadRequest())
         elif isinstance(ex_value, Fault):
-            LOG.info(_LI("Fault thrown: %s"), ex_value)
+            LOG.info("Fault thrown: %s", ex_value)
             raise ex_value
         elif isinstance(ex_value, webob.exc.HTTPException):
-            LOG.info(_LI("HTTP exception thrown: %s"), ex_value)
+            LOG.info("HTTP exception thrown: %s", ex_value)
             raise Fault(ex_value)
 
         # We didn't handle the exception
@@ -567,9 +566,8 @@ class Resource(wsgi.Application):
     def __call__(self, request):
         """WSGI method that controls (de)serialization and method dispatch."""
 
-        LOG.info(_LI("%(method)s %(url)s"),
-                 {"method": request.method,
-                  "url": request.url})
+        LOG.info("%(method)s %(url)s",
+                 {"method": request.method, "url": request.url})
 
         # Identify the action, its arguments, and the requested
         # content type
@@ -667,10 +665,10 @@ class Resource(wsgi.Application):
 
         try:
             msg_dict = dict(url=request.url, status=response.status_int)
-            msg = _LI("%(url)s returned with HTTP %(status)d")
+            msg = "%(url)s returned with HTTP %(status)d"
         except AttributeError as e:
             msg_dict = dict(url=request.url, e=e)
-            msg = _LI("%(url)s returned a fault: %(e)s")
+            msg = "%(url)s returned a fault: %(e)s"
 
         LOG.info(msg, msg_dict)
 
@@ -691,7 +689,7 @@ class Resource(wsgi.Application):
                                                             'create',
                                                             'delete',
                                                             'update']):
-                    LOG.exception(_LE('Get method error.'))
+                    LOG.exception('Get method error.')
                 else:
                     ctxt.reraise = False
         else:

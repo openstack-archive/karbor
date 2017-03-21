@@ -16,7 +16,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from threading import RLock
 
-from karbor.i18n import _LE
 from karbor.services.operationengine.engine.executors import \
     scheduled_operation_executor as base_executor
 
@@ -82,7 +81,7 @@ class ThreadPoolExecutor(base_executor.ScheduledOperationExecutor):
 
             except Exception:
                 self._operation_to_run[operation_id] -= 1
-                LOG.exception(_LE("Submit operation(%(o_id)s) failed."),
+                LOG.exception("Submit operation(%(o_id)s) failed.",
                               operation_id)
 
     def _finish_operation(self, operation_id):

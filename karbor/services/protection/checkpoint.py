@@ -13,7 +13,7 @@
 from datetime import datetime
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from karbor.services.protection import graph
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -120,7 +120,7 @@ class Checkpoint(object):
         try:
             new_md = self._checkpoint_section.get_object(_INDEX_FILE_NAME)
         except exception.BankGetObjectFailed:
-            LOG.error(_LE("unable to reload metadata for checkpoint id: %s"),
+            LOG.error("unable to reload metadata for checkpoint id: %s",
                       self.id)
             raise exception.CheckpointNotFound(checkpoint_id=self.id)
         self._assert_supported_version(new_md)

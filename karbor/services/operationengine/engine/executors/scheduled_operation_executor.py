@@ -18,7 +18,6 @@ from oslo_utils import timeutils
 
 from karbor.common import constants
 from karbor import context
-from karbor.i18n import _LE, _LW
 from karbor import objects
 from karbor.services.operationengine.engine.executors import base
 
@@ -40,7 +39,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                           expect_start_time, window_time, **kwargs):
 
         if self._check_operation(operation_id, self._CHECK_ITEMS.values()):
-            LOG.warning(_LW("Execute operation(%s), it can't be executed"),
+            LOG.warning("Execute operation(%s), it can't be executed",
                         operation_id)
             return
 
@@ -92,7 +91,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                 operation = objects.ScheduledOperation.get_by_id(
                     context.get_admin_context(), operation_id)
             except Exception:
-                LOG.exception(_LE("Run operation(%s), get operation failed"),
+                LOG.exception("Run operation(%s), get operation failed",
                               operation_id)
                 return
 
@@ -105,7 +104,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                     operation.operation_definition,
                     param=param)
             except Exception:
-                LOG.exception(_LE("Run operation(%s) failed"), operation_id)
+                LOG.exception("Run operation(%s) failed", operation_id)
 
         finally:
             self._update_operation_state(
@@ -122,7 +121,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
                 setattr(state_ref, item, value)
             state_ref.save()
         except Exception:
-            LOG.exception(_LE("Execute operation(%s), update state failed"),
+            LOG.exception("Execute operation(%s), update state failed",
                           operation_id)
             return False
         return True

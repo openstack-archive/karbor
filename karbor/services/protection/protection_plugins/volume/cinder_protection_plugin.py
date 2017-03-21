@@ -16,7 +16,6 @@ import six
 from cinderclient import exceptions as cinder_exc
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE, _LI, _LW
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.volume \
@@ -119,8 +118,7 @@ class ProtectOperation(protection_plugin.Operation):
         return snapshot_id
 
     def _delete_snapshot(self, cinder_client, snapshot_id):
-        LOG.info(_LI('Cleaning up snapshot (snapshot_id: %s)'),
-                 snapshot_id)
+        LOG.info('Cleaning up snapshot (snapshot_id: %s)', snapshot_id)
         cinder_client.volume_snapshots.delete(snapshot_id)
         return status_poll(
             partial(get_snapshot_status, cinder_client, snapshot_id),
@@ -164,11 +162,11 @@ class ProtectOperation(protection_plugin.Operation):
                           **kwargs):
         volume_id = resource.id
         if not self._backup_from_snapshot:
-            LOG.info(_LI('Skipping taking snapshot of volume %s - backing up '
-                         'directly'), volume_id)
+            LOG.info('Skipping taking snapshot of volume %s - backing up '
+                     'directly', volume_id)
             return
 
-        LOG.info(_LI('Taking snapshot of volume %s'), volume_id)
+        LOG.info('Taking snapshot of volume %s', volume_id)
         bank_section = checkpoint.get_resource_bank_section(volume_id)
         bank_section.update_object('status',
                                    constants.RESOURCE_STATUS_PROTECTING)
@@ -188,7 +186,7 @@ class ProtectOperation(protection_plugin.Operation):
         volume_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(volume_id)
         cinder_client = ClientFactory.create_client('cinder', context)
-        LOG.info(_LI('creating volume backup, volume_id: %s'), volume_id)
+        LOG.info('creating volume backup, volume_id: %s', volume_id)
         bank_section.update_object('status',
                                    constants.RESOURCE_STATUS_PROTECTING)
         resource_metadata = {
@@ -218,15 +216,12 @@ class ProtectOperation(protection_plugin.Operation):
             backup_id = self._create_backup(cinder_client, volume_id,
                                             backup_name, self.snapshot_id)
         except Exception as e:
-            LOG.error(
-                _LE('Error creating backup (volume_id: %(volume_id)s '
-                    'snapshot_id: %(snapshot_id)s): %(reason)s'),
-                {
-                    'volume_id': volume_id,
-                    'snapshot_id': self.snapshot_id,
-                    'reason': e,
-                }
-            )
+            LOG.error('Error creating backup (volume_id: %(volume_id)s '
+                      'snapshot_id: %(snapshot_id)s): %(reason)s',
+                      {'volume_id': volume_id,
+                       'snapshot_id': self.snapshot_id,
+                       'reason': e}
+                      )
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
@@ -237,28 +232,21 @@ class ProtectOperation(protection_plugin.Operation):
 
         resource_metadata['backup_id'] = backup_id
         bank_section.update_object('metadata', resource_metadata)
-        LOG.info(
-            _LI('Backed up volume (volume_id: %(volume_id)s snapshot_id: '
-                '%(snapshot_id)s backup_id: %(backup_id)s) successfully'),
-            {
-                'backup_id': backup_id,
-                'snapshot_id': self.snapshot_id,
-                'volume_id': volume_id
-            }
-        )
+        LOG.info('Backed up volume (volume_id: %(volume_id)s snapshot_id: '
+                 '%(snapshot_id)s backup_id: %(backup_id)s) successfully',
+                 {'backup_id': backup_id,
+                  'snapshot_id': self.snapshot_id,
+                  'volume_id': volume_id}
+                 )
 
         if self.snapshot_id:
             try:
                 self._delete_snapshot(cinder_client, self.snapshot_id)
             except Exception as e:
-                LOG.warn(
-                    _LW('Failed deleting snapshot: %(snapshot_id)s. '
-                        'Reason: %(reason)s'),
-                    {
-                        'snapshot_id': self.snapshot_id,
-                        'reason': e,
-                    }
-                )
+                LOG.warn('Failed deleting snapshot: %(snapshot_id)s. '
+                         'Reason: %(reason)s',
+                         {'snapshot_id': self.snapshot_id, 'reason': e}
+                         )
 
 
 class RestoreOperation(protection_plugin.Operation):
@@ -303,7 +291,7 @@ class DeleteOperation(protection_plugin.Operation):
                 backup = cinder_client.backups.get(backup_id)
                 cinder_client.backups.delete(backup)
             except cinder_exc.NotFound:
-                LOG.info(_LI('Backup id: %s not found. Assuming deleted'),
+                LOG.info('Backup id: %s not found. Assuming deleted',
                          backup_id)
             is_success = status_poll(
                 partial(get_backup_status, cinder_client, backup_id),
@@ -318,8 +306,7 @@ class DeleteOperation(protection_plugin.Operation):
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_DELETED)
         except Exception as e:
-            LOG.error(_LE('delete volume backup failed, backup_id: %s'),
-                      backup_id)
+            LOG.error('delete volume backup failed, backup_id: %s', backup_id)
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.DeleteBackupFailed(

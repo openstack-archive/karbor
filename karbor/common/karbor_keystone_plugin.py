@@ -19,7 +19,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from karbor import exception
-from karbor.i18n import _LW
 from karbor import utils
 
 
@@ -163,9 +162,9 @@ class KarborKeystonePlugin(object):
             CONF, TRUSTEE_CONF_GROUP, trust_id=trust_id)
 
         if not auth_plugin:
-            LOG.warning(_LW('Please add the trustee credentials you '
-                            'need to the %s section of your karbor.conf '
-                            'file.') % TRUSTEE_CONF_GROUP)
+            LOG.warning('Please add the trustee credentials you need to the'
+                        ' %s section of your karbor.conf file.',
+                        TRUSTEE_CONF_GROUP)
             raise exception.AuthorizationFailure(obj=TRUSTEE_CONF_GROUP)
 
         return auth_plugin

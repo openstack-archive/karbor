@@ -24,7 +24,6 @@ from oslo_log import log as logging
 
 from karbor.common import constants
 from karbor import context
-from karbor.i18n import _LE
 from karbor import objects
 from karbor.services.operationengine import karbor_client
 
@@ -136,7 +135,7 @@ class Operation(object):
         try:
             log_ref.create()
         except Exception:
-            LOG.exception(_LE("Execute operation(%s), create log obj failed"),
+            LOG.exception("Execute operation(%s), create log obj failed",
                           param['operation_id'])
             return
         return log_ref
@@ -160,7 +159,7 @@ class Operation(object):
         try:
             log_ref.save()
         except Exception:
-            LOG.exception(_LE("Execute operation(%s), save log failed"),
+            LOG.exception("Execute operation(%s), save log failed",
                           log_ref.operation_id)
 
     def _update_log_when_operation_finished(self, log_ref, state,

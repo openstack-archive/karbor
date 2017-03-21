@@ -14,7 +14,7 @@ import os
 import six
 
 from karbor import exception
-from karbor.i18n import _, _LE, _LI
+from karbor.i18n import _
 from karbor.services.protection import bank_plugin
 from karbor.services.protection.checkpoint import CheckpointCollection
 from karbor import utils
@@ -115,8 +115,7 @@ class PluggableProtectionProvider(object):
             plugin = utils.load_plugin(PROTECTION_NAMESPACE, bank_name,
                                        self._config)
         except Exception:
-            LOG.exception(_LE("Load bank plugin: '%s' failed."),
-                          bank_name)
+            LOG.exception("Load bank plugin: '%s' failed.", bank_name)
             raise
         else:
             self._bank_plugin = plugin
@@ -125,8 +124,7 @@ class PluggableProtectionProvider(object):
         try:
             plugin = utils.load_class(PROTECTION_NAMESPACE, plugin_name)
         except Exception:
-            LOG.exception(_LE("Load protection plugin: '%s' failed."),
-                          plugin_name)
+            LOG.exception("Load protection plugin: '%s' failed.", plugin_name)
             raise
         else:
             for resource in plugin.get_supported_resources_types():
@@ -178,12 +176,12 @@ class ProviderRegistry(object):
             try:
                 provider = PluggableProtectionProvider(provider_config)
             except Exception as e:
-                LOG.error(_LE("Load provider: %(provider)s failed. "
-                              "Reason: %(reason)s"),
+                LOG.error("Load provider: %(provider)s failed. "
+                          "Reason: %(reason)s",
                           {'provider': provider_config.provider.name,
                            'reason': e})
             else:
-                LOG.info(_LI('Loaded provider: %s successully.'),
+                LOG.info('Loaded provider: %s successully.',
                          provider_config.provider.name)
                 self.providers[provider.id] = provider
 

@@ -19,7 +19,7 @@ from webob import exc
 from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from karbor import objects
 from karbor import policy
 from karbor.services.operationengine import api as operationengine_api
@@ -246,7 +246,7 @@ class ScheduledOperationController(wsgi.Controller):
             self._raise_unknown_exception(ex)
 
     def _raise_unknown_exception(self, exception_instance):
-        LOG.exception(_LE('An unknown exception happened'))
+        LOG.exception('An unknown exception happened')
 
         value = exception_instance.msg if isinstance(
             exception_instance, exception.KarborException) else type(

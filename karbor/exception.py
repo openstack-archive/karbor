@@ -28,7 +28,7 @@ import webob.exc
 from webob.util import status_generic_reasons
 from webob.util import status_reasons
 
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 
 
 LOG = logging.getLogger(__name__)
@@ -111,9 +111,9 @@ class KarborException(Exception):
                 exc_info = sys.exc_info()
                 # kwargs doesn't match a variable in the message
                 # log the issue and the kwargs
-                LOG.exception(_LE('Exception in string format operation'))
+                LOG.exception('Exception in string format operation')
                 for name, value in kwargs.items():
-                    LOG.error(_LE("%(name)s: %(value)s"),
+                    LOG.error("%(name)s: %(value)s",
                               {'name': name, 'value': value})
                 if CONF.fatal_exception_format_errors:
                     six.reraise(*exc_info)

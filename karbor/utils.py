@@ -22,7 +22,7 @@ from oslo_utils import strutils
 from oslo_utils import timeutils
 
 from karbor import exception
-from karbor.i18n import _, _LE
+from karbor.i18n import _
 from stevedore import driver
 
 CONF = cfg.CONF
@@ -112,8 +112,8 @@ def load_class(namespace, plugin_name):
         try:
             return importutils.import_class(plugin_name)
         except ImportError as e2:
-            LOG.error(_LE("Error loading plugin by name, %s"), e1)
-            LOG.error(_LE("Error loading plugin by class, %s"), e2)
+            LOG.error("Error loading plugin by name, %s", e1)
+            LOG.error("Error loading plugin by class, %s", e2)
             raise ImportError(_("Class not found."))
 
 

@@ -23,7 +23,7 @@ from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _, _LI
+from karbor.i18n import _
 
 from karbor import objects
 from karbor.objects import base as objects_base
@@ -135,7 +135,7 @@ class RestoresController(wsgi.Controller):
         """Return data about the given restore."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show restore with id: %s"), id, context=context)
+        LOG.info("Show restore with id: %s", id, context=context)
 
         if not uuidutils.is_uuid_like(id):
             msg = _("Invalid restore id provided.")
@@ -146,7 +146,7 @@ class RestoresController(wsgi.Controller):
         except exception.RestoreNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        LOG.info(_LI("Show restore request issued successfully."),
+        LOG.info("Show restore request issued successfully.",
                  resource={'id': restore.id})
         return self._view_builder.detail(req, restore)
 
@@ -154,7 +154,7 @@ class RestoresController(wsgi.Controller):
         """Returns a list of restores, transformed through view builder."""
         context = req.environ['karbor.context']
 
-        LOG.info(_LI("Show restore list"), context=context)
+        LOG.info("Show restore list", context=context)
 
         params = req.params.copy()
         marker, limit, offset = common.get_pagination_params(params)
@@ -175,7 +175,7 @@ class RestoresController(wsgi.Controller):
 
         retval_restores = self._view_builder.detail_list(req, restores)
 
-        LOG.info(_LI("Show restore list request issued successfully."))
+        LOG.info("Show restore list request issued successfully.")
 
         return retval_restores
 
@@ -216,7 +216,7 @@ class RestoresController(wsgi.Controller):
                 sort_keys=sort_keys, sort_dirs=sort_dirs, filters=filters,
                 offset=offset)
 
-        LOG.info(_LI("Get all restores completed successfully."))
+        LOG.info("Get all restores completed successfully.")
         return restores
 
     def _get_restore_filter_options(self):
@@ -303,7 +303,7 @@ class RestoresController(wsgi.Controller):
             # raise RestoreNotFound instead to make sure karbor behaves
             # as it used to
             raise exception.RestoreNotFound(restore_id=restore_id)
-        LOG.info(_LI("Restore info retrieved successfully."))
+        LOG.info("Restore info retrieved successfully.")
         return restore
 
     def _restore_update(self, context, restore_id, fields):
@@ -315,7 +315,7 @@ class RestoresController(wsgi.Controller):
         if isinstance(restore, objects_base.KarborObject):
             restore.update(fields)
             restore.save()
-            LOG.info(_LI("restore updated successfully."))
+            LOG.info("restore updated successfully.")
             return restore
         else:
             msg = _("The parameter restore must be a object of "

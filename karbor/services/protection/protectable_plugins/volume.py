@@ -14,7 +14,6 @@ import six
 
 from karbor.common import constants
 from karbor import exception
-from karbor.i18n import _LE
 from karbor import resource
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protectable_plugin
@@ -48,8 +47,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             volumes = self._client(context).volumes.list(detailed=True)
         except Exception as e:
-            LOG.exception(_LE("List all summary volumes "
-                              "from cinder failed."))
+            LOG.exception("List all summary volumes from cinder failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
@@ -63,8 +61,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             volume = self._client(context).volumes.get(resource_id)
         except Exception as e:
-            LOG.exception(_LE("Show a summary volume "
-                              "from cinder failed."))
+            LOG.exception("Show a summary volume from cinder failed.")
             raise exception.ProtectableResourceNotFound(
                 id=resource_id,
                 type=self._SUPPORT_RESOURCE_TYPE,
@@ -91,8 +88,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
         try:
             volumes = self._client(context).volumes.list(detailed=True)
         except Exception as e:
-            LOG.exception(_LE("List all detailed volumes "
-                              "from cinder failed."))
+            LOG.exception("List all detailed volumes from cinder failed.")
             raise exception.ListProtectableResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))

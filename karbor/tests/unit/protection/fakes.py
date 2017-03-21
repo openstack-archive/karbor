@@ -19,7 +19,6 @@ import mock
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from karbor.i18n import _LE
 from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
@@ -265,7 +264,7 @@ class FakeFlowEngine(object):
 
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
-            LOG.error(_LE("The flow is None, get it first"))
+            LOG.error("The flow is None, get it first")
         flow.add(*nodes, **kwargs)
 
     def link_task(self, flow, u, v):
@@ -277,12 +276,12 @@ class FakeFlowEngine(object):
         elif flow_type == 'graph':
             return graph_flow.Flow(flow_name)
         else:
-            LOG.error(_LE("unsupported flow type:%s"), flow_type)
+            LOG.error("unsupported flow type:%s", flow_type)
             return
 
     def get_engine(self, flow, **kwargs):
         if flow is None:
-            LOG.error(_LE("Flow is None, build it first"))
+            LOG.error("Flow is None, build it first")
             return
         executor = kwargs.get('executor', None)
         engine = kwargs.get('engine', None)
@@ -299,13 +298,13 @@ class FakeFlowEngine(object):
 
     def run_engine(self, flow_engine):
         if flow_engine is None:
-            LOG.error(_LE("Flow engine is None,get it first"))
+            LOG.error("Flow engine is None,get it first")
             return
         flow_engine.run()
 
     def output(self, flow_engine, target=None):
         if flow_engine is None:
-            LOG.error(_LE("Flow engine is None,return nothing"))
+            LOG.error("Flow engine is None,return nothing")
             return
         if target:
             return flow_engine.storage.fetch(target)

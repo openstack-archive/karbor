@@ -15,7 +15,6 @@ import json
 import yaml
 
 from karbor.exception import InvalidOriginalId
-from karbor.i18n import _LE
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -64,7 +63,7 @@ class HeatTemplate(object):
         elif original_id in self._original_id_parameter_map:
             return self._original_id_parameter_map[original_id]
         else:
-            LOG.error(_LE("The reference is not found, original_id:%s"),
+            LOG.error("The reference is not found, original_id:%s",
                       original_id)
             raise InvalidOriginalId
 

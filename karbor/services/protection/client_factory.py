@@ -20,7 +20,7 @@ from oslo_utils import importutils
 
 from karbor.common import karbor_keystone_plugin
 from karbor import exception
-from karbor.i18n import _LE
+from karbor.i18n import _
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class ClientFactory(object):
     def _list_clients():
         clients_dir = os.path.join(os.path.dirname(__file__), 'clients')
         if not os.path.isdir(clients_dir):
-            LOG.error(_LE('clients directory "%s" not found'), clients_dir)
+            LOG.error('clients directory "%s" not found', clients_dir)
             return
 
         for file in os.listdir(clients_dir):
