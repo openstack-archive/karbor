@@ -11,11 +11,11 @@
 #    under the License.
 
 import datetime
-import json
 import yaml
 
 from karbor.exception import InvalidOriginalId
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 LOG = logging.getLogger(__name__)
 
@@ -81,10 +81,10 @@ class HeatTemplate(object):
             "description": self.description,
             "resources": resources_dict
         }
-        return yaml.load(json.dumps(template_dict))
+        return yaml.load(jsonutils.dumps(template_dict))
 
     def dump_to_yaml_file(self, file_name):
         with open(file_name, "w") as f:
-            yaml.dump(yaml.load(json.dumps(self.to_dict())),
+            yaml.dump(yaml.load(jsonutils.dumps(self.to_dict())),
                       f,
                       default_flow_style=False)

@@ -11,9 +11,9 @@
 #    under the License.
 import abc
 from collections import namedtuple
-import json
 
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 import six
 
@@ -218,11 +218,11 @@ def unpack_graph(packed_graph):
 
 def serialize_resource_graph(resource_graph):
     packed_resource_graph = pack_graph(resource_graph)
-    return json.dumps(packed_resource_graph)
+    return jsonutils.dumps(packed_resource_graph)
 
 
 def deserialize_resource_graph(serialized_resource_graph):
-    deserialized_graph = json.loads(serialized_resource_graph)
+    deserialized_graph = jsonutils.loads(serialized_resource_graph)
     packed_resource_graph = PackedGraph(nodes=deserialized_graph[0],
                                         adjacency=deserialized_graph[1])
     for sid, node in packed_resource_graph.nodes.items():

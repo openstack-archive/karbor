@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import math
 import time
 
@@ -21,6 +20,7 @@ from karbor.services.protection.bank_plugin import LeasePlugin
 from karbor.services.protection import client_factory
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_service import loopingcall
 from oslo_utils import uuidutils
 from swiftclient import ClientException
@@ -112,7 +112,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
         serialized = False
         try:
             if not isinstance(value, str):
-                value = json.dumps(value)
+                value = jsonutils.dumps(value)
                 serialized = True
             self._put_object(container=self.bank_object_container,
                              obj=key,
@@ -208,7 +208,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
             (_resp, body) = self.connection.get_object(container=container,
                                                        obj=obj)
             if _resp.get("x-object-meta-serialized").lower() == "true":
-                body = json.loads(body)
+                body = jsonutils.loads(body)
             return body
         except ClientException as err:
             raise SwiftConnectionFailed(reason=err)
