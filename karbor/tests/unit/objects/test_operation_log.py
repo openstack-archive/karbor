@@ -46,10 +46,10 @@ class TestOperationLog(test_objects.BaseObjectsTestCase):
         db_operation_log = fake_operation_log.fake_db_operation_log()
         operation_log = objects.OperationLog._from_db_object(
             self.context, objects.OperationLog(), db_operation_log)
-        operation_log.state = 'finished'
+        operation_log.status = 'finished'
         operation_log.save()
         operation_log_update.assert_called_once_with(
-            self.context, operation_log.id, {'state': 'finished'})
+            self.context, operation_log.id, {'status': 'finished'})
 
     @mock.patch('karbor.db.sqlalchemy.api.operation_log_destroy')
     def test_destroy(self, operation_log_destroy):
@@ -63,5 +63,5 @@ class TestOperationLog(test_objects.BaseObjectsTestCase):
 
     def test_obj_field_status(self):
         operation_log = objects.OperationLog(context=self.context,
-                                             state='finished')
-        self.assertEqual('finished', operation_log.state)
+                                             status='finished')
+        self.assertEqual('finished', operation_log.status)

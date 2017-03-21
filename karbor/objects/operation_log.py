@@ -29,12 +29,17 @@ class OperationLog(base.KarborPersistentObject, base.KarborObject,
     fields = {
         'id': fields.UUIDField(),
         'project_id': fields.UUIDField(),
-        'scheduled_operation_id': fields.UUIDField(),
-        'started_at': base.DateTimeField(nullable=True),
-        'ended_at': base.DateTimeField(nullable=True),
-        'state': fields.StringField(nullable=True),
-        'error': fields.StringField(nullable=True),
-        'entries': fields.StringField(nullable=True),
+        'operation_type': fields.UUIDField(),
+        'checkpoint_id': fields.UUIDField(nullable=True),
+        'plan_id': fields.UUIDField(nullable=True),
+        'provider_id': fields.UUIDField(nullable=True),
+        'restore_id': fields.UUIDField(nullable=True),
+        'scheduled_operation_id': fields.UUIDField(nullable=True),
+        'status': fields.StringField(nullable=True),
+        'started_at': fields.DateTimeField(nullable=True),
+        'ended_at': fields.DateTimeField(nullable=True),
+        'error_info': fields.StringField(nullable=True),
+        'extra_info': fields.StringField(nullable=True),
     }
 
     @staticmethod
