@@ -16,10 +16,10 @@
 """Tests for db purge."""
 
 import datetime
-import uuid
 
 from oslo_db import exception as db_exc
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from sqlalchemy.dialects import sqlite
 
 from karbor import context
@@ -47,7 +47,7 @@ class PurgeDeletedTest(base.TestCase):
 
         self.uuidstrs = []
         for unused in range(6):
-            self.uuidstrs.append(uuid.uuid4().hex)
+            self.uuidstrs.append(uuidutils.generate_uuid(dashed=False))
         # Add 6 rows to table
         for uuidstr in self.uuidstrs:
             ins_stmt = self.plans.insert().values(id=uuidstr)
@@ -139,7 +139,7 @@ class PurgeDeletedTest(base.TestCase):
 
         # add new entry in plans and resources for
         # integrity check
-        uuid_str = uuid.uuid4().hex
+        uuid_str = uuidutils.generate_uuid(dashed=False)
         ins_stmt = self.plans.insert().values(id=uuid_str)
         self.conn.execute(ins_stmt)
         ins_stmt = self.resources.insert().values(
