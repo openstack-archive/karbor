@@ -32,11 +32,14 @@ s+=,karbor,karbor-api,karbor-operationengine,karbor-protection
 ENABLED_SERVICES=$s
 export ENABLED_SERVICES
 
-DEVSTACK_LOCAL_CONFIG+="enable_plugin karbor git://git.openstack.org/openstack/karbor"
+DEVSTACK_LOCAL_CONFIG+="API_WORKERS=8"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"VOLUME_BACKING_FILE_SIZE=20490M"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin karbor git://git.openstack.org/openstack/karbor"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat git://git.openstack.org/openstack/heat"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_REPLICAS=1"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_DATA_DIR=$DEST/data"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_LOOPBACK_DISK_SIZE=10G"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"DATABASE_PASSWORD=password"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"RABBIT_PASSWORD=password"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SERVICE_PASSWORD=password"

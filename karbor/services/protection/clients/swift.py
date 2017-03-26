@@ -66,7 +66,7 @@ def create(context, conf, **kwargs):
     register_opts(conf)
 
     client_config = conf.swift_client
-    session = kwargs.get('session')
+    session = kwargs.get('session', None)
 
     if not session:
         auth = identity.Password(

@@ -22,18 +22,19 @@ class PlansTest(karbor_base.KarborBaseTest):
         self.provider_id = self.provider_id_noop
 
     def test_plans_list(self):
-        nplans_before = len(self.karbor_client.plans.list())
         # create plan
         volume = self.store(objects.Volume())
         volume.create(1)
         plan1 = self.store(objects.Plan())
-        plan2 = self.store(objects.Plan())
         plan1.create(self.provider_id, [volume, ])
+        plan2 = self.store(objects.Plan())
         plan2.create(self.provider_id, [volume, ])
 
         # list plans after creating
-        nplans_after = len(self.karbor_client.plans.list())
-        self.assertEqual(2, nplans_after - nplans_before)
+        items = self.karbor_client.plans.list()
+        ids = [item.id for item in items]
+        self.assertTrue(plan1.id in ids)
+        self.assertTrue(plan2.id in ids)
 
     def test_plans_get(self):
         plan_name = "Fullstack Test Get"

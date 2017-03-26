@@ -35,10 +35,15 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         self.assertTrue(len(providers))
         self.provider_id = self.provider_id_noop
 
-    def _create_scheduled_operation(self,
-                                    trigger_properties,
-                                    operation_definition,
-                                    operation_name=None):
+    def _create_scheduled_operation(
+            self,
+            resources,
+            trigger_properties=DEFAULT_PROPERTY,
+            operation_name=None):
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, resources)
+        operation_definition = {'plan_id': plan.id,
+                                'provider_id': self.provider_id}
         trigger = self.store(objects.Trigger())
         trigger.create('time', trigger_properties)
 
@@ -47,43 +52,34 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
                          operation_definition, operation_name)
         return operation
 
-    def _create_scheduled_operation_for_volume(
-            self,
-            trigger_properties=DEFAULT_PROPERTY,
-            operation_name=None):
+    def _create_for_volume(self,
+                           trigger_properties=DEFAULT_PROPERTY,
+                           operation_name=None):
         volume = self.store(objects.Volume())
         volume.create(1)
-        plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [volume, ])
-        operation_definition = {'plan_id': plan.id,
-                                'provider_id': self.provider_id}
-        return self._create_scheduled_operation(trigger_properties,
-                                                operation_definition,
+        return self._create_scheduled_operation([volume, ],
+                                                trigger_properties,
                                                 operation_name)
 
-    def _create_scheduled_operation_for_server(
-            self,
-            trigger_properties=DEFAULT_PROPERTY,
-            operation_name=None):
+    def _create_for_server(self,
+                           trigger_properties=DEFAULT_PROPERTY,
+                           operation_name=None):
         server = self.store(objects.Server())
         server.create()
-        plan = self.store(objects.Plan())
-        plan.create(self.provider_id, [server, ])
-        operation_definition = {'plan_id': plan.id,
-                                'provider_id': self.provider_id}
-        return self._create_scheduled_operation(trigger_properties,
-                                                operation_definition,
+        return self._create_scheduled_operation([server, ],
+                                                trigger_properties,
                                                 operation_name)
 
     def test_scheduled_operations_create_no_scheduled(self):
-        operation_items = self.karbor_client.scheduled_operations.list()
-        before_num = len(operation_items)
+        name = "KarborFullstack-Scheduled-Operation-no-scheduled"
+        operation = self.store(self._create_for_volume(operation_name=name))
 
-        self.store(self._create_scheduled_operation_for_volume())
+        item = self.karbor_client.scheduled_operations.get(operation.id)
+        self.assertEqual(name, item.name)
 
-        operation_items = self.karbor_client.scheduled_operations.list()
-        after_num = len(operation_items)
-        self.assertEqual(1, after_num - before_num)
+        items = self.karbor_client.scheduled_operations.list()
+        ids = [item_.id for item_ in items]
+        self.assertTrue(operation.id in ids)
 
     @staticmethod
     def _wait_timestamp(pattern, start_time, freq):
@@ -113,69 +109,56 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         pattern = '*/5 * * * *'
         cur_property = {'pattern': pattern, 'format': 'crontab'}
 
-        before_items = self.karbor_client.checkpoints.list(self.provider_id)
-        before_num = len(before_items)
-
         start_time = datetime.now().replace(microsecond=0)
-        self.store(self._create_scheduled_operation_for_volume(cur_property))
+        operation = self.store(self._create_for_volume(cur_property))
         sleep_time = self._wait_timestamp(pattern, start_time, freq)
         self.assertNotEqual(0, sleep_time)
         eventlet.sleep(sleep_time)
 
-        after_items = self.karbor_client.checkpoints.list(self.provider_id)
-        after_num = len(after_items)
-        self.assertEqual(freq, after_num - before_num)
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        operation_item = self.karbor_client.scheduled_operations.get(
+            operation.id)
+        plan_id = operation_item.operation_definition["plan_id"]
+        cps = filter(lambda x: x.protection_plan["id"] == plan_id, items)
+        self.assertEqual(freq, len(cps))
 
-        for item in after_items:
-            if item not in before_items:
-                utils.wait_until_true(
-                    partial(self._checkpoint_status,
-                            item.id,
-                            constants.CHECKPOINT_STATUS_AVAILABLE),
-                    timeout=objects.LONG_TIMEOUT, sleep=objects.LONG_SLEEP
-                )
-                self.karbor_client.checkpoints.delete(self.provider_id,
-                                                      item.id)
+        for cp in cps:
+            utils.wait_until_true(
+                partial(self._checkpoint_status,
+                        cp.id,
+                        constants.CHECKPOINT_STATUS_AVAILABLE),
+                timeout=objects.LONG_TIMEOUT, sleep=objects.LONG_SLEEP
+            )
+            checkpoint = self.store(objects.Checkpoint())
+            checkpoint._provider_id = self.provider_id
+            checkpoint.id = cp.id
 
     def test_scheduled_operations_list(self):
-        operation_items = self.karbor_client.scheduled_operations.list()
-        before_num = len(operation_items)
+        operation1 = self.store(self._create_for_volume())
+        operation2 = self.store(self._create_for_server())
 
-        self.store(self._create_scheduled_operation_for_volume())
-        self.store(self._create_scheduled_operation_for_server())
-
-        operation_items = self.karbor_client.scheduled_operations.list()
-        after_num = len(operation_items)
-        self.assertEqual(2, after_num - before_num)
+        items = self.karbor_client.scheduled_operations.list()
+        ids = [item.id for item in items]
+        self.assertTrue(operation1.id in ids)
+        self.assertTrue(operation2.id in ids)
 
     def test_scheduled_operations_get(self):
-        operation_name = "KarborFullstack-Scheduled-Operation-Test-Get"
-        operation = self._create_scheduled_operation_for_volume(
-            operation_name=operation_name
-        )
+        name = "KarborFullstack-Scheduled-Operation-Test-Get"
+        operation = self._create_for_volume(operation_name=name)
         self.store(operation)
 
-        operation_item = self.karbor_client.scheduled_operations.get(
-            operation.id
-        )
-        self.assertEqual(operation_item.name, operation_name)
-        self.assertEqual(operation_item.id, operation.id)
+        item = self.karbor_client.scheduled_operations.get(operation.id)
+        self.assertEqual(item.name, name)
+        self.assertEqual(item.id, operation.id)
 
     def test_scheduled_operations_delete(self):
-        operation_items = self.karbor_client.scheduled_operations.list()
-        before_num = len(operation_items)
+        name = "KarborFullstack-Scheduled-Operation-Test-Delete"
+        operation = self._create_for_volume(operation_name=name)
 
-        operation_name = "KarborFullstack-Scheduled-Operation-Test-Delete"
-        operation = self._create_scheduled_operation_for_volume(
-            operation_name=operation_name
-        )
-
-        operation_item = self.karbor_client.scheduled_operations.get(
-            operation.id
-        )
-        self.assertEqual(operation_name, operation_item.name)
+        item = self.karbor_client.scheduled_operations.get(operation.id)
+        self.assertEqual(name, item.name)
 
         operation.close()
-        operation_items = self.karbor_client.scheduled_operations.list()
-        after_num = len(operation_items)
-        self.assertEqual(before_num, after_num)
+        items = self.karbor_client.scheduled_operations.list()
+        ids = [item_.id for item_ in items]
+        self.assertTrue(operation.id not in ids)
