@@ -146,6 +146,57 @@ class MockOperation(protection_plugin.Operation):
             setattr(self, hook_name, mock.Mock())
 
 
+class FakeOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(FakeOperation, self).__init__()
+        self.all_invokes = {}
+
+    def _update_invokes(self, resource, func, info):
+        self.all_invokes.setdefault(resource, {})[func] = info
+
+    def on_prepare_begin(self, checkpoint, resource, context, parameters,
+                         **kwargs):
+        info = {
+            'checkpoint': checkpoint,
+            'resource': resource,
+            'context': context,
+            'parameters': parameters,
+            'kwargs': kwargs
+        }
+        self._update_invokes(resource, 'on_prepare_begin', info)
+
+    def on_prepare_finish(self, checkpoint, resource, context, parameters,
+                          **kwargs):
+        info = {
+            'checkpoint': checkpoint,
+            'resource': resource,
+            'context': context,
+            'parameters': parameters,
+            'kwargs': kwargs
+        }
+        self._update_invokes(resource, 'on_prepare_finish', info)
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        info = {
+            'checkpoint': checkpoint,
+            'resource': resource,
+            'context': context,
+            'parameters': parameters,
+            'kwargs': kwargs
+        }
+        self._update_invokes(resource, 'on_main', info)
+
+    def on_complete(self, checkpoint, resource, context, parameters, **kwargs):
+        info = {
+            'checkpoint': checkpoint,
+            'resource': resource,
+            'context': context,
+            'parameters': parameters,
+            'kwargs': kwargs
+        }
+        self._update_invokes(resource, 'on_complete', info)
+
+
 class FakeProtectionPlugin(protection_plugin.ProtectionPlugin):
     SUPPORTED_RESOURCES = [
         'Test::ResourceA',
