@@ -84,6 +84,13 @@ function configure_karbor_api {
     fi
 }
 
+function configure_providers {
+    if is_swift_enabled; then
+        echo_summary "Configuring Swift Bank"
+        iniset $KARBOR_CONF_DIR/providers.d/openstack-infra.conf swift_client swift_key $SERVICE_PASSWORD
+    fi
+}
+
 function create_karbor_cache_dir {
 
     # Delete existing dir
@@ -108,6 +115,7 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
         echo_summary "Configuring Karbor"
 
         configure_karbor_api
+        configure_providers
 
         echo export PYTHONPATH=\$PYTHONPATH:$KARBOR_DIR >> $RC_DIR/.localrc.auto
 
