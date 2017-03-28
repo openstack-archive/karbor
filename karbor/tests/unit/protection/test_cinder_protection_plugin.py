@@ -12,7 +12,6 @@
 
 from cinderclient import exceptions as cinder_exc
 import collections
-import datetime
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor import exception
@@ -88,6 +87,20 @@ class BackupResponse(object):
             res.status = self._final_status
         if res.status == 'not-found':
             raise cinder_exc.NotFound(403)
+        return res
+
+
+class RestoreResponse(object):
+    def __init__(self, volume_id, raise_except=False):
+        self._volume_id = volume_id
+        self._raise_except = raise_except
+
+    def __call__(self, *args, **kwargs):
+        if self._raise_except:
+            raise exception.KarborException()
+
+        res = mock.Mock()
+        res.volume_id = self._volume_id
         return res
 
 
@@ -319,8 +332,10 @@ class CinderProtectionPluginTest(base.TestCase):
                 {}
             )
 
-    def test_restore(self):
-        heat_template = HeatTemplate()
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'udpate_resource_restore_result')
+    def test_restore_succeed(self, mock_update_restore, mock_cinder_create):
         resource = Resource(
             id="123",
             type=constants.VOLUME_RESOURCE_TYPE,
@@ -338,26 +353,85 @@ class CinderProtectionPluginTest(base.TestCase):
         }
 
         operation = self.plugin.get_restore_operation(resource)
-        call_hooks(operation, checkpoint, resource, self.cntxt,
-                   parameters, heat_template=heat_template)
-        self.assertEqual(1, len(heat_template._resources))
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            volumes=mock.DEFAULT,
+            restores=mock.DEFAULT,
+        ) as mocks:
+            volume_id = 456
+            mocks['volumes'].get.return_value = mock.Mock()
+            mocks['volumes'].get.return_value.status = 'available'
+            mocks['restores'].restore = RestoreResponse(volume_id)
+            call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
+                       **{'restore':  None, 'heat_template': HeatTemplate()})
+            mocks['volumes'].update.assert_called_with(
+                volume_id,
+                **{'name': parameters['restore_name'],
+                   'description': parameters['restore_description']})
+            mock_update_restore.assert_called_with(
+                None, resource.type, volume_id, 'available')
 
-        heat_resource_id = heat_template._original_id_resource_map["123"]
-        template_dict = {
-            "heat_template_version": str(datetime.date(2015, 10, 15)),
-            "description": "karbor restore template",
-            "resources": {
-                heat_resource_id: {
-                    "type": "OS::Cinder::Volume",
-                    "properties": {
-                        "description": "karbor restore",
-                        "backup_id": "456",
-                        "name": "karbor restore volume",
-                    }
-                }
-            }
-        }
-        self.assertEqual(template_dict, heat_template.to_dict())
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    def test_restore_fail_volume_0(self, mock_cinder_create):
+        resource = Resource(
+            id="123",
+            type=constants.VOLUME_RESOURCE_TYPE,
+            name="fake",
+        )
+        checkpoint = self._get_checkpoint()
+        section = checkpoint.get_resource_bank_section()
+        section.update_object('metadata', {
+            'backup_id': '456',
+        })
+
+        operation = self.plugin.get_restore_operation(resource)
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            restores=mock.DEFAULT,
+        ) as mocks:
+            mocks['restores'].restore = RestoreResponse(0, True)
+            self.assertRaises(
+                exception.KarborException, call_hooks,
+                operation, checkpoint, resource, self.cntxt,
+                {}, **{'restore':  None})
+
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'udpate_resource_restore_result')
+    def test_restore_fail_volume_1(self, mock_update_restore,
+                                   mock_cinder_create):
+        resource = Resource(
+            id="123",
+            type=constants.VOLUME_RESOURCE_TYPE,
+            name="fake",
+        )
+        checkpoint = self._get_checkpoint()
+        section = checkpoint.get_resource_bank_section()
+        section.update_object('metadata', {
+            'backup_id': '456',
+        })
+
+        operation = self.plugin.get_restore_operation(resource)
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            volumes=mock.DEFAULT,
+            restores=mock.DEFAULT,
+        ) as mocks:
+            volume_id = 456
+            mocks['volumes'].get.return_value = mock.Mock()
+            mocks['volumes'].get.return_value.status = 'error'
+            mocks['restores'].restore = RestoreResponse(volume_id)
+            self.assertRaises(
+                exception.RestoreBackupFailed, call_hooks,
+                operation, checkpoint, resource, self.cntxt,
+                {}, **{'restore':  None})
+
+            mock_update_restore.assert_called_with(
+                None, resource.type, volume_id,
+                constants.RESOURCE_STATUS_ERROR, 'Error creating volume')
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()

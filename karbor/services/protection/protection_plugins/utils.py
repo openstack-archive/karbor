@@ -10,7 +10,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 from oslo_service import loopingcall
+
+
+LOG = logging.getLogger(__name__)
+
+
+def udpate_resource_restore_result(restore_record, resource_type, resource_id,
+                                   status, reason=''):
+    try:
+        restore_record.update_resource_status(resource_type, resource_id,
+                                              status, reason)
+        restore_record.save()
+    except Exception:
+        LOG.error('Unable to update restoration result. '
+                  'resource type: %(resource_type)s, '
+                  'resource id: %(resource_id)s, '
+                  'status: %(status)s, reason: %(reason)s',
+                  {'resource_type': resource_type, 'resource_id': resource_id,
+                   'status': status, 'reason': reason})
+        pass
 
 
 def status_poll(get_status_func, interval, success_statuses=set(),

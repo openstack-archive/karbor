@@ -14,6 +14,9 @@ from functools import partial
 import six
 
 from cinderclient import exceptions as cinder_exc
+from oslo_config import cfg
+from oslo_log import log as logging
+
 from karbor.common import constants
 from karbor import exception
 from karbor.services.protection.client_factory import ClientFactory
@@ -21,11 +24,7 @@ from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins import utils
 from karbor.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
-from karbor.services.protection.restore_heat import HeatResource
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import uuidutils
 
 LOG = logging.getLogger(__name__)
 
@@ -250,23 +249,63 @@ class ProtectOperation(protection_plugin.Operation):
 
 
 class RestoreOperation(protection_plugin.Operation):
-    def on_main(self, checkpoint, resource, context, parameters, heat_template,
-                **kwargs):
+    def __init__(self, poll_interval):
+        super(RestoreOperation, self).__init__()
+        self._interval = poll_interval
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         resource_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(resource_id)
         resource_metadata = bank_section.get_object('metadata')
-        name = parameters.get('restore_name',
-                              '%s@%s' % (checkpoint.id, resource_id))
-        heat_resource_id = uuidutils.generate_uuid()
-        heat_resource = HeatResource(heat_resource_id,
-                                     constants.VOLUME_RESOURCE_TYPE)
-        heat_resource.set_property('name', name)
-        if 'restore_description' in parameters:
-            heat_resource.set_property('description',
-                                       parameters['restore_description'])
+        cinder_client = ClientFactory.create_client('cinder', context)
 
-        heat_resource.set_property('backup_id', resource_metadata['backup_id'])
-        heat_template.put_resource(resource_id, heat_resource)
+        # create volume
+        volume_property = {
+            'name': parameters.get(
+                'restore_name',  '%s@%s' % (checkpoint.id, resource_id))
+        }
+        if 'restore_description' in parameters:
+            volume_property['description'] = parameters['restore_description']
+        backup_id = resource_metadata['backup_id']
+        try:
+            volume_id = cinder_client.restores.restore(backup_id).volume_id
+            cinder_client.volumes.update(volume_id, **volume_property)
+        except Exception as ex:
+            LOG.error('Error creating volume (backup_id: %(backup_id)s): '
+                      '%(reason)s',
+                      {'backup_id': backup_id,
+                       'reason': ex})
+            raise
+
+        # check and update status
+        update_method = partial(
+            utils.udpate_resource_restore_result,
+            kwargs.get('restore'), resource.type, volume_id)
+
+        update_method(constants.RESOURCE_STATUS_RESTORING)
+
+        is_success = self._check_create_complete(cinder_client, volume_id)
+        if is_success:
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+            kwargs.get("heat_template").put_parameter(resource_id, volume_id)
+        else:
+            reason = 'Error creating volume'
+            update_method(constants.RESOURCE_STATUS_ERROR, reason)
+
+            raise exception.RestoreBackupFailed(
+                reason=reason,
+                resource_id=resource_id,
+                resource_type=resource.type
+            )
+
+    def _check_create_complete(self, cinder_client, volume_id):
+        return utils.status_poll(
+            partial(get_volume_status, cinder_client, volume_id),
+            interval=self._interval,
+            success_statuses={'available'},
+            failure_statuses={'error', 'not-found'},
+            ignore_statuses={'creating', 'restoring-backup', 'downloading'},
+        )
 
 
 class DeleteOperation(protection_plugin.Operation):
@@ -350,7 +389,7 @@ class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
                                 self._backup_from_snapshot)
 
     def get_restore_operation(self, resource):
-        return RestoreOperation()
+        return RestoreOperation(self._poll_interval)
 
     def get_delete_operation(self, resource):
         return DeleteOperation(self._poll_interval)
