@@ -62,10 +62,11 @@ global_opts = [
     cfg.StrOpt('protection_manager',
                default='karbor.services.protection.manager.ProtectionManager',
                help='Full class name for the Manager for Protection'),
-    cfg.StrOpt('host',
-               default=socket.gethostname(),
-               help='Name of this node.  This can be an opaque identifier. '
-                    'It is not necessarily a host name, FQDN, or IP address.'),
+    cfg.HostAddressOpt('host',
+                       default=socket.gethostname(),
+                       help='Name of this node.  This can be an opaque '
+                            'identifier. It is not necessarily a host '
+                            'name, FQDN, or IP address.'),
     cfg.StrOpt('auth_strategy',
                default='keystone',
                choices=['noauth', 'keystone'],
