@@ -397,7 +397,7 @@ class ProvidersController(wsgi.Controller):
                 msg = _("The extra_info in checkpoint must be a dict when "
                         "creating a checkpoint.")
                 raise exception.InvalidInput(reason=msg)
-            elif not all(map(lambda s: isinstance(s, (str, unicode)),
+            elif not all(map(lambda s: isinstance(s, six.string_types),
                              extra_info.keys())):
                 msg = _("Key of extra_info in checkpoint must be string when"
                         "creating a checkpoint.")
