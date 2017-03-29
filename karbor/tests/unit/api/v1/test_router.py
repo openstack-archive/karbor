@@ -9,6 +9,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from six.moves import http_client
 
 from karbor.api.openstack import ProjectMapper
 from karbor.api.v1 import router
@@ -27,4 +28,4 @@ class PlansRouterTestCase(base.TestCase):
         req.method = 'GET'
         req.content_type = 'application/json'
         response = req.get_response(self.app)
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(http_client.OK, response.status_int)

@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from six.moves import http_client
+
 from karbor import exception
 from karbor.tests import base
 
@@ -44,23 +46,23 @@ class KarborExceptionTestCase(base.TestCase):
         class FakeKarborException(exception.KarborException):
             message = "default message: %(misspelled_code)s"
 
-        exc = FakeKarborException(code=500)
+        exc = FakeKarborException(code=http_client.INTERNAL_SERVER_ERROR)
         self.assertEqual('default message: %(misspelled_code)s',
                          six.text_type(exc))
 
     def test_default_error_code(self):
         class FakeKarborException(exception.KarborException):
-            code = 404
+            code = http_client.NOT_FOUND
 
         exc = FakeKarborException()
-        self.assertEqual(404, exc.kwargs['code'])
+        self.assertEqual(http_client.NOT_FOUND, exc.kwargs['code'])
 
     def test_error_code_from_kwarg(self):
         class FakeKarborException(exception.KarborException):
-            code = 500
+            code = http_client.INTERNAL_SERVER_ERROR
 
-        exc = FakeKarborException(code=404)
-        self.assertEqual(404, exc.kwargs['code'])
+        exc = FakeKarborException(code=http_client.NOT_FOUND)
+        self.assertEqual(http_client.NOT_FOUND, exc.kwargs['code'])
 
     def test_error_msg_is_exception_to_string(self):
         msg = 'test message'
@@ -79,7 +81,7 @@ class KarborExceptionTestCase(base.TestCase):
         class FakeKarborException(exception.KarborException):
             message = 'Error %(code)d: %(msg)s'
 
-        exc = FakeKarborException(code=404, msg='message')
+        exc = FakeKarborException(code=http_client.NOT_FOUND, msg='message')
         self.assertEqual('Error 404: message', six.text_type(exc))
 
 
@@ -87,7 +89,7 @@ class KarborConvertedExceptionTestCase(base.TestCase):
     def test_default_args(self):
         exc = exception.ConvertedException()
         self.assertNotEqual('', exc.title)
-        self.assertEqual(500, exc.code)
+        self.assertEqual(http_client.INTERNAL_SERVER_ERROR, exc.code)
         self.assertEqual('', exc.explanation)
 
     def test_standard_status_code(self):
@@ -95,7 +97,8 @@ class KarborConvertedExceptionTestCase(base.TestCase):
             exc = exception.ConvertedException(code=200)
             self.assertEqual('reason', exc.title)
 
-    @mock.patch.dict(webob.util.status_reasons, {500: 'reason'})
+    @mock.patch.dict(webob.util.status_reasons,
+                     {http_client.INTERNAL_SERVER_ERROR: 'reason'})
     def test_generic_status_code(self):
         with mock.patch.dict(webob.util.status_generic_reasons,
                              {5: 'generic_reason'}):
