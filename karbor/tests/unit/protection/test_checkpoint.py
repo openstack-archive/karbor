@@ -36,9 +36,6 @@ resource_map = {
 
 
 class CheckpointTest(base.TestCase):
-    def setUp(self):
-        super(CheckpointTest, self).setUp()
-
     def test_create_in_section(self):
         bank = bank_plugin.Bank(_InMemoryBankPlugin())
         bank_lease = _InMemoryLeasePlugin()
