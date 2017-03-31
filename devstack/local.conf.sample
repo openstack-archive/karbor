@@ -18,6 +18,7 @@ ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 ENABLED_SERVICES+=,cinder,g-api,g-reg
 ENABLED_SERVICES+=,c-api,c-vol,c-sch,c-bak,horizon
 ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
+ENABLED_SERVICES+=,manila,m-api,m-sch,m-shr,m-dat
 
 #Add the karbor services
 enable_service karbor-api
@@ -34,3 +35,18 @@ SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5
 SWIFT_REPLICAS=1
 SWIFT_DATA_DIR=$DEST/data
 enable_service s-proxy s-object s-container s-account
+
+# Enable Manila
+
+enable_plugin manila https://git.openstack.org/openstack/manila master
+
+MANILA_USE_SERVICE_INSTANCE_PASSWORD=True
+MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="'snapshot_support=True create_share_from_snapshot_support=True'"
+
+Q_PLUGIN=ml2
+ENABLE_TENANT_VLANS=True
+ML2_VLAN_RANGES=physnet1:100:200
+PHYSICAL_NETWORK=physnet1
+OVS_PHYSICAL_BRIDGE=br-eth1
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch
+Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,vxlan

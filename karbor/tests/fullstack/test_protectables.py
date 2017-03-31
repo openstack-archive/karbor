@@ -76,3 +76,14 @@ class ProtectablesTest(karbor_base.KarborBaseTest):
                          ins_res.dependent_resources[0]["type"])
         self.assertEqual(volume.id,
                          ins_res.dependent_resources[0]["id"])
+
+    def test_share_protectables_list_instances(self):
+        res_list = self.karbor_client.protectables.list_instances(
+            'OS::Manila::Share')
+        before_num = len(res_list)
+        share = self.store(objects.Share())
+        share.create("NFS", 1)
+        res_list = self.karbor_client.protectables.list_instances(
+            'OS::Manila::Share')
+        after_num = len(res_list)
+        self.assertEqual(1, after_num - before_num)

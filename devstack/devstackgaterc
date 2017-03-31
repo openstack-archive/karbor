@@ -28,14 +28,28 @@ s+=,cinder,g-api,g-reg
 s+=,c-api,c-vol,c-sch,c-bak,horizon
 s+=,s-proxy,s-object,s-container,s-account
 s+=,h-eng,h-api,h-api-cfn,h-api-cw
+s+=,manila,m-api,m-sch,m-shr,m-dat
 s+=,karbor,karbor-api,karbor-operationengine,karbor-protection
 ENABLED_SERVICES=$s
 export ENABLED_SERVICES
+
+DEFAULT_EXTRA_SPECS="'snapshot_support=True create_share_from_snapshot_support=True'"
 
 DEVSTACK_LOCAL_CONFIG+="API_WORKERS=4"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"VOLUME_BACKING_FILE_SIZE=20490M"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin karbor git://git.openstack.org/openstack/karbor"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat git://git.openstack.org/openstack/heat"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin manila git://git.openstack.org/openstack/manila"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"MANILA_USE_SERVICE_INSTANCE_PASSWORD=True"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS=$DEFAULT_EXTRA_SPECS"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_PLUGIN=ml2"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"ENABLE_TENANT_VLANS=True"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"ML2_VLAN_RANGES=physnet1:100:200"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"PHYSICAL_NETWORK=physnet1"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"OVS_PHYSICAL_BRIDGE=br-eth1"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,vxlan"
+
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_REPLICAS=1"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_DATA_DIR=$DEST/data"
