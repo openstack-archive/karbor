@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_service import wsgi
 from oslo_utils import uuidutils
 
 import routes
@@ -22,7 +23,6 @@ import webob.request
 
 from karbor.api.openstack import wsgi as os_wsgi
 from karbor import context
-from karbor.wsgi import common as wsgi
 
 
 FAKE_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
