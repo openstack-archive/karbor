@@ -19,7 +19,9 @@ from oslo_log import log as logging
 from six.moves import urllib
 import webob
 
+from karbor import db
 from karbor.i18n import _
+from karbor import utils
 
 
 api_common_opts = [
@@ -88,17 +90,8 @@ def _get_marker_param(params):
 
 def _get_offset_param(params):
     """Extract offset id from request's dictionary (defaults to 0) or fail."""
-    try:
-        offset = int(params.pop('offset', 0))
-    except ValueError:
-        msg = _('offset param must be an integer')
-        raise webob.exc.HTTPBadRequest(explanation=msg)
-
-    if offset < 0:
-        msg = _('offset param must be positive')
-        raise webob.exc.HTTPBadRequest(explanation=msg)
-
-    return offset
+    offset = params.pop('offset', 0)
+    return utils.validate_integer(offset, 'offset', 0, db.MAX_INT)
 
 
 def limited(items, request, max_limit=None):

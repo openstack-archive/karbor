@@ -131,6 +131,29 @@ class PlanApiTest(base.TestCase):
         self.controller.index(req)
         self.assertTrue(moak_get_all.called)
 
+    @mock.patch(
+        'karbor.api.v1.plans.PlansController._get_all')
+    def test_plan_index_limit_offset(self, moak_get_all):
+        req = fakes.HTTPRequest.blank('/v1/plans?limit=2&offset=1')
+        self.controller.index(req)
+        self.assertTrue(moak_get_all.called)
+
+        req = fakes.HTTPRequest.blank('/v1/plans?limit=-1&offset=1')
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
+        req = fakes.HTTPRequest.blank('/v1/plans?limit=a&offset=1')
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
+        url = '/v1/plans?limit=2&offset=43543564546567575'
+        req = fakes.HTTPRequest.blank(url)
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
     def test_plan_create_empty_dict(self):
         plan = self._plan_in_request_body(parameters={})
         body = {"plan": plan}
