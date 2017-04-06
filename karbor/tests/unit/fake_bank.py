@@ -15,7 +15,7 @@ from oslo_config import cfg
 from karbor.services.protection import bank_plugin
 
 fake_bank_opts = [
-    cfg.StrOpt('fake_host'),
+    cfg.HostAddressOpt('fake_host'),
 ]
 
 
