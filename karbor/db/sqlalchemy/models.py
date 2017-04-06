@@ -164,6 +164,7 @@ class Resource(BASE, KarborBase):
     resource_id = Column(String(36))
     resource_type = Column(String(64))
     resource_name = Column(String(255))
+    resource_extra_info = Column(Text)
     plan_id = Column(String(36), ForeignKey('plans.id'), nullable=False)
     plan = orm.relationship(Plan, backref="resources",
                             foreign_keys=plan_id,

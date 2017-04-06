@@ -63,6 +63,7 @@ def define_tables(meta):
         Column('resource_id', String(length=36)),
         Column('resource_type', String(length=64)),
         Column('resource_name', String(length=255)),
+        Column('resource_extra_info', Text),
         mysql_engine='InnoDB'
     )
 

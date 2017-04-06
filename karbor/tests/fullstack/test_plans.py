@@ -64,7 +64,9 @@ class PlansTest(karbor_base.KarborBaseTest):
         self.assertEqual("suspended", plan_item.status)
         self.assertEqual([{"id": volume1.id,
                            "type": constants.VOLUME_RESOURCE_TYPE,
-                           "name": volume1_name}],
+                           "name": volume1_name,
+                           "extra_info":
+                               {"availability_zone": "az1"}}],
                          plan_item.resources)
 
         # update name
@@ -75,7 +77,11 @@ class PlansTest(karbor_base.KarborBaseTest):
         # update resources
         data = {"resources": [volume2.to_dict(), ]}
         plan_item = self.karbor_client.plans.update(plan.id, data)
-        self.assertEqual([volume2.to_dict(), ],
+        self.assertEqual([{"id": volume2.id,
+                           "type": constants.VOLUME_RESOURCE_TYPE,
+                           "name": volume2_name,
+                           "extra_info":
+                               {"availability_zone": "az1"}}],
                          plan_item.resources)
 
         # update status

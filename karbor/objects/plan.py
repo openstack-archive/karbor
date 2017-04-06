@@ -91,6 +91,8 @@ class Plan(base.KarborPersistentObject, base.KarborObject,
                 dict_temp['id'] = resource['resource_id']
                 dict_temp['type'] = resource['resource_type']
                 dict_temp['name'] = resource['resource_name']
+                dict_temp['extra_info'] = (
+                    resource['resource_extra_info'])
                 resources_list.append(dict_temp)
             plan.resources = resources_list
 
@@ -135,6 +137,8 @@ class Plan(base.KarborPersistentObject, base.KarborObject,
                     resource_dict["id"] = resource_obj.get("resource_id")
                     resource_dict["type"] = resource_obj.get("resource_type")
                     resource_dict["name"] = resource_obj.get("resource_name")
+                    resource_dict["extra_info"] = resource_obj.get(
+                        "resource_extra_info")
                     resources_dictlist.append(resource_dict)
                 self.resources = resources_dictlist
             db.plan_update(self._context, self.id, updates)

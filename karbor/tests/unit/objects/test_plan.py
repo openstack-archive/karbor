@@ -57,7 +57,8 @@ class TestPlan(test_objects.BaseObjectsTestCase):
     @mock.patch('karbor.db.sqlalchemy.api.plan_resources_update',
                 return_value=[
                     {'resource_id': 'key1',
-                     "resource_type": "value1"}
+                     "resource_type": "value1",
+                     "extra_info": "{'availability_zone': 'az1'}"}
                 ])
     @mock.patch('karbor.db.sqlalchemy.api.plan_update')
     def test_save_with_resource(self, plan_update, resource_update):
@@ -66,17 +67,21 @@ class TestPlan(test_objects.BaseObjectsTestCase):
                                             objects.Plan(), db_plan)
         plan.name = 'planname'
         plan.resources = [{'id': 'key1',
-                           "type": "value1"}]
+                           "type": "value1",
+                           "extra_info": "{'availability_zone': 'az1'}"}]
         self.assertEqual({'name': 'planname',
                           'resources': [{'id': 'key1',
-                                         "type": "value1"}]},
+                                         "type": "value1",
+                                         "extra_info":
+                                             "{'availability_zone': 'az1'}"}]},
                          plan.obj_get_changes())
         plan.save()
         plan_update.assert_called_once_with(self.context, plan.id,
                                             {'name': 'planname'})
-        resource_update.assert_called_once_with(self.context, plan.id,
-                                                [{'id': 'key1',
-                                                  "type": "value1"}])
+        resource_update.assert_called_once_with(
+            self.context, plan.id, [{'id': 'key1', "type": "value1",
+                                     "extra_info":
+                                         "{'availability_zone': 'az1'}"}])
 
     @mock.patch('karbor.db.sqlalchemy.api.plan_destroy')
     def test_destroy(self, plan_destroy):

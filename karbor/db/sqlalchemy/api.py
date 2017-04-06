@@ -737,6 +737,8 @@ def _resource_refs(resource_list, meta_class):
             resource_ref['resource_id'] = resource['id']
             resource_ref['resource_type'] = resource['type']
             resource_ref['resource_name'] = resource['name']
+            resource_ref['resource_extra_info'] = resource.get(
+                'extra_info', None)
             resource_refs.append(resource_ref)
     return resource_refs
 
@@ -803,6 +805,8 @@ def _plan_resources_update(context, plan_id, resources, session=None):
         resource['resource_id'] = resource.pop('id')
         resource['resource_type'] = resource.pop('type')
         resource['resource_name'] = resource.pop('name')
+        resource['resource_extra_info'] = resource.pop(
+            'extra_info', None)
         resource_ref = _resource_create(context, resource)
         resources_list.append(resource_ref)
 
