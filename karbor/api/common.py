@@ -27,10 +27,9 @@ api_common_opts = [
                default=1000,
                help='The maximum number of items that a collection '
                     'resource returns in a single response'),
-    cfg.StrOpt('osapi_plan_base_URL',
+    cfg.StrOpt('osapi_karbor_base_URL',
                help='Base URL that will be presented to users in links '
-                    'to the OpenStack Plan API',
-               deprecated_name='osapi_compute_link_prefix'),
+                    'to the OpenStack Karbor API'),
 ]
 
 CONF = cfg.CONF
@@ -247,7 +246,7 @@ class ViewBuilder(object):
         params = request.params.copy()
         params["marker"] = identifier
         prefix = self._update_link_prefix(get_request_url(request),
-                                          CONF.osapi_plan_base_URL)
+                                          CONF.osapi_karbor_base_URL)
         url = os.path.join(prefix,
                            request.environ["karbor.context"].project_id,
                            collection_name)
@@ -256,7 +255,7 @@ class ViewBuilder(object):
     def _get_href_link(self, request, identifier):
         """Return an href string pointing to this object."""
         prefix = self._update_link_prefix(get_request_url(request),
-                                          CONF.osapi_plan_base_URL)
+                                          CONF.osapi_karbor_base_URL)
         return os.path.join(prefix,
                             request.environ["karbor.context"].project_id,
                             self._collection_name,
@@ -266,7 +265,7 @@ class ViewBuilder(object):
         """Create a URL that refers to a specific resource."""
         base_url = remove_version_from_href(get_request_url(request))
         base_url = self._update_link_prefix(base_url,
-                                            CONF.osapi_plan_base_URL)
+                                            CONF.osapi_karbor_base_URL)
         return os.path.join(base_url,
                             request.environ["karbor.context"].project_id,
                             self._collection_name,
