@@ -293,7 +293,8 @@ class ProtectionManager(manager.Manager):
 
         result = []
         for resource in resource_instances:
-            result.append(dict(id=resource.id, name=resource.name))
+            result.append(dict(id=resource.id, name=resource.name,
+                               extra_info=resource.extra_info))
 
         return result
 
@@ -320,7 +321,8 @@ class ProtectionManager(manager.Manager):
             raise
 
         return dict(id=resource_instance.id, name=resource_instance.name,
-                    type=resource_instance.type)
+                    type=resource_instance.type,
+                    extra_info=resource_instance.extra_info)
 
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_dependents(self, context,
@@ -332,7 +334,7 @@ class ProtectionManager(manager.Manager):
                   'id': protectable_id})
 
         parent_resource = Resource(type=protectable_type, id=protectable_id,
-                                   name="")
+                                   name="", extra_info=None)
 
         registry = self.protectable_registry
         try:
@@ -347,7 +349,8 @@ class ProtectionManager(manager.Manager):
         result = []
         for resource in dependent_resources:
             result.append(dict(type=resource.type, id=resource.id,
-                               name=resource.name))
+                               name=resource.name,
+                               extra_info=resource.extra_info))
 
         return result
 

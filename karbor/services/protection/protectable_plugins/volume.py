@@ -52,10 +52,12 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
         else:
-            return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=vol.id, name=vol.name)
-                    for vol in volumes
-                    if vol.status not in INVALID_VOLUME_STATUS]
+            return [resource.Resource(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                id=vol.id, name=vol.name,
+                extra_info={'availability_zone': vol.availability_zone})
+                for vol in volumes
+                if vol.status not in INVALID_VOLUME_STATUS]
 
     def show_resource(self, context, resource_id, parameters=None):
         try:
@@ -71,8 +73,10 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 raise exception.ProtectableResourceInvalidStatus(
                     id=resource_id, type=self._SUPPORT_RESOURCE_TYPE,
                     status=volume.status)
-            return resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                     id=volume.id, name=volume.name)
+            return resource.Resource(
+                type=self._SUPPORT_RESOURCE_TYPE,
+                id=volume.id, name=volume.name,
+                extra_info={'availability_zone': volume.availability_zone})
 
     def get_dependent_resources(self, context, parent_resource):
         def _is_attached_to(vol):
@@ -93,6 +97,7 @@ class VolumeProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 type=self._SUPPORT_RESOURCE_TYPE,
                 reason=six.text_type(e))
         else:
-            return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                      id=vol.id, name=vol.name)
-                    for vol in volumes if _is_attached_to(vol)]
+            return [resource.Resource(
+                type=self._SUPPORT_RESOURCE_TYPE, id=vol.id, name=vol.name,
+                extra_info={'availability_zone': vol.availability_zone})
+                for vol in volumes if _is_attached_to(vol)]

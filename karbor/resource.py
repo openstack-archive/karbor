@@ -10,6 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
 from collections import namedtuple
 
-Resource = namedtuple("Resource", ('type', 'id', 'name'))
+_Resource = namedtuple("Resource", ('type', 'id', 'name', 'extra_info'))
+
+
+def Resource(type, id, name, extra_info=None):
+    return _Resource(type, id, name, extra_info)

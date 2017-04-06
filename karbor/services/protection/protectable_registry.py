@@ -12,6 +12,7 @@
 
 from karbor import exception
 from karbor.i18n import _
+from karbor.resource import Resource
 from karbor.services.protection.graph import build_graph
 import six
 
@@ -107,7 +108,15 @@ class ProtectableRegistry(object):
 
     def build_graph(self, context, resources):
         def fetch_dependent_resources_context(resource):
-            return self.fetch_dependent_resources(context, resource)
+            dependent_resources = self.fetch_dependent_resources(
+                context, resource)
+            # The extra_info field of the resource is a dict
+            # The dict can not be handled by build_graph, it will throw a
+            # error. TypeError: unhashable type: 'dict'
+            return [Resource(type=dependent_resource.type,
+                             id=dependent_resource.id,
+                             name=dependent_resource.name, extra_info=None)
+                    for dependent_resource in dependent_resources]
 
         return build_graph(
             start_nodes=resources,
