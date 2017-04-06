@@ -40,15 +40,7 @@ class CompleteProtectTask(task.Task):
 
 def get_flow(context, protectable_registry, workflow_engine, plan, provider,
              checkpoint):
-    # The 'extra-info' field of resources in plan is optional
-    # The extra_info field of the resource is a dict.
-    # The dict can not be handled by build_graph. It will throw a
-    # error. TypeError: unhashable type: 'dict'
-    resources = set()
-    for item in plan.get("resources"):
-        item["extra_info"] = None
-        resources.add(Resource(**item))
-
+    resources = set(Resource(**item) for item in plan.get("resources"))
     resource_graph = protectable_registry.build_graph(context,
                                                       resources)
     checkpoint.resource_graph = resource_graph

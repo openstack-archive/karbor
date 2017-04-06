@@ -14,6 +14,7 @@ from oslo_serialization import jsonutils
 from oslo_serialization import msgpackutils
 
 from karbor import exception
+from karbor import resource
 import karbor.services.protection.graph as graph
 from karbor.tests import base
 
@@ -142,6 +143,25 @@ class GraphBuilderTest(base.TestCase):
             serialized = fmt.dumps(graph.pack_graph(test_graph))
             unserialized = graph.unpack_graph(fmt.loads(serialized))
             self.assertEqual(test_graph, unserialized)
+
+    def test_graph_serialize(self):
+        resource_a = resource.Resource('server', 0, 'a', {'name': 'a'})
+        resource_b = resource.Resource('volume', 1, 'b', {'name': 'b'})
+        test_base = {
+            resource_a: [resource_b],
+            resource_b: []
+        }
+        test_graph = graph.build_graph(test_base.keys(), test_base.__getitem__)
+        self.assertIn(
+            graph.serialize_resource_graph(test_graph),
+            [
+                '[{"0x1": ["server", 0, "a", {"name": "a"}], '
+                '"0x0": ["volume", 1, "b", {"name": "b"}]}, '
+                '[["0x1", ["0x0"]]]]',
+                '[{"0x0": ["volume", 1, "b", {"name": "b"}], '
+                '"0x1": ["server", 0, "a", {"name": "a"}]}, '
+                '[["0x1", ["0x0"]]]]'
+            ])
 
     def test_graph_deserialize_unordered_adjacency(self):
         test_base = {

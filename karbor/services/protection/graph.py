@@ -219,7 +219,9 @@ def unpack_graph(packed_graph):
 
 def serialize_resource_graph(resource_graph):
     packed_resource_graph = pack_graph(resource_graph)
-    return jsonutils.dumps(packed_resource_graph)
+    return jsonutils.dumps(
+        packed_resource_graph,
+        default=lambda r: (r.type, r.id, r.name, r.extra_info))
 
 
 def deserialize_resource_graph(serialized_resource_graph):
