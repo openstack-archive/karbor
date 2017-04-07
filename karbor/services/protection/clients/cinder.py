@@ -30,7 +30,6 @@ cinder_client_opts = [
                '<service_type>:<service_name>:<endpoint_type> - '
                'Only used if cinder_endpoint is unset'),
     cfg.StrOpt(SERVICE + '_ca_cert_file',
-               default=None,
                help='Location of the CA certificate file '
                     'to use for client requests in SSL connections.'),
     cfg.BoolOpt(SERVICE + '_auth_insecure',

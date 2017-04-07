@@ -97,7 +97,6 @@ service_client_opts = [
                     'values are: public, admin, internal.'),
 
     cfg.StrOpt('ca_cert_file',
-               default=None,
                help='Location of the CA certificate file '
                     'to use for client requests in SSL connections.'),
 
