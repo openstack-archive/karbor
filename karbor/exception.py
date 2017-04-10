@@ -28,6 +28,8 @@ import webob.exc
 from webob.util import status_generic_reasons
 from webob.util import status_reasons
 
+from six.moves import http_client
+
 from karbor.i18n import _
 
 
@@ -44,7 +46,8 @@ CONF.register_opts(exc_log_opts)
 
 
 class ConvertedException(webob.exc.WSGIHTTPException):
-    def __init__(self, code=500, title="", explanation=""):
+    def __init__(self, code=500, title="",
+                 explanation=""):
         self.code = code
         # There is a strict rule about constructing status line for HTTP:
         # '...Status-Line, consisting of the protocol version followed by a
@@ -78,7 +81,7 @@ class KarborException(Exception):
 
     """
     message = _("An unknown exception occurred.")
-    code = 500
+    code = http_client.INTERNAL_SERVER_ERROR
     headers = {}
     safe = False
 
@@ -134,7 +137,7 @@ class KarborException(Exception):
 
 class NotAuthorized(KarborException):
     message = _("Not authorized.")
-    code = 403
+    code = http_client.FORBIDDEN
 
 
 class AdminRequired(NotAuthorized):
@@ -151,7 +154,7 @@ class AuthorizationFailure(NotAuthorized):
 
 class Invalid(KarborException):
     message = _("Unacceptable parameters.")
-    code = 400
+    code = http_client.BAD_REQUEST
 
 
 class InvalidParameterValue(Invalid):
@@ -168,7 +171,7 @@ class ScheduledOperationExist(Invalid):
 
 class NotFound(KarborException):
     message = _("Resource could not be found.")
-    code = 404
+    code = http_client.NOT_FOUND
     safe = True
 
 
