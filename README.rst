@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/karbor.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/karbor.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -54,9 +54,9 @@ Links
 *****
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/karbor
-* Source: http://git.openstack.org/cgit/openstack/karbor
-* Bugs: http://bugs.launchpad.net/karbor
+* Documentation: https://docs.openstack.org/developer/karbor
+* Source: https://git.openstack.org/cgit/openstack/karbor
+* Bugs: https://bugs.launchpad.net/karbor
 
 ********
 Features
