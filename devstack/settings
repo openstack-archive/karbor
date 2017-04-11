@@ -3,12 +3,18 @@ KARBOR_REPO=${KARBOR_REPO:-https://git.openstack.org/cgit/openstack/karbor/}
 KARBOR_DIR=$DEST/karbor
 KARBOR_BRANCH=${KARBOR_BRANCH:-master}
 
+# Toggle for deploying Karbor under apache2 in mod_wsgi
+KARBOR_USE_MOD_WSGI=${KARBOR_USE_MOD_WSGI:-True}
+
+KARBOR_BIN_DIR=$(get_python_exec_prefix)
+
 # common variables
 KARBOR_CONF_DIR=${KARBOR_CONF_DIR:-/etc/karbor}
 
 # karbor rest api
 KARBOR_API=$KARBOR_DIR/karbor/cmd/api.py
 KARBOR_API_CONF=$KARBOR_CONF_DIR/karbor.conf
+KARBOR_API_APACHE_TEMPLATE=$KARBOR_DIR/devstack/files/apache-karbor-api.template
 
 KARBOR_API_LISTEN_ADDRESS=${KARBOR_API_LISTEN_ADDRESS:-0.0.0.0}
 KARBOR_API_HOST=${KARBOR_API_HOST:-$SERVICE_HOST}
