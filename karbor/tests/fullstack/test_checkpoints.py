@@ -132,3 +132,35 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         backups = self.cinder_client.backups.list(search_opts=search_opts)
         self.assertEqual(1, len(backups))
         server.detach_volume(volume.id)
+
+    def test_server_boot_from_volume_with_attached_volume(self):
+        """Test checkpoint for server with a bootable volume
+
+        Test checkpoint for server which has booted form one bootable
+        volume.
+        """
+        bootable_volume = self.store(objects.Volume())
+        bootable_volume_id = bootable_volume.create(1, create_from_image=True)
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        server = self.store(objects.Server())
+        server.create(volume=bootable_volume_id)
+        server.attach_volume(volume.id)
+
+        plan = self.store(objects.Plan())
+        plan.create(self.provider_id, [server, ])
+
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
+
+        items = self.karbor_client.checkpoints.list(self.provider_id)
+        ids = [item.id for item in items]
+        self.assertTrue(checkpoint.id in ids)
+        search_opts = {"volume_id": volume.id}
+        backups = self.cinder_client.backups.list(search_opts=search_opts)
+        self.assertEqual(1, len(backups))
+        search_opts = {"volume_id": bootable_volume_id}
+        bootable_backups = self.cinder_client.backups.list(
+            search_opts=search_opts)
+        self.assertEqual(1, len(bootable_backups))
+        server.detach_volume(volume.id)

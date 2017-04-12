@@ -219,15 +219,24 @@ class Server(object):
             "name": self._name,
         }
 
-    def create(self, name=None, image=None, flavor=DEFAULT_FLAVOR,
+    def create(self, name=None, image=None, volume=None, flavor=DEFAULT_FLAVOR,
                network=DEFAULT_NETWORK, timeout=LONG_TIMEOUT):
-        if not image:
-            images = self.glance_client.images.list()
-            for image_iter in images:
-                if image_iter['disk_format'] not in ('aki', 'ari'):
-                    image = image_iter['id']
-                    break
-        assert image
+        block_device_mapping_v2 = None
+        if volume:
+            block_device_mapping_v2 = [{
+                'uuid': volume,
+                'source_type': 'volume',
+                'destination_type': 'volume',
+                'boot_index': 0,
+                'delete_on_termination': False}]
+        else:
+            if not image:
+                images = self.glance_client.images.list()
+                for image_iter in images:
+                    if image_iter['disk_format'] not in ('aki', 'ari'):
+                        image = image_iter['id']
+                        break
+            assert image
         flavor = self.nova_client.flavors.find(name=flavor)
         if name is None:
             name = "KarborFullstack-Server-{id}".format(
@@ -243,6 +252,7 @@ class Server(object):
         server = self.nova_client.servers.create(
             name=name,
             image=image,
+            block_device_mapping_v2=block_device_mapping_v2,
             flavor=flavor,
             nics=[{"net-id": network_id}],
         )
@@ -296,6 +306,7 @@ class Volume(object):
         self.id = None
         self._name = None
         self.cinder_client = base._get_cinder_client()
+        self.glance_client = base._get_glance_client()
 
     def _volume_status(self, status=None):
         try:
@@ -316,7 +327,8 @@ class Volume(object):
             "extra_info": {'availability_zone': 'az1'},
         }
 
-    def create(self, size, name=None, timeout=LONG_TIMEOUT):
+    def create(self, size, name=None, create_from_image=False,
+               timeout=LONG_TIMEOUT):
         if name is None:
             name = "KarborFullstack-Volume-{id}".format(
                 id=self.__class__._name_id
@@ -324,7 +336,16 @@ class Volume(object):
             self.__class__._name_id += 1
 
         self._name = name
-        volume = self.cinder_client.volumes.create(size, name=name)
+        image = None
+        if create_from_image:
+            images = self.glance_client.images.list()
+            for image_iter in images:
+                if image_iter['disk_format'] not in ('aki', 'ari'):
+                    image = image_iter['id']
+                    break
+            assert image
+        volume = self.cinder_client.volumes.create(size, name=name,
+                                                   imageRef=image)
         self.id = volume.id
         utils.wait_until_true(partial(self._volume_status, 'available'),
                               timeout=timeout, sleep=MEDIUM_SLEEP)
