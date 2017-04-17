@@ -10,16 +10,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from functools import partial
+
+from novaclient import exceptions
+from oslo_config import cfg
+from oslo_log import log as logging
+
 from karbor.common import constants
 from karbor import exception
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.server \
     import server_plugin_schemas
-from karbor.services.protection.restore_heat import HeatResource
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import uuidutils
+from karbor.services.protection.protection_plugins import utils
 
 
 CONF = cfg.CONF
@@ -27,6 +30,13 @@ LOG = logging.getLogger(__name__)
 
 VOLUME_ATTACHMENT_RESOURCE = 'OS::Cinder::VolumeAttachment'
 FLOATING_IP_ASSOCIATION = 'OS::Nova::FloatingIPAssociation'
+
+nova_backup_opts = [
+    cfg.IntOpt(
+        'poll_interval', default=15,
+        help='Poll interval for Nova backup status'
+    ),
+]
 
 
 class ProtectOperation(protection_plugin.Operation):
@@ -170,36 +180,54 @@ class DeleteOperation(protection_plugin.Operation):
 
 
 class RestoreOperation(protection_plugin.Operation):
+    def __init__(self, poll_interval):
+        super(RestoreOperation, self).__init__()
+        self._interval = poll_interval
+
     def on_complete(self, checkpoint, resource, context, parameters, **kwargs):
         original_server_id = resource.id
-        heat_template = kwargs.get("heat_template")
-
-        restore_name = parameters.get("restore_name", "karbor-restore-server")
-
         LOG.info("Restoring server backup, server_id: %s.", original_server_id)
 
-        bank_section = checkpoint.get_resource_bank_section(original_server_id)
+        update_method = None
         try:
-            resource_definition = bank_section.get_object("metadata")
+            resource_definition = checkpoint.get_resource_bank_section(
+                original_server_id).get_object("metadata")
+
+            nova_client = ClientFactory.create_client("nova", context)
+            heat_template = kwargs.get("heat_template")
 
             # restore server instance
-            self._heat_restore_server_instance(
-                heat_template, original_server_id,
-                restore_name, resource_definition)
+            new_server_id = self._restore_server_instance(
+                nova_client, heat_template, original_server_id,
+                parameters.get("restore_name", "karbor-restore-server"),
+                resource_definition)
+
+            update_method = partial(utils.udpate_resource_restore_result,
+                                    kwargs.get('restore'), resource.type,
+                                    new_server_id)
+            update_method(constants.RESOURCE_STATUS_RESTORING)
+            self._wait_server_to_active(nova_client, new_server_id)
 
             # restore volume attachment
-            self._heat_restore_volume_attachment(
-                heat_template, original_server_id, resource_definition)
+            self._restore_volume_attachment(
+                nova_client, ClientFactory.create_client("cinder", context),
+                heat_template, new_server_id, resource_definition)
 
             # restore floating ip association
-            self._heat_restore_floating_association(
-                heat_template, original_server_id, resource_definition)
-            LOG.debug("Restoring server backup, heat_template: %s.",
-                      heat_template)
+            self._restore_floating_association(
+                nova_client, new_server_id, resource_definition)
+
+            heat_template.put_parameter(original_server_id, new_server_id)
+
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+
             LOG.info("Finish restore server, server_id: %s.",
                      original_server_id)
+
         except Exception as e:
-            LOG.exception("restore server backup failed, server_id: %s.",
+            if update_method:
+                update_method(constants.RESOURCE_STATUS_ERROR, str(e))
+            LOG.exception("Restore server backup failed, server_id: %s.",
                           original_server_id)
             raise exception.RestoreBackupFailed(
                 reason=e,
@@ -207,111 +235,176 @@ class RestoreOperation(protection_plugin.Operation):
                 resource_type=constants.SERVER_RESOURCE_TYPE
             )
 
-    def _heat_restore_server_instance(self, heat_template,
-                                      original_id, restore_name,
-                                      resource_definition):
+    def _restore_server_instance(self, nova_client, heat_template,
+                                 original_id, restore_name,
+                                 resource_definition):
         server_metadata = resource_definition["server_metadata"]
         properties = {
-            "availability_zone": server_metadata["availability_zone"],
-            "flavor": server_metadata["flavor"],
+            "availability_zone": server_metadata.get("availability_zone"),
+            "flavor": server_metadata.get("flavor"),
             "name": restore_name,
+            "image": None
         }
+
         # server boot device
         boot_metadata = resource_definition["boot_metadata"]
-        boot_device_type = boot_metadata["boot_device_type"]
+        boot_device_type = boot_metadata.get("boot_device_type")
         if boot_device_type == "image":
-            original_image_id = boot_metadata["boot_image_id"]
-            image_id = heat_template.get_resource_reference(
-                original_image_id)
-            properties["image"] = image_id
+            properties["image"] = heat_template.get_resource_reference(
+                boot_metadata.get("boot_image_id"))
+
         elif boot_device_type == "volume":
-            original_volume_id = boot_metadata["boot_volume_id"]
-            volume_id = heat_template.get_resource_reference(
-                original_volume_id)
             properties["block_device_mapping_v2"] = [{
-                "volume_id": volume_id,
-                "delete_on_termination": False,
-                "boot_index": 0,
+                'uuid': heat_template.get_resource_reference(
+                    boot_metadata.get("boot_volume_id")),
+                'source_type': 'volume',
+                'destination_type': 'volume',
+                'boot_index': 0,
+                'delete_on_termination': False,
             }]
         else:
-            LOG.exception("Restore server backup failed, server_id: %s.",
-                          original_id)
-            raise exception.RestoreBackupFailed(
-                reason="Can not find the boot device of the server.",
-                resource_id=original_id,
-                resource_type=constants.SERVER_RESOURCE_TYPE
-            )
+            reason = "Can not find the boot device of the server."
+            LOG.error("Restore server backup failed, (server_id:"
+                      "%(server_id)s): %(reason)s.",
+                      {'server_id': original_id,
+                       'reason': reason})
+            raise Exception(reason)
 
         # server key_name, security_groups, networks
-        if server_metadata["key_name"] is not None:
-            properties["key_name"] = server_metadata["key_name"]
+        properties["key_name"] = server_metadata.get("key_name", None)
 
-        if server_metadata["security_groups"] is not None:
-            security_groups = []
-            for security_group in server_metadata["security_groups"]:
-                security_groups.append(security_group["name"])
-            properties["security_groups"] = security_groups
+        if server_metadata.get("security_groups"):
+            properties["security_groups"] = [
+                security_group["name"]
+                for security_group in server_metadata["security_groups"]
+            ]
 
-        networks = []
-        for network in server_metadata["networks"]:
-            networks.append({"network": network})
-        properties["networks"] = networks
+        if server_metadata.get("networks"):
+            properties["nics"] = [
+                {'net-id': network}
+                for network in server_metadata["networks"]
+            ]
 
-        heat_resource_id = uuidutils.generate_uuid()
-        heat_server_resource = HeatResource(heat_resource_id,
-                                            constants.SERVER_RESOURCE_TYPE)
-        for key, value in properties.items():
-            heat_server_resource.set_property(key, value)
+        properties["userdata"] = None
 
-        heat_template.put_resource(original_id,
-                                   heat_server_resource)
+        try:
+            server = nova_client.servers.create(**properties)
+        except Exception as ex:
+            LOG.error('Error creating server (server_id:%(server_id)s): '
+                      '%(reason)s',
+                      {'server_id': original_id,
+                       'reason': ex})
+            raise
 
-    def _heat_restore_volume_attachment(self, heat_template,
-                                        original_server_id,
-                                        resource_definition):
-        attach_metadata = resource_definition["attach_metadata"]
+        return server.id
+
+    def _restore_volume_attachment(self, nova_client, cinder_client,
+                                   heat_template, new_server_id,
+                                   resource_definition):
+        attach_metadata = resource_definition.get("attach_metadata", {})
         for original_id, attach_metadata_item in attach_metadata.items():
-            device = attach_metadata_item.get("device", None)
-            if attach_metadata_item.get("bootable", None) != "true":
-                instance_uuid = heat_template.get_resource_reference(
-                    original_server_id)
-                volume_id = heat_template.get_resource_reference(
-                    original_id)
-                properties = {"mountpoint": device,
-                              "instance_uuid": instance_uuid,
-                              "volume_id": volume_id}
-                heat_resource_id = uuidutils.generate_uuid()
-                heat_attachment_resource = HeatResource(
-                    heat_resource_id,
-                    VOLUME_ATTACHMENT_RESOURCE)
-                for key, value in properties.items():
-                    heat_attachment_resource.set_property(key, value)
-                heat_template.put_resource(
-                    "%s_%s" % (original_server_id, original_id),
-                    heat_attachment_resource)
+            if attach_metadata_item.get("bootable", None) == "true":
+                continue
 
-    def _heat_restore_floating_association(self, heat_template,
-                                           original_server_id,
-                                           resource_definition):
+            volume_id = heat_template.get_resource_reference(original_id)
+            try:
+                nova_client.volumes.create_server_volume(
+                    server_id=new_server_id,
+                    volume_id=volume_id,
+                    device=attach_metadata_item.get("device", None))
+
+            except Exception as ex:
+                LOG.error("Failed to attach volume %(vol)s to server %(srv)s, "
+                          "reason: %(err)s",
+                          {'vol': volume_id,
+                           'srv': new_server_id,
+                           'err': ex})
+                raise
+
+            self._wait_volume_to_attached(cinder_client, volume_id)
+
+    def _restore_floating_association(self, nova_client, new_server_id,
+                                      resource_definition):
         server_metadata = resource_definition["server_metadata"]
-        for floating_ip in server_metadata["floating_ips"]:
-            instance_uuid = heat_template.get_resource_reference(
-                original_server_id)
-            properties = {"instance_uuid": instance_uuid,
-                          "floating_ip": floating_ip}
-            heat_resource_id = uuidutils.generate_uuid()
-            heat_floating_resource = HeatResource(
-                heat_resource_id, FLOATING_IP_ASSOCIATION)
+        for floating_ip in server_metadata.get("floating_ips", []):
+            nova_client.servers.add_floating_ip(
+                nova_client.servers.get(new_server_id), floating_ip)
 
-            for key, value in properties.items():
-                heat_floating_resource.set_property(key, value)
-            heat_template.put_resource(
-                "%s_%s" % (original_server_id, floating_ip),
-                heat_floating_resource)
+    def _wait_volume_to_attached(self, cinder_client, volume_id):
+        def _get_volume_status():
+            try:
+                return cinder_client.volumes.get(volume_id).status
+            except Exception as ex:
+                LOG.error('Fetch volume(%(volume_id)s) status failed, '
+                          'reason: %(reason)s',
+                          {'volume_id': volume_id,
+                           'reason': ex})
+                return 'ERROR'
+
+        is_success = utils.status_poll(
+            _get_volume_status,
+            interval=self._interval,
+            success_statuses={'in-use', },
+            failure_statuses={'ERROR', },
+            ignore_statuses={'available', 'attaching'}
+        )
+        if not is_success:
+            raise Exception('Attach the volume to server failed')
+
+    def _wait_server_to_active(self, nova_client, server_id):
+        def _get_server_status():
+            try:
+                server = self._fetch_server(nova_client, server_id)
+                return server.status.split('(')[0] if server else 'BUILD'
+            except Exception as ex:
+                LOG.error('Fetch server(%(server_id)s) failed, '
+                          'reason: %(reason)s',
+                          {'server_id': server_id,
+                           'reason': ex})
+                return 'ERROR'
+
+        is_success = utils.status_poll(
+            _get_server_status,
+            interval=self._interval,
+            success_statuses={'ACTIVE', },
+            failure_statuses={'ERROR', },
+            ignore_statuses={'BUILD', 'HARD_REBOOT', 'PASSWORD', 'REBOOT',
+                             'RESCUE', 'RESIZE', 'REVERT_RESIZE', 'SHUTOFF',
+                             'SUSPENDED', 'VERIFY_RESIZE'},
+        )
+        if not is_success:
+            raise Exception('The server does not start successfully')
+
+    def _fetch_server(self, nova_client, server_id):
+        server = None
+        try:
+            server = nova_client.servers.get(server_id)
+        except exceptions.OverLimit as exc:
+            LOG.warning("Received an OverLimit response when "
+                        "fetching server (%(id)s) : %(exception)s",
+                        {'id': server_id,
+                         'exception': exc})
+        except exceptions.ClientException as exc:
+            if ((getattr(exc, 'http_status', getattr(exc, 'code', None)) in
+                 (500, 503))):
+                LOG.warning("Received the following exception when "
+                            "fetching server (%(id)s) : %(exception)s",
+                            {'id': server_id,
+                             'exception': exc})
+            else:
+                raise
+        return server
 
 
 class NovaProtectionPlugin(protection_plugin.ProtectionPlugin):
     _SUPPORT_RESOURCE_TYPES = [constants.SERVER_RESOURCE_TYPE]
+
+    def __init__(self, config=None):
+        super(NovaProtectionPlugin, self).__init__(config)
+        self._config.register_opts(nova_backup_opts,
+                                   'nova_backup_protection_plugin')
+        self._poll_interval = (
+            self._config.nova_backup_protection_plugin.poll_interval)
 
     @classmethod
     def get_supported_resources_types(cls):
@@ -337,7 +430,7 @@ class NovaProtectionPlugin(protection_plugin.ProtectionPlugin):
         return ProtectOperation()
 
     def get_restore_operation(self, resource):
-        return RestoreOperation()
+        return RestoreOperation(self._poll_interval)
 
     def get_delete_operation(self, resource):
         return DeleteOperation()

@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import collections
-
 from collections import namedtuple
+import mock
+from oslo_config import cfg
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
@@ -24,7 +25,6 @@ from karbor.services.protection.protection_plugins.server \
 from karbor.services.protection.protection_plugins.server. \
     nova_protection_plugin import NovaProtectionPlugin
 from karbor.tests import base
-import mock
 
 
 class Server(object):
@@ -238,7 +238,7 @@ class FakeBankPlugin(BankPlugin):
 
 fake_bank = Bank(FakeBankPlugin())
 
-ResourceNode = collections.namedtuple(
+ResourceNode = namedtuple(
     "ResourceNode",
     ["value",
      "child_nodes"]
@@ -287,7 +287,7 @@ class NovaProtectionPluginTest(base.TestCase):
         self.cntxt = RequestContext(user_id='demo',
                                     project_id='abcd',
                                     auth_token='efgh')
-        self.plugin = NovaProtectionPlugin()
+        self.plugin = NovaProtectionPlugin(cfg.CONF)
         self.glance_client = FakeGlanceClient()
         self.nova_client = FakeNovaClient()
         self.cinder_client = FakeCinderClient()
