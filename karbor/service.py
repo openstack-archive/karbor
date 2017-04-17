@@ -159,8 +159,7 @@ class Service(service.Service):
                     {'service_down_time': CONF.service_down_time,
                      'report_interval': self.report_interval,
                      'new_down_time': new_down_time})
-                CONF.set_override('service_down_time', new_down_time,
-                                  enforce_type=True)
+                CONF.set_override('service_down_time', new_down_time)
 
     def _create_service_ref(self, context):
         service_ref = db.service_create(context,
