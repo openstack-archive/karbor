@@ -327,12 +327,18 @@
         {
           "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
           "type": "OS::Cinder::Volume",
-          "name": "System volume"
+          "name": "System volume",
+          "extra_info": {
+              "availability_zone": "az1"
+          }
         },
         {
           "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
           "type": "OS::Cinder::Volume",
-          "name": "Data volume"
+          "name": "Data volume",
+          "extra_info": {
+              "availability_zone": "az1"
+          }
         }
       ],
       "status": "suspended",
@@ -383,12 +389,18 @@
       {
         "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
-        "name": "System volume"
+        "name": "System volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       },
       {
         "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
-        "name": "Data volume"
+        "name": "Data volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       }
     ],
     "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
@@ -430,12 +442,18 @@
       {
         "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
-        "name": "System volume"
+        "name": "System volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       },
       {
         "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
-        "name": "Data volume"
+        "name": "Data volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       }
     ],
     "status": "suspended",
@@ -480,12 +498,18 @@
       {
         "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
-        "name": "System volume"
+        "name": "System volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       },
       {
         "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
-        "name": "Data volume"
+        "name": "Data volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       }
     ],
     "status": "suspended",
@@ -540,12 +564,18 @@
       {
         "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
-        "name": "System volume"
+        "name": "System volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       },
       {
         "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
-        "name": "Data volume"
+        "name": "Data volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       }
     ],
     "status": "started",
@@ -615,19 +645,23 @@ None
 ```json
 {
   "instances": [
-    {
-      "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
-      "type": "OS::Nova::Server",
-      "name": "My VM",
-      "dependent_resources": [
-        {
-          "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
-          "type": "OS::Glance::Image",
-          "name": "cirros-0.3.4-x86_64-uec"
-        }
-      ]
-    }
-  ],
+      {
+          "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
+          "type": "OS::Cinder::Volume",
+          "name": "System volume",
+          "extra_info": {
+              "availability_zone": "az1"
+          }
+      },
+      {
+          "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
+          "type": "OS::Cinder::Volume",
+          "name": "Data volume",
+          "extra_info": {
+              "availability_zone": "az1"
+          }
+      }
+  ]
   "instances_links": [
     {
       "href": "/v1/{project_id}/instances?limit=1&marker=cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
