@@ -73,7 +73,7 @@ class Plan(object):
         self.karbor_client = base._get_karbor_client()
 
     def create(self, provider_id, resources,
-               parameters={"dummy": {"dummy": "dummy"}}, name=None):
+               parameters={}, name=None):
         def _transform_resource(resource):
             if isinstance(resource, dict):
                 return resource

@@ -17,24 +17,27 @@ OPTIONS_SCHEMA = {
         "backup_name": {
             "type": "string",
             "title": "Backup Name",
-            "description": "The name of the backup."
+            "description": "The name of the backup.",
+            "default": None
         },
         "backup_mode": {
             "type": "string",
             "title": "Backup Mode",
             "description": "The backup mode.",
-            "enum": ["full", "incremental", "auto"],
-            "default": "auto"
+            "enum": ["full", "incremental"],
+            "default": "full"
         },
         "container": {
             "type": "string",
             "title": "Container",
-            "description": "The container which been chosen."
+            "description": "The container which been chosen.",
+            "default": None
         },
         "description": {
             "type": "string",
             "title": "Description",
-            "description": "The description of the volume."
+            "description": "The description of the volume.",
+            "default": None
         },
         "force": {
             "type": "boolean",
@@ -54,7 +57,8 @@ RESTORE_SCHEMA = {
         "volume_id": {
             "type": "string",
             "title": "Volume ID",
-            "description": "The target volume ID to restore to."
+            "description": "The target volume ID to restore to.",
+            "default": None
         },
         "restore_name": {
             "type": "string",
