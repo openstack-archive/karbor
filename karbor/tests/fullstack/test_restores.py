@@ -66,7 +66,7 @@ class RestoresTest(karbor_base.KarborBaseTest):
             r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b', re.IGNORECASE
         )
         url = re.search(regex, endpoint).group()
-        restore_target = url + r":35357/v3"
+        restore_target = url + r"/identity/v3"
         return restore_target
 
     def test_restore_create(self):
