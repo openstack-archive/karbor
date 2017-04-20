@@ -43,12 +43,9 @@ class SwiftClientTest(base.TestCase):
         self.conf.set_default('swift_auth_url',
                               auth_url,
                               'swift_client')
-        self.conf.set_override('swift_user', 'demo', 'swift_client',
-                               enforce_type=True)
-        self.conf.set_override('swift_key', 'secrete', 'swift_client',
-                               enforce_type=True)
-        self.conf.set_override('swift_tenant_name', 'abcd', 'swift_client',
-                               enforce_type=True)
+        self.conf.set_override('swift_user', 'demo', 'swift_client')
+        self.conf.set_override('swift_key', 'secrete', 'swift_client')
+        self.conf.set_override('swift_tenant_name', 'abcd', 'swift_client')
         sc = swift.create(self._context, self.conf)
         self.assertEqual(sc.authurl, auth_url)
         self.assertEqual(sc.user, 'demo')
