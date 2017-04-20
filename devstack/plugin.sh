@@ -34,6 +34,59 @@ function create_karbor_accounts {
     fi
 }
 
+
+# karbor_config_apache_wsgi() - Set WSGI config files
+function karbor_config_apache_wsgi {
+    local karbor_apache_conf
+    karbor_apache_conf=$(apache_site_config_for osapi_karbor)
+    local karbor_ssl=""
+    local karbor_certfile=""
+    local karbor_keyfile=""
+    local karbor_api_port=$KARBOR_API_PORT
+
+    if is_ssl_enabled_service karbor-api; then
+        karbor_ssl="SSLEngine On"
+        karbor_certfile="SSLCertificateFile $KARBOR_SSL_CERT"
+        karbor_keyfile="SSLCertificateKeyFile $KARBOR_SSL_KEY"
+    fi
+
+    # copy proxy vhost file
+    sudo cp $KARBOR_API_APACHE_TEMPLATE $karbor_apache_conf
+    sudo sed -e "
+        s|%PUBLICPORT%|$karbor_api_port|g;
+        s|%APACHE_NAME%|$APACHE_NAME|g;
+        s|%APIWORKERS%|$API_WORKERS|g
+        s|%KARBOR_BIN_DIR%|$KARBOR_BIN_DIR|g;
+        s|%SSLENGINE%|$karbor_ssl|g;
+        s|%SSLCERTFILE%|$karbor_certfile|g;
+        s|%SSLKEYFILE%|$karbor_keyfile|g;
+        s|%USER%|$STACK_USER|g;
+    " -i $karbor_apache_conf
+}
+
+# clean_karbor_api_wsgi() - Remove wsgi files, disable and remove apache vhost file
+function clean_karbor_api_wsgi {
+    sudo rm -f $(apache_site_config_for osapi_karbor)
+}
+
+# start_karbor_api_wsgi() - Start the API processes ahead of other things
+function start_karbor_api_wsgi {
+    enable_apache_site osapi_karbor
+    restart_apache_server
+    tail_log karbor-api /var/log/$APACHE_NAME/karbor-api.log
+
+    echo "Waiting for Karbor API to start..."
+    if ! wait_for_service $SERVICE_TIMEOUT $KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT; then
+        die $LINENO "karbor-api wsgi did not start"
+    fi
+}
+
+# stop_karbor_api_wsgi() - Disable the api service and stop it.
+function stop_karbor_api_wsgi {
+    disable_apache_site osapi_karbor
+    restart_apache_server
+}
+
 function configure_karbor_api {
     if is_service_enabled karbor-api ; then
         echo "Configuring Karbor API"
@@ -114,6 +167,10 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
         configure_karbor_api
         configure_providers
 
+        if [ "$KARBOR_USE_MOD_WSGI" == "True" ]; then
+            karbor_config_apache_wsgi
+        fi
+
         echo export PYTHONPATH=\$PYTHONPATH:$KARBOR_DIR >> $RC_DIR/.localrc.auto
 
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
@@ -122,7 +179,6 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
         create_karbor_accounts
 
         echo_summary "Initializing Karbor Service"
-        KARBOR_BIN_DIR=$(get_python_exec_prefix)
 
         if is_service_enabled $DATABASE_BACKENDS; then
             # (re)create karbor database
@@ -132,7 +188,11 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
             $KARBOR_BIN_DIR/karbor-manage db sync
         fi
         if is_service_enabled karbor-api; then
-            run_process karbor-api "$KARBOR_BIN_DIR/karbor-api --config-file $KARBOR_API_CONF"
+            if [[ "$KARBOR_USE_MOD_WSGI" == "True" ]]; then
+                start_karbor_api_wsgi
+            else
+                run_process karbor-api "$KARBOR_BIN_DIR/karbor-api --config-file $KARBOR_API_CONF"
+            fi
         fi
         if is_service_enabled karbor-operationengine; then
            run_process karbor-operationengine "$KARBOR_BIN_DIR/karbor-operationengine --config-file $KARBOR_API_CONF"
@@ -145,7 +205,12 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
     if [[ "$1" == "unstack" ]]; then
 
         if is_service_enabled karbor-api; then
-           stop_process karbor-api
+            if [[ "$KARBOR_USE_MOD_WSGI" == "True" ]]; then
+                stop_karbor_api_wsgi
+                clean_karbor_api_wsgi
+            else
+                stop_process karbor-api
+            fi
         fi
         if is_service_enabled karbor-operationengine; then
            stop_process karbor-operationengine
