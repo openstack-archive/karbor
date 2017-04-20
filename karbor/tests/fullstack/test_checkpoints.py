@@ -25,12 +25,28 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id_os, [volume, ])
+        volume_parameter_key = "OS::Cinder::Volume#{id}".format(id=volume.id)
+        backup_name = "volume-backup-{id}".format(id=volume.id)
+        parameters = {
+            "OS::Cinder::Volume": {
+                "incremental": "full",
+                "force": False
+            },
+            volume_parameter_key: {
+                "backup_name": backup_name
+            }
+        }
+        plan.create(self.provider_id_os, [volume, ],
+                    parameters=parameters)
 
         checkpoint = self.store(objects.Checkpoint())
         checkpoint.create(self.provider_id, plan.id, timeout=2400)
 
         search_opts = {"volume_id": volume.id}
+        backups = self.cinder_client.backups.list(search_opts=search_opts)
+        self.assertEqual(1, len(backups))
+
+        search_opts = {"name": backup_name}
         backups = self.cinder_client.backups.list(search_opts=search_opts)
         self.assertEqual(1, len(backups))
 

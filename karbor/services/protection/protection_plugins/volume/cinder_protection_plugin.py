@@ -129,12 +129,16 @@ class ProtectOperation(protection_plugin.Operation):
         )
 
     def _create_backup(self, cinder_client, volume_id, backup_name,
-                       snapshot_id=None):
+                       description, snapshot_id=None, incremental=False,
+                       container=None, force=False):
         backup = cinder_client.backups.create(
             volume_id=volume_id,
             name=backup_name,
-            force=True,
-            snapshot_id=snapshot_id
+            description=description,
+            force=force,
+            snapshot_id=snapshot_id,
+            incremental=incremental,
+            container=container
         )
 
         backup_id = backup.id
@@ -210,10 +214,22 @@ class ProtectOperation(protection_plugin.Operation):
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
             )
 
-        backup_name = parameters.get('backup_name')
+        backup_name = parameters.get('backup_name', None)
+        description = parameters.get('description', None)
+        backup_mode = parameters.get('backup_mode', "full")
+        container = parameters.get('container', None)
+        force = parameters.get('force', False)
+        incremental = False
+        if backup_mode == "incremental":
+            incremental = True
+        elif backup_mode == "full":
+            incremental = False
+
         try:
             backup_id = self._create_backup(cinder_client, volume_id,
-                                            backup_name, self.snapshot_id)
+                                            backup_name, description,
+                                            self.snapshot_id,
+                                            incremental, container, force)
         except Exception as e:
             LOG.error('Error creating backup (volume_id: %(volume_id)s '
                       'snapshot_id: %(snapshot_id)s): %(reason)s',
