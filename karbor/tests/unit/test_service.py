@@ -26,13 +26,17 @@ from karbor import manager
 from karbor import rpc
 from karbor import service
 from karbor.tests import base
-from karbor.wsgi import common as wsgi
 
 
 test_service_opts = [
     cfg.StrOpt("fake_manager",
                default="karbor.tests.unit.test_service.FakeManager",
-               help="Manager for testing"), ]
+               help="Manager for testing"),
+    cfg.StrOpt("test_service_listen",
+               help="Host to bind test service to"),
+    cfg.IntOpt("test_service_listen_port",
+               default=0,
+               help="Port number to bind test service to"), ]
 
 CONF = cfg.CONF
 CONF.register_opts(test_service_opts)
@@ -234,69 +238,64 @@ class TestWSGIService(base.TestCase):
     def setUp(self):
         super(TestWSGIService, self).setUp()
 
-    @mock.patch('karbor.utils.find_config')
-    def test_service_random_port(self, mock_find_config):
-        with mock.patch.object(wsgi.Loader, 'load_app') as mock_load_app:
-            test_service = service.WSGIService("test_service")
-            self.assertEqual(0, test_service.port)
-            test_service.start()
-            self.assertNotEqual(0, test_service.port)
-            test_service.stop()
-            self.assertTrue(mock_load_app.called)
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_service_random_port(self, mock_loader):
+        test_service = service.WSGIService("test_service")
+        self.assertEqual(0, test_service.port)
+        test_service.start()
+        self.assertNotEqual(0, test_service.port)
+        test_service.stop()
+        self.assertTrue(mock_loader.called)
 
-    @mock.patch('karbor.utils.find_config')
-    def test_reset_pool_size_to_default(self, mock_find_config):
-        with mock.patch.object(wsgi.Loader, 'load_app') as mock_load_app:
-            test_service = service.WSGIService("test_service")
-            test_service.start()
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_reset_pool_size_to_default(self, mock_loader):
+        test_service = service.WSGIService("test_service")
+        test_service.start()
 
-            # Stopping the service, which in turn sets pool size to 0
-            test_service.stop()
-            self.assertEqual(0, test_service.server._pool.size)
+        # Stopping the service, which in turn sets pool size to 0
+        test_service.stop()
+        self.assertEqual(0, test_service.server._pool.size)
 
-            # Resetting pool size to default
-            test_service.reset()
-            test_service.start()
-            self.assertEqual(1000, test_service.server._pool.size)
-            self.assertTrue(mock_load_app.called)
+        # Resetting pool size to default
+        test_service.reset()
+        test_service.start()
+        self.assertEqual(cfg.CONF.wsgi_default_pool_size,
+                         test_service.server._pool.size)
+        self.assertTrue(mock_loader.called)
 
-    @mock.patch('karbor.utils.find_config')
-    @mock.patch('karbor.wsgi.common.Loader.load_app')
-    @mock.patch('karbor.wsgi.eventlet_server.Server')
-    def test_workers_set_default(self, wsgi_server, mock_load_app,
-                                 mock_find_config):
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_workers_set_default(self, mock_loader):
+        self.override_config('osapi_karbor_listen_port',
+                             CONF.test_service_listen_port)
         test_service = service.WSGIService("osapi_karbor")
-        self.assertEqual(processutils.get_worker_count(), test_service.workers)
+        self.assertEqual(processutils.get_worker_count(),
+                         test_service.workers)
+        self.assertTrue(mock_loader.called)
 
-    @mock.patch('karbor.utils.find_config')
-    @mock.patch('karbor.wsgi.common.Loader.load_app')
-    @mock.patch('karbor.wsgi.eventlet_server.Server')
-    def test_workers_set_good_user_setting(self, wsgi_server,
-                                           mock_load_app,
-                                           mock_find_config):
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_workers_set_good_user_setting(self, mock_loader):
+        self.override_config('osapi_karbor_listen_port',
+                             CONF.test_service_listen_port)
         self.override_config('osapi_karbor_workers', 8)
         test_service = service.WSGIService("osapi_karbor")
         self.assertEqual(8, test_service.workers)
+        self.assertTrue(mock_loader.called)
 
-    @mock.patch('karbor.utils.find_config')
-    @mock.patch('karbor.wsgi.common.Loader.load_app')
-    @mock.patch('karbor.wsgi.eventlet_server.Server')
-    def test_workers_set_zero_user_setting(self, wsgi_server,
-                                           mock_load_app,
-                                           mock_find_config):
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_workers_set_zero_user_setting(self, mock_loader):
+        self.override_config('osapi_karbor_listen_port',
+                             CONF.test_service_listen_port)
         self.override_config('osapi_karbor_workers', 0)
         test_service = service.WSGIService("osapi_karbor")
-        # If a value less than 1 is used, defaults to number of procs available
-        self.assertEqual(processutils.get_worker_count(), test_service.workers)
+        # If a value less than 1 is used, defaults to number of procs
+        # available
+        self.assertEqual(processutils.get_worker_count(),
+                         test_service.workers)
+        self.assertTrue(mock_loader.called)
 
-    @mock.patch('karbor.utils.find_config')
-    @mock.patch('karbor.wsgi.common.Loader.load_app')
-    @mock.patch('karbor.wsgi.eventlet_server.Server')
-    def test_workers_set_negative_user_setting(self, wsgi_server,
-                                               mock_load_app,
-                                               mock_find_config):
+    @mock.patch('oslo_service.wsgi.Loader')
+    def test_workers_set_negative_user_setting(self, mock_loader):
         self.override_config('osapi_karbor_workers', -1)
         self.assertRaises(exception.InvalidInput,
-                          service.WSGIService,
-                          "osapi_karbor")
-        self.assertFalse(wsgi_server.called)
+                          service.WSGIService, "osapi_karbor")
+        self.assertTrue(mock_loader.called)

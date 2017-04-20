@@ -24,6 +24,7 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import loopingcall
 from oslo_service import service
+from oslo_service import wsgi
 from oslo_utils import importutils
 
 from karbor import context
@@ -33,8 +34,6 @@ from karbor.i18n import _
 from karbor.objects import base as objects_base
 from karbor import rpc
 from karbor import version
-from karbor.wsgi import common as wsgi_common
-from karbor.wsgi import eventlet_server as wsgi
 
 LOG = logging.getLogger(__name__)
 
@@ -313,7 +312,7 @@ class WSGIService(service.ServiceBase):
         """
         self.name = name
         self.manager = self._get_manager()
-        self.loader = loader or wsgi_common.Loader()
+        self.loader = loader or wsgi.Loader(CONF)
         self.app = self.loader.load_app(name)
         self.host = getattr(CONF, '%s_listen' % name, "0.0.0.0")
         self.port = getattr(CONF, '%s_listen_port' % name, 0)
@@ -327,7 +326,8 @@ class WSGIService(service.ServiceBase):
                     'workers': self.workers})
             raise exception.InvalidInput(msg)
 
-        self.server = wsgi.Server(name,
+        self.server = wsgi.Server(CONF,
+                                  name,
                                   self.app,
                                   host=self.host,
                                   port=self.port)

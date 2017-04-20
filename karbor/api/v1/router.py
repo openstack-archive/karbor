@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_service import wsgi as base_wsgi
+
 from karbor.api.openstack import ProjectMapper
 from karbor.api.v1 import plans
 from karbor.api.v1 import protectables
@@ -17,10 +19,9 @@ from karbor.api.v1 import providers
 from karbor.api.v1 import restores
 from karbor.api.v1 import scheduled_operations
 from karbor.api.v1 import triggers
-from karbor.wsgi import common as wsgi_common
 
 
-class APIRouter(wsgi_common.Router):
+class APIRouter(base_wsgi.Router):
     @classmethod
     def factory(cls, global_conf, **local_conf):
         return cls(ProjectMapper())
