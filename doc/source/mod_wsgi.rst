@@ -33,8 +33,8 @@ Installing Karbor API with mod_wsgi
    * Modify the ``WSGIDaemonProcess`` directive to set the ``user`` and
      ``group`` values to appropriate user on your server.
    * Modify the ``WSGIScriptAlias`` directive to point to the
-     watcher/api/app.wsgi script.
-   * Modify the ``Directory`` directive to set the path to the Watcher API
+     %KARBOR_BIN_DIR%/karbor-wsgi script.
+   * Modify the ``Directory`` directive to set the path to the Karbor API
      code.
    * Modify the ``ErrorLog and CustomLog`` to redirect the logs to the right
      directory.
