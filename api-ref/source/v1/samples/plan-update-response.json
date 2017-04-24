@@ -16,12 +16,18 @@
       {
         "id": "25336116-f38e-4c22-81ad-e9b7bd71ba51",
         "type": "OS::Cinder::Volume",
-        "name": "System volume"
+        "name": "System volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       },
       {
         "id": "33b6bb0b-1157-4e66-8553-1c9e14b1c7ba",
         "type": "OS::Cinder::Volume",
-        "name": "Data volume"
+        "name": "Data volume",
+        "extra_info": {
+            "availability_zone": "az1"
+        }
       }
     ],
     "status": "started",
