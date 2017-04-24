@@ -421,8 +421,9 @@ class ProvidersController(wsgi.Controller):
             checkpoint_id = self.protection_api.protect(context, plan,
                                                         checkpoint_properties)
         except Exception as error:
-            msg = _("Create checkpoint failed: %s") % error.msg
+            msg = _("Create checkpoint failed: %s") % error
             raise exc.HTTPBadRequest(explanation=msg)
+
         checkpoint_properties['id'] = checkpoint_id
 
         LOG.info("Create the checkpoint successfully. checkpoint_id:%s",
