@@ -38,6 +38,7 @@ swift_client_opts = [
     cfg.StrOpt('swift_user',
                help='Swift user name, if swift_auth_url is set.'),
     cfg.StrOpt('swift_key',
+               secret=True,
                help='Swift key for authentication, if swift_auth_url '
                     ' is set.'),
     cfg.IntOpt('swift_retry_attempts',

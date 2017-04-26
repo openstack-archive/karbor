@@ -28,6 +28,7 @@ eisoo_client_opts = [
     cfg.StrOpt(SERVICE + '_app_id',
                help='App id for eisoo authentication.'),
     cfg.StrOpt(SERVICE + '_app_secret',
+               secret=True,
                help='App secret for eisoo authenticaiton.'),
 ]
 
