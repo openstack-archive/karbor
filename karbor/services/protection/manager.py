@@ -23,6 +23,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from oslo_utils import uuidutils
+
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _
@@ -131,7 +133,8 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.ProviderNotFound,
                                    exception.CheckpointNotFound,
                                    exception.CheckpointNotAvailable,
-                                   exception.FlowError)
+                                   exception.FlowError,
+                                   exception.InvalidInput)
     def restore(self, context, restore, restore_auth):
         LOG.info("Starting restore service:restore action")
 
@@ -140,6 +143,8 @@ class ProtectionManager(manager.Manager):
         provider = self.provider_registry.show_provider(provider_id)
         if not provider:
             raise exception.ProviderNotFound(provider_id=provider_id)
+
+        self.validate_restore_parameters(restore, provider)
 
         checkpoint_collection = provider.get_checkpoint_collection()
         checkpoint = checkpoint_collection.get(checkpoint_id)
@@ -163,6 +168,34 @@ class ProtectionManager(manager.Manager):
                 flow="restore",
                 error=_("Failed to create flow"))
         self._spawn(self.worker.run_flow, flow)
+
+    def validate_restore_parameters(self, restore, provider):
+        parameters = restore["parameters"]
+        if not parameters:
+            return
+        restore_schema = provider.extended_info_schema.get(
+            "restore_schema", None)
+        if restore_schema is None:
+            msg = _("The restore schema of plugin must be provided.")
+            raise exception.InvalidInput(reason=msg)
+        for resource_key, parameter_value in parameters.items():
+            if "#" in resource_key:
+                resource_type, resource_id = resource_key.split("#")
+                if not uuidutils.is_uuid_like(resource_id):
+                    msg = _("The resource_id must be a uuid.")
+                    raise exception.InvalidInput(reason=msg)
+            else:
+                resource_type = resource_key
+            if (resource_type not in constants.RESOURCE_TYPES) or (
+                    resource_type not in restore_schema):
+                msg = _("The key of restore parameters is invalid.")
+                raise exception.InvalidInput(reason=msg)
+            properties = restore_schema[resource_type]["properties"]
+            if not set(parameter_value.keys()).issubset(
+                    set(properties.keys())):
+                msg = _("The restore property of restore parameters "
+                        "is invalid.")
+                raise exception.InvalidInput(reason=msg)
 
     def delete(self, context, provider_id, checkpoint_id):
         LOG.info("Starting protection service:delete action")
