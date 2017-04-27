@@ -29,7 +29,7 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         backup_name = "volume-backup-{id}".format(id=volume.id)
         parameters = {
             "OS::Cinder::Volume": {
-                "incremental": "full",
+                "backup_mode": "full",
                 "force": False
             },
             volume_parameter_key: {

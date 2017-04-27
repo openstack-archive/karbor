@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 from oslo_utils import uuidutils
 from webob import exc
 
@@ -185,18 +186,22 @@ class ScheduledOperationApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank('/v1/triggers')
         return controller.create(req, create_trigger_param)
 
-    def _create_plan(self, provider_id):
+    @mock.patch(
+        'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
+    def _create_plan(self, provider_id, mock_provider):
         create_plan_param = {
             'plan': {
                 'name': '123',
                 'provider_id': provider_id,
                 'resources': [
-                    {'id': '123', 'type': '123', 'name': '123'}
+                    {'id': '39bb894794b741e982bd26144d2949f6',
+                     'type': 'OS::Cinder::Volume', 'name': '123'}
                 ],
-                'parameters': {"OS::Nova::Server": {"consistency": "os"}},
+                'parameters': {"OS::Cinder::Volume": {"backup_name": "test"}},
             }
         }
         controller = plan_api.PlansController()
-        req = fakes.HTTPRequest.blank('/v1/triggers')
+        mock_provider.return_value = fakes.PROVIDER_OS
+        req = fakes.HTTPRequest.blank('/v1/plans')
         plan = controller.create(req, create_plan_param)
         return plan['plan']
