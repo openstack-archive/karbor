@@ -247,6 +247,8 @@ class ProtectOperation(protection_plugin.Operation):
 
         resource_metadata['backup_id'] = backup_id
         bank_section.update_object('metadata', resource_metadata)
+        bank_section.update_object('status',
+                                   constants.RESOURCE_STATUS_AVAILABLE)
         LOG.info('Backed up volume (volume_id: %(volume_id)s snapshot_id: '
                  '%(snapshot_id)s backup_id: %(backup_id)s) successfully',
                  {'backup_id': backup_id,
