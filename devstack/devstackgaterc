@@ -32,7 +32,7 @@ s+=,karbor,karbor-api,karbor-operationengine,karbor-protection
 ENABLED_SERVICES=$s
 export ENABLED_SERVICES
 
-DEVSTACK_LOCAL_CONFIG+="API_WORKERS=8"
+DEVSTACK_LOCAL_CONFIG+="API_WORKERS=4"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"VOLUME_BACKING_FILE_SIZE=20490M"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin karbor git://git.openstack.org/openstack/karbor"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat git://git.openstack.org/openstack/heat"
