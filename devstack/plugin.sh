@@ -150,12 +150,22 @@ function create_karbor_cache_dir {
 
 }
 
+function install_karborclient {
+    if use_library_from_git "python-karborclient"; then
+        echo_summary "Installing Karbor Client from git"
+        git_clone_by_name "python-karborclient"
+        setup_dev_lib "python-karborclient"
+    fi
+}
+
 is_karbor_enabled
 
 if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
     if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
         echo summary "Karbor pre-install"
     elif [[ "$1" == "stack" && "$2" == "install" ]]; then
+        install_karborclient
+
         echo_summary "Installing Karbor"
 
         setup_package $KARBOR_DIR -e
