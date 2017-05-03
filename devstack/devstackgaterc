@@ -18,11 +18,16 @@
 #
 
 s=rabbit,mysql,key
-s+=,n-cpu,n-api,n-crt,n-cond,n-sch,n-cauth,placement-api
+s+=,n-cpu,n-api,n-cond,n-sch,n-cauth,placement-api
 # n-obj has been removed from mitaka
 if [[ "stable/kilo stable/liberty" =~ $ZUUL_BRANCH ]]; then
     s+=,n-obj
 fi
+
+if [[ "stable/kilo stable/liberty stable/mitaka stable/ocata" =~ $ZUUL_BRANCH ]]; then
+    s+=,n-crt
+fi
+
 s+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 s+=,cinder,g-api,g-reg
 s+=,c-api,c-vol,c-sch,c-bak,horizon
