@@ -78,7 +78,7 @@ class FakeBankPlugin(BankPlugin):
         super(FakeBankPlugin, self).__init__(config=config)
         self._objects = {}
         fake_bank_opts = [
-            cfg.StrOpt('fake_host'),
+            cfg.HostAddressOpt('fake_host'),
         ]
         if config:
             config.register_opts(fake_bank_opts, 'fake_bank')
