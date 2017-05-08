@@ -233,7 +233,8 @@ class Server(object):
             if not image:
                 images = self.glance_client.images.list()
                 for image_iter in images:
-                    if image_iter['disk_format'] not in ('aki', 'ari'):
+                    if image_iter['disk_format'] not in ('aki', 'ari') and (
+                            image_iter['name'].startswith('cirros')):
                         image = image_iter['id']
                         break
             assert image
@@ -340,7 +341,8 @@ class Volume(object):
         if create_from_image:
             images = self.glance_client.images.list()
             for image_iter in images:
-                if image_iter['disk_format'] not in ('aki', 'ari'):
+                if image_iter['disk_format'] not in ('aki', 'ari') and (
+                        image_iter['name'].startswith('cirros')):
                     image = image_iter['id']
                     break
             assert image
@@ -357,4 +359,63 @@ class Volume(object):
         except Exception:
             return
         utils.wait_until_none(self._volume_status, timeout=timeout,
+                              sleep=MEDIUM_SLEEP)
+
+
+class Share(object):
+    _name_id = 0
+
+    def __init__(self):
+        self.id = None
+        self._name = None
+        self.manila_client = base._get_manila_client()
+        self.neutron_client = base._get_neutron_client()
+
+    def _share_status(self, status=None):
+        try:
+            share = self.manila_client.shares.get(self.id)
+        except Exception:
+            return False
+
+        if status is None or status == share.status:
+            return True
+        else:
+            return False
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": constants.SHARE_RESOURCE_TYPE,
+            "name": self._name,
+        }
+
+    def create(self, share_proto, size, name=None, timeout=LONG_TIMEOUT):
+        if name is None:
+            name = "KarborFullstack-Share-{id}".format(id=self._name_id)
+            self._name_id += 1
+
+        self._name = name
+        networks = self.neutron_client.list_networks(name="private")
+        assert len(networks['networks']) > 0
+        network_id = networks['networks'][0]['id']
+
+        subnets = self.neutron_client.list_subnets(name="private-subnet")
+        assert len(subnets['subnets']) > 0
+        subnet_id = subnets['subnets'][0]['id']
+
+        share_network = self.manila_client.share_networks.create(
+            neutron_net_id=network_id, neutron_subnet_id=subnet_id)
+        share = self.manila_client.shares.create(share_proto, size, name=name,
+                                                 share_network=share_network)
+        self.id = share.id
+        utils.wait_until_true(partial(self._share_status, 'available'),
+                              timeout=timeout, sleep=MEDIUM_SLEEP)
+        return self.id
+
+    def close(self, timeout=MEDIUM_TIMEOUT):
+        try:
+            self.manila_client.shares.delete(self.id)
+        except Exception:
+            return
+        utils.wait_until_none(self._share_status, timeout=timeout,
                               sleep=MEDIUM_SLEEP)
