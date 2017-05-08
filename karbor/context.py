@@ -143,6 +143,13 @@ class RequestContext(context.RequestContext):
         kwargs = {k: values[k] for k in values if k in allowed_keys}
         return cls(**kwargs)
 
+    def to_policy_values(self):
+        policy = super(RequestContext, self).to_policy_values()
+
+        policy['is_admin'] = self.is_admin
+
+        return policy
+
     def elevated(self, read_deleted=None, overwrite=False):
         """Return a version of this context with admin flag set."""
         context = self.deepcopy()
