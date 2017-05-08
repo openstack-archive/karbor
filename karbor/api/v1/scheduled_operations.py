@@ -99,7 +99,7 @@ class ScheduledOperationController(wsgi.Controller):
         operation_type = operation_info.get("operation_type", None)
         operation_definition = operation_info.get(
             "operation_definition", None)
-        if name is None:
+        if not all([name, operation_type, operation_definition]):
             msg = _("Operation name or type or definition is not provided.")
             raise exc.HTTPBadRequest(explanation=msg)
 
