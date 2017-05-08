@@ -10,7 +10,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""Cinder OS API WSGI application."""
+"""Karbor OS API WSGI application."""
 
 
 import sys
