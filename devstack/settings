@@ -2,6 +2,9 @@
 KARBOR_REPO=${KARBOR_REPO:-https://git.openstack.org/cgit/openstack/karbor/}
 KARBOR_DIR=$DEST/karbor
 KARBOR_BRANCH=${KARBOR_BRANCH:-master}
+KARBORCLIENT_REPO=${KARBORCLIENT_REPO:-"https://git.openstack.org/cgit/openstack/python-karborclient/"}
+KARBORCLIENT_DIR=$DEST/python-karborclient
+KARBORCLIENT_BRANCH=${KARBORCLIENT_BRANCH:-master}
 
 # Toggle for deploying Karbor under apache2 in mod_wsgi
 KARBOR_USE_MOD_WSGI=${KARBOR_USE_MOD_WSGI:-True}
