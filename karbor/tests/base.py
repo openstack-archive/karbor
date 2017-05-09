@@ -15,7 +15,6 @@ import os
 
 import fixtures
 from oslo_config import cfg
-from oslo_log import log
 from oslo_messaging import conffixture as messaging_conffixture
 from oslo_utils import timeutils
 from oslotest import base
@@ -28,8 +27,6 @@ from karbor.tests.unit import conf_fixture
 
 
 CONF = cfg.CONF
-
-LOG = log.getLogger(__name__)
 
 _DB_CACHE = None
 
