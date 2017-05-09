@@ -56,8 +56,8 @@ class ThreadPoolExecutorTestCase(base.TestCase):
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.context, operation.id)
-        self.assertTrue(state.end_time_for_run is not None)
-        self.assertTrue(constants.OPERATION_STATE_REGISTERED == state.state)
+        self.assertIsNotNone(state.end_time_for_run)
+        self.assertEqual(constants.OPERATION_STATE_REGISTERED, state.state)
 
     def test_resume_operation(self):
         operation = self._create_operation()
@@ -75,7 +75,7 @@ class ThreadPoolExecutorTestCase(base.TestCase):
 
         state = objects.ScheduledOperationState.get_by_operation_id(
             self.context, operation.id)
-        self.assertTrue(constants.OPERATION_STATE_REGISTERED == state.state)
+        self.assertEqual(constants.OPERATION_STATE_REGISTERED, state.state)
 
     def test_cancel_operation(self):
         operation_id = '123'

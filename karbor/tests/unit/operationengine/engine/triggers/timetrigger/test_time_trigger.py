@@ -144,7 +144,7 @@ class TimeTriggerTestCase(base.TestCase):
         trigger.register_operation(operation_id)
         eventlet.sleep(0.3)
 
-        self.assertTrue(trigger._executor._ops[operation_id] >= 1)
+        self.assertGreaterEqual(trigger._executor._ops[operation_id], 1)
         self.assertRaisesRegexp(exception.ScheduledOperationExist,
                                 "The operation_id.* is exist",
                                 trigger.register_operation,
@@ -170,15 +170,15 @@ class TimeTriggerTestCase(base.TestCase):
 
         for op_id in ['1', '2', '3']:
             trigger.register_operation(op_id)
-            self.assertTrue(op_id in trigger._operation_ids)
+            self.assertIn(op_id, trigger._operation_ids)
         eventlet.sleep(0.5)
 
         for op_id in ['2', '3']:
             trigger.unregister_operation(op_id)
-            self.assertTrue(op_id not in trigger._operation_ids)
+            self.assertNotIn(op_id, trigger._operation_ids)
         eventlet.sleep(0.6)
 
-        self.assertTrue(trigger._executor._ops['1'] >= 1)
+        self.assertGreaterEqual(trigger._executor._ops['1'], 1)
 
         self.assertTrue(('2' not in trigger._executor._ops) or (
             '3' not in trigger._executor._ops))

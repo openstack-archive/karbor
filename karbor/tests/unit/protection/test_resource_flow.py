@@ -184,25 +184,25 @@ class ResourceFlowTest(base.TestCase):
 
         self._walk_operation(mock_protection, operation)
 
-        self.assertTrue(order_list.index(('pre_begin', parent.id)) <
+        self.assertLess(order_list.index(('pre_begin', parent.id)),
                         order_list.index(('pre_begin', child.id)))
-        self.assertTrue(order_list.index(('pre_begin', child.id)) <
+        self.assertLess(order_list.index(('pre_begin', child.id)),
                         order_list.index(('pre_begin', grandchild.id)))
 
-        self.assertTrue(order_list.index(('pre_finish', parent.id)) >
-                        order_list.index(('pre_finish', child.id)))
-        self.assertTrue(order_list.index(('pre_finish', child.id)) >
-                        order_list.index(('pre_finish', grandchild.id)))
+        self.assertGreater(order_list.index(('pre_finish', parent.id)),
+                           order_list.index(('pre_finish', child.id)))
+        self.assertGreater(order_list.index(('pre_finish', child.id)),
+                           order_list.index(('pre_finish', grandchild.id)))
 
-        self.assertTrue(order_list.index(('complete', parent.id)) >
-                        order_list.index(('complete', child.id)))
-        self.assertTrue(order_list.index(('complete', child.id)) >
-                        order_list.index(('complete', grandchild.id)))
+        self.assertGreater(order_list.index(('complete', parent.id)),
+                           order_list.index(('complete', child.id)))
+        self.assertGreater(order_list.index(('complete', child.id)),
+                           order_list.index(('complete', grandchild.id)))
 
         for resource_id in (parent.id, child.id, grandchild.id):
-            self.assertTrue(order_list.index(('pre_begin', resource_id)) <
+            self.assertLess(order_list.index(('pre_begin', resource_id)),
                             order_list.index(('pre_finish', resource_id)))
-            self.assertTrue(order_list.index(('pre_finish', resource_id)) <
+            self.assertLess(order_list.index(('pre_finish', resource_id)),
                             order_list.index(('main', resource_id)))
-            self.assertTrue(order_list.index(('main', resource_id)) <
+            self.assertLess(order_list.index(('main', resource_id)),
                             order_list.index(('complete', resource_id)))
