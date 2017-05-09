@@ -13,6 +13,7 @@
 import re
 
 from datetime import datetime
+from oslo_serialization import jsonutils
 
 from karbor import exception
 from karbor.services.operationengine.engine.triggers.timetrigger.timeformats \
@@ -95,6 +96,29 @@ class CalendarTimeTestCase(base.TestCase):
                                     calendar_time.ICal.check_time_format,
                                     pattern)
 
+    def test_valid_pattern(self):
+        pattern = "BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=60;\nEND:VEVENT"
+        self.assertIsNone(calendar_time.ICal.check_time_format(pattern))
+
+    def test_escape_valid_pattern(self):
+        pattern0 = "BEGIN:VEVENT\\nRRULE:FREQ=HOURLY;INTERVAL=1;\\nEND:VEVENT"
+        self.assertIsNone(calendar_time.ICal.check_time_format(pattern0))
+
+        pattern1 = "BEGIN:VEVENT\nRRULE:FREQ=HOURLY;INTERVAL=1;\nEND:VEVENT"
+        properties = {"format": "calendar",
+                      "pattern": pattern1}
+        body = {"trigger_info": {"name": "test",
+                                 "type": "time",
+                                 "properties": properties,
+                                 }}
+        quest = jsonutils.dumps(body)
+        recieve = jsonutils.loads(quest)
+        trigger_info = recieve["trigger_info"]
+        trigger_property = trigger_info.get("properties", None)
+        pattern_ = trigger_property.get("pattern", None)
+
+        self.assertIsNone(calendar_time.ICal.check_time_format(pattern_))
+
     def test_compute_next_time(self):
         pattern = (
             "BEGIN:VEVENT\n"
@@ -148,4 +172,4 @@ class CalendarTimeTestCase(base.TestCase):
         )
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
-        self.assertEqual(None, time_obj.get_min_interval())
+        self.assertIsNone(time_obj.get_min_interval())
