@@ -31,7 +31,7 @@ Proposed change
 ===============
 
 Objects would be stored under a file name with their ID having `/` be defined
-as a directory seperator.
+as a directory separator.
 
 For example::
         Object ID: /checkpoints/2fd14f87-46bd-43a9-8853-9e1a84ebee3d/index.json
@@ -41,7 +41,7 @@ we will need to escape some chars so that they can be used as file names.
 
 We propose the following encoding escape sequence
 non ascii chars would be modified to `%[XX..]` where XX are Hex
-representations of the utf-8 encodinf of the charechters.
+representations of the utf-8 encodinf of the characters.
 
 This avoids using back-slash for escape.
 

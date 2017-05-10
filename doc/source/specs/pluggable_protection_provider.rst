@@ -12,7 +12,7 @@
         .yellow {color:#fbc02d; font-weight: bold;}
         .indigo {color:#536dfe; font-weight: bold;}
         .purple {color:#cd12da; font-weight: bold;}
-        .black {colot:#000000; font-weight: bold;}
+        .black {color:#000000; font-weight: bold;}
     </style>
 
 .. role:: red

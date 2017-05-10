@@ -17,8 +17,8 @@ your local.conf, under [[local|localrc]]:
         # Karbor Dashboard depends on Horizon
         enable_service karbor-dashboard
 
-Depenencies
-===========
+Dependencies
+============
 
 Heat
 ~~~~

@@ -27,7 +27,7 @@ Installing Karbor API with mod_wsgi
    Debian/Ubuntu:
     sudo cp etc/apache2/apache-karbor-api.conf /etc/apache2/sites-available/apache-karbor-api.conf
 
-#. Edit ``apache-karbor-api.conf`` according to installtion
+#. Edit ``apache-karbor-api.conf`` according to installation
    and environment.
 
    * Modify the ``WSGIDaemonProcess`` directive to set the ``user`` and
