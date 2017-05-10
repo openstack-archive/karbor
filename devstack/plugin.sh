@@ -153,8 +153,8 @@ function create_karbor_cache_dir {
 function install_karborclient {
     if use_library_from_git "python-karborclient"; then
         echo_summary "Installing Karbor Client from git"
-        git_clone_by_name "python-karborclient"
-        setup_dev_lib "python-karborclient"
+        git_clone $KARBORCLIENT_REPO $KARBORCLIENT_DIR $KARBORCLIENT_BRANCH
+        setup_develop $KARBORCLIENT_DIR
     fi
 }
 
