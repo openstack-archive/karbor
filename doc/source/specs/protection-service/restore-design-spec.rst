@@ -218,7 +218,7 @@ another.
 Restore heat stack managed resources(TBD)
 ==========================================
 The basic idea here is to iterate the
-original source template, and look up correpsonding resource in protection
+original source template, and look up corresponding resource in protection
 checkpoint, and thus rebuild the source template with checkpoint data.  In this
 way, the rebuilt resource are still managed by heat stack.
 

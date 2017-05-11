@@ -19,7 +19,7 @@ when using it directly to access other openstack services.
 Use Cases
 =========
 
-In protection service, both protect and restore operationes use user token passed
+In protection service, both protect and restore operations use user token passed
 by context to create clients of other openstack services and access them by that
 client. It may fail to access other services because of the expiration of user
 token.
@@ -124,7 +124,7 @@ in protect service.
 Dependencies
 ============
 
-It depends on all the patches[3] of Kestone to be merged.
+It depends on all the patches[3] of Keystone to be merged.
 
 Testing
 =======

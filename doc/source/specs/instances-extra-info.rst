@@ -12,7 +12,7 @@ https://blueprints.launchpad.net/karbor/+spec/instances-extra-info
 
 Problem description
 ===================
-We can only query the id, name and type of protectable instance using the restfull API
+We can only query the id, name and type of protectable instance using the restful API
 of protectable instance. We can not get more info about the resource instance.
 Some other info about instance is also needed when we protect resources with different
 resources type.
