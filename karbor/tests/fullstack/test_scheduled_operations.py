@@ -109,8 +109,8 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         pattern = '*/5 * * * *'
         cur_property = {'pattern': pattern, 'format': 'crontab'}
 
-        start_time = datetime.now().replace(microsecond=0)
         operation = self.store(self._create_for_volume(cur_property))
+        start_time = datetime.now().replace(microsecond=0)
         sleep_time = self._wait_timestamp(pattern, start_time, freq)
         self.assertNotEqual(0, sleep_time)
         eventlet.sleep(sleep_time)
