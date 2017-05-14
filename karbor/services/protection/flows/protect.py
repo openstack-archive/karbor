@@ -20,9 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class InitiateProtectTask(task.Task):
-    def __init__(self):
-        super(InitiateProtectTask, self).__init__()
-
     def execute(self, checkpoint, *args, **kwargs):
         LOG.debug("Initiate protect checkpoint_id: %s", checkpoint.id)
         checkpoint.status = constants.CHECKPOINT_STATUS_PROTECTING
@@ -35,9 +32,6 @@ class InitiateProtectTask(task.Task):
 
 
 class CompleteProtectTask(task.Task):
-    def __init__(self):
-        super(CompleteProtectTask, self).__init__()
-
     def execute(self, checkpoint):
         LOG.debug("Complete protect checkpoint_id: %s", checkpoint.id)
         checkpoint.status = constants.CHECKPOINT_STATUS_AVAILABLE

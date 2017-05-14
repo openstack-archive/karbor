@@ -197,6 +197,7 @@ class GraphBuilderTest(base.TestCase):
 
 class _TestGraphWalkerListener(graph.GraphWalkerListener):
     def __init__(self, expected_event_stream, test):
+        super(_TestGraphWalkerListener, self).__init__()
         # Because the testing famework is badly designed
         # I need to have a reference to the test to raise assertions
         self._test = test

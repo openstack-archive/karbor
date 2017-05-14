@@ -25,9 +25,6 @@ class ProtectOperation(base.Operation):
 
     OPERATION_TYPE = "protect"
 
-    def __init__(self, user_trust_manager):
-        super(ProtectOperation, self).__init__(user_trust_manager)
-
     def check_operation_definition(self, operation_definition):
         provider_id = operation_definition.get("provider_id")
         if not provider_id or not uuidutils.is_uuid_like(provider_id):

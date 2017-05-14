@@ -24,6 +24,7 @@ from karbor.tests import base
 class FakeTriggerManager(object):
 
     def __init__(self):
+        super(FakeTriggerManager, self).__init__()
         self._trigger = {}
 
     def register_operation(self, trigger_id, operation_id, **kwargs):

@@ -70,6 +70,7 @@ def fake_protection_plan():
                        }
     return protection_plan
 
+
 plan_resources = [A, B, C, D]
 
 
@@ -193,6 +194,7 @@ class FakeProtectionPlugin(protection_plugin.ProtectionPlugin):
 
 class FakeCheckpoint(object):
     def __init__(self):
+        super(FakeCheckpoint, self).__init__()
         self.id = 'fake_checkpoint'
         self.status = 'available'
         self.resource_graph = resource_graph
@@ -241,9 +243,6 @@ class FakeProvider(provider.PluggableProtectionProvider):
 
 
 class FakeFlowEngine(object):
-    def __init__(self):
-        super(FakeFlowEngine, self).__init__()
-
     def create_task(self, function, requires=None, provides=None,
                     inject=None, **kwargs):
         name = kwargs.get('name', None)

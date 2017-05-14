@@ -56,10 +56,6 @@ class ProtectableViewBuilder(common.ViewBuilder):
 
     _collection_name = "protectables"
 
-    def __init__(self):
-        """Initialize view builder."""
-        super(ProtectableViewBuilder, self).__init__()
-
     def show(self, request, protectable_type):
         """Detailed view of a single protectable_type."""
         protectable_type_ref = {

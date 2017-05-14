@@ -108,6 +108,7 @@ class TestScheduledOperationStateList(test_objects.BaseObjectsTestCase):
 class FakeEnv(object):
 
     def __init__(self, ctx):
+        super(FakeEnv, self).__init__()
         self.context = ctx
 
     def do_init(self):

@@ -54,9 +54,6 @@ def args(*args, **kwargs):
 class DbCommands(object):
     """Class for managing the database."""
 
-    def __init__(self):
-        pass
-
     @args('version', nargs='?', default=None,
           help='Database version')
     def sync(self, version=None):
@@ -91,9 +88,6 @@ class DbCommands(object):
 class VersionCommands(object):
     """Class for exposing the codebase version."""
 
-    def __init__(self):
-        pass
-
     def list(self):
         print(version.version_string())
 
@@ -103,9 +97,6 @@ class VersionCommands(object):
 
 class ConfigCommands(object):
     """Class for exposing the flags defined by flag_file(s)."""
-
-    def __init__(self):
-        pass
 
     @args('param', nargs='?', default=None,
           help='Configuration parameter to display (default: %(default)s)')

@@ -25,6 +25,7 @@ from karbor.tests import base
 
 class FakeOperationManager(object):
     def __init__(self):
+        super(FakeOperationManager, self).__init__()
         self._op_id = 0
 
     def run_operation(self, operation_type, operation_definition, **kwargs):

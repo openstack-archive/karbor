@@ -25,6 +25,7 @@ class Crontab(timeformats.TimeFormat):
     def __init__(self, start_time, pattern):
         self._start_time = start_time
         self._pattern = pattern
+        super(Crontab, self).__init__(start_time, pattern)
 
     @classmethod
     def check_time_format(cls, pattern):

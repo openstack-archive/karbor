@@ -68,10 +68,6 @@ class RestoreViewBuilder(common.ViewBuilder):
 
     _collection_name = "restores"
 
-    def __init__(self):
-        """Initialize view builder."""
-        super(RestoreViewBuilder, self).__init__()
-
     def detail(self, request, restore):
         """Detailed view of a single restore."""
         restore_ref = {

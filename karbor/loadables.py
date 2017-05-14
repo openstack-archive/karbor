@@ -46,6 +46,7 @@ from karbor import exception
 
 class BaseLoader(object):
     def __init__(self, loadable_cls_type):
+        super(BaseLoader, self).__init__()
         mod = sys.modules[self.__class__.__module__]
         self.path = os.path.abspath(mod.__path__[0])
         self.package = mod.__package__

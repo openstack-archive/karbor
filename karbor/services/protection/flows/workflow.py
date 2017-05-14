@@ -87,9 +87,6 @@ class WorkFlowEngine(object):
 
 
 class TaskFlowEngine(WorkFlowEngine):
-    def __init__(self):
-        super(TaskFlowEngine, self).__init__()
-
     def build_flow(self, flow_name, flow_type='graph'):
         if flow_type == 'linear':
             return linear_flow.Flow(flow_name)

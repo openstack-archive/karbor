@@ -111,6 +111,7 @@ class GraphWalkerListener(object):
 
 class GraphWalker(object):
     def __init__(self):
+        super(GraphWalker, self).__init__()
         self._listeners = []
 
     def register_listener(self, graph_walker_listener):

@@ -32,9 +32,6 @@ class ScheduledOperationExecutor(base.BaseExecutor):
         'is_canceled': 'is_canceled'
     }
 
-    def __init__(self, operation_manager):
-        super(ScheduledOperationExecutor, self).__init__(operation_manager)
-
     def execute_operation(self, operation_id, triggered_time,
                           expect_start_time, window_time, **kwargs):
 

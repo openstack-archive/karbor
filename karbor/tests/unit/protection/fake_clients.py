@@ -39,4 +39,5 @@ class FakeHeatClient(object):
             return FakeStacks[stack_id]
 
     def __init__(self):
+        super(FakeHeatClient, self).__init__()
         self.stacks = self.Stacks()

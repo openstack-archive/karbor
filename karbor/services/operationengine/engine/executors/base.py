@@ -23,6 +23,7 @@ import six
 class BaseExecutor(object):
     def __init__(self, operation_manager):
         self._operation_manager = operation_manager
+        super(BaseExecutor, self).__init__()
 
     @abstractmethod
     def execute_operation(self, operation_id, triggered_time,

@@ -81,6 +81,7 @@ def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
 
 class CheckpointCollection(object):
     def __init__(self):
+        super(CheckpointCollection, self).__init__()
         self.bank_section = fake_bank_section
 
     def get_resource_bank_section(self, resource_id):

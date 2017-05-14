@@ -21,6 +21,7 @@ from karbor.tests import base
 
 class FakeConfig(object):
     def __init__(self):
+        super(FakeConfig, self).__init__()
         self.eisoo_client = EisooClient()
 
     def __call__(self, args):
@@ -32,6 +33,7 @@ class FakeConfig(object):
 
 class EisooClient(object):
     def __init__(self):
+        super(EisooClient, self).__init__()
         self.eisoo_endpoint = 'eisoo_endpoint'
         self.eisoo_app_id = 'eisoo_app_id'
         self.eisoo_app_secret = 'eisoo_app_secret'

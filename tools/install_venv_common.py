@@ -35,6 +35,7 @@ class InstallVenv(object):
     def __init__(self, root, venv, requirements,
                  test_requirements, py_version,
                  project):
+        super(InstallVenv, self).__init__()
         self.root = root
         self.venv = venv
         self.requirements = requirements

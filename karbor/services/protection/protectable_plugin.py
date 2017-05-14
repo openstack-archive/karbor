@@ -21,6 +21,7 @@ class ProtectablePlugin(object):
     """
 
     def __init__(self, context=None):
+        super(ProtectablePlugin, self).__init__()
         self._context = context
 
     def instance(self, context):

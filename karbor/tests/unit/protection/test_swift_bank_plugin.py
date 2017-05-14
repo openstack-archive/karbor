@@ -25,6 +25,7 @@ CONF = cfg.CONF
 
 class FakeConf(object):
     def __init__(self):
+        super(FakeConf, self).__init__()
         self.lease_expire_window = 600
         self.lease_renew_window = 120
         self.lease_validity_window = 100

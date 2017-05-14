@@ -70,10 +70,6 @@ class PlanViewBuilder(common.ViewBuilder):
 
     _collection_name = "plans"
 
-    def __init__(self):
-        """Initialize view builder."""
-        super(PlanViewBuilder, self).__init__()
-
     def detail(self, request, plan):
         """Detailed view of a single plan."""
 

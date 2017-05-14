@@ -35,9 +35,6 @@ LOG = logging.getLogger(__name__)
 
 
 class InitiateRestoreTask(task.Task):
-    def __init__(self):
-        super(InitiateRestoreTask, self).__init__()
-
     def execute(self, restore, *args, **kwargs):
         LOG.debug("Initiate restore restore_id: %s", restore.id)
         restore['status'] = constants.RESTORE_STATUS_IN_PROGRESS
@@ -50,9 +47,6 @@ class InitiateRestoreTask(task.Task):
 
 
 class CompleteRestoreTask(task.Task):
-    def __init__(self):
-        super(CompleteRestoreTask, self).__init__()
-
     def execute(self, restore, *args, **kwargs):
         LOG.debug("Complete restore restore_id: %s", restore.id)
         restore['status'] = constants.RESTORE_STATUS_SUCCESS
@@ -61,9 +55,6 @@ class CompleteRestoreTask(task.Task):
 
 class CreateHeatTask(task.Task):
     default_provides = ['heat_client', 'heat_template']
-
-    def __init__(self, *args, **kwargs):
-        super(CreateHeatTask, self).__init__(*args, **kwargs)
 
     def execute(self, context, heat_conf):
         LOG.info('Creating Heat template. Target: "%s"'
@@ -78,9 +69,6 @@ class CreateHeatTask(task.Task):
 
 class CreateStackTask(task.Task):
     default_provides = 'stack_id'
-
-    def __init__(self, *args, **kwargs):
-        super(CreateStackTask, self).__init__(*args, **kwargs)
 
     def execute(self, heat_client, heat_template):
         stack_name = "restore_%s" % uuidutils.generate_uuid()
@@ -100,10 +88,6 @@ class CreateStackTask(task.Task):
 
 
 class SyncRestoreStatusTask(task.Task):
-
-    def __init__(self, *args, **kwargs):
-        super(SyncRestoreStatusTask, self).__init__(*args, **kwargs)
-
     def execute(self, stack_id, heat_client, restore):
         if stack_id is None:
             LOG.info('Not syncing Heat stack status, stack is empty')

@@ -34,6 +34,7 @@ class Checkpoint(object):
 
     def __init__(self, checkpoint_section, indices_section,
                  bank_lease, checkpoint_id):
+        super(Checkpoint, self).__init__()
         self._id = checkpoint_id
         self._checkpoint_section = checkpoint_section
         self._indices_section = indices_section
