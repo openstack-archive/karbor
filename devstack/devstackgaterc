@@ -38,15 +38,17 @@ s+=,karbor,karbor-api,karbor-operationengine,karbor-protection
 ENABLED_SERVICES=$s
 export ENABLED_SERVICES
 
-DEFAULT_EXTRA_SPECS="'snapshot_support=True create_share_from_snapshot_support=True'"
+DEFAULT_EXTRA_SPECS="'snapshot_support=True create_share_from_snapshot_support=True mount_snapshot_support=True driver_handles_share_servers=False'"
 
 DEVSTACK_LOCAL_CONFIG+="API_WORKERS=4"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"VOLUME_BACKING_FILE_SIZE=20490M"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin karbor git://git.openstack.org/openstack/karbor"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat git://git.openstack.org/openstack/heat"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin manila git://git.openstack.org/openstack/manila"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"MANILA_OPTGROUP_generic1_driver_handles_share_servers=False"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"MANILA_USE_SERVICE_INSTANCE_PASSWORD=True"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS=$DEFAULT_EXTRA_SPECS"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"SHARE_DRIVER=manila.share.drivers.lvm.LVMShareDriver"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_PLUGIN=ml2"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"ENABLE_TENANT_VLANS=True"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"ML2_VLAN_RANGES=physnet1:100:200"

@@ -395,18 +395,7 @@ class Share(object):
             self._name_id += 1
 
         self._name = name
-        networks = self.neutron_client.list_networks(name="private")
-        assert len(networks['networks']) > 0
-        network_id = networks['networks'][0]['id']
-
-        subnets = self.neutron_client.list_subnets(name="private-subnet")
-        assert len(subnets['subnets']) > 0
-        subnet_id = subnets['subnets'][0]['id']
-
-        share_network = self.manila_client.share_networks.create(
-            neutron_net_id=network_id, neutron_subnet_id=subnet_id)
-        share = self.manila_client.shares.create(share_proto, size, name=name,
-                                                 share_network=share_network)
+        share = self.manila_client.shares.create(share_proto, size, name=name)
         self.id = share.id
         utils.wait_until_true(partial(self._share_status, 'available'),
                               timeout=timeout, sleep=MEDIUM_SLEEP)
