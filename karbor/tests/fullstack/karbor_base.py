@@ -155,6 +155,8 @@ class KarborBaseTest(base.BaseTestCase):
         self.provider_id_noop = 'b766f37c-d011-4026-8228-28730d734a3f'
         self.provider_id_os = 'cf56bd3e-97a7-4078-b6d5-f36246333fd9'
         self.provider_id_fs_bank = '6659007d-6f66-4a0f-9cb4-17d6aded0bb9'
+        self.provider_id_os_volume_snapshot = (
+            '90d5bfea-a259-41e6-80c6-dcfcfcd9d827')
 
     def store(self, obj, close_func=None):
         return self._testcase_store.store(obj, close_func)
