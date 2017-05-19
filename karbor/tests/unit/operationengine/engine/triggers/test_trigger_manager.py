@@ -97,15 +97,15 @@ class TriggerManagerTestCase(base.TestCase):
     def test_add_trigger(self):
         trigger_id = 'add'
         self._add_a_trigger(trigger_id)
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                'Trigger id.* is exist',
-                                self._manager.add_trigger,
-                                trigger_id, self._trigger_type, {})
+        self.assertRaisesRegex(exception.InvalidInput,
+                               'Trigger id.* is exist',
+                               self._manager.add_trigger,
+                               trigger_id, self._trigger_type, {})
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                'Invalid trigger type.*',
-                                self._manager.add_trigger,
-                                1, 'abc', {})
+        self.assertRaisesRegex(exception.InvalidInput,
+                               'Invalid trigger type.*',
+                               self._manager.add_trigger,
+                               1, 'abc', {})
 
     def test_remove_trigger(self):
         self.assertRaises(exception.TriggerNotFound,

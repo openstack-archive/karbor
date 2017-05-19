@@ -27,16 +27,16 @@ class CrontabTimeTestCase(base.TestCase):
         self._time_format = crontab_time.Crontab
 
     def test_none_pattern(self):
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger pattern is None",
-                                self._time_format.check_time_format,
-                                "")
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger pattern is None",
+                               self._time_format.check_time_format,
+                               "")
 
     def test_invalid_pattern(self):
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger pattern.* is invalid",
-                                self._time_format.check_time_format,
-                                "*")
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger pattern.* is invalid",
+                               self._time_format.check_time_format,
+                               "*")
 
     def test_compute_next_time(self):
         now = datetime(2016, 1, 20, 15, 11, 0, 0)
