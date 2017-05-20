@@ -28,7 +28,6 @@ import karbor.services.operationengine.manager
 import karbor.services.operationengine.operations.base as base
 import karbor.services.protection.clients.cinder
 import karbor.services.protection.clients.glance
-import karbor.services.protection.clients.heat
 import karbor.services.protection.clients.manila
 import karbor.services.protection.clients.neutron
 import karbor.services.protection.clients.nova
@@ -57,9 +56,6 @@ _opts = [
     ('glance_client', list(itertools.chain(
         karbor.common.config.service_client_opts,
         karbor.services.protection.clients.glance.glance_client_opts))),
-    ('heat_client', list(itertools.chain(
-        karbor.common.config.service_client_opts,
-        karbor.services.protection.clients.heat.heat_client_opts))),
     ('manila_client', list(itertools.chain(
         karbor.common.config.service_client_opts,
         karbor.services.protection.clients.manila.manila_client_opts))),

@@ -247,8 +247,6 @@ class RestoresController(wsgi.Controller):
             raise exception.InvalidInput(reason=msg)
 
         # restore_auth and restore_target are optional
-        # Heat client can be initialized using current login tenant when the
-        # restore_target and restore_auth is not provided.
         restore_auth = restore.get("restore_auth")
         if restore_auth is not None:
             if not isinstance(restore_auth, dict):
