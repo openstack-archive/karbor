@@ -18,7 +18,6 @@ from karbor.resource import Resource
 from karbor.services.protection.flows.workflow import TaskFlowEngine
 from karbor.services.protection import graph
 from karbor.services.protection import resource_flow
-from karbor.services.protection import restore_heat
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
 from oslo_config import cfg
@@ -82,7 +81,7 @@ class ResourceFlowTest(base.TestCase):
         for operation in constants.OPERATION_TYPES:
             kwargs = {}
             if operation == constants.OPERATION_RESTORE:
-                kwargs['heat_template'] = restore_heat.HeatTemplate()
+                kwargs['new_resources'] = {}
                 kwargs['restore'] = None
             self._walk_operation(mock_protection, operation, **kwargs)
 
@@ -98,7 +97,7 @@ class ResourceFlowTest(base.TestCase):
 
             kwargs = {}
             if operation == constants.OPERATION_RESTORE:
-                kwargs['heat_template'] = restore_heat.HeatTemplate()
+                kwargs['new_resources'] = {}
                 kwargs['restore'] = None
             self._walk_operation(mock_protection, operation, **kwargs)
 
@@ -135,24 +134,16 @@ class ResourceFlowTest(base.TestCase):
                 get_operation_attr
             ).return_value = fake_operation
 
-            kwargs = {
+            args = {
                 'checkpoint': 'A',
                 'context': 'B',
             }
 
-            args = kwargs.copy()
+            kwargs = args.copy()
+            kwargs['operation_log'] = None
             if operation == constants.OPERATION_RESTORE:
-                template = restore_heat.HeatTemplate()
-                args['kwargs'] = {
-                    'heat_template': template,
-                    'restore': None,
-                    'operation_log': None
-                }
-            else:
-                args['kwargs'] = {
-                    'operation_log': None
-                }
-            kwargs.update(args['kwargs'])
+                kwargs['new_resources'] = {}
+                kwargs['restore'] = None
 
             self._walk_operation(mock_protection, operation,
                                  parameters=parameters, **kwargs)

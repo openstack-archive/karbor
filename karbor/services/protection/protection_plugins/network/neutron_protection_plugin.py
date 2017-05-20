@@ -289,7 +289,7 @@ class RestoreOperation(protection_plugin.Operation):
                                  success_statuses, failure_statuses,
                                  ignore_statuses)
 
-    def _restore_networks(self, neutron_client, heat_template, nets_meta):
+    def _restore_networks(self, neutron_client, new_resources, nets_meta):
         net_ids = set()
         for _, net_data in nets_meta.items():
             if net_data["router:external"]:
@@ -303,14 +303,14 @@ class RestoreOperation(protection_plugin.Operation):
             }
             net_id = neutron_client.create_network(
                 {'network': props})['network']['id']
-            heat_template.put_parameter(net_data["name"], net_id)
+            new_resources[net_data["name"]] = net_id
             net_ids.add(net_id)
 
         is_success = self._check_complete(neutron_client, net_ids, 'network')
         if not is_success:
             raise Exception("Crate networks failed")
 
-    def _restore_subnets(self, neutron_client, heat_template,
+    def _restore_subnets(self, neutron_client, new_resources,
                          nets_meta, subs_meta):
         for _, sub_data in subs_meta.items():
             props = {
@@ -323,16 +323,16 @@ class RestoreOperation(protection_plugin.Operation):
                 "host_routes": sub_data["host_routes"],
                 "name": sub_data["name"],
                 "ip_version": sub_data["ip_version"],
-                "network_id": heat_template.get_resource_reference(
+                "network_id": new_resources.get(
                     nets_meta[sub_data['network_id']]['name']),
                 "tenant_id": sub_data["tenant_id"],
             }
 
             subnet_id = neutron_client.create_subnet(
                 {'subnet': props})['subnet']['id']
-            heat_template.put_parameter(sub_data["name"], subnet_id)
+            new_resources[sub_data["name"]] = subnet_id
 
-    def _get_new_fixed_ips(self, heat_template, subs_meta, fixed_ips_meta):
+    def _get_new_fixed_ips(self, new_resources, subs_meta, fixed_ips_meta):
         new_fixed_ips = []
         for fixed_ip in fixed_ips_meta:
             subnet = subs_meta.get(fixed_ip["subnet_id"])
@@ -341,14 +341,14 @@ class RestoreOperation(protection_plugin.Operation):
 
             props = {
                 "ip_address": fixed_ip["ip_address"],
-                "subnet_id": heat_template.get_resource_reference(
+                "subnet_id": new_resources.get(
                     subnet['name'])
             }
             new_fixed_ips.append(props)
 
         return new_fixed_ips
 
-    def _restore_ports(self, neutron_client, heat_template,
+    def _restore_ports(self, neutron_client, new_resources,
                        nets_meta, subs_meta, ports_meta):
         port_ids = set()
         for _, port_data in ports_meta.items():
@@ -363,12 +363,12 @@ class RestoreOperation(protection_plugin.Operation):
                 "device_owner": port_data["device_owner"],
                 "mac_address": port_data["mac_address"],
                 "name": port_data["name"],
-                "network_id": heat_template.get_resource_reference(
+                "network_id": new_resources.get(
                     nets_meta[port_data['network_id']]['name']),
                 "port_security_enabled": port_data["port_security_enabled"],
             }
             new_fixed_ips = self._get_new_fixed_ips(
-                heat_template, subs_meta, port_data["fixed_ips"])
+                new_resources, subs_meta, port_data["fixed_ips"])
             if new_fixed_ips:
                 props["fixed_ips"] = new_fixed_ips
 
@@ -385,12 +385,12 @@ class RestoreOperation(protection_plugin.Operation):
             security_groups = port_data["security_groups"]
             if security_groups:
                 props['security_groups'] = [
-                    heat_template.get_resource_reference(sg)
+                    new_resources.get(sg)
                     for sg in security_groups if sg != 'default'
                 ]
 
             port_id = neutron_client.create_port({'port': props})['port']['id']
-            heat_template.put_parameter(port_data["name"], port_id)
+            new_resources[port_data["name"]] = port_id
             port_ids.add(port_id)
 
         is_success = self._check_complete(neutron_client, port_ids, 'port')
@@ -414,7 +414,7 @@ class RestoreOperation(protection_plugin.Operation):
             gateway["enable_snat"] = gateway_info["enable_snat"]
         return gateway
 
-    def _restore_routers(self, neutron_client, heat_template,
+    def _restore_routers(self, neutron_client, new_resources,
                          public_network_id, routers_meta):
         router_ids = set()
         for _, router_data in routers_meta.items():
@@ -430,14 +430,14 @@ class RestoreOperation(protection_plugin.Operation):
             #     props["external_gateway_info"] = new_external_gateway
             router_id = neutron_client.create_router(
                 {'router': props})['router']['id']
-            heat_template.put_parameter(router_data["name"], router_id)
+            new_resources[router_data["name"]] = router_id
             router_ids.add(router_id)
 
         is_success = self._check_complete(neutron_client, router_ids, 'router')
         if not is_success:
             raise Exception("Crate router failed")
 
-    def _restore_routerinterfaces(self, neutron_client, heat_template,
+    def _restore_routerinterfaces(self, neutron_client, new_resources,
                                   subs_meta, routers_meta, ports_meta):
         for _, port_data in ports_meta.items():
             if port_data["device_owner"] != "network:router_interface":
@@ -455,9 +455,9 @@ class RestoreOperation(protection_plugin.Operation):
                 continue
 
             neutron_client.add_interface_router(
-                heat_template.get_resource_reference(router['name']),
+                new_resources.get(router['name']),
                 {
-                    'subnet_id': heat_template.get_resource_reference(
+                    'subnet_id': new_resources.get(
                         subnet['name'])
                 }
             )
@@ -546,7 +546,7 @@ class RestoreOperation(protection_plugin.Operation):
                         isinstance(ex, exceptions.OverQuotaClient)):
                     raise
 
-    def _restore_securitygroups(self, neutron_client, heat_template, sgs_meta):
+    def _restore_securitygroups(self, neutron_client, new_resources, sgs_meta):
         for _, sg_data in sgs_meta.items():
             # Skip the default securitygroups
             if sg_data["name"] == "default":
@@ -558,7 +558,7 @@ class RestoreOperation(protection_plugin.Operation):
             }
             sg_id = neutron_client.create_security_group(
                 {'security_group': props})['security_group']['id']
-            heat_template.put_parameter(sg_data["name"], sg_id)
+            new_resources[sg_data["name"]] = sg_id
 
             rules = self._get_security_group_rules(
                 sg_data["security_group_rules"])
@@ -570,7 +570,7 @@ class RestoreOperation(protection_plugin.Operation):
         network_id = get_network_id(context)
         public_network_id = parameters.get("public_network_id")
         bank_section = checkpoint.get_resource_bank_section(network_id)
-        heat_template = kwargs['heat_template']
+        new_resources = kwargs['new_resources']
 
         def _filter_resources(resources):
             ids = []
@@ -587,40 +587,40 @@ class RestoreOperation(protection_plugin.Operation):
             # Config Net
             nets_meta = resource_definition.get("network_metadata")
             if nets_meta:
-                self._restore_networks(neutron_client, heat_template,
+                self._restore_networks(neutron_client, new_resources,
                                        nets_meta)
 
             # Config Securiy-group
             sgs_meta = resource_definition.get("security-group_metadata")
             if sgs_meta:
-                self._restore_securitygroups(neutron_client, heat_template,
+                self._restore_securitygroups(neutron_client, new_resources,
                                              sgs_meta)
 
             # Config Subnet
             subs_meta = resource_definition.get("subnet_metadata")
             _filter_resources(subs_meta)
             if subs_meta:
-                self._restore_subnets(neutron_client, heat_template,
+                self._restore_subnets(neutron_client, new_resources,
                                       nets_meta, subs_meta)
 
             # Config Router
             routers_meta = resource_definition.get("router_metadata")
             if routers_meta:
-                self._restore_routers(neutron_client, heat_template,
+                self._restore_routers(neutron_client, new_resources,
                                       public_network_id, routers_meta)
 
             # Config Port
             ports_meta = resource_definition.get("port_metadata")
             _filter_resources(ports_meta)
             if ports_meta:
-                self._restore_ports(neutron_client, heat_template, nets_meta,
+                self._restore_ports(neutron_client, new_resources, nets_meta,
                                     subs_meta, ports_meta)
 
             # Config RouterInterface
             if all([i is not None
                     for i in [subs_meta, routers_meta, ports_meta]]):
                 self._restore_routerinterfaces(
-                    neutron_client, heat_template,
+                    neutron_client, new_resources,
                     subs_meta, routers_meta, ports_meta)
 
         except Exception as e:

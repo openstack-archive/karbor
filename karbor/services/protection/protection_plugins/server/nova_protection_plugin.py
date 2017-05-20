@@ -194,11 +194,11 @@ class RestoreOperation(protection_plugin.Operation):
                 original_server_id).get_object("metadata")
 
             nova_client = ClientFactory.create_client("nova", context)
-            heat_template = kwargs.get("heat_template")
+            new_resources = kwargs.get("new_resources")
 
             # restore server instance
             new_server_id = self._restore_server_instance(
-                nova_client, heat_template, original_server_id,
+                nova_client, new_resources, original_server_id,
                 parameters.get("restore_name", "karbor-restore-server"),
                 resource_definition)
 
@@ -211,13 +211,13 @@ class RestoreOperation(protection_plugin.Operation):
             # restore volume attachment
             self._restore_volume_attachment(
                 nova_client, ClientFactory.create_client("cinder", context),
-                heat_template, new_server_id, resource_definition)
+                new_resources, new_server_id, resource_definition)
 
             # restore floating ip association
             self._restore_floating_association(
                 nova_client, new_server_id, resource_definition)
 
-            heat_template.put_parameter(original_server_id, new_server_id)
+            new_resources[original_server_id] = new_server_id
 
             update_method(constants.RESOURCE_STATUS_AVAILABLE)
 
@@ -235,7 +235,7 @@ class RestoreOperation(protection_plugin.Operation):
                 resource_type=constants.SERVER_RESOURCE_TYPE
             )
 
-    def _restore_server_instance(self, nova_client, heat_template,
+    def _restore_server_instance(self, nova_client, new_resources,
                                  original_id, restore_name,
                                  resource_definition):
         server_metadata = resource_definition["server_metadata"]
@@ -250,13 +250,13 @@ class RestoreOperation(protection_plugin.Operation):
         boot_metadata = resource_definition["boot_metadata"]
         boot_device_type = boot_metadata.get("boot_device_type")
         if boot_device_type == "image":
-            properties["image"] = heat_template.get_resource_reference(
-                boot_metadata.get("boot_image_id"))
+            properties["image"] = new_resources.get(
+                boot_metadata["boot_image_id"])
 
         elif boot_device_type == "volume":
             properties["block_device_mapping_v2"] = [{
-                'uuid': heat_template.get_resource_reference(
-                    boot_metadata.get("boot_volume_id")),
+                'uuid': new_resources.get(
+                    boot_metadata["boot_volume_id"]),
                 'source_type': 'volume',
                 'destination_type': 'volume',
                 'boot_index': 0,
@@ -299,14 +299,14 @@ class RestoreOperation(protection_plugin.Operation):
         return server.id
 
     def _restore_volume_attachment(self, nova_client, cinder_client,
-                                   heat_template, new_server_id,
+                                   new_resources, new_server_id,
                                    resource_definition):
         attach_metadata = resource_definition.get("attach_metadata", {})
         for original_id, attach_metadata_item in attach_metadata.items():
             if attach_metadata_item.get("bootable", None) == "true":
                 continue
 
-            volume_id = heat_template.get_resource_reference(original_id)
+            volume_id = new_resources.get(original_id)
             try:
                 nova_client.volumes.create_server_volume(
                     server_id=new_server_id,
