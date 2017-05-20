@@ -53,7 +53,7 @@ class ResourceFlowTest(base.TestCase):
 
     def _walk_operation(self, protection, operation_type,
                         checkpoint='checkpoint', parameters={}, context=None,
-                        heat_template=None, **kwargs):
+                        **kwargs):
         plugin_map = {
             parent_type: protection,
             child_type: protection,
@@ -69,8 +69,7 @@ class ResourceFlowTest(base.TestCase):
         store = {
             'checkpoint': checkpoint
         }
-        if heat_template:
-            store['heat_template'] = heat_template
+        store.update(kwargs)
 
         engine = self.taskflow_engine.get_engine(flow,
                                                  engine='parallel',
@@ -80,10 +79,11 @@ class ResourceFlowTest(base.TestCase):
     @mock.patch('karbor.tests.unit.protection.fakes.FakeProtectionPlugin')
     def test_resource_no_impl(self, mock_protection):
         for operation in constants.OPERATION_TYPES:
-            heat_template = restore_heat.HeatTemplate() if (
-                operation == constants.OPERATION_RESTORE) else None
-            self._walk_operation(mock_protection, operation,
-                                 heat_template=heat_template)
+            kwargs = {}
+            if operation == constants.OPERATION_RESTORE:
+                kwargs['heat_template'] = restore_heat.HeatTemplate()
+                kwargs['restore'] = None
+            self._walk_operation(mock_protection, operation, **kwargs)
 
     @mock.patch('karbor.tests.unit.protection.fakes.FakeProtectionPlugin')
     def test_resource_flow_callbacks(self, mock_protection):
@@ -95,11 +95,12 @@ class ResourceFlowTest(base.TestCase):
                 get_operation_attr
             ).return_value = mock_operation
 
-            heat_template = restore_heat.HeatTemplate() if (
-                operation == constants.OPERATION_RESTORE) else None
+            kwargs = {}
+            if operation == constants.OPERATION_RESTORE:
+                kwargs['heat_template'] = restore_heat.HeatTemplate()
+                kwargs['restore'] = None
+            self._walk_operation(mock_protection, operation, **kwargs)
 
-            self._walk_operation(mock_protection, operation,
-                                 heat_template=heat_template)
             self.assertEqual(mock_operation.on_prepare_begin.call_count,
                              len(self.resource_graph))
             self.assertEqual(mock_operation.on_prepare_finish.call_count,
@@ -135,6 +136,7 @@ class ResourceFlowTest(base.TestCase):
 
             if operation == constants.OPERATION_RESTORE:
                 kwargs['heat_template'] = restore_heat.HeatTemplate()
+                kwargs['restore'] = None
 
             self._walk_operation(mock_protection, operation,
                                  parameters=parameters, **kwargs)

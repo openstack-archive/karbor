@@ -40,7 +40,7 @@ ResourceHooks = namedtuple('ResourceHooks', [
 
 
 OPERATION_EXTRA_ARGS = {
-    constants.OPERATION_RESTORE: ['heat_template'],
+    constants.OPERATION_RESTORE: ['heat_template', 'restore'],
 }
 
 
