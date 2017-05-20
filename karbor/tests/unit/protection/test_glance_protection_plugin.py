@@ -102,7 +102,6 @@ class GlanceProtectionPluginTest(base.TestCase):
             backup_image_object_size=65536,
         )
         self.plugin = GlanceProtectionPlugin(plugin_config)
-
         cfg.CONF.set_default('glance_endpoint',
                              'http://127.0.0.1:9292',
                              'glance_client')
@@ -131,7 +130,7 @@ class GlanceProtectionPluginTest(base.TestCase):
                          image_plugin_schemas.SAVED_INFO_SCHEMA)
 
     @mock.patch('karbor.services.protection.protection_plugins.image.'
-                'image_protection_plugin.status_poll')
+                'image_protection_plugin.utils.status_poll')
     @mock.patch('karbor.services.protection.clients.glance.create')
     def test_create_backup(self, mock_glance_create, mock_status_poll):
         resource = Resource(id="123",
