@@ -18,12 +18,13 @@ from karbor.common import constants
 from karbor import exception
 from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
+from karbor.services.protection.protection_plugins import utils
 from karbor.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
 from karbor.services.protection.restore_heat import HeatResource
+
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_service import loopingcall
 from oslo_utils import uuidutils
 
 LOG = logging.getLogger(__name__)
@@ -39,24 +40,6 @@ cinder_backup_opts = [
         'it. Minimizes the time the volume is unavailable.'
     ),
 ]
-
-
-def status_poll(get_status_func, interval, success_statuses=set(),
-                failure_statuses=set(), ignore_statuses=set(),
-                ignore_unexpected=False):
-    def _poll():
-        status = get_status_func()
-        if status in success_statuses:
-            raise loopingcall.LoopingCallDone(retvalue=True)
-        if status in failure_statuses:
-            raise loopingcall.LoopingCallDone(retvalue=False)
-        if status in ignore_statuses:
-            return
-        if ignore_unexpected is False:
-            raise loopingcall.LoopingCallDone(retvalue=False)
-
-    loop = loopingcall.FixedIntervalLoopingCall(_poll)
-    return loop.start(interval=interval, initial_delay=interval).wait()
 
 
 def get_backup_status(cinder_client, backup_id):
@@ -104,7 +87,7 @@ class ProtectOperation(protection_plugin.Operation):
         snapshot = cinder_client.volume_snapshots.create(volume_id, force=True)
 
         snapshot_id = snapshot.id
-        is_success = status_poll(
+        is_success = utils.status_poll(
             partial(get_snapshot_status, cinder_client, snapshot_id),
             interval=self._interval,
             success_statuses={'available', },
@@ -120,7 +103,7 @@ class ProtectOperation(protection_plugin.Operation):
     def _delete_snapshot(self, cinder_client, snapshot_id):
         LOG.info('Cleaning up snapshot (snapshot_id: %s)', snapshot_id)
         cinder_client.volume_snapshots.delete(snapshot_id)
-        return status_poll(
+        return utils.status_poll(
             partial(get_snapshot_status, cinder_client, snapshot_id),
             interval=self._interval,
             success_statuses={'not-found', },
@@ -142,7 +125,7 @@ class ProtectOperation(protection_plugin.Operation):
         )
 
         backup_id = backup.id
-        is_success = status_poll(
+        is_success = utils.status_poll(
             partial(get_backup_status, cinder_client, backup_id),
             interval=self._interval,
             success_statuses={'available'},
@@ -195,7 +178,7 @@ class ProtectOperation(protection_plugin.Operation):
         resource_metadata = {
             'volume_id': volume_id,
         }
-        is_success = status_poll(
+        is_success = utils.status_poll(
             partial(get_volume_status, cinder_client, volume_id),
             interval=self._interval,
             success_statuses={'available', 'in-use', 'error_extending',
@@ -310,7 +293,7 @@ class DeleteOperation(protection_plugin.Operation):
             except cinder_exc.NotFound:
                 LOG.info('Backup id: %s not found. Assuming deleted',
                          backup_id)
-            is_success = status_poll(
+            is_success = utils.status_poll(
                 partial(get_backup_status, cinder_client, backup_id),
                 interval=self._interval,
                 success_statuses={'deleted', 'not-found'},

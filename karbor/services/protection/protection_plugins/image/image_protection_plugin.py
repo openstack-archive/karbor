@@ -20,9 +20,9 @@ from karbor.services.protection.client_factory import ClientFactory
 from karbor.services.protection import protection_plugin
 from karbor.services.protection.protection_plugins.image \
     import image_plugin_schemas as image_schemas
+from karbor.services.protection.protection_plugins import utils
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_service import loopingcall
 
 
 image_backup_opts = [
@@ -36,24 +36,6 @@ image_backup_opts = [
 ]
 
 LOG = logging.getLogger(__name__)
-
-
-def status_poll(get_status_func, interval, success_statuses=set(),
-                failure_statuses=set(), ignore_statuses=set(),
-                ignore_unexpected=False):
-    def _poll():
-        status = get_status_func()
-        if status in success_statuses:
-            raise loopingcall.LoopingCallDone(retvalue=True)
-        if status in failure_statuses:
-            raise loopingcall.LoopingCallDone(retvalue=False)
-        if status in ignore_statuses:
-            return
-        if ignore_unexpected is False:
-            raise loopingcall.LoopingCallDone(retvalue=False)
-
-    loop = loopingcall.FixedIntervalLoopingCall(_poll)
-    return loop.start(interval=interval, initial_delay=interval).wait()
 
 
 def get_image_status(glance_client, image_id):
@@ -86,7 +68,7 @@ class ProtectOperation(protection_plugin.Operation):
                                        constants.RESOURCE_STATUS_PROTECTING)
             image_info = glance_client.images.get(image_id)
             if image_info.status != "active":
-                is_success = status_poll(
+                is_success = utils.status_poll(
                     partial(get_image_status, glance_client, image_info.id),
                     interval=self._interval, success_statuses={'active'},
                     ignore_statuses={'queued', 'saving'},
@@ -242,7 +224,7 @@ class RestoreOperation(protection_plugin.Operation):
 
             image_info = glance_client.images.get(image.id)
             if image_info.status != "active":
-                is_success = status_poll(
+                is_success = utils.status_poll(
                     partial(get_image_status, glance_client, image_info.id),
                     interval=self._interval, success_statuses={'active'},
                     ignore_statuses={'queued', 'saving'},
