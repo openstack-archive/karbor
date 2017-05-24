@@ -30,6 +30,7 @@ from karbor import objects
 from karbor.objects import base as objects_base
 import karbor.policy
 from karbor.services.operationengine import api as operationengine_api
+from karbor.services.protection import api as protection_api
 from karbor import utils
 
 import six
@@ -136,6 +137,7 @@ class PlansController(wsgi.Controller):
 
     def __init__(self):
         self.operationengine_api = operationengine_api.API()
+        self.protection_api = protection_api.API()
         super(PlansController, self).__init__()
 
     def show(self, req, id):
@@ -273,6 +275,7 @@ class PlansController(wsgi.Controller):
 
         self.validate_name_and_description(plan)
         self.validate_plan_resources(plan)
+        self.validate_plan_parameters(context, plan)
 
         resources = plan.get('resources', None)
         if resources:
@@ -400,6 +403,38 @@ class PlansController(wsgi.Controller):
             msg = _("list resources must be provided when creating "
                     "a plan.")
             raise exception.InvalidInput(reason=msg)
+
+    def validate_plan_parameters(self, context, plan):
+        parameters = plan["parameters"]
+        if not parameters:
+            return
+        try:
+            provider = self.protection_api.show_provider(
+                context, plan["provider_id"])
+        except exception:
+            msg = _("The provider could not be found.")
+            raise exc.HTTPBadRequest(explanation=msg)
+        options_schema = provider.get(
+            "extended_info_schema", {}).get("options_schema", None)
+        if options_schema is None:
+            msg = _("The option_schema of plugin must be provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+        for resource_key, parameter_value in parameters.items():
+            if "#" in resource_key:
+                resource_type, resource_id = resource_key.split("#")
+                if not uuidutils.is_uuid_like(resource_id):
+                    msg = _("The resource_id must be a uuid.")
+                    raise exc.HTTPBadRequest(explanation=msg)
+            else:
+                resource_type = resource_key
+            if resource_type not in constants.RESOURCE_TYPES:
+                msg = _("The key of plan parameters is invalid.")
+                raise exc.HTTPBadRequest(explanation=msg)
+            properties = options_schema[resource_type]["properties"]
+            if not set(properties.keys()) > set(parameter_value.keys()):
+                msg = _("The protect property of plan parameters "
+                        "is invalid.")
+                raise exc.HTTPBadRequest(explanation=msg)
 
 
 def create_resource():

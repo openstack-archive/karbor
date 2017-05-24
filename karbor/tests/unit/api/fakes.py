@@ -23,10 +23,28 @@ import webob.request
 
 from karbor.api.openstack import wsgi as os_wsgi
 from karbor import context
-
+from karbor.services.protection.protection_plugins.volume \
+    import volume_plugin_cinder_schemas as cinder_schemas
 
 FAKE_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
 FAKE_UUIDS = {}
+PROVIDER_OS = {
+    "description": "This provider uses OpenStack's own services "
+                   "(swift, cinder) as storage",
+    "extended_info_schema": {
+        "options_schema": {
+            "OS::Cinder::Volume": cinder_schemas.OPTIONS_SCHEMA
+        },
+        "saved_info_schema": {
+            "OS::Cinder::Volume": cinder_schemas.SAVED_INFO_SCHEMA
+        },
+        "restore_schema": {
+            "OS::Cinder::Volume": cinder_schemas.RESTORE_SCHEMA
+        }
+    },
+    "id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+    "name": "OS Infra Provider"
+}
 
 
 class Context(object):

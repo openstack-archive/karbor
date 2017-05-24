@@ -28,9 +28,9 @@ DEFAULT_NAME = 'My 3 tier application'
 DEFAULT_DESCRIPTION = 'My 3 tier application protection plan'
 DEFAULT_PROVIDER_ID = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
 DEFAULT_PROJECT_ID = '39bb894794b741e982bd26144d2949f6'
-DEFAULT_RESOURCES = [{'id': 'key1',
-                      "type": "value1", "name": "name1"}]
-DEFAULT_PARAMETERS = {"OS::Nova::Server": {"consistency": "os"}}
+DEFAULT_RESOURCES = [{'id': 'efc6a88b-9096-4bb6-8634-cda182a6e144',
+                      "type": "OS::Cinder::Volume", "name": "name1"}]
+DEFAULT_PARAMETERS = {"OS::Cinder::Volume": {"backup_name": "name"}}
 
 
 class PlanApiTest(base.TestCase):
@@ -40,11 +40,14 @@ class PlanApiTest(base.TestCase):
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
 
     @mock.patch(
+        'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
+    @mock.patch(
         'karbor.objects.plan.Plan.create')
-    def test_plan_create(self, mock_plan_create):
+    def test_plan_create(self, mock_plan_create, mock_provider):
         plan = self._plan_in_request_body()
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
+        mock_provider.return_value = fakes.PROVIDER_OS
         self.controller.create(req, body)
         self.assertTrue(mock_plan_create.called)
 
@@ -79,6 +82,23 @@ class PlanApiTest(base.TestCase):
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(exception.InvalidInput, self.controller.create,
+                          req, body)
+
+    @mock.patch(
+        'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
+    def test_plan_create_InvalidParameters(self, mock_provider):
+        parameters = {"OS::Cinder::Volume": {"test": "os"}}
+        plan = self._plan_in_request_body(
+            name=DEFAULT_NAME,
+            description=DEFAULT_DESCRIPTION,
+            provider_id=DEFAULT_PROVIDER_ID,
+            status=constants.PLAN_STATUS_SUSPENDED,
+            project_id=DEFAULT_PROJECT_ID,
+            parameters=parameters)
+        body = {"plan": plan}
+        mock_provider.return_value = fakes.PROVIDER_OS
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.assertRaises(exc.HTTPBadRequest, self.controller.create,
                           req, body)
 
     @mock.patch(
