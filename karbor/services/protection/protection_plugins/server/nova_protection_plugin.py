@@ -30,9 +30,6 @@ FLOATING_IP_ASSOCIATION = 'OS::Nova::FloatingIPAssociation'
 
 
 class ProtectOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(ProtectOperation, self).__init__()
-
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         server_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(server_id)
@@ -144,9 +141,6 @@ class ProtectOperation(protection_plugin.Operation):
 
 
 class DeleteOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(DeleteOperation, self).__init__()
-
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         resource_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(resource_id)
@@ -176,9 +170,6 @@ class DeleteOperation(protection_plugin.Operation):
 
 
 class RestoreOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(RestoreOperation, self).__init__()
-
     def on_complete(self, checkpoint, resource, context, parameters, **kwargs):
         original_server_id = resource.id
         heat_template = kwargs.get("heat_template")
@@ -321,9 +312,6 @@ class RestoreOperation(protection_plugin.Operation):
 
 class NovaProtectionPlugin(protection_plugin.ProtectionPlugin):
     _SUPPORT_RESOURCE_TYPES = [constants.SERVER_RESOURCE_TYPE]
-
-    def __init__(self, config=None):
-        super(NovaProtectionPlugin, self).__init__(config)
 
     @classmethod
     def get_supported_resources_types(cls):

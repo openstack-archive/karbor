@@ -31,6 +31,7 @@ def _raise_extension_exception(extmanager, ep, err):
 class ProtectableRegistry(object):
 
     def __init__(self):
+        super(ProtectableRegistry, self).__init__()
         self._protectable_map = {}
         self._plugin_map = {}
 

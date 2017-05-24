@@ -155,9 +155,6 @@ class ProtectOperation(protection_plugin.Operation):
 
 
 class DeleteOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(DeleteOperation, self).__init__()
-
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         image_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(image_id)
@@ -257,6 +254,7 @@ class RestoreOperation(protection_plugin.Operation):
 
 class ImageBankIO(object):
         def __init__(self, bank_section, sorted_objects):
+            super(ImageBankIO, self).__init__()
             self.bank_section = bank_section
             self.sorted_objects = sorted_objects
             self.obj_size = len(sorted_objects)

@@ -22,6 +22,7 @@ from karbor.services.operationengine import operations
 class OperationManager(object):
     """Manage all operation classes which are defined at operations dir."""
     def __init__(self, user_trust_manager):
+        super(OperationManager, self).__init__()
         self._user_trust_manager = user_trust_manager
         all_ops = operations.all_operations()
         self._ops_map = {op.OPERATION_TYPE: op(self._user_trust_manager)

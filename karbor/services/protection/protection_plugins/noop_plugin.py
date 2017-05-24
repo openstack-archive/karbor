@@ -15,9 +15,6 @@ from karbor.services.protection import protection_plugin
 
 
 class NoopOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(NoopOperation, self).__init__()
-
     def on_prepare_begin(self, *args, **kwargs):
         pass
 
@@ -32,9 +29,6 @@ class NoopOperation(protection_plugin.Operation):
 
 
 class NoopProtectionPlugin(protection_plugin.ProtectionPlugin):
-    def __init__(self, config=None):
-        super(NoopProtectionPlugin, self).__init__(config)
-
     def get_protect_operation(self, resource):
         return NoopOperation()
 

@@ -62,6 +62,7 @@ def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
 
 class FakeCheckpoint(object):
     def __init__(self, section):
+        super(FakeCheckpoint, self).__init__()
         self.bank_section = section
         self.id = "fake_id"
 
@@ -71,6 +72,7 @@ class FakeCheckpoint(object):
 
 class BackupResponse(object):
     def __init__(self, bkup_id, final_status, working_status, time_to_work):
+        super(BackupResponse, self).__init__()
         self._final_status = final_status
         self._working_status = working_status
         self._time_to_work = time_to_work

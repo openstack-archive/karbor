@@ -36,6 +36,7 @@ CONF.register_opts(workflow_opts)
 
 class Worker(object):
     def __init__(self, engine_path=None):
+        super(Worker, self).__init__()
         try:
             self.workflow_engine = self._load_engine(engine_path)
         except Exception:

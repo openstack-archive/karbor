@@ -12,9 +12,6 @@
 
 
 class Operation(object):
-    def __init__(self):
-        super(Operation, self).__init__()
-
     def on_prepare_begin(self, checkpoint, resource, context, parameters,
                          **kwargs):
         """on_prepare_begin hook runs before any child resource's hooks run
@@ -73,6 +70,7 @@ class Operation(object):
 
 class ProtectionPlugin(object):
     def __init__(self, config=None):
+        super(ProtectionPlugin, self).__init__()
         self._config = config
 
     def get_protect_operation(self, resource):

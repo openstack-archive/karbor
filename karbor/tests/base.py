@@ -34,6 +34,7 @@ _DB_CACHE = None
 class Database(fixtures.Fixture):
 
     def __init__(self, db_api, db_migrate, sql_connection):
+        super(Database, self).__init__()
         self.sql_connection = sql_connection
 
         # Suppress logging for test runs

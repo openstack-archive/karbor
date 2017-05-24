@@ -25,6 +25,7 @@ from karbor.tests.unit.api.v1 import test_triggers
 
 class FakeRemoteOperationApi(object):
     def __init__(self):
+        super(FakeRemoteOperationApi, self).__init__()
         self._create_operation_exception = None
         self._delete_operation_exception = None
 

@@ -19,9 +19,6 @@ LOG = logging.getLogger(__name__)
 
 
 class InitiateDeleteTask(task.Task):
-    def __init__(self):
-        super(InitiateDeleteTask, self).__init__()
-
     def execute(self, checkpoint, *args, **kwargs):
         LOG.debug("Initiate delete checkpoint_id: %s", checkpoint.id)
         checkpoint.status = constants.CHECKPOINT_STATUS_DELETING
@@ -34,9 +31,6 @@ class InitiateDeleteTask(task.Task):
 
 
 class CompleteDeleteTask(task.Task):
-    def __init__(self, *args, **kwargs):
-        super(CompleteDeleteTask, self).__init__(*args, **kwargs)
-
     def execute(self, checkpoint):
         LOG.debug("Complete delete checkpoint_id: %s", checkpoint.id)
         checkpoint.delete()

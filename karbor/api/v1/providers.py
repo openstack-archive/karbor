@@ -76,10 +76,6 @@ class ProviderViewBuilder(common.ViewBuilder):
 
     _collection_name = "providers"
 
-    def __init__(self):
-        """Initialize view builder."""
-        super(ProviderViewBuilder, self).__init__()
-
     def detail(self, request, provider):
         """Detailed view of a single provider."""
         provider_ref = {
@@ -129,10 +125,6 @@ class CheckpointViewBuilder(common.ViewBuilder):
     """Model a server API response as a python dictionary."""
 
     _collection_name = "checkpoints"
-
-    def __init__(self):
-        """Initialize view builder."""
-        super(CheckpointViewBuilder, self).__init__()
 
     def detail(self, request, checkpoint):
         """Detailed view of a single checkpoint."""

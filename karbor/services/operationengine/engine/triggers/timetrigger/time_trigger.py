@@ -50,6 +50,7 @@ LOG = logging.getLogger(__name__)
 
 class TriggerOperationGreenThread(object):
     def __init__(self, first_run_time, function):
+        super(TriggerOperationGreenThread, self).__init__()
         self._is_sleeping = True
         self._pre_run_time = None
         self._running = False

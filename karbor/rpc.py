@@ -92,6 +92,7 @@ class RequestContextSerializer(messaging.Serializer):
 
     def __init__(self, base):
         self._base = base
+        super(RequestContextSerializer, self).__init__()
 
     def serialize_entity(self, context, entity):
         if not self._base:

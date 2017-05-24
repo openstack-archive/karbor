@@ -46,6 +46,7 @@ class Operation(object):
     OPERATION_TYPE = ""
 
     def __init__(self, user_trust_manager):
+        super(Operation, self).__init__()
         self._user_trust_manager = user_trust_manager
         self._karbor_endpoint = None
 

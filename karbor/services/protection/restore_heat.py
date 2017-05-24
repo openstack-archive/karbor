@@ -22,6 +22,7 @@ LOG = logging.getLogger(__name__)
 
 class HeatResource(object):
     def __init__(self, resource_id, type):
+        super(HeatResource, self).__init__()
         self.resource_id = resource_id
         self._type = type
         self._properties = {}
@@ -44,6 +45,7 @@ class HeatTemplate(object):
     description = "karbor restore template"
 
     def __init__(self):
+        super(HeatTemplate, self).__init__()
         self._resources = []
         self._original_id_resource_map = {}
         self._original_id_parameter_map = {}

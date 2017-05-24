@@ -330,6 +330,7 @@ class WSGIService(service.ServiceBase):
                                   self.app,
                                   host=self.host,
                                   port=self.port)
+        super(WSGIService, self).__init__()
 
     def _get_manager(self):
         """Initialize a Manager object appropriate for this service.
@@ -431,6 +432,7 @@ def wait():
 
 class Launcher(object):
     def __init__(self):
+        super(Launcher, self).__init__()
         self.launch_service = serve
         self.wait = wait
 

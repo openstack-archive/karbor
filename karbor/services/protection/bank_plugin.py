@@ -37,6 +37,7 @@ class LeasePlugin(object):
 @six.add_metaclass(abc.ABCMeta)
 class BankPlugin(object):
     def __init__(self, config=None):
+        super(BankPlugin, self).__init__()
         self._config = config
 
     @abc.abstractmethod
@@ -74,6 +75,7 @@ class Bank(object):
     _KEY_DOT_VALIDATION = re.compile('/\.{1,2}(/|$)')
 
     def __init__(self, plugin):
+        super(Bank, self).__init__()
         self._plugin = plugin
 
     def _normalize_key(self, key):
@@ -160,6 +162,7 @@ class BankSection(object):
     _SECTION_DOT_VALIDATION = re.compile('/\.{1,2}(/|$)')
 
     def __init__(self, bank, section, is_writable=True):
+        super(BankSection, self).__init__()
         self._validate_section(section)
 
         self._bank = bank

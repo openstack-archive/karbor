@@ -30,6 +30,7 @@ DEFAULT_NETWORK = "private"
 
 class Checkpoint(object):
     def __init__(self):
+        super(Checkpoint, self).__init__()
         self.id = None
         self._provider_id = None
         self.karbor_client = base._get_karbor_client()
@@ -69,6 +70,7 @@ class Plan(object):
     _name_id = 0
 
     def __init__(self):
+        super(Plan, self).__init__()
         self.id = None
         self.karbor_client = base._get_karbor_client()
 
@@ -104,6 +106,7 @@ class Plan(object):
 
 class Restore(object):
     def __init__(self):
+        super(Restore, self).__init__()
         self.id = None
         self.karbor_client = base._get_karbor_client()
 
@@ -138,6 +141,7 @@ class Trigger(object):
     _name_id = 0
 
     def __init__(self):
+        super(Trigger, self).__init__()
         self.id = None
         self.karbor_client = base._get_karbor_client()
 
@@ -163,6 +167,7 @@ class ScheduledOperation(object):
     _name_id = 0
 
     def __init__(self):
+        super(ScheduledOperation, self).__init__()
         self.id = None
         self.karbor_client = base._get_karbor_client()
 
@@ -194,6 +199,7 @@ class Server(object):
     _name_id = 0
 
     def __init__(self):
+        super(Server, self).__init__()
         self.id = None
         self._name = None
         self.nova_client = base._get_nova_client()
@@ -304,6 +310,7 @@ class Volume(object):
     _name_id = 0
 
     def __init__(self):
+        super(Volume, self).__init__()
         self.id = None
         self._name = None
         self.cinder_client = base._get_cinder_client()
@@ -366,6 +373,7 @@ class Share(object):
     _name_id = 0
 
     def __init__(self):
+        super(Share, self).__init__()
         self.id = None
         self._name = None
         self.manila_client = base._get_manila_client()

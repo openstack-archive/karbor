@@ -40,6 +40,7 @@ class FakeCheckPoint(object):
 
 class FakeKarborClient(object):
     def __init__(self):
+        super(FakeKarborClient, self).__init__()
         self._check_point = FakeCheckPoint()
 
     @property

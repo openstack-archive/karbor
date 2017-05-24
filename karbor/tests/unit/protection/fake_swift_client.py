@@ -18,7 +18,7 @@ from swiftclient import ClientException
 
 class FakeSwiftClient(object):
     def __init__(self, *args, **kwargs):
-        pass
+        super(FakeSwiftClient, self).__init__()
 
     @classmethod
     def connection(cls, *args, **kargs):
@@ -27,6 +27,7 @@ class FakeSwiftClient(object):
 
 class FakeSwiftConnection(object):
     def __init__(self, *args, **kwargs):
+        super(FakeSwiftConnection, self).__init__()
         self.swiftdir = tempfile.mkdtemp()
         self.object_headers = {}
 

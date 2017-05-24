@@ -22,6 +22,8 @@ from karbor.tests import base
 
 class FakeTrigger(triggers.BaseTrigger):
     def __init__(self, trigger_id, trigger_property, executor):
+        super(FakeTrigger, self).__init__(trigger_id, trigger_property,
+                                          executor)
         self._ops = set()
 
     def shutdown(self):

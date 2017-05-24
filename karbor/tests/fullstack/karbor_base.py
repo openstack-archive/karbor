@@ -122,6 +122,7 @@ class ObjectStore(object):
     """
 
     def __init__(self):
+        super(ObjectStore, self).__init__()
         self._close_funcs = []
 
     def store(self, obj, close_func=None):

@@ -24,7 +24,7 @@ from karbor.tests import base
 
 class FakeTimeFormat(object):
     def __init__(self, start_time, pattern):
-        pass
+        super(FakeTimeFormat, self).__init__()
 
     @classmethod
     def check_time_format(cls, pattern):
@@ -39,6 +39,7 @@ class FakeTimeFormat(object):
 
 class FakeExecutor(object):
     def __init__(self):
+        super(FakeExecutor, self).__init__()
         self._ops = {}
 
     def execute_operation(self, operation_id, triggered_time,

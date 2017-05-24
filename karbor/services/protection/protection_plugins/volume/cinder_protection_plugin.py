@@ -250,9 +250,6 @@ class ProtectOperation(protection_plugin.Operation):
 
 
 class RestoreOperation(protection_plugin.Operation):
-    def __init__(self):
-        super(RestoreOperation, self).__init__()
-
     def on_main(self, checkpoint, resource, context, parameters, heat_template,
                 **kwargs):
         resource_id = resource.id

@@ -30,6 +30,7 @@ import mock
 class Server(object):
     def __init__(self, id, addresses, availability_zone,
                  flavor, key_name, security_groups):
+        super(Server, self).__init__()
         self.id = id
         self.addresses = addresses
         self.__setattr__("OS-EXT-AZ:availability_zone", availability_zone)
@@ -41,6 +42,7 @@ class Server(object):
 class Volume(object):
     def __init__(self, id, volume_type, status, bootable,
                  attachments, name=None):
+        super(Volume, self).__init__()
         self.id = id
         self.volume_type = volume_type
         self.status = status
@@ -51,6 +53,7 @@ class Volume(object):
 
 class Image(object):
     def __init__(self, id, status, disk_format, container_format):
+        super(Image, self).__init__()
         self.id = id
         self.status = status
         self.disk_format = disk_format
@@ -152,6 +155,7 @@ class FakeNovaClient(object):
             return None
 
     def __init__(self):
+        super(FakeNovaClient, self).__init__()
         self.servers = self.Servers()
 
 
@@ -171,6 +175,7 @@ class FakeGlanceClient(object):
             return None
 
     def __init__(self):
+        super(FakeGlanceClient, self).__init__()
         self.images = self.Images()
 
 
@@ -186,6 +191,7 @@ class FakeCinderClient(object):
             return None
 
     def __init__(self):
+        super(FakeCinderClient, self).__init__()
         self.volumes = self.Volumes()
 
 
@@ -241,6 +247,7 @@ ResourceNode = collections.namedtuple(
 
 class Checkpoint(object):
     def __init__(self):
+        super(Checkpoint, self).__init__()
         self.id = "checkpoint_id"
         self.graph = []
 
