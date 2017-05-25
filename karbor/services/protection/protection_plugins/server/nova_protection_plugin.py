@@ -144,7 +144,8 @@ class ProtectOperation(protection_plugin.Operation):
             LOG.exception("Create backup failed, server_id: %s.", server_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Server Backup",
                 reason=err,
                 resource_id=server_id,
                 resource_type=constants.SERVER_RESOURCE_TYPE)
@@ -173,7 +174,8 @@ class DeleteOperation(protection_plugin.Operation):
             LOG.error("Delete backup failed, server_id: %s.", resource_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.DeleteBackupFailed(
+            raise exception.DeleteResourceFailed(
+                name="Server Backup",
                 reason=err,
                 resource_id=resource_id,
                 resource_type=constants.SERVER_RESOURCE_TYPE)
@@ -229,7 +231,8 @@ class RestoreOperation(protection_plugin.Operation):
                 update_method(constants.RESOURCE_STATUS_ERROR, str(e))
             LOG.exception("Restore server backup failed, server_id: %s.",
                           original_server_id)
-            raise exception.RestoreBackupFailed(
+            raise exception.RestoreResourceFailed(
+                name="Server Backup",
                 reason=e,
                 resource_id=original_server_id,
                 resource_type=constants.SERVER_RESOURCE_TYPE

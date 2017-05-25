@@ -205,7 +205,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volume_snapshots'].get = BackupResponse(
                 '789', 'available', 'creating', 2)
             self.assertRaises(
-                exception.CreateBackupFailed,
+                exception.CreateResourceFailed,
                 call_hooks,
                 operation,
                 checkpoint,
@@ -241,7 +241,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volume_snapshots'].get = BackupResponse(
                 '789', 'error', 'creating', 2)
             self.assertRaises(
-                exception.CreateBackupFailed,
+                exception.CreateResourceFailed,
                 call_hooks,
                 operation,
                 checkpoint,
@@ -277,7 +277,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volume_snapshots'].get = BackupResponse(
                 '789', 'available', 'creating', 2)
             self.assertRaises(
-                exception.CreateBackupFailed,
+                exception.CreateResourceFailed,
                 call_hooks,
                 operation,
                 checkpoint,
@@ -323,7 +323,7 @@ class CinderProtectionPluginTest(base.TestCase):
             backups.delete = BackupResponse('456', 'deleting', '---', 0)
             backups.get = BackupResponse('456', 'error', 'deleting', 2)
             self.assertRaises(
-                exception.DeleteBackupFailed,
+                exception.DeleteResourceFailed,
                 call_hooks,
                 operation,
                 checkpoint,
@@ -425,7 +425,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volumes'].get.return_value.status = 'error'
             mocks['restores'].restore = RestoreResponse(volume_id)
             self.assertRaises(
-                exception.RestoreBackupFailed, call_hooks,
+                exception.RestoreResourceFailed, call_hooks,
                 operation, checkpoint, resource, self.cntxt,
                 {}, **{'restore':  None})
 

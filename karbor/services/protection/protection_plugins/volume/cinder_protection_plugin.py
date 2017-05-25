@@ -161,7 +161,8 @@ class ProtectOperation(protection_plugin.Operation):
         except Exception:
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Volume Backup",
                 reason='Error creating snapshot for volume',
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
@@ -190,8 +191,9 @@ class ProtectOperation(protection_plugin.Operation):
         if not is_success:
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
-                reason='Volume is in erroneous state',
+            raise exception.CreateResourceFailed(
+                name="Volume Backup",
+                reason='Volume is in errorneous state',
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
             )
@@ -221,7 +223,8 @@ class ProtectOperation(protection_plugin.Operation):
                       )
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Volume Backup",
                 reason=e,
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
@@ -291,7 +294,8 @@ class RestoreOperation(protection_plugin.Operation):
             reason = 'Error creating volume'
             update_method(constants.RESOURCE_STATUS_ERROR, reason)
 
-            raise exception.RestoreBackupFailed(
+            raise exception.RestoreResourceFailed(
+                name="Volume Backup",
                 reason=reason,
                 resource_id=resource_id,
                 resource_type=resource.type
@@ -344,7 +348,8 @@ class DeleteOperation(protection_plugin.Operation):
             LOG.error('delete volume backup failed, backup_id: %s', backup_id)
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.DeleteBackupFailed(
+            raise exception.DeleteResourceFailed(
+                name="Volume Backup",
                 reason=six.text_type(e),
                 resource_id=resource_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE
