@@ -180,3 +180,35 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
             search_opts=search_opts)
         self.assertEqual(1, len(bootable_backups))
         server.detach_volume(volume.id)
+
+    def test_checkpoint_share_projection(self):
+        share = self.store(objects.Share())
+        share.create("NFS", 1)
+        plan = self.store(objects.Plan())
+
+        share_parameter_key = "OS::Manila::Share#{id}".format(
+            id=share.id)
+        snapshot_name = "share-snapshot-{id}".format(id=share.id)
+        parameters = {
+            "OS::Manila::Share": {
+                "force": False
+            },
+            share_parameter_key: {
+                "snapshot_name": snapshot_name
+            }
+        }
+        plan.create(self.provider_id_os, [share, ],
+                    parameters=parameters)
+
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id, plan.id, timeout=2400)
+
+        search_opts = {"share_id": share.id}
+        snapshots = self.manila_client.share_snapshots.list(
+            search_opts=search_opts)
+        self.assertEqual(1, len(snapshots))
+
+        search_opts = {"name": snapshot_name}
+        backups = self.manila_client.share_snapshots.list(
+            search_opts=search_opts)
+        self.assertEqual(1, len(backups))

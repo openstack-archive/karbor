@@ -294,6 +294,21 @@ class CreateBackupFailed(KarborException):
                 " type=%(resource_type)s")
 
 
+class CreateResourceFailed(KarborException):
+    message = _("Create %(name)s failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
+class DeleteResourceFailed(KarborException):
+    message = _("Delete %(name)s failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
+class RestoreResourceFailed(KarborException):
+    message = _("Restore %(name)s failed: %(reason)s, id=%(resource_id)s,"
+                " type=%(resource_type)s")
+
+
 class DeleteBackupFailed(KarborException):
     message = _("Delete Backup failed: %(reason)s, id=%(resource_id)s,"
                 " type=%(resource_type)s")
