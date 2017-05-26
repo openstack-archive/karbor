@@ -27,10 +27,11 @@ function create_karbor_accounts {
         create_service_user "$KARBOR_SERVICE_NAME" "admin"
 
         get_or_create_service "$KARBOR_SERVICE_NAME" "$KARBOR_SERVICE_TYPE" "Application Data Protection Service"
+
         get_or_create_endpoint "$KARBOR_SERVICE_TYPE" "$REGION_NAME" \
-            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(project_id)s" \
-            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(project_id)s" \
-            "$KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT/v1/\$(project_id)s"
+            "$KARBOR_API_ENDPOINT" \
+            "$KARBOR_API_ENDPOINT" \
+            "$KARBOR_API_ENDPOINT"
     fi
 }
 
@@ -64,27 +65,49 @@ function karbor_config_apache_wsgi {
     " -i $karbor_apache_conf
 }
 
-# clean_karbor_api_wsgi() - Remove wsgi files, disable and remove apache vhost file
-function clean_karbor_api_wsgi {
+function karbor_config_uwsgi {
+    write_uwsgi_config "$KARBOR_API_UWSGI_CONF" "$KARBOR_API_UWSGI" "/$KARBOR_SERVICE_TYPE"
+}
+
+# clean_karbor_api_mod_wsgi() - Remove wsgi files, disable and remove apache vhost file
+function clean_karbor_api_mod_wsgi {
     sudo rm -f $(apache_site_config_for osapi_karbor)
 }
 
-# start_karbor_api_wsgi() - Start the API processes ahead of other things
-function start_karbor_api_wsgi {
+function clean_karbor_api_uwsgi {
+    remove_uwsgi_config "$KARBOR_API_UWSGI_CONF" "$KARBOR_API_UWSGI"
+}
+
+# start_karbor_api_mod_wsgi() - Start the API processes ahead of other things
+function start_karbor_api_mod_wsgi {
     enable_apache_site osapi_karbor
     restart_apache_server
     tail_log karbor-api /var/log/$APACHE_NAME/karbor-api.log
 
     echo "Waiting for Karbor API to start..."
-    if ! wait_for_service $SERVICE_TIMEOUT $KARBOR_API_PROTOCOL://$KARBOR_API_HOST:$KARBOR_API_PORT; then
-        die $LINENO "karbor-api wsgi did not start"
+    if ! wait_for_service $SERVICE_TIMEOUT $KARBOR_API_ENDPOINT; then
+        die $LINENO "karbor-api mod_wsgi did not start"
     fi
 }
 
-# stop_karbor_api_wsgi() - Disable the api service and stop it.
-function stop_karbor_api_wsgi {
+function start_karbor_api_uwsgi {
+    run_process karbor-api "$KARBOR_BIN_DIR/uwsgi --ini $KARBOR_API_UWSGI_CONF" ""
+
+    echo "Waiting for Karbor API to start..."
+    if ! wait_for_service $SERVICE_TIMEOUT $KARBOR_API_ENDPOINT; then
+        die $LINENO "karbor-api uwsgi did not start"
+    fi
+}
+
+# stop_karbor_api_mod_wsgi() - Disable the api service and stop it.
+function stop_karbor_api_mod_wsgi {
     disable_apache_site osapi_karbor
     restart_apache_server
+}
+
+function stop_karbor_api_uwsgi {
+    remove_uwsgi_config "$KARBOR_API_UWSGI_CONF" "$KARBOR_API_UWSGI"
+    stop_process karbor-api
 }
 
 function configure_karbor_api {
@@ -177,8 +200,10 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
         configure_karbor_api
         configure_providers
 
-        if [ "$KARBOR_USE_MOD_WSGI" == "True" ]; then
+        if [[ "$KARBOR_DEPLOY" == "mod_wsgi" ]]; then
             karbor_config_apache_wsgi
+        elif [[ "$KARBOR_DEPLOY" == "uwsgi" ]]; then
+            karbor_config_uwsgi
         fi
 
         echo export PYTHONPATH=\$PYTHONPATH:$KARBOR_DIR >> $RC_DIR/.localrc.auto
@@ -198,10 +223,10 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
             $KARBOR_BIN_DIR/karbor-manage db sync
         fi
         if is_service_enabled karbor-api; then
-            if [[ "$KARBOR_USE_MOD_WSGI" == "True" ]]; then
-                start_karbor_api_wsgi
-            else
-                run_process karbor-api "$KARBOR_BIN_DIR/karbor-api --config-file $KARBOR_API_CONF"
+            if [[ "$KARBOR_DEPLOY" == "mod_wsgi" ]]; then
+                start_karbor_api_mod_wsgi
+            elif [[ "$KARBOR_DEPLOY" == "uwsgi" ]]; then
+                start_karbor_api_uwsgi
             fi
         fi
         if is_service_enabled karbor-operationengine; then
@@ -215,12 +240,13 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
     if [[ "$1" == "unstack" ]]; then
 
         if is_service_enabled karbor-api; then
-            if [[ "$KARBOR_USE_MOD_WSGI" == "True" ]]; then
-                stop_karbor_api_wsgi
-                clean_karbor_api_wsgi
-            else
-                stop_process karbor-api
-            fi
+            if [[ "$KARBOR_DEPLOY" == "mod_wsgi" ]]; then
+               stop_karbor_api_mod_wsgi
+               clean_karbor_api_mod_wsgi
+            elif [[ "$KARBOR_DEPLOY" == "uwsgi" ]]; then
+               stop_karbor_api_uwsgi
+               clean_karbor_api_uwsgi
+           fi
         fi
         if is_service_enabled karbor-operationengine; then
            stop_process karbor-operationengine
