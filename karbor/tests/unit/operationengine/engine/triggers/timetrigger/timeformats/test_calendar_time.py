@@ -45,10 +45,10 @@ class CalendarTimeTestCase(base.TestCase):
 
         regexp = re.compile("^The trigger pattern.* is invalid$", re.DOTALL)
         for pattern in patterns:
-            self.assertRaisesRegexp(exception.InvalidInput,
-                                    regexp,
-                                    calendar_time.ICal.check_time_format,
-                                    pattern)
+            self.assertRaisesRegex(exception.InvalidInput,
+                                   regexp,
+                                   calendar_time.ICal.check_time_format,
+                                   pattern)
 
         patterns = [
             "BEGIN:VCALENDAR\n"
@@ -68,10 +68,10 @@ class CalendarTimeTestCase(base.TestCase):
         regexp = re.compile("^The trigger pattern.* must include less than "
                             "one VEVENT component$", re.DOTALL)
         for pattern in patterns:
-            self.assertRaisesRegexp(exception.InvalidInput,
-                                    regexp,
-                                    calendar_time.ICal.check_time_format,
-                                    pattern)
+            self.assertRaisesRegex(exception.InvalidInput,
+                                   regexp,
+                                   calendar_time.ICal.check_time_format,
+                                   pattern)
 
         patterns = [
             "BEGIN:VEVENT\n"
@@ -91,10 +91,10 @@ class CalendarTimeTestCase(base.TestCase):
                             "must include less than one RRULE property$",
                             re.DOTALL)
         for pattern in patterns:
-            self.assertRaisesRegexp(exception.InvalidInput,
-                                    regexp,
-                                    calendar_time.ICal.check_time_format,
-                                    pattern)
+            self.assertRaisesRegex(exception.InvalidInput,
+                                   regexp,
+                                   calendar_time.ICal.check_time_format,
+                                   pattern)
 
     def test_valid_pattern(self):
         pattern = "BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=60;\nEND:VEVENT"

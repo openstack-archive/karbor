@@ -68,9 +68,9 @@ class TimeTriggerTestCase(base.TestCase):
 
     def test_check_configuration(self):
         self._set_configuration(10, 20, 30)
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "Configurations of time trigger are invalid",
-                                TimeTrigger.check_configuration)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "Configurations of time trigger are invalid",
+                               TimeTrigger.check_configuration)
         self._set_configuration()
 
     def test_check_trigger_property_start_time(self):
@@ -79,22 +79,22 @@ class TimeTriggerTestCase(base.TestCase):
             "start_time": ""
         }
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger\'s start time is unknown",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger\'s start time is unknown",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
         trigger_property['start_time'] = 'abc'
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The format of trigger .* is not correct",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The format of trigger .* is not correct",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
         trigger_property['start_time'] = 123
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger .* is not an instance of string",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger .* is not an instance of string",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
     @mock.patch.object(FakeTimeFormat, 'get_min_interval')
     def test_check_trigger_property_interval(self, get_min_interval):
@@ -104,10 +104,10 @@ class TimeTriggerTestCase(base.TestCase):
             "start_time": '2016-8-18 01:03:04'
         }
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The interval of two adjacent time points .*",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The interval of two adjacent time points .*",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
     def test_check_trigger_property_window(self):
         trigger_property = {
@@ -115,16 +115,16 @@ class TimeTriggerTestCase(base.TestCase):
             "start_time": '2016-8-18 01:03:04'
         }
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger window.* is not integer",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger window.* is not integer",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
         trigger_property['window'] = 1000
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The trigger windows .* must be between .*",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger windows .* must be between .*",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
     def test_check_trigger_property_end_time(self):
         trigger_property = {
@@ -133,10 +133,10 @@ class TimeTriggerTestCase(base.TestCase):
             "end_time": "abc"
         }
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                "The format of trigger .* is not correct",
-                                TimeTrigger.check_trigger_definition,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The format of trigger .* is not correct",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
 
     def test_register_operation(self):
         trigger = self._generate_trigger()
@@ -146,10 +146,10 @@ class TimeTriggerTestCase(base.TestCase):
         eventlet.sleep(0.3)
 
         self.assertGreaterEqual(trigger._executor._ops[operation_id], 1)
-        self.assertRaisesRegexp(exception.ScheduledOperationExist,
-                                "The operation_id.* is exist",
-                                trigger.register_operation,
-                                operation_id)
+        self.assertRaisesRegex(exception.ScheduledOperationExist,
+                               "The operation_id.* is exist",
+                               trigger.register_operation,
+                               operation_id)
 
         eventlet.sleep(0.3)
         self.assertRaises(exception.TriggerIsInvalid,
@@ -194,19 +194,19 @@ class TimeTriggerTestCase(base.TestCase):
             "end_time": datetime.utcnow()
         }
 
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                ".*Can not find the first run tim",
-                                trigger.update_trigger_property,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               ".*Can not find the first run tim",
+                               trigger.update_trigger_property,
+                               trigger_property)
 
         trigger.register_operation('1')
         eventlet.sleep(0.2)
         trigger_property['end_time'] = (
             datetime.utcnow() + timedelta(seconds=1))
-        self.assertRaisesRegexp(exception.InvalidInput,
-                                ".*First run time.* must be after.*",
-                                trigger.update_trigger_property,
-                                trigger_property)
+        self.assertRaisesRegex(exception.InvalidInput,
+                               ".*First run time.* must be after.*",
+                               trigger.update_trigger_property,
+                               trigger_property)
 
     def test_update_trigger_property_success(self):
         trigger = self._generate_trigger()
