@@ -197,7 +197,7 @@ def scheduled_operation_get(context, id, columns_to_join=[]):
 
     :param context: The security context
     :param id: ID of the scheduled operation
-    :columns_to_join: columns which will be joined
+    :param columns_to_join: columns which will be joined
 
     :returns: Dictionary-like object containing properties of the scheduled
      operation

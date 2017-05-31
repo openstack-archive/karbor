@@ -334,7 +334,7 @@ class CinderProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.clients.cinder.create')
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
-                'udpate_resource_restore_result')
+                'update_resource_restore_result')
     def test_restore_succeed(self, mock_update_restore, mock_cinder_create):
         resource = Resource(
             id="123",
@@ -399,7 +399,7 @@ class CinderProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.clients.cinder.create')
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
-                'udpate_resource_restore_result')
+                'update_resource_restore_result')
     def test_restore_fail_volume_1(self, mock_update_restore,
                                    mock_cinder_create):
         resource = Resource(

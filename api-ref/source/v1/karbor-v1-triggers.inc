@@ -167,7 +167,7 @@ Update trigger
 
 .. rest_method:: PUT /v1/{tenant_id}/triggers/{trigger_id}
 
-Updates the name or properties of a specific trigger alonely or at the same
+Updates the name or properties of a specific trigger alone or at the same
 time.
 
 Response Codes

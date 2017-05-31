@@ -180,7 +180,7 @@ class ProviderRegistry(object):
                           {'provider': provider_config.provider.name,
                            'reason': e})
             else:
-                LOG.info('Loaded provider: %s successully.',
+                LOG.info('Loaded provider: %s successfully.',
                          provider_config.provider.name)
                 self.providers[provider.id] = provider
 

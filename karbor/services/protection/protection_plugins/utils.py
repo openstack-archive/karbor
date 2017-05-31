@@ -17,7 +17,7 @@ from oslo_service import loopingcall
 LOG = logging.getLogger(__name__)
 
 
-def udpate_resource_restore_result(restore_record, resource_type, resource_id,
+def update_resource_restore_result(restore_record, resource_type, resource_id,
                                    status, reason=''):
     try:
         restore_record.update_resource_status(resource_type, resource_id,
