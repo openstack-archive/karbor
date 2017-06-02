@@ -39,7 +39,7 @@ time_trigger_opts = [
                help='The maximum window time'),
 
     cfg.StrOpt('time_format',
-               default='crontab',
+               default='calendar',
                help='The type of time format which is used to compute time')
 ]
 

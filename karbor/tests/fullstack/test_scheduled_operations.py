@@ -13,16 +13,18 @@
 import copy
 import eventlet
 
-from croniter import croniter
 from datetime import datetime
 from functools import partial
 
 from karbor.common import constants
+from karbor.services.operationengine.engine.triggers.timetrigger \
+    .timeformats import calendar_time
 from karbor.tests.fullstack import karbor_base
 from karbor.tests.fullstack import karbor_objects as objects
 from karbor.tests.fullstack import utils
 
-DEFAULT_PROPERTY = {'pattern': '0 20 * * 2', 'format': 'crontab'}
+pattern = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
+DEFAULT_PROPERTY = {'pattern': pattern}
 
 
 class ScheduledOperationsTest(karbor_base.KarborBaseTest):
@@ -87,8 +89,9 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
             return 0
 
         cur_time = copy.deepcopy(start_time)
+        cal_obj = calendar_time.ICal(start_time, pattern)
         for i in range(freq):
-            next_time = croniter(pattern, cur_time).get_next(datetime)
+            next_time = cal_obj.compute_next_time(cur_time)
             cur_time = next_time
         return (next_time - start_time).seconds
 
@@ -106,8 +109,8 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
 
     def test_scheduled_operations_create_and_scheduled(self):
         freq = 2
-        pattern = '*/5 * * * *'
-        cur_property = {'pattern': pattern, 'format': 'crontab'}
+        pattern = "BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=5;\nEND:VEVENT"
+        cur_property = {'pattern': pattern, 'format': 'calendar'}
 
         operation = self.store(self._create_for_volume(cur_property))
         start_time = datetime.now().replace(microsecond=0)

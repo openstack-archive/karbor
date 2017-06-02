@@ -441,14 +441,14 @@ trigger_name_1:
 trigger_properties:
   description: |
     The property list for trigger. it must include "``pattern``" and
-    "``window``", may include "``format``" "``start_time``" and "``end_time``".
+    "``format``", may include "``window``" "``start_time``" and "``end_time``".
   in: body
   required: true
   type: dict
 trigger_properties_1:
   description: |
     The property list for trigger. it must include "``pattern``" and
-    "``window``", may include "``format``" "``start_time``" and "``end_time``".
+    "``format``", may include "``window``" "``start_time``" and "``end_time``".
   in: body
   required: false
   type: dict
