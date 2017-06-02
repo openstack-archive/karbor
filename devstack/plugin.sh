@@ -114,6 +114,11 @@ function configure_karbor_api {
     if is_service_enabled karbor-api ; then
         echo "Configuring Karbor API"
 
+        # generate configuration file
+        cd $KARBOR_DIR
+        tox -e genconfig
+        cp etc/karbor.conf.sample etc/karbor.conf
+
         cp $KARBOR_DIR/etc/karbor.conf $KARBOR_API_CONF
         cp $KARBOR_DIR/etc/api-paste.ini $KARBOR_CONF_DIR
         cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR

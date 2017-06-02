@@ -51,3 +51,4 @@ ChangeLog
 .*sw?
 
 releasenotes/build
+etc/karbor.conf.sample
