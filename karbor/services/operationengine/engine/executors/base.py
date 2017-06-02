@@ -33,7 +33,7 @@ class BaseExecutor(object):
         :param operation_id: ID of operation
         :param triggered_time: time when the operation is triggered
         :param expect_start_time: expect time when to run the operation
-        :param window_time: time how long to wait to runn the operation after
+        :param window_time: time how long to wait to run the operation after
                       expect_start_time
         """
         pass

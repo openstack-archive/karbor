@@ -44,7 +44,7 @@ will be in the format of ``karbor-<key-name>`` for example
 
 Anything that is not officially defined *should* use the
 prefix: ``x-<application>--<key-name>``.
-For example, ``x-trigger-master--tigger-id``
+For example, ``x-trigger-master--trigger-id``
 
 Alternatives
 ------------

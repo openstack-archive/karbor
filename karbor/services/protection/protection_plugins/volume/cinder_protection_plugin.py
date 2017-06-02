@@ -191,7 +191,7 @@ class ProtectOperation(protection_plugin.Operation):
             bank_section.update_object('status',
                                        constants.RESOURCE_STATUS_ERROR)
             raise exception.CreateBackupFailed(
-                reason='Volume is in errorneous state',
+                reason='Volume is in erroneous state',
                 resource_id=volume_id,
                 resource_type=constants.VOLUME_RESOURCE_TYPE,
             )
@@ -279,7 +279,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         # check and update status
         update_method = partial(
-            utils.udpate_resource_restore_result,
+            utils.update_resource_restore_result,
             kwargs.get('restore'), resource.type, volume_id)
 
         update_method(constants.RESOURCE_STATUS_RESTORING)

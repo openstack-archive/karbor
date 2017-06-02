@@ -19,7 +19,7 @@ List scheduled operations
 
 .. rest_method:: GET /v1/{tenant_id}/scheduled_operations
 
-List all the scheduled operations based on tigger and plan, or part of the
+List all the scheduled operations based on trigger and plan, or part of the
 scheduled operations limited by ``?limit={limit_num}`` by ``GET`` method.
 
 Response Codes
