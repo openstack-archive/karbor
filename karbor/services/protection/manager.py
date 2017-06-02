@@ -353,9 +353,7 @@ class ProtectionManager(manager.Manager):
                        'err': six.text_type(err)})
             raise
 
-        return dict(id=resource_instance.id, name=resource_instance.name,
-                    type=resource_instance.type,
-                    extra_info=resource_instance.extra_info)
+        return resource_instance.to_dict()
 
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_dependents(self, context,
@@ -367,7 +365,7 @@ class ProtectionManager(manager.Manager):
                   'id': protectable_id})
 
         parent_resource = Resource(type=protectable_type, id=protectable_id,
-                                   name="", extra_info=None)
+                                   name="")
 
         registry = self.protectable_registry
         try:
@@ -379,13 +377,7 @@ class ProtectionManager(manager.Manager):
                        'err': six.text_type(err)})
             raise
 
-        result = []
-        for resource in dependent_resources:
-            result.append(dict(type=resource.type, id=resource.id,
-                               name=resource.name,
-                               extra_info=resource.extra_info))
-
-        return result
+        return [resource.to_dict() for resource in dependent_resources]
 
     def list_providers(self, context, marker=None, limit=None,
                        sort_keys=None, sort_dirs=None, filters=None):

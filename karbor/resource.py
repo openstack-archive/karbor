@@ -11,10 +11,34 @@
 #    under the License.
 
 
-from collections import namedtuple
+class Resource(object):
+    __slots__ = ('type', 'id', 'name', 'extra_info')
 
-_Resource = namedtuple("Resource", ('type', 'id', 'name', 'extra_info'))
+    def __init__(self, type, id, name, extra_info=None):
+        self.type = type
+        self.id = id
+        self.name = name
+        self.extra_info = extra_info
 
+    def __setattr__(self, key, value):
+        try:
+            getattr(self, key)
+        except AttributeError:
+            pass
+        else:
+            raise AttributeError()
 
-def Resource(type, id, name, extra_info=None):
-    return _Resource(type, id, name, extra_info)
+        return super(Resource, self).__setattr__(key, value)
+
+    def __hash__(self):
+        return hash(self.key)
+
+    def __eq__(self, other):
+        return self.key == other.key
+
+    def to_dict(self):
+        return {item: getattr(self, item) for item in self.__slots__}
+
+    @property
+    def key(self):
+        return (self.type, self.id, self.name)
