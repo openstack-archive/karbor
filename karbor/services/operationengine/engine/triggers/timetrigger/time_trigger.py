@@ -227,8 +227,8 @@ class TimeTrigger(triggers.BaseTrigger):
             if operation_id not in self._operation_ids:
                 # Maybe, when traversing this operation_id, it has been
                 # removed by self.unregister_operation
-                LOG.warn("Execuete operation %s which is not exist, "
-                         "ignore it", operation_id)
+                LOG.warning("Execute operation %s which is not exist, "
+                            "ignore it", operation_id)
                 continue
 
             now = datetime.utcnow()

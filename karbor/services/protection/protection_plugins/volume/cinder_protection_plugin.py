@@ -242,10 +242,9 @@ class ProtectOperation(protection_plugin.Operation):
             try:
                 self._delete_snapshot(cinder_client, self.snapshot_id)
             except Exception as e:
-                LOG.warn('Failed deleting snapshot: %(snapshot_id)s. '
-                         'Reason: %(reason)s',
-                         {'snapshot_id': self.snapshot_id, 'reason': e}
-                         )
+                LOG.warning('Failed deleting snapshot: %(snapshot_id)s. '
+                            'Reason: %(reason)s',
+                            {'snapshot_id': self.snapshot_id, 'reason': e})
 
 
 class RestoreOperation(protection_plugin.Operation):
