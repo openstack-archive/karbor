@@ -47,8 +47,8 @@ def init(conf):
 
     global TRANSPORT, NOTIFIER
     exmods = get_allowed_exmods()
-    TRANSPORT = messaging.get_transport(conf,
-                                        allowed_remote_exmods=exmods)
+    TRANSPORT = messaging.get_rpc_transport(conf,
+                                            allowed_remote_exmods=exmods)
 
     serializer = RequestContextSerializer(JsonPayloadSerializer())
     NOTIFIER = messaging.Notifier(TRANSPORT, serializer=serializer)
