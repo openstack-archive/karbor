@@ -92,9 +92,6 @@ class TestScheduledOperationLog(test_objects.BaseObjectsTestCase):
 
 class TestScheduledOperationLogList(test_objects.BaseObjectsTestCase):
 
-    def setUp(self):
-        super(TestScheduledOperationLogList, self).setUp()
-
     def test_get_by_filters(self):
         log = self._create_operation_log('123')
 
