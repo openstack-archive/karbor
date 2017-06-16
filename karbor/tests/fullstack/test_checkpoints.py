@@ -212,3 +212,34 @@ class CheckpointsTest(karbor_base.KarborBaseTest):
         backups = self.manila_client.share_snapshots.list(
             search_opts=search_opts)
         self.assertEqual(1, len(backups))
+
+    def test_checkpoint_volume_snapshot(self):
+        volume = self.store(objects.Volume())
+        volume.create(1)
+        plan = self.store(objects.Plan())
+        volume_parameter_key = "OS::Cinder::Volume#{id}".format(id=volume.id)
+        snapshot_name = "volume-snapshot-{id}".format(id=volume.id)
+        parameters = {
+            "OS::Cinder::Volume": {
+                "force": False
+            },
+            volume_parameter_key: {
+                "snapshot_name": snapshot_name
+            }
+        }
+        plan.create(self.provider_id_os_volume_snapshot, [volume, ],
+                    parameters=parameters)
+
+        checkpoint = self.store(objects.Checkpoint())
+        checkpoint.create(self.provider_id_os_volume_snapshot, plan.id,
+                          timeout=2400)
+
+        search_opts = {"volume_id": volume.id}
+        snapshots = self.cinder_client.volume_snapshots.list(
+            search_opts=search_opts)
+        self.assertEqual(1, len(snapshots))
+
+        search_opts = {"name": snapshot_name}
+        snapshots = self.cinder_client.volume_snapshots.list(
+            search_opts=search_opts)
+        self.assertEqual(1, len(snapshots))
