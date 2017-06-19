@@ -30,7 +30,7 @@ fi
 
 s+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 s+=,cinder,g-api,g-reg
-s+=,c-api,c-vol,c-sch,c-bak,horizon
+s+=,c-api,c-vol,c-sch,c-bak
 s+=,s-proxy,s-object,s-container,s-account
 s+=,h-eng,h-api,h-api-cfn,h-api-cw
 s+=,manila,m-api,m-sch,m-shr,m-dat
