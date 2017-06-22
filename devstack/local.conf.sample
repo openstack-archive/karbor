@@ -41,7 +41,7 @@ enable_service s-proxy s-object s-container s-account
 enable_plugin manila https://git.openstack.org/openstack/manila master
 
 MANILA_USE_SERVICE_INSTANCE_PASSWORD=True
-MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="'snapshot_support=True create_share_from_snapshot_support=True'"
+MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="snapshot_support=True create_share_from_snapshot_support=True"
 
 Q_PLUGIN=ml2
 ENABLE_TENANT_VLANS=True
