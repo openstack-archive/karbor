@@ -83,7 +83,7 @@ class KarborException(Exception):
     message = _("An unknown exception occurred.")
     code = http_client.INTERNAL_SERVER_ERROR
     headers = {}
-    safe = False
+    safe = True
 
     def __init__(self, message=None, **kwargs):
         """Initiate the instance of KarborException
@@ -132,7 +132,7 @@ class KarborException(Exception):
         super(KarborException, self).__init__(message)
 
     def __unicode__(self):
-        return six.text_type(self.msg)
+        return self.msg
 
 
 class NotAuthorized(KarborException):
