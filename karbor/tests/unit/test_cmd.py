@@ -17,8 +17,10 @@ try:
 except ImportError:
     import mock
 from oslo_config import cfg
+from oslo_db import exception as db_exc
 
 from karbor.cmd import api as karbor_api
+from karbor.cmd import manage as karbor_manage
 from karbor.tests import base
 from karbor import version
 
@@ -57,3 +59,28 @@ class TestKarborApiCmd(base.TestCase):
         launcher.launch_service.assert_called_once_with(server,
                                                         workers=server.workers)
         launcher.wait.assert_called_once_with()
+
+
+class TestKarborManageCmd(base.TestCase):
+    """Unit test cases for python modules under karbor/cmd/manage.py."""
+
+    def setUp(self):
+        super(TestKarborManageCmd, self).setUp()
+        sys.argv = ['karbor-manage']
+        CONF(sys.argv[1:], project='karbor', version=version.version_string())
+
+    def tearDown(self):
+        super(TestKarborManageCmd, self).tearDown()
+
+    def test_db_commands_upgrade_out_of_range(self):
+        version = 1111111111
+        db_cmds = karbor_manage.DbCommands()
+        exit = self.assertRaises(SystemExit, db_cmds.sync, version + 1)
+        self.assertEqual(1, exit.code)
+
+    @mock.patch("oslo_db.sqlalchemy.migration.db_sync")
+    def test_db_commands_script_not_present(self, db_sync):
+        db_sync.side_effect = db_exc.DbMigrationError
+        db_cmds = karbor_manage.DbCommands()
+        exit = self.assertRaises(SystemExit, db_cmds.sync, 101)
+        self.assertEqual(1, exit.code)

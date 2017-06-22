@@ -22,6 +22,7 @@ import os
 import sys
 
 from oslo_config import cfg
+from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import migration
 from oslo_log import log as logging
 
@@ -54,11 +55,19 @@ def args(*args, **kwargs):
 class DbCommands(object):
     """Class for managing the database."""
 
-    @args('version', nargs='?', default=None,
+    @args('version', nargs='?', default=None, type=int,
           help='Database version')
     def sync(self, version=None):
         """Sync the database up to the most recent version."""
-        return db_migration.db_sync(version)
+        if version is not None and version > db.MAX_INT:
+            print(_('Version should be less than or equal to '
+                    '%(max_version)d.') % {'max_version': db.MAX_INT})
+            sys.exit(1)
+        try:
+            return db_migration.db_sync(version)
+        except db_exc.DbMigrationError as ex:
+            print("Error during database migration: %s" % ex)
+            sys.exit(1)
 
     def version(self):
         """Print the current database version."""
