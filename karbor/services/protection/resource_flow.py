@@ -98,7 +98,8 @@ class ResourceFlowGraphWalkerListener(graph.GraphWalkerListener):
             'parameters': parameters,
             'resource': resource,
         }
-        requires = OPERATION_EXTRA_ARGS.get(self.operation_type)
+        requires = OPERATION_EXTRA_ARGS.get(self.operation_type, [])
+        requires.append('operation_log')
         task = self.workflow_engine.create_task(method,
                                                 name=task_name,
                                                 inject=injects,

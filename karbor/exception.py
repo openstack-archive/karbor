@@ -258,6 +258,10 @@ class PlanNotFound(NotFound):
     message = _("Plan %(plan_id)s could not be found.")
 
 
+class OperationLogFound(NotFound):
+    message = _("Operation log %(operation_log_id)s could not be found.")
+
+
 class RestoreNotFound(NotFound):
     message = _("Restore %(restore_id)s could not be found.")
 

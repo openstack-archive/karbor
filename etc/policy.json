@@ -35,5 +35,8 @@
     "scheduled_operation:create": "",
     "scheduled_operation:delete": "rule:admin_or_owner",
     "scheduled_operation:get": "rule:admin_or_owner",
-    "scheduled_operation:list": ""
+    "scheduled_operation:list": "",
+
+    "operation_log:get": "rule:admin_or_owner",
+    "operation_log:get_all": "rule:admin_or_owner"
 }

@@ -14,10 +14,13 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+from oslo_utils import timeutils
 from oslo_utils import uuidutils
+
 
 from karbor.common import constants
 from karbor.services.protection import client_factory
+from karbor.services.protection.flows import utils
 from karbor.services.protection import resource_flow
 from karbor.services.protection import restore_heat
 from taskflow import task
@@ -35,22 +38,34 @@ LOG = logging.getLogger(__name__)
 
 
 class InitiateRestoreTask(task.Task):
-    def execute(self, restore, *args, **kwargs):
+    def execute(self, context, restore, operation_log, *args, **kwargs):
         LOG.debug("Initiate restore restore_id: %s", restore.id)
         restore['status'] = constants.RESTORE_STATUS_IN_PROGRESS
         restore.save()
+        update_fields = {"status": restore.status}
+        utils.update_operation_log(context, operation_log, update_fields)
 
-    def revert(self, restore, *args, **kwargs):
+    def revert(self, context, restore, operation_log, *args, **kwargs):
         LOG.debug("Failed to restore restore_id: %s", restore.id)
         restore['status'] = constants.RESTORE_STATUS_FAILURE
         restore.save()
+        update_fields = {
+            "status": restore.status,
+            "ended_at": timeutils.utcnow()
+        }
+        utils.update_operation_log(context, operation_log, update_fields)
 
 
 class CompleteRestoreTask(task.Task):
-    def execute(self, restore, *args, **kwargs):
+    def execute(self, context, restore, operation_log, *args, **kwargs):
         LOG.debug("Complete restore restore_id: %s", restore.id)
         restore['status'] = constants.RESTORE_STATUS_SUCCESS
         restore.save()
+        update_fields = {
+            "status": restore.status,
+            "ended_at": timeutils.utcnow()
+        }
+        utils.update_operation_log(context, operation_log, update_fields)
 
 
 class CreateHeatTask(task.Task):
@@ -159,6 +174,7 @@ def get_flow(context, workflow_engine, checkpoint, provider, restore,
                 heat_conf["password"] = restore_auth["password"]
 
     resource_graph = checkpoint.resource_graph
+    operation_log = utils.create_operation_log_restore(context, restore)
     parameters = restore.parameters
     flow_name = "Restore_" + checkpoint.id
     restore_flow = workflow_engine.build_flow(flow_name, 'linear')
@@ -181,7 +197,11 @@ def get_flow(context, workflow_engine, checkpoint, provider, restore,
         SyncRestoreStatusTask(),
         CompleteRestoreTask()
     )
-    flow_engine = workflow_engine.get_engine(restore_flow,
-                                             store={'checkpoint': checkpoint,
-                                                    'restore': restore})
+    flow_engine = workflow_engine.get_engine(
+        restore_flow,
+        store={
+            'context': context,
+            'checkpoint': checkpoint,
+            'restore': restore,
+            'operation_log': operation_log})
     return flow_engine

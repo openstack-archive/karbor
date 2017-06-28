@@ -11,29 +11,44 @@
 # under the License.
 
 from karbor.common import constants
+from karbor.services.protection.flows import utils
 from karbor.services.protection import resource_flow
 from oslo_log import log as logging
+from oslo_utils import timeutils
+
 from taskflow import task
 
 LOG = logging.getLogger(__name__)
 
 
 class InitiateDeleteTask(task.Task):
-    def execute(self, checkpoint, *args, **kwargs):
+    def execute(self, context, checkpoint, operation_log, *args, **kwargs):
         LOG.debug("Initiate delete checkpoint_id: %s", checkpoint.id)
         checkpoint.status = constants.CHECKPOINT_STATUS_DELETING
         checkpoint.commit()
+        update_fields = {"status": checkpoint.status}
+        utils.update_operation_log(context, operation_log, update_fields)
 
-    def revert(self, checkpoint, *args, **kwargs):
+    def revert(self, context, checkpoint, operation_log, *args, **kwargs):
         LOG.debug("Failed to delete checkpoint_id: %s", checkpoint.id)
         checkpoint.status = constants.CHECKPOINT_STATUS_ERROR_DELETING
         checkpoint.commit()
+        update_fields = {
+            "status": checkpoint.status,
+            "ended_at": timeutils.utcnow()
+        }
+        utils.update_operation_log(context, operation_log, update_fields)
 
 
 class CompleteDeleteTask(task.Task):
-    def execute(self, checkpoint):
+    def execute(self, context, checkpoint, operation_log):
         LOG.debug("Complete delete checkpoint_id: %s", checkpoint.id)
         checkpoint.delete()
+        update_fields = {
+            "status": checkpoint.status,
+            "ended_at": timeutils.utcnow()
+        }
+        utils.update_operation_log(context, operation_log, update_fields)
 
 
 def get_flow(context, workflow_engine, checkpoint, provider):
@@ -41,6 +56,7 @@ def get_flow(context, workflow_engine, checkpoint, provider):
     flow_name = "Delete_Checkpoint_" + checkpoint.id
     delete_flow = workflow_engine.build_flow(flow_name, 'linear')
     resource_graph = checkpoint.resource_graph
+    operation_log = utils.create_operation_log(context, checkpoint)
     plugins = provider.load_plugins()
     resources_task_flow = resource_flow.build_resource_flow(
         operation_type=constants.OPERATION_DELETE,
@@ -56,6 +72,11 @@ def get_flow(context, workflow_engine, checkpoint, provider):
         resources_task_flow,
         CompleteDeleteTask(),
     )
-    flow_engine = workflow_engine.get_engine(delete_flow,
-                                             store={'checkpoint': checkpoint})
+    flow_engine = workflow_engine.get_engine(
+        delete_flow,
+        store={
+            'context': context,
+            'checkpoint': checkpoint,
+            'operation_log': operation_log}
+    )
     return flow_engine

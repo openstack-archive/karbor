@@ -13,6 +13,7 @@
 from oslo_service import wsgi as base_wsgi
 
 from karbor.api.openstack import ProjectMapper
+from karbor.api.v1 import operation_logs
 from karbor.api.v1 import plans
 from karbor.api.v1 import protectables
 from karbor.api.v1 import providers
@@ -33,6 +34,7 @@ class APIRouter(base_wsgi.Router):
         providers_resources = providers.create_resource()
         trigger_resources = triggers.create_resource()
         scheduled_operation_resources = scheduled_operations.create_resource()
+        operation_log_resources = operation_logs.create_resource()
 
         mapper.resource("plan", "plans",
                         controller=plans_resources,
@@ -92,4 +94,8 @@ class APIRouter(base_wsgi.Router):
                         controller=scheduled_operation_resources,
                         collection={},
                         member={'action': 'POST'})
+        mapper.resource("operation_log", "operation_logs",
+                        controller=operation_log_resources,
+                        collection={},
+                        member={})
         super(APIRouter, self).__init__(mapper)
