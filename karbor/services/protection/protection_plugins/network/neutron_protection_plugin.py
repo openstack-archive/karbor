@@ -541,6 +541,34 @@ class RestoreOperation(protection_plugin.Operation):
             )
 
 
+class DeleteOperation(protection_plugin.Operation):
+    def on_main(self, checkpoint, resource, cntxt, parameters, **kwargs):
+        network_id = self._get_network_id(cntxt)
+        bank_section = checkpoint.get_resource_bank_section(network_id)
+
+        LOG.info("Deleting network backup, network_id: %s.", network_id)
+
+        try:
+            bank_section.update_object("status",
+                                       constants.RESOURCE_STATUS_DELETING)
+            objects = bank_section.list_objects()
+            for obj in objects:
+                if obj == "status":
+                    continue
+                bank_section.delete_object(obj)
+            bank_section.update_object("status",
+                                       constants.RESOURCE_STATUS_DELETED)
+        except Exception as err:
+            # update resource_definition backup_status
+            LOG.error("Delete backup failed, network_id: %s.", network_id)
+            bank_section.update_object("status",
+                                       constants.RESOURCE_STATUS_ERROR)
+            raise exception.DeleteBackupFailed(
+                reason=err,
+                resource_id=network_id,
+                resource_type=self._SUPPORT_RESOURCE_TYPES)
+
+
 class NeutronProtectionPlugin(protection_plugin.ProtectionPlugin):
     _SUPPORT_RESOURCE_TYPES = [constants.NETWORK_RESOURCE_TYPE]
 

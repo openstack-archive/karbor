@@ -340,3 +340,52 @@ class NeutronProtectionPluginTest(base.TestCase):
 
         call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
                    {})
+
+    @mock.patch('karbor.services.protection.clients.neutron.create')
+    def test_delete_backup(self, mock_neutron_create):
+        resource = Resource(id="network_id_1",
+                            type=constants.NETWORK_RESOURCE_TYPE,
+                            name="test")
+
+        fake_bank._plugin._objects[
+            "/resource_data/checkpoint_id/network_id_1/metadata"] = {
+            "resource_id": "network_id_1",
+            "network_metadata": {
+                "id": "9b68fb64-39d4-4d41-8cc9-f27846c6e5f5",
+                "router:external": False,
+                "admin_state_up": True,
+                "mtu": 1500
+            },
+            "subnet_metadata": {
+                "id": "808c3b3f-3d79-4c5b-a5b6-95dd07abeb2d",
+                "network_id": "9b68fb64-39d4-4d41-8cc9-f27846c6e5f5",
+                "host_routes": [],
+                "dns_nameservers": []
+            },
+            "port_metadata": {
+                "id": "2b34c97a-4ccc-44c0-bc50-b7bbfc3508eb",
+                "admin_state_up": True,
+                "allowed_address_pairs": [],
+                "fixed_ips": [{"subnet_id": "3d79-4c5b-a5b6-95dd07abeb2d",
+                               "ip_address": "192.168.21.3"}]
+            },
+            "router_metadata": {
+                "id": "4c0e-4ed8-8d39-e27b7c1b7ae8",
+                "admin_state_up": True,
+                "availability_zone_hints": [],
+                "fixed_ips":  {"network_id": "9bb2-4b8f-9eea-e45563efc420",
+                               "enable_snat": True
+                               }
+            },
+            "security-group_metadata": {
+                "id": "4ccc-44c0-bc50-b7bbfc3508eb",
+                "description": "Default security group",
+                "security_group_rules": []
+            }
+        }
+
+        delete_operation = self.plugin.get_delete_operation(resource)
+        mock_neutron_create.return_value = self.neutron_client
+
+        call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
+                   {})
