@@ -55,9 +55,9 @@ def enforce(context, action, target):
            ``compute:attach_volume``,
            ``volume:attach_volume``
 
-       :param object: dictionary representing the object of the action
-           for object creation this should be a dictionary representing the
-           location of the object e.g. ``{'project_id': context.project_id}``
+       :param target: dictionary representing the target of the action
+           for target creation this should be a dictionary representing the
+           location of the target e.g. ``{'project_id': context.project_id}``
 
        :raises PolicyNotAuthorized: if verification fails.
 
