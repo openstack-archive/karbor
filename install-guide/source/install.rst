@@ -21,4 +21,5 @@ Note that installation and configuration vary by distribution.
 .. toctree::
    :maxdepth: 1
 
+   install-source.rst
    install-ubuntu.rst
