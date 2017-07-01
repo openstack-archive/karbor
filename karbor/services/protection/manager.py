@@ -38,7 +38,7 @@ LOG = logging.getLogger(__name__)
 
 protection_manager_opts = [
     cfg.StrOpt('provider_registry',
-               default='karbor.services.protection.provider.ProviderRegistry',
+               default='provider-registry',
                help='the provider registry'),
     cfg.IntOpt('max_concurrent_operations',
                default=0,
