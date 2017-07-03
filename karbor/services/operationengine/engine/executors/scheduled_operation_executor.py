@@ -43,7 +43,7 @@ class ScheduledOperationExecutor(base.BaseExecutor):
         end_time_for_run = expect_start_time + timedelta(seconds=window_time)
         ret = self._update_operation_state(
             operation_id,
-            {'state': constants.OPERATION_STATE_TRIGGERED,
+            {'state': constants.OPERATION_STATE_RUNNING,
              'end_time_for_run': end_time_for_run})
         if not ret:
             return
@@ -74,10 +74,6 @@ class ScheduledOperationExecutor(base.BaseExecutor):
         self._execute_operation(operation_id, self._run_operation, param)
 
     def _run_operation(self, operation_id, param):
-
-        self._update_operation_state(
-            operation_id,
-            {'state': constants.OPERATION_STATE_RUNNING})
 
         try:
             check_item = [self._CHECK_ITEMS['is_canceled']]
