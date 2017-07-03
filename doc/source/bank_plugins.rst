@@ -8,3 +8,12 @@ Swift
   :noindex:
   :members:
   :show-inheritance:
+
+
+Local Filesystem
+""""""""""""""""
+
+.. autoclass:: karbor.services.protection.bank_plugins.file_system_bank_plugin.FileSystemBankPlugin
+  :noindex:
+  :members:
+  :show-inheritance:

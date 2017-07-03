@@ -25,6 +25,13 @@ Communication and Meetings
 
   Additional Info: https://wiki.openstack.org/wiki/Meetings/karbor
 
+Plugins Development Guide
+=========================
+.. toctree::
+   :maxdepth: 1
+
+   bank_plugins_guide
+
 Additional References
 =====================
 
