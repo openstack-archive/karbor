@@ -28,7 +28,7 @@ OPTIONS_SCHEMA = {
         "force": {
             "type": "boolean",
             "title": "Force",
-            "description": "Allows or disallows snapshot of a volume when the"
+            "description": "Allows or disallows snapshot of a volume when the "
                            "volume is attached to an instance.",
             "default": False
         }

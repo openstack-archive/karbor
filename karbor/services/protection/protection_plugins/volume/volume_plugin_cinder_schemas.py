@@ -42,7 +42,7 @@ OPTIONS_SCHEMA = {
         "force": {
             "type": "boolean",
             "title": "Force",
-            "description": "Whether to backup, even if the volume"
+            "description": "Whether to backup, even if the volume "
                            "is attached",
             "default": False
         }
