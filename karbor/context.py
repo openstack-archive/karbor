@@ -76,7 +76,7 @@ class RequestContext(context.RequestContext):
                                     ('identity', 'compute', 'object-store',
                                      'image', 'volume', 'volumev2', 'network',
                                      'volumev3', 'orchestration',
-                                     'share', 'sharev2')]
+                                     'share', 'sharev2', 'database')]
         else:
             # if list is empty or none
             self.service_catalog = []

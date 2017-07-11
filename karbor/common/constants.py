@@ -51,12 +51,14 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   IMAGE_RESOURCE_TYPE,
                   SHARE_RESOURCE_TYPE,
                   NETWORK_RESOURCE_TYPE,
+                  DATABASE_RESOURCE_TYPE,
                   ) = ('OS::Keystone::Project',
                        'OS::Nova::Server',
                        'OS::Cinder::Volume',
                        'OS::Glance::Image',
                        'OS::Manila::Share',
                        'OS::Neutron::Network',
+                       'OS::Trove::Instance',
                        )
 # plan status
 PLAN_STATUS_SUSPENDED = 'suspended'
