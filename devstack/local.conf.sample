@@ -40,13 +40,8 @@ enable_service s-proxy s-object s-container s-account
 
 enable_plugin manila https://git.openstack.org/openstack/manila master
 
+MANILA_OPTGROUP_generic1_driver_handles_share_servers=False
 MANILA_USE_SERVICE_INSTANCE_PASSWORD=True
-MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="snapshot_support=True create_share_from_snapshot_support=True"
+MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="snapshot_support=True create_share_from_snapshot_support=True mount_snapshot_support=True driver_handles_share_servers=False"
+SHARE_DRIVER=manila.share.drivers.lvm.LVMShareDriver
 
-Q_PLUGIN=ml2
-ENABLE_TENANT_VLANS=True
-ML2_VLAN_RANGES=physnet1:100:200
-PHYSICAL_NETWORK=physnet1
-OVS_PHYSICAL_BRIDGE=br-eth1
-Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch
-Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,vxlan
