@@ -383,9 +383,9 @@ class NovaProtectionPluginTest(base.TestCase):
                    {})
 
         self.assertEqual(
+            constants.RESOURCE_STATUS_AVAILABLE,
             fake_bank._plugin._objects[
-                "/resource_data/checkpoint_id/vm_id_2/status"],
-            constants.RESOURCE_STATUS_AVAILABLE
+                "/resource_data/checkpoint_id/vm_id_2/status"]
         )
         resource_definition = {
             "resource_id": "vm_id_2",
@@ -456,5 +456,4 @@ class NovaProtectionPluginTest(base.TestCase):
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
-        self.assertEqual(types,
-                         [constants.SERVER_RESOURCE_TYPE])
+        self.assertEqual([constants.SERVER_RESOURCE_TYPE], types)

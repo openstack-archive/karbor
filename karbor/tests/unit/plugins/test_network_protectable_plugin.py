@@ -79,10 +79,10 @@ class NetworkProtectablePluginTest(base.TestCase):
             auth=None)
         self.assertEqual('network',
                          neutronclient.httpclient.service_type)
-        self.assertEqual(neutronclient.httpclient.endpoint_url,
-                         'http://127.0.0.1:9696')
-        self.assertEqual(novaclient.client.management_url,
-                         'http://127.0.0.1:8774/v2.1/abcd')
+        self.assertEqual('http://127.0.0.1:9696',
+                         neutronclient.httpclient.endpoint_url)
+        self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
+                         novaclient.client.management_url)
 
     @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
                 '_generate_session')
@@ -98,15 +98,15 @@ class NetworkProtectablePluginTest(base.TestCase):
             auth=None)
         self.assertEqual('network',
                          neutronclient.httpclient.service_type)
-        self.assertEqual(neutronclient.httpclient.endpoint_url,
-                         'http://127.0.0.1:9696')
-        self.assertEqual(novaclient.client.management_url,
-                         'http://127.0.0.1:8774/v2.1/abcd')
+        self.assertEqual('http://127.0.0.1:9696',
+                         neutronclient.httpclient.endpoint_url)
+        self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
+                         novaclient.client.management_url)
 
     def test_get_resource_type(self):
         plugin = NetworkProtectablePlugin(self._context)
-        self.assertEqual(plugin.get_resource_type(),
-                         constants.NETWORK_RESOURCE_TYPE)
+        self.assertEqual(constants.NETWORK_RESOURCE_TYPE,
+                         plugin.get_resource_type())
 
     def test_get_parent_resource_type(self):
         plugin = NetworkProtectablePlugin(self._context)

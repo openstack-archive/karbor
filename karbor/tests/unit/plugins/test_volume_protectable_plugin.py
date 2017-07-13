@@ -126,6 +126,6 @@ class VolumeProtectablePluginTest(base.TestCase):
 
         mock_volume_list.return_value = volumes
         self.assertEqual(
-            plugin.get_dependent_resources(self._context, project),
             [Resource('OS::Cinder::Volume', '123', 'name123',
-                      {'availability_zone': 'az1'})])
+                      {'availability_zone': 'az1'})],
+            plugin.get_dependent_resources(self._context, project))

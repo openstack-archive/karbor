@@ -435,5 +435,4 @@ class CinderProtectionPluginTest(base.TestCase):
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
-        self.assertEqual(types,
-                         [constants.VOLUME_RESOURCE_TYPE])
+        self.assertEqual([constants.VOLUME_RESOURCE_TYPE], types)

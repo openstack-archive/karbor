@@ -45,23 +45,23 @@ class ProviderRegistryTest(base.TestCase):
                        '_register_plugin')
     def test_load_providers(self, mock_load_bank, mock_register_plugin):
         pr = provider.ProviderRegistry()
-        self.assertEqual(mock_register_plugin.call_count, 1)
-        self.assertEqual(mock_load_bank.call_count, 1)
-        self.assertEqual(len(pr.providers), 1)
+        self.assertEqual(1, mock_register_plugin.call_count)
+        self.assertEqual(1, mock_load_bank.call_count)
+        self.assertEqual(1, len(pr.providers))
 
-        self.assertEqual(pr.providers['fake_id1'].name, 'fake_provider1')
+        self.assertEqual('fake_provider1', pr.providers['fake_id1'].name)
         self.assertNotIn('fake_provider2', pr.providers)
 
     def test_provider_bank_config(self):
         pr = provider.ProviderRegistry()
         provider1 = pr.show_provider('fake_id1')
-        self.assertEqual(provider1.bank._plugin.fake_host, 'thor')
+        self.assertEqual('thor', provider1.bank._plugin.fake_host)
 
     def test_provider_plugin_config(self):
         pr = provider.ProviderRegistry()
         provider1 = pr.show_provider('fake_id1')
         plugins = provider1.load_plugins()
-        self.assertEqual(plugins['Test::ResourceA'].fake_user, 'user')
+        self.assertEqual('user', plugins['Test::ResourceA'].fake_user)
 
     def test_list_provider(self):
         pr = provider.ProviderRegistry()

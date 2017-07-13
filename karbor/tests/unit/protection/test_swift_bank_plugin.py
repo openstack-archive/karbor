@@ -67,7 +67,7 @@ class SwiftBankPluginTest(base.TestCase):
         expire_time = math.floor(time.time()) + self.conf.lease_expire_window
         self.assertEqual(self.swift_bank_plugin.lease_expire_time, expire_time)
         is_valid = self.swift_bank_plugin.check_lease_validity()
-        self.assertEqual(is_valid, True)
+        self.assertTrue(is_valid)
 
     def test_delete_object(self):
         self.swift_bank_plugin.update_object("key", "value")
@@ -75,18 +75,18 @@ class SwiftBankPluginTest(base.TestCase):
         object_file = os.path.join(self.fake_connection.swiftdir,
                                    "karbor",
                                    "key")
-        self.assertEqual(os.path.isfile(object_file), False)
+        self.assertFalse(os.path.isfile(object_file))
 
     def test_get_object(self):
         self.swift_bank_plugin.update_object("key", "value")
         value = self.swift_bank_plugin.get_object("key")
-        self.assertEqual(value, "value")
+        self.assertEqual("value", value)
 
     def test_list_objects(self):
         self.swift_bank_plugin.update_object("key-1", "value-1")
         self.swift_bank_plugin.update_object("key-2", "value-2")
         objects = self.swift_bank_plugin.list_objects(prefix=None)
-        self.assertEqual(len(objects), 2)
+        self.assertEqual(2, len(objects))
 
     def test_update_object(self):
         self.swift_bank_plugin.update_object("key-1", "value-1")
@@ -96,9 +96,9 @@ class SwiftBankPluginTest(base.TestCase):
                                    "key-1")
         with open(object_file, "r") as f:
             contents = f.read()
-        self.assertEqual(contents, "value-2")
+        self.assertEqual("value-2", contents)
 
     def test_create_get_dict_object(self):
         self.swift_bank_plugin.update_object("dict_object", {"key": "value"})
         value = self.swift_bank_plugin.get_object("dict_object")
-        self.assertEqual(value, {"key": "value"})
+        self.assertEqual({"key": "value"}, value)

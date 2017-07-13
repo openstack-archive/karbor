@@ -135,7 +135,7 @@ class BankSectionTest(base.TestCase):
             bank.update_object(path, value1)
             bank.update_object(path, value2)
             res = bank.get_object(path)
-            self.assertEqual(res, value2)
+            self.assertEqual(value2, res)
             bank.delete_object(path)
             self.assertRaises(
                 exception.BankGetObjectFailed,
@@ -162,18 +162,16 @@ class BankSectionTest(base.TestCase):
         section.update_object("/KeyB", "value")
         section.update_object("KeyC", "value")
         expected_result = ["KeyA", "KeyB", "KeyC"]
-        self.assertEqual(list(section.list_objects("/")), expected_result)
-        self.assertEqual(list(section.list_objects("///")), expected_result)
-        self.assertEqual(list(section.list_objects(None)), expected_result)
-        self.assertEqual(list(section.list_objects("Key")), expected_result)
+        self.assertEqual(expected_result, list(section.list_objects("/")))
+        self.assertEqual(expected_result, list(section.list_objects("///")))
+        self.assertEqual(expected_result, list(section.list_objects(None)))
+        self.assertEqual(expected_result, list(section.list_objects("Key")))
         self.assertEqual(
-            list(section.list_objects("/", limit=2)),
             expected_result[:2],
-        )
+            list(section.list_objects("/", limit=2)))
         self.assertEqual(
-            list(section.list_objects("/", limit=2, marker="KeyB")),
             expected_result[2:4],
-        )
+            list(section.list_objects("/", limit=2, marker="KeyB")))
 
     def test_read_only(self):
         bank = self._create_test_bank()
@@ -222,8 +220,8 @@ class BankSectionTest(base.TestCase):
         mid_section = top_section.get_sub_section("/mid")
         bottom_section = mid_section.get_sub_section("/bottom")
         bottom_section.update_object("key", "value")
-        self.assertEqual(bank.get_object("/top/mid/bottom/key"), "value")
-        self.assertEqual(bottom_section.get_object("key"), "value")
+        self.assertEqual("value", bank.get_object("/top/mid/bottom/key"))
+        self.assertEqual("value", bottom_section.get_object("key"))
 
     def test_nested_sections_list(self):
         bank = self._create_test_bank()
@@ -235,15 +233,13 @@ class BankSectionTest(base.TestCase):
             bottom_section.update_object(key, "value")
 
         list_result = set(bottom_section.list_objects(prefix="Key"))
-        self.assertEqual(list_result, set(keys))
+        self.assertEqual(set(keys), list_result)
         self.assertEqual(
-            list(bottom_section.list_objects("/", limit=2)),
             keys[:2],
-        )
+            list(bottom_section.list_objects("/", limit=2)))
         self.assertEqual(
-            list(bottom_section.list_objects("/", limit=2, marker="KeyB")),
             keys[2:4],
-        )
+            list(bottom_section.list_objects("/", limit=2, marker="KeyB")))
 
     def test_nested_sections_read_only(self):
         bank = self._create_test_bank()

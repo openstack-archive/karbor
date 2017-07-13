@@ -67,7 +67,7 @@ class ServicesDbTestCase(base.TestCase):
                                          'binary': 'binarytest',
                                          'topic': 'topictest',
                                          'report_count': 0})
-        self.assertEqual(service_ref['host'], 'hosttest')
+        self.assertEqual('hosttest', service_ref['host'])
 
     def test_services_get(self):
         service_ref = db.service_create(self.ctxt,
@@ -77,8 +77,8 @@ class ServicesDbTestCase(base.TestCase):
                                          'report_count': 0})
 
         service_get_ref = db.service_get(self.ctxt, service_ref['id'])
-        self.assertEqual(service_ref['host'], 'hosttest1')
-        self.assertEqual(service_get_ref['host'], 'hosttest1')
+        self.assertEqual('hosttest1', service_ref['host'])
+        self.assertEqual('hosttest1', service_get_ref['host'])
 
     def test_service_destroy(self):
         service_ref = db.service_create(self.ctxt,
@@ -103,8 +103,8 @@ class ServicesDbTestCase(base.TestCase):
                                                 'binary': 'binarytest4',
                                                 'topic': 'topictest4',
                                                 'report_count': 0})
-        self.assertEqual(service_ref['host'], 'hosttest3')
-        self.assertEqual(service_update_ref['host'], 'hosttest4')
+        self.assertEqual('hosttest3', service_ref['host'])
+        self.assertEqual('hosttest4', service_update_ref['host'])
 
     def test_service_get_by_host_and_topic(self):
         service_ref = db.service_create(self.ctxt,
@@ -116,8 +116,8 @@ class ServicesDbTestCase(base.TestCase):
         service_get_ref = db.service_get_by_host_and_topic(self.ctxt,
                                                            'hosttest5',
                                                            'topictest5')
-        self.assertEqual(service_ref['host'], 'hosttest5')
-        self.assertEqual(service_get_ref['host'], 'hosttest5')
+        self.assertEqual('hosttest5', service_ref['host'])
+        self.assertEqual('hosttest5', service_get_ref['host'])
 
 
 class TriggerTestCase(base.TestCase):

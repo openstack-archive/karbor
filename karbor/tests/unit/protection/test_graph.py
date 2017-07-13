@@ -43,7 +43,7 @@ class GraphBuilderTest(base.TestCase):
 
         for g, expected_result in test_matrix:
             result = graph.build_graph(g.keys(), g.__getitem__)
-            self.assertEqual({node.value for node in result}, expected_result)
+            self.assertEqual(expected_result, {node.value for node in result})
 
     def test_detect_cyclic_graph(self):
         """Test that cyclic graphs are detected"""
@@ -101,7 +101,7 @@ class GraphBuilderTest(base.TestCase):
         test_nodes = {test_root, }
         result_graph = graph.build_graph(test_nodes, test_node_children)
         test_root_node = result_graph[0]
-        self.assertEqual(len(test_root_node.child_nodes), 2)
+        self.assertEqual(2, len(test_root_node.child_nodes))
         test_left_node = test_root_node.child_nodes[0]
         test_right_node = test_root_node.child_nodes[1]
 

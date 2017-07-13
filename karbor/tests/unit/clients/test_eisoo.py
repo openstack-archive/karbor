@@ -55,7 +55,7 @@ class ABClientTest(base.TestCase):
         mock_abspath.return_value = ''
 
         client = eisoo.create(self._context, None)
-        self.assertEqual(client._app_id, 'eisoo_app_id')
+        self.assertEqual('eisoo_app_id', client._app_id)
 
     def tearDown(self):
         super(ABClientTest, self).tearDown()

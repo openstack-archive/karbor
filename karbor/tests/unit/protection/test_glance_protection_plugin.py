@@ -171,5 +171,4 @@ class GlanceProtectionPluginTest(base.TestCase):
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
-        self.assertEqual(types,
-                         [constants.IMAGE_RESOURCE_TYPE])
+        self.assertEqual([constants.IMAGE_RESOURCE_TYPE], types)
