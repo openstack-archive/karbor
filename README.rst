@@ -54,7 +54,7 @@ Links
 *****
 
 * Free software: Apache license
-* Documentation: https://docs.openstack.org/developer/karbor
+* Documentation: https://docs.openstack.org/karbor/latest/
 * Source: https://git.openstack.org/cgit/openstack/karbor
 * Bugs: https://bugs.launchpad.net/karbor
 
