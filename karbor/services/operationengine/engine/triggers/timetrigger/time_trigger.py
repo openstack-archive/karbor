@@ -40,6 +40,7 @@ time_trigger_opts = [
 
     cfg.StrOpt('time_format',
                default='calendar',
+               choices=['crontab', 'calendar'],
                help='The type of time format which is used to compute time')
 ]
 

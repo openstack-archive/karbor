@@ -35,6 +35,7 @@ LOG = logging.getLogger(__name__)
 trigger_manager_opts = [
     cfg.StrOpt('executor',
                default='green_thread',
+               choices=['thread_pool', 'green_thread'],
                help='The name of executor which is used to run operations')
 ]
 
