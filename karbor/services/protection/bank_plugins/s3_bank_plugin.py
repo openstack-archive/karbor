@@ -155,10 +155,7 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
                 limit=limit,
                 marker=marker
             )
-            if 'Contents' not in response:
-                return []
-            else:
-                return [obj['Key'] for obj in response['Contents']]
+            return [obj['Key'] for obj in response]
         except S3ConnectionFailed as err:
             LOG.error("list objects failed, err: %s.", err)
             raise exception.BankListObjectsFailed(reason=err)
@@ -222,15 +219,38 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
         except ClientError as err:
             raise S3ConnectionFailed(reason=err)
 
-    def _get_bucket(self, bucket, prefix=None, limit=None, marker=None):
+    def _get_bucket(self, bucket, prefix=None, limit=None,
+                    marker=None):
         try:
             prefix = '' if prefix is None else prefix
             marker = '' if marker is None else marker
-            response = self.connection.list_objects(
-                Bucket=bucket,
-                Prefix=prefix,
-                MaxKeys=limit,
-                Marker=marker)
-            return response
+            objects_to_return = []
+            if limit is None:
+                is_truncated = True
+                while is_truncated:
+                    response = self.connection.list_objects(
+                        Bucket=bucket,
+                        Prefix=prefix,
+                        Marker=marker
+                    )
+                    if 'Contents' not in response:
+                        break
+
+                    is_truncated = response['IsTruncated']
+                    objects_to_return.extend(response['Contents'])
+                    marker = response['Contents'][-1]['Key']
+            else:
+                response = self.connection.list_objects(
+                    Bucket=bucket,
+                    Prefix=prefix,
+                    MaxKeys=limit,
+                    Marker=marker
+                )
+
+                if 'Contents' in response:
+                    objects_to_return.extend(response['Contents'])
+
         except ClientError as err:
             raise S3ConnectionFailed(reason=err)
+        else:
+            return objects_to_return

@@ -183,8 +183,8 @@ class FileSystemBankPlugin(BankPlugin):
         LOG.debug("FsBank: list_objects. key: %s", prefix)
         try:
             file_lists = self._list_object(prefix)
-            return (
-                file_lists[-limit:] if limit is not None else file_lists)
         except OSError as err:
             LOG.error("List objects failed. err: %s", err)
             raise exception.BankListObjectsFailed(reason=err)
+        else:
+            return file_lists[-limit:] if limit is not None else file_lists
