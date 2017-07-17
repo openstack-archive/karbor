@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-===================================================
+==================================================================
 Add extra_info field for the response of protectable instances API
-===================================================
+==================================================================
 
 https://blueprints.launchpad.net/karbor/+spec/instances-extra-info
 

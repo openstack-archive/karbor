@@ -1,5 +1,5 @@
 Karbor Specs
-===========
+============
 
 This section contains detailed specification documents for
 different features inside Karbor.
@@ -14,7 +14,7 @@ Contents:
     pluggable_protection_provider
 
 Spec Template
---------------
+-------------
 .. toctree::
     :maxdepth: 3
 
