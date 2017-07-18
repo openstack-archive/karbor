@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-============
+===========
 API Service
-============
+===========
 
 https://review.openstack.org/#/c/266338/
 
@@ -20,9 +20,9 @@ in OpenStack (such as a hardware device, an external database, etc.).
 
 
 
-==========================
+=========================
 WSGI Resources Controller
-==========================
+=========================
 
 The WSGI Controller handles incoming web requests that are dispatched
 from the WSGI application APIRouter.
@@ -33,19 +33,19 @@ From the module class graph, api service basically have following
 resources Controller:
 
 Provider Controller
------------------------
+-------------------
 Enables the Karbor user to list available providers and get parameters and
 result schema super-set for all plugins of a specific Provider.
 
 
 Checkpoint Controller
------------------------
+---------------------
 Enables the Karbor user to access and manage the checkpoints stored
 in the protection provider.
 
 
 Protectable Controller
------------------------
+----------------------
 
 Enables the Karbor user to access information about which resource types
 are protectable (i.e. can be protected by Karbor).
@@ -53,7 +53,7 @@ In addition, enables the user to get additional information on each
 resource type, such as a list of actual instances and their dependencies.
 
 Plan Controller
------------------------
+---------------
 
 This API enables the Karbor user to access the protection Plan registry
 and do the following operations:
@@ -63,7 +63,7 @@ and do the following operations:
 
 
 Scheduled Operation Controller
---------------------------
+------------------------------
 
 This API enables the Karbor user to manage Scheduled Operations:
 
@@ -71,7 +71,7 @@ This API enables the Karbor user to manage Scheduled Operations:
 -  List Operations.
 
 Trigger Controller
---------------------------
+------------------
 
 This API enables the Karbor user to manage Triggers:
 A trigger only can be deleted when it isn't used in any of the
@@ -81,16 +81,16 @@ scheduled operation.
 
 
 Restore Controller
----------------------------
+------------------
 
 This API enables the Karbor user restore a checkpoint on to a restore target:
 
 -  Create restored system from a checkpoint.
 
 
-====================================
+============================
 API Service Data base tables
-====================================
+============================
 
 
 

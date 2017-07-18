@@ -1,6 +1,6 @@
-==================================
+===================================
 Karbor: Application Data Protection
-==================================
+===================================
 
 Introduction
 ============
@@ -16,7 +16,7 @@ standard framework of APIs and services that allows vendors to provide plugins
 through a unified interface
 
 Using Karbor
-===========
+============
 .. toctree::
    :maxdepth: 1
 
@@ -36,7 +36,7 @@ Available Plugins
    protection_plugins
 
 Karbor Specs
-===========
+============
 .. toctree::
    :maxdepth: 1
 
