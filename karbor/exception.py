@@ -365,6 +365,10 @@ class CreateContainerFailed(KarborException):
     message = _("Create Container in Bank Failed: %(reason)s")
 
 
+class CreateBucketFailed(KarborException):
+    message = _("Create Bucket in Bank Failed: %(reason)s")
+
+
 class TriggerIsInvalid(Invalid):
     message = _("Trigger%(trigger_id)s is invalid.")
 

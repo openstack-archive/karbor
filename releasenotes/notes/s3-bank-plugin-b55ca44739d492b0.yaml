@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Add support for using S3 comptatible storage as bank plugin.
