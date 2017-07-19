@@ -11,11 +11,15 @@
 #    under the License.
 
 from karbor import exception
+from karbor.exception import ListProtectableResourceFailed
 from karbor.i18n import _
 from karbor.services.protection.graph import build_graph
 import six
 
+from oslo_log import log as logging
 from stevedore import extension
+
+LOG = logging.getLogger(__name__)
 
 
 class ProtectablePluginLoadFailed(exception.KarborException):
@@ -101,8 +105,14 @@ class ProtectableRegistry(object):
                 protectable = self._get_protectable(
                     context,
                     plugin.get_resource_type())
-                result.extend(protectable.get_dependent_resources(context,
-                                                                  resource))
+                try:
+                    protectable_resources = \
+                        protectable.get_dependent_resources(context, resource)
+                except ListProtectableResourceFailed as e:
+                    LOG.error("List resources failed, so skip it. "
+                              "Error: {0}".format(e))
+                    protectable_resources = []
+                result.extend(protectable_resources)
 
         return result
 
