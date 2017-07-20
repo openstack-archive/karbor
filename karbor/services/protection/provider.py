@@ -35,7 +35,10 @@ provider_opts = [
                help='the name of provider'),
     cfg.StrOpt('id',
                default='',
-               help='the provider id')
+               help='the provider id'),
+    cfg.BoolOpt('enabled',
+                default=False,
+                help='enabled or not'),
 ]
 CONF = cfg.CONF
 
@@ -172,6 +175,14 @@ class ProviderRegistry(object):
             provider_config = cfg.ConfigOpts()
             provider_config(args=['--config-file=' + config_path])
             provider_config.register_opts(provider_opts, 'provider')
+
+            provider_enabled = provider_config.provider.enabled
+            if not provider_enabled:
+                LOG.info('Provider {0} is not enabled'.format(
+                    provider_config.provider.name)
+                )
+                continue
+
             try:
                 provider = PluggableProtectionProvider(provider_config)
             except Exception as e:
