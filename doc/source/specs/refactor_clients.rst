@@ -141,5 +141,5 @@ References
 ==========
 
 [1] https://bugs.launchpad.net/karbor/+bug/1566793
-[2] http://specs.openstack.org/openstack/keystone-specs/specs/keystone/ocata/allow-expired.html
+[2] https://specs.openstack.org/openstack/keystone-specs/specs/keystone/ocata/allow-expired.html
 [3] https://review.openstack.org/#q,topic:bp/allow-expired,n,z
