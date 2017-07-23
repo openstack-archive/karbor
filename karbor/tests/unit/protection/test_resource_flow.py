@@ -121,22 +121,32 @@ class ResourceFlowTest(base.TestCase):
             child_type: {'option3': 'value5'}
         }
 
+        def _compare_parameters(resource, func, expect_parameters):
+            result = fake_operation.all_invokes[resource][func]
+            for k, v in expect_parameters.items():
+                self.assertEqual(v, result[k])
+
         for operation in constants.OPERATION_TYPES:
-            mock_operation = fakes.MockOperation()
+            fake_operation = fakes.FakeOperation()
             get_operation_attr = 'get_{}_operation'.format(operation)
             getattr(
                 mock_protection,
                 get_operation_attr
-            ).return_value = mock_operation
+            ).return_value = fake_operation
 
             kwargs = {
                 'checkpoint': 'A',
                 'context': 'B',
             }
 
+            args = kwargs.copy()
             if operation == constants.OPERATION_RESTORE:
-                kwargs['heat_template'] = restore_heat.HeatTemplate()
-                kwargs['restore'] = None
+                template = restore_heat.HeatTemplate()
+                args['kwargs'] = {
+                    'heat_template': template,
+                    'restore': None
+                }
+                kwargs.update(args['kwargs'])
 
             self._walk_operation(mock_protection, operation,
                                  parameters=parameters, **kwargs)
@@ -145,22 +155,12 @@ class ResourceFlowTest(base.TestCase):
                 resource_params = parameters.get(resource.type, {})
                 resource_id = '{}#{}'.format(resource.type, resource.id)
                 resource_params.update(parameters.get(resource_id, {}))
-                mock_operation.on_prepare_begin.assert_any_call(
-                    resource=resource,
-                    parameters=resource_params,
-                    **kwargs)
-                mock_operation.on_prepare_finish.assert_any_call(
-                    resource=resource,
-                    parameters=resource_params,
-                    **kwargs)
-                mock_operation.on_main.assert_any_call(
-                    resource=resource,
-                    parameters=resource_params,
-                    **kwargs)
-                mock_operation.on_complete.assert_any_call(
-                    resource=resource,
-                    parameters=resource_params,
-                    **kwargs)
+                args['resource'] = resource
+                args['parameters'] = resource_params
+                _compare_parameters(resource, 'on_prepare_begin', args)
+                _compare_parameters(resource, 'on_prepare_finish', args)
+                _compare_parameters(resource, 'on_main', args)
+                _compare_parameters(resource, 'on_complete', args)
 
     @mock.patch('karbor.tests.unit.protection.fakes.FakeProtectionPlugin')
     def test_resource_flow_order(self, mock_protection):
