@@ -40,11 +40,11 @@ class ProtectionServiceTest(base.TestCase):
     @mock.patch.object(protectable_registry.ProtectableRegistry,
                        'list_resource_types')
     def test_list_protectable_types(self, mocker):
-        excepted = ["OS::Nova::Server",
+        expected = ["OS::Nova::Server",
                     "OS::Cinder::Volume"]
-        mocker.return_value = excepted
+        mocker.return_value = expected
         result = self.pro_manager.list_protectable_types(None)
-        self.assertEqual(excepted, result)
+        self.assertEqual(expected, result)
 
     def test_show_protectable_type(self):
         def mock_plugins(self):
@@ -139,7 +139,7 @@ class ProtectionServiceTest(base.TestCase):
         context = mock.MagicMock()
         cp = self.pro_manager.show_checkpoint(context, 'provider1',
                                               'fake_checkpoint')
-        self.assertEqual(cp['id'], 'fake_checkpoint')
+        self.assertEqual('fake_checkpoint', cp['id'])
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     @mock.patch.object(fakes.FakeCheckpointCollection, 'get')

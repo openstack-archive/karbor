@@ -309,8 +309,7 @@ class NeutronProtectionPluginTest(base.TestCase):
 
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
-        self.assertEqual(types,
-                         [constants.NETWORK_RESOURCE_TYPE])
+        self.assertEqual([constants.NETWORK_RESOURCE_TYPE], types)
 
     @mock.patch('karbor.services.protection.clients.neutron.create')
     def test_create_backup(self, mock_neutron_create):

@@ -86,5 +86,5 @@ class ProtectableRegistryTest(base.TestCase):
         for item in g:
             expected = set(g_dict[item.value])
             found = set(child.value for child in item.child_nodes)
-            self.assertEqual(found, expected)
+            self.assertEqual(expected, found)
             self.assert_graph(item.child_nodes, g_dict)
