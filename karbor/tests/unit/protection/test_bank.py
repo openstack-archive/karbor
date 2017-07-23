@@ -13,7 +13,6 @@
 from collections import OrderedDict
 from copy import deepcopy
 from oslo_utils import uuidutils
-import six
 
 from karbor import exception
 from karbor.services.protection.bank_plugin import Bank
@@ -40,7 +39,7 @@ class _InMemoryBankPlugin(BankPlugin):
     def list_objects(self, prefix=None, limit=None, marker=None,
                      sort_dir=None):
         marker_found = marker is None
-        for key in six.iterkeys(self._data):
+        for key in self._data.keys():
             if marker is not True and key != marker:
                 if marker_found:
                     if prefix is None or key.startswith(prefix):

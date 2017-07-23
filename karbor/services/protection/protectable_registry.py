@@ -66,7 +66,7 @@ class ProtectableRegistry(object):
 
         :return: The list of supported resource types.
         """
-        return [type for type in six.iterkeys(self._plugin_map)]
+        return [type for type in self._plugin_map.keys()]
 
     def get_protectable_resource_plugin(self, resource_type):
         """Get the protectable plugin with the specified type."""
@@ -100,7 +100,7 @@ class ProtectableRegistry(object):
         :return: The list of dependent resources.
         """
         result = []
-        for plugin in six.itervalues(self._plugin_map):
+        for plugin in self._plugin_map.values():
             if resource.type in plugin.get_parent_resource_types():
                 protectable = self._get_protectable(
                     context,
