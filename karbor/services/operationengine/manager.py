@@ -125,12 +125,10 @@ class OperationEngineManager(manager.Manager):
         marker = None
         filters = {"service_id": self._service_id,
                    "state": [constants.OPERATION_STATE_REGISTERED,
-                             constants.OPERATION_STATE_TRIGGERED,
                              constants.OPERATION_STATE_RUNNING]}
         columns_to_join = ['operation']
         ctxt = karbor_context.get_admin_context()
-        resume_states = [constants.OPERATION_STATE_TRIGGERED,
-                         constants.OPERATION_STATE_RUNNING]
+        resume_states = [constants.OPERATION_STATE_RUNNING, ]
         while True:
             states = objects.ScheduledOperationStateList.get_by_filters(
                 ctxt, filters, limit, marker, columns_to_join=columns_to_join)

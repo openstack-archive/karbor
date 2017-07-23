@@ -63,7 +63,7 @@ class GreenThreadExecutor(base.BaseExecutor):
         end_time_for_run = expect_start_time + timedelta(seconds=window_time)
         ret = self._update_operation_state(
             operation_id,
-            {'state': constants.OPERATION_STATE_TRIGGERED,
+            {'state': constants.OPERATION_STATE_RUNNING,
              'end_time_for_run': end_time_for_run})
         if not ret:
             self._operation_thread_map.pop(operation_id, None)
@@ -131,10 +131,6 @@ class GreenThreadExecutor(base.BaseExecutor):
         self._operation_thread_map = {}
 
     def _run_operation(self, operation_id, param):
-
-        self._update_operation_state(
-            operation_id,
-            {'state': constants.OPERATION_STATE_RUNNING})
 
         try:
             try:
