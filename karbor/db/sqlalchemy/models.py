@@ -194,12 +194,17 @@ class OperationLog(BASE, KarborBase):
     __tablename__ = 'operation_logs'
     id = Column(String(36), primary_key=True)
     project_id = Column(String(255))
+    operation_type = Column(String(255))
+    checkpoint_id = Column(String(36))
+    plan_id = Column(String(36))
+    provider_id = Column(String(36))
+    restore_id = Column(String(36))
     scheduled_operation_id = Column(String(36))
+    status = Column(String(64))
     started_at = Column(DateTime)
     ended_at = Column(DateTime)
-    state = Column(String(64))
-    error = Column(String(64))
-    entries = Column(Text)
+    error_info = Column(Text)
+    extra_info = Column(Text)
 
 
 class CheckpointRecord(BASE, KarborBase):

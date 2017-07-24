@@ -93,12 +93,17 @@ def define_tables(meta):
         Column('deleted', Boolean, nullable=False),
         Column('id', String(length=36), primary_key=True, nullable=False),
         Column('project_id', String(length=255), nullable=False),
+        Column('operation_type', String(length=255), nullable=False),
+        Column('checkpoint_id', String(length=36)),
+        Column('plan_id', String(length=36)),
+        Column('provider_id', String(length=36)),
+        Column('restore_id', String(length=36)),
         Column('scheduled_operation_id', String(length=36)),
+        Column('status', String(length=64)),
         Column('started_at', DateTime),
         Column('ended_at', DateTime),
-        Column('state', String(length=64)),
-        Column('error', String(length=255)),
-        Column('entries', Text),
+        Column('error_info', Text),
+        Column('extra_info', Text),
         mysql_engine='InnoDB'
     )
 
