@@ -63,7 +63,7 @@ class FileSystemBankPlugin(BankPlugin):
         try:
             original_umask = None
             try:
-                original_umask = os.umask(0)
+                original_umask = os.umask(0o022)
                 os.makedirs(path)
             finally:
                 os.umask(original_umask)
