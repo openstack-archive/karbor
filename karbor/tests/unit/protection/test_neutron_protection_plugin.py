@@ -275,7 +275,7 @@ class NeutronProtectionPluginTest(base.TestCase):
     def setUp(self):
         super(NeutronProtectionPluginTest, self).setUp()
 
-        self.plugin = NeutronProtectionPlugin()
+        self.plugin = NeutronProtectionPlugin(cfg.CONF)
 
         cfg.CONF.set_default('neutron_endpoint',
                              'http://127.0.0.1:9696',
