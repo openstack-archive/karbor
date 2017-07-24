@@ -93,7 +93,7 @@ class FileSystemBankPlugin(BankPlugin):
         obj_file_name = self.object_container_path + path
         if not os.path.isfile(obj_file_name):
             LOG.exception(_("Object is not a file. name: %s"), obj_file_name)
-            raise
+            raise OSError("Object is not a file")
         try:
             with open(obj_file_name, mode='r') as obj_file:
                 data = obj_file.read()
@@ -118,9 +118,8 @@ class FileSystemBankPlugin(BankPlugin):
     def _list_object(self, path):
         obj_file_path = self.object_container_path + path
         if not os.path.isdir(obj_file_path):
-            LOG.exception(_("Path is not a directory. name: %s"),
-                          obj_file_path)
-            raise
+            LOG.debug(_("Path is not a directory. name: %s"), obj_file_path)
+            return ()
         try:
             if os.path.isdir(obj_file_path):
                 return os.listdir(obj_file_path)
