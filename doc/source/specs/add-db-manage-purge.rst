@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==========================================
+=======================
 Karbor db purge utility
-==========================================
+=======================
 
 https://blueprints.launchpad.net/karbor/+spec/clean-deleted-data-in-db
 
@@ -69,7 +69,7 @@ None, this would be run from karbor-manage
 CLI impact
 ----------
 
-A new karbor-manage command will be added:
+A new karbor-manage command will be added::
 
    karbor-manage db purge <age_in_days>
 

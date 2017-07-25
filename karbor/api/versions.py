@@ -10,8 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httplib
 from karbor.api.openstack import wsgi
+from six.moves import http_client
 import webob.dec
 
 from oslo_serialization import jsonutils
@@ -44,7 +44,7 @@ class Versions(object):
         ])
 
         response = webob.Response(request=req,
-                                  status=httplib.MULTIPLE_CHOICES,
+                                  status=http_client.MULTIPLE_CHOICES,
                                   content_type='application/json')
         response.body = jsonutils.dumps(dict(versions=version_objs))
         return response

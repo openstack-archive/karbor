@@ -95,7 +95,7 @@ class TriggerManager(object):
                            the operation is registered to
         :param operation_id: ID of the operation
         :param kwargs: Any parameters
-        :raise InvalidInput if the trigger_type is invalid or
+        :raise InvalidInput: if the trigger_type is invalid or
                other exceptionis register_operation of trigger raises
         """
         trigger = self._trigger_obj_map.get(trigger_id, None)
@@ -113,7 +113,7 @@ class TriggerManager(object):
         :param trigger_id: The ID of the trigger which
                            the operation is registered to
         :param operation_id: ID of the operation
-        :raise InvalidInput if the trigger_type is invalid or
+        :raise InvalidInput: if the trigger_type is invalid or
                other exceptionis unregister_operation of trigger raises
         """
         trigger = self._trigger_obj_map.get(trigger_id, None)

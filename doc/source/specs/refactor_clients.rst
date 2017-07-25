@@ -41,7 +41,9 @@ the protect/restore works. There are some changes to create and use the clients
 of other services before using that new mechanism.
 
 1. create client
-    The client may be created like this.
+    The client may be created like this
+
+.. code-block:: python
 
     def create(context):
         # user_auth_plugin: created by context, which stores the user token.
@@ -119,7 +121,7 @@ Work Items
 ----------
 
 * refactor all clients of other openstack services been using
-in protect service.
+  in protect service.
 
 Dependencies
 ============

@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==========================================
+==========================
 Checkpoint scheduled clean
-==========================================
+==========================
 
 https://blueprints.launchpad.net/karbor/+spec/checkpoint-scheduled-clean
 

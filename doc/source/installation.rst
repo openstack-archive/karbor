@@ -69,3 +69,5 @@ Neutron (optional)
 
         enable_service neutron q-svc q-agt q-dhcp q-meta
         disable_service n-net
+
+.. include:: mod_wsgi.rst

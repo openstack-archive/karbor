@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-=========================================
+========================================
 Cinder volume snapshot protection plugin
-=========================================
+========================================
 
 https://blueprints.launchpad.net/karbor/+spec/cinder-volume-snapshot-plugin
 
@@ -52,48 +52,50 @@ of this operation to delete the volume snapshot.
 Cinder volume snapshot protection plugin schema:
 ------------------------------------------------
 
-OPTIONS_SCHEMA = {
-    "title": "Volume Snapshot Protection Options",
-    "type": "object",
-    "properties": {
-        "snapshot_name": {
-            "type": "string",
-            "title": "Snapshot Name",
-            "description": "The name of the volume snapshot."
-        },
-        "description": {
-            "type": "string",
-            "title": "Description",
-            "description": "The description of the volume snapshot."
-        },
-        "force": {
-            "type": "boolean",
-            "title": "Force",
-            "description": "If force is True, create a snapshot even if the volume is attached to an instance.",
-            "default": False
-        }
-    },
-    "required": ["snapshot_name", "description", "force"]
-}
+::
 
-RESTORE_SCHEMA = {
-    "title": "Volume Protection Restore",
-    "type": "object",
-    "properties": {
-        "restore_name": {
-            "type": "string",
-            "title": "Restore Name",
-            "description": "The name of the restored volume.",
-            "default": None
+    OPTIONS_SCHEMA = {
+        "title": "Volume Snapshot Protection Options",
+        "type": "object",
+        "properties": {
+            "snapshot_name": {
+                "type": "string",
+                "title": "Snapshot Name",
+                "description": "The name of the volume snapshot."
+            },
+            "description": {
+                "type": "string",
+                "title": "Description",
+                "description": "The description of the volume snapshot."
+            },
+            "force": {
+                "type": "boolean",
+                "title": "Force",
+                "description": "If force is True, create a snapshot even if the volume is attached to an instance.",
+                "default": False
+            }
         },
-        "restore_description": {
-            "type": "string",
-            "title": "Restore Description",
-            "description": "The description of the restored volume.",
-            "default": None
+        "required": ["snapshot_name", "description", "force"]
+    }
+
+    RESTORE_SCHEMA = {
+        "title": "Volume Protection Restore",
+        "type": "object",
+        "properties": {
+            "restore_name": {
+                "type": "string",
+                "title": "Restore Name",
+                "description": "The name of the restored volume.",
+                "default": None
+            },
+            "restore_description": {
+                "type": "string",
+                "title": "Restore Description",
+                "description": "The description of the restored volume.",
+                "default": None
+            }
         }
     }
-}
 
 
 Alternatives

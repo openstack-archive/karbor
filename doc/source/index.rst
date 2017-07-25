@@ -35,6 +35,13 @@ Available Plugins
    protectable_plugins
    protection_plugins
 
+Karbor Code Reference
+=====================
+.. toctree::
+   :maxdepth: 1
+
+   devref/index
+
 Karbor Specs
 ============
 .. toctree::

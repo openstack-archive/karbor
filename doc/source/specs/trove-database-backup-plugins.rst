@@ -15,7 +15,7 @@ Problem description
 
 The database instance managed by Trove can not be protected by Karbor now. Currently,
 Trove as a Database service allows the user to quickly and easily use database features
- without the burden of handling complex administrative tasks.
+without the burden of handling complex administrative tasks.
 
 The users can use Database service (Trove) to backup a database and store the backup
 artifact in the Object Storage service. Later on, if the original database is damaged,
@@ -45,19 +45,21 @@ The type of resource database instance is "OS::Trove::Instance". It will be adde
 RESOURCE_TYPES in karbor.
 
 
-1. The parent resource types:
-PROJECT_RESOURCE_TYPE.
+1. The parent resource types: PROJECT_RESOURCE_TYPE
 
 2. list the resources:
-This interface of plugin will call the 'list' method of Instances manager in troveclient.
+
+   This interface of plugin will call the 'list' method of Instances manager in troveclient.
 
 3. show the resource:
-This interface of plugin will call the 'get' method of Instances manager in troveclient.
-The parameter is a database instance id.
+
+   This interface of plugin will call the 'get' method of Instances manager in troveclient.
+   The parameter is a database instance id.
 
 4. get dependent resources:
-The parameter parent_resource is a project, this interface of plugin will return the
-database instance in this project.
+
+   The parameter parent_resource is a project, this interface of plugin will return the
+   database instance in this project.
 
 
 Trove database instance protection plugin
@@ -65,58 +67,63 @@ Trove database instance protection plugin
 A new protection plugin about Trove database instance need be implemented.
 
 1. Protect Operation:
-The 'create' method of Backups manager will be called in the main hook
-of this operation to make a backup of the database instance.
+
+   The 'create' method of Backups manager will be called in the main hook
+   of this operation to make a backup of the database instance.
 
 2. Restore Operation:
-The 'create' method of Instances manager
-will be called in the main hook of this operation to create a new database instance from
-the giving backup.
+
+   The 'create' method of Instances manager
+   will be called in the main hook of this operation to create a new database instance from
+   the giving backup.
 
 3. Delete Operation:
-The database instance backup will be deleted.
-The 'delete' method of Backups manager will be called in the main hook
-of this operation to delete the database instance backup.
+
+   The database instance backup will be deleted.
+   The 'delete' method of Backups manager will be called in the main hook
+   of this operation to delete the database instance backup.
 
 Trove database instance protection plugin schema:
 -------------------------------------------------
 
-OPTIONS_SCHEMA = {
-    "title": "Database Instance Protection Options",
-    "type": "object",
-    "properties": {
-        "backup_name": {
-            "type": "string",
-            "title": "Backup Name",
-            "description": "The name of the database instance backup."
-        },
-        "description": {
-            "type": "string",
-            "title": "Description",
-            "description": "The description of the database instance backup."
-        }
-    },
-    "required": ["backup_name", "description"]
-}
+::
 
-RESTORE_SCHEMA = {
-    "title": "Database Instance Protection Restore",
-    "type": "object",
-    "properties": {
-        "restore_name": {
-            "type": "string",
-            "title": "Restore Name",
-            "description": "The name of the restored database instance.",
-            "default": None
+    OPTIONS_SCHEMA = {
+        "title": "Database Instance Protection Options",
+        "type": "object",
+        "properties": {
+            "backup_name": {
+                "type": "string",
+                "title": "Backup Name",
+                "description": "The name of the database instance backup."
+            },
+            "description": {
+                "type": "string",
+                "title": "Description",
+                "description": "The description of the database instance backup."
+            }
         },
-        "restore_description": {
-            "type": "string",
-            "title": "Restore Description",
-            "description": "The description of the restored database instance.",
-            "default": None
+        "required": ["backup_name", "description"]
+    }
+
+    RESTORE_SCHEMA = {
+        "title": "Database Instance Protection Restore",
+        "type": "object",
+        "properties": {
+            "restore_name": {
+                "type": "string",
+                "title": "Restore Name",
+                "description": "The name of the restored database instance.",
+                "default": None
+            },
+            "restore_description": {
+                "type": "string",
+                "title": "Restore Description",
+                "description": "The description of the restored database instance.",
+                "default": None
+            }
         }
     }
-}
 
 
 Alternatives
@@ -191,7 +198,7 @@ None
 Testing
 =======
 
-Unit tests in Karbor .
+Unit tests in Karbor.
 
 
 Documentation Impact

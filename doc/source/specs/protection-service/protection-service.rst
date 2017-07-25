@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-====================================
+=========================
 Protection Service Basics
-====================================
+=========================
 
 https://bugs.launchpad.net/karbor/+bug/1529199
 
@@ -27,7 +27,7 @@ resource dependency and thus be executed on parallel or linearly according to
 the graph task flow.
 
 RPC interfaces
-================================================
+==============
 
 .. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/protection-architecture.png
 
@@ -35,7 +35,7 @@ From the module graph, protection service basically provide following RPC
 calls:
 
 Operation RPC:
---------------------
+--------------
 **execute_operation(backup_plan:BackupPlan, action:Action):** where action
 could be protect or restore
 
@@ -89,7 +89,7 @@ it needs create key/value for checkpoint itself. After that, it will build
 multiple indexes for easier list checkpoints.
 
 Typical scenario
-======================================
+================
 A typical scenario will start from a triggered operation being sent through RPC
 call to Protection Service.
 
@@ -105,12 +105,12 @@ events, will call RPC call of Protection Service:
 execute_operation(backup_plan:Bac,upPlan, action:Action);
 
 2. ProtectionManager
-------------------------
+--------------------
 who plays as one of the RPC server endpoints, and will handle this RPC call by
 following sequence:
 
 2.1 CreateCheckpointTask:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 This task will be the start point task of the graph flow. This task will call
 the unique instance of class
 **Checkpoints**:create_checkpoint(plan:ProtectionPlan), to create one
@@ -142,7 +142,7 @@ id, snapshot id, image id, etc) into the Bank under the corresponding
 **ProtectionDefinition**.
 
 2.3 CompleteCheckpointTask
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This task is added into the top layer task flow right after the task flow built
 form ProtectProvider, which will be executed only when all tasks ahead of it

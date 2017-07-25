@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==========================================
+===================================
 API for custom checkpoint meta-data
-==========================================
+===================================
 
 https://blueprints.launchpad.net/cinder/+spec/custom-checkpoint-metadata
 
@@ -34,9 +34,9 @@ When creating a checkpoint a new field would be available called
 ``extra-info``.
 This field must be a map in the format of::
 
-        {
-                "key": "value",
-        }
+    {
+        "key": "value",
+    }
 
 Keys and values *must* both be strings. Keys that are officially recognized
 will be in the format of ``karbor-<key-name>`` for example

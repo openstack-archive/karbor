@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-===================================================
+==================================================
 Add parameters field for protectable instances API
-===================================================
+==================================================
 
 https://blueprints.launchpad.net/cinder/+spec/custom-checkpoint-metadata
 
@@ -42,37 +42,36 @@ A dict type parameter is needed for Protectable Instances API. And it is optiona
 Proposed change
 ===============
 
-Add a new field parameters to the params of request for Protectable Instances API.
+Add a new field parameters to the params of request for Protectable Instances API::
 
-  /{project_id}/protectables/{protectable_type}/instances:
-    get:
-      summary: Resource Instances
-      description: |
-        Return all the available instances for the given protectable type.
-      parameters:
-        - $ref: '#/parameters/projectParam'
-        - $ref: '#/parameters/protectable_typeParam'
-        - $ref: '#/parameters/nameFilterParam'
-        - $ref: '#/parameters/sortParam'
-        - $ref: '#/parameters/limitParam'
-        - $ref: '#/parameters/markerParam'
-        - $ref: '#/parameters/ParametersParam'
+    /{project_id}/protectables/{protectable_type}/instances:
+      get:
+        summary: Resource Instances
+        description: |
+          Return all the available instances for the given protectable type.
+        parameters:
+          - $ref: '#/parameters/projectParam'
+          - $ref: '#/parameters/protectable_typeParam'
+          - $ref: '#/parameters/nameFilterParam'
+          - $ref: '#/parameters/sortParam'
+          - $ref: '#/parameters/limitParam'
+          - $ref: '#/parameters/markerParam'
+          - $ref: '#/parameters/ParametersParam'
 
 The params of request: A dictionary-like object containing both the parameters from
 the query string and request body.
 
 Convert the data of parameters to the query string of API.
 
-For example:
+For example::
 
-"parameters": {
-    "region_name": "USA"
-}
+    "parameters": {
+        "region_name": "USA"
+    }
 
-Add the query string about the parameters to Protectable Instances API.
+Add the query string about the parameters to Protectable Instances API::
 
-
-/{project_id}/protectables/{protectable_type}/instances?parameters=%7B%27region_name%27%3A+%27USA%27%7D
+    /{project_id}/protectables/{protectable_type}/instances?parameters=%7B%27region_name%27%3A+%27USA%27%7D
 
 
 

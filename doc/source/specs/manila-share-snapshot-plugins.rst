@@ -72,53 +72,55 @@ of this operation to delete the share snapshot.
 Manila share protection plugin schema:
 --------------------------------------
 
-OPTIONS_SCHEMA = {
-    "title": "Share Protection Options",
-    "type": "object",
-    "properties": {
-        "snapshot_name": {
-            "type": "string",
-            "title": "Snapshot Name",
-            "description": "The name of the snapshot."
-        },
-        "description": {
-            "type": "string",
-            "title": "Description",
-            "description": "The description of the share snapshot."
-        },
-        "force": {
-            "type": "boolean",
-            "title": "Force",
-            "description": "Optional flag to indicate whether to snapshot a share even if it's busy.",
-            "default": False
-        }
-    },
-    "required": ["snapshot_name", "description", "force"]
-}
+::
 
-RESTORE_SCHEMA = {
-    "title": "Share Protection Restore",
-    "type": "object",
-    "properties": {
-        "share_id": {
-            "type": "string",
-            "title": "Share ID",
-            "description": "The target share ID to restore to."
+    OPTIONS_SCHEMA = {
+        "title": "Share Protection Options",
+        "type": "object",
+        "properties": {
+            "snapshot_name": {
+                "type": "string",
+                "title": "Snapshot Name",
+                "description": "The name of the snapshot."
+            },
+            "description": {
+                "type": "string",
+                "title": "Description",
+                "description": "The description of the share snapshot."
+            },
+            "force": {
+                "type": "boolean",
+                "title": "Force",
+                "description": "Optional flag to indicate whether to snapshot a share even if it's busy.",
+                "default": False
+            }
         },
-        "restore_name": {
-            "type": "string",
-            "title": "Restore Name",
-            "description": "The name of the restored share.",
-            "default": None
-        },
-        "restore_description": {
-            "type": "string",
-            "title": "Restore Description",
-            "description": "The description of the restored share.",
-            "default": None
+        "required": ["snapshot_name", "description", "force"]
+    }
+
+    RESTORE_SCHEMA = {
+        "title": "Share Protection Restore",
+        "type": "object",
+        "properties": {
+            "share_id": {
+                "type": "string",
+                "title": "Share ID",
+                "description": "The target share ID to restore to."
+            },
+            "restore_name": {
+                "type": "string",
+                "title": "Restore Name",
+                "description": "The name of the restored share.",
+                "default": None
+            },
+            "restore_description": {
+                "type": "string",
+                "title": "Restore Description",
+                "description": "The description of the restored share.",
+                "default": None
+            }
         }
     }
-}
 
 
 Alternatives
@@ -193,7 +195,7 @@ None
 Testing
 =======
 
-Unit tests in Karbor .
+Unit tests in Karbor.
 
 
 Documentation Impact

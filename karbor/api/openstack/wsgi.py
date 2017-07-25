@@ -19,9 +19,8 @@ from oslo_serialization import jsonutils
 from oslo_utils import excutils
 from oslo_utils import strutils
 import six
-import webob
-
 from six.moves import http_client
+import webob
 
 from karbor import exception
 from karbor import i18n
