@@ -19,6 +19,7 @@ through a unified interface
    :maxdepth: 1
 
    install/index
+   configuration/index
 
 Using Karbor
 ============
