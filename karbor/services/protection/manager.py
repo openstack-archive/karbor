@@ -243,7 +243,8 @@ class ProtectionManager(manager.Manager):
         pass
 
     @messaging.expected_exceptions(exception.ProviderNotFound,
-                                   exception.CheckpointNotFound)
+                                   exception.CheckpointNotFound,
+                                   exception.BankListObjectsFailed)
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
                          sort_keys=None, sort_dirs=None, filters=None):
         LOG.info("Starting list checkpoints. provider_id:%s", provider_id)
