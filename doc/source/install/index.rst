@@ -1,15 +1,15 @@
-=======================
-Data Protection service
-=======================
+============
+Installation
+============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   get_started.rst
-   install.rst
-   verify.rst
-   launch-instance.rst
-   next-steps.rst
+   get_started
+   install
+   verify
+   launch-instance
+   next-steps
 
 To protect the Data and Metadata that comprises an OpenStack-deployed
 Application against loss/damage (e.g. backup, replication), The Data

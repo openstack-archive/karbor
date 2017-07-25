@@ -15,13 +15,18 @@ Application against loss/damage (e.g. backup, replication) by providing a
 standard framework of APIs and services that allows vendors to provide plugins
 through a unified interface
 
+.. toctree::
+   :maxdepth: 1
+
+   install/index
+
 Using Karbor
 ============
 .. toctree::
    :maxdepth: 1
 
    readme
-   installation
+   devstack-installation
    usage
    contributing
    releasenotes
