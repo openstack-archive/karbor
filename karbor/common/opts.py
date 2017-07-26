@@ -77,7 +77,7 @@ _opts = [
         volume_snapshot_plugin.volume_snapshot_opts))),
     ('manila_snapshot_plugin', list(itertools.chain(
         share_snapshot_plugin.manila_snapshot_opts))),
-    (None, list(itertools.chain(
+    ('DEFAULT', list(itertools.chain(
         karbor.common.config.core_opts,
         karbor.common.config.debug_opts,
         karbor.common.config.global_opts,

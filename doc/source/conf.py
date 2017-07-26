@@ -23,7 +23,9 @@ extensions = [
     'sphinx.ext.autodoc',
     # 'sphinx.ext.intersphinx',
     'openstackdocstheme',
-    'reno.sphinxext'
+    'reno.sphinxext',
+    'oslo_config.sphinxext',
+    'oslo_config.sphinxconfiggen',
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -39,6 +41,11 @@ exclude_patterns = [
     'api/karbor.services.protection.bank_plugins.*',
     'api/karbor.services.protection.protectable_plugins.*',
     'api/karbor.services.protection.protection_plugins.*',
+]
+
+config_generator_config_file = [
+    ('../../etc/oslo-config-generator/karbor.conf',
+     '_static/karbor'),
 ]
 
 # The suffix of source filenames.
