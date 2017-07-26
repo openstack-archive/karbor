@@ -24,9 +24,9 @@ from karbor.services.operationengine.engine.triggers.timetrigger import \
 
 
 RATE = 2
-FREQ_TO_KWARGS = [{'days': RATE*366},
-                  {'days': RATE*31},
-                  {'days': RATE*7},
+FREQ_TO_KWARGS = [{'days': RATE * 366},
+                  {'days': RATE * 31},
+                  {'days': RATE * 7},
                   {'days': RATE},
                   {'hours': RATE},
                   {'minutes': RATE},
@@ -109,7 +109,8 @@ class ICal(timeformats.TimeFormat):
         """Compute next time
 
         :param current_time: the time before the next time
-        :return datetime or None
+        :return: datetime or None
+
         """
         next_time = self.rrule_obj.after(current_time)
         return next_time if next_time else None
@@ -117,7 +118,8 @@ class ICal(timeformats.TimeFormat):
     def get_min_interval(self):
         """Get minimum interval of two adjacent time points
 
-        :return int(seconds) or None
+        :return: int(seconds) or None
+
         """
         gen = self.rrule_obj
         kwargs = FREQ_TO_KWARGS[self.min_freq]

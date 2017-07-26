@@ -35,7 +35,7 @@ def find_config(config_path):
 
     :param config_path: Full or relative path to the config.
     :returns: Full path of the config, if it exists.
-    :raises: `karbor.exception.ConfigNotFound`
+    :raises karbor.exception.ConfigNotFound:
 
     """
     possible_locations = [

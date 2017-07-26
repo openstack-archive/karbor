@@ -14,7 +14,7 @@ application - Application Data Protection as a Service.
 
 
 Mission Statement
-~~~~~~~~~~~~~~~~~
+-----------------
 To protect the Data and Metadata that comprises an OpenStack-deployed
 Application against loss/damage (e.g. backup, replication) by providing a
 standard framework of APIs and services that allows vendors to provide plugins
@@ -79,20 +79,18 @@ Example
 Let’s take the OpenStack::Cinder::Volume resource *Protect* action.
 
 One of the action parameters in the Parameters Schema will be
-"Consistency Level":
+"Consistency Level"::
 
-.. code-block:: JSON
-
-      "parameters_schema" : {
-            "type": "object",
-            "properties": {
-                "consistency_level": {
-                    "title": "Consistency Level",
-                    "description": "The preferred consistency level",
-                    "enum": [ "Crash", "OS", "Application" ]
-                }
+    "parameters_schema" : {
+        "type": "object",
+        "properties": {
+            "consistency_level": {
+                "title": "Consistency Level",
+                "description": "The preferred consistency level",
+                "enum": ["Crash", "OS", "Application"]
             }
         }
+    }
 
 Protection Plans
 ----------------

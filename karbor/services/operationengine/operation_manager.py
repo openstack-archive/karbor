@@ -40,7 +40,7 @@ class OperationManager(object):
 
         :param operation_type: the type of operation
         :param operation_definition: the definition of operation
-        :raise InvalidInput if the operation_type is invalid or
+        :raise InvalidInput: if the operation_type is invalid or
                InvalidOperationDefinition if operation_definition is invalid
         """
         op = self._get_operation(operation_type)
@@ -51,7 +51,7 @@ class OperationManager(object):
 
         :param operation_type: the type of operation
         :param operation_definition: the definition of operation
-        :raise InvalidInput if the operation_type is invalid.
+        :raise InvalidInput: if the operation_type is invalid.
         """
         op = self._get_operation(operation_type)
         op.run(operation_definition, **kwargs)

@@ -6,7 +6,7 @@
 
 
 Installing Karbor API with mod_wsgi
-=====================================
+===================================
 
 #. Install the Apache Service::
 
@@ -21,11 +21,11 @@ Installing Karbor API with mod_wsgi
 
 #. Copy ``etc/apache2/apache-karbor-api.conf`` under the apache sites::
 
-   Fedora/RHEL7/CentOS7:
-    sudo cp etc/apache2/apache-karbor-api.conf /etc/httpd/conf.d/apache-karbor-api.conf
-
-   Debian/Ubuntu:
-    sudo cp etc/apache2/apache-karbor-api.conf /etc/apache2/sites-available/apache-karbor-api.conf
+    Fedora/RHEL7/CentOS7:
+     sudo cp etc/apache2/apache-karbor-api.conf /etc/httpd/conf.d/apache-karbor-api.conf
+ 
+    Debian/Ubuntu:
+     sudo cp etc/apache2/apache-karbor-api.conf /etc/apache2/sites-available/apache-karbor-api.conf
 
 #. Edit ``apache-karbor-api.conf`` according to installation
    and environment.
@@ -41,9 +41,9 @@ Installing Karbor API with mod_wsgi
 
 #. Enable the apache watcher site and reload::
 
-   Fedora/RHEL7/CentOS7:
-    sudo systemctl reload httpd
-
-   Debian/Ubuntu:
-    sudo a2ensite apache-karbor-api
-    sudo apache2ctl -k restart
+    Fedora/RHEL7/CentOS7:
+     sudo systemctl reload httpd
+ 
+    Debian/Ubuntu:
+     sudo a2ensite apache-karbor-api
+     sudo apache2ctl -k restart

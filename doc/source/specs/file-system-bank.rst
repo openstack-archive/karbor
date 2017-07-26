@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==========================================
+=====================================
 File System based Bank implementation
-==========================================
+=====================================
 
 https://blueprints.launchpad.net/karbor/+spec/file-system-bank
 

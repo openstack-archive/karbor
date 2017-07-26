@@ -59,57 +59,67 @@ Logo of the resource. The extra-info of this resource is collapsed by default.
 If a user/tenant click the icon, The extra-info will be displayed under this resource.
 Click the icon again, the extra-info will be collapsed.
 
-Add a new field extra_info to the response for Protectable Instances API.
-  /{project_id}/protectables/{protectable_type}/instances:
-    get:
-      summary: Resource Instances
-      description: |
-        Return all the available instances for the given protectable type.
-          examples:
-            application/json: {
-              "instances": [
-                {
-                  "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
-                  "type": "OS::Nova::Server",
-                  "name": "My VM",
-                  "extra_info": {
-                      "hostname": "KarborServer",
-                      "availability_zone": "AZOne",
-                      "cell_name": "CellOne"
-                    }
-                  "dependent_resources": [
-                    {
-                      "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
-                      "type": "OS::Glance::Image",
-                      "name": "cirros-0.3.4-x86_64-uec"
-                      "extra_info": {
-                          "availability_zone": "AZOne",
-                          "cell_name": "CellOne"
+Add a new field extra_info to the response for Protectable Instances API::
+
+    /{project_id}/protectables/{protectable_type}/instances:
+      get:
+        summary: Resource Instances
+        description: |
+          Return all the available instances for the given protectable type.
+            examples:
+              application/json: {
+                "instances": [
+                  {
+                    "id": "cb4ef2ff-10f5-46c9-bce4-cf7a49c65a01",
+                    "type": "OS::Nova::Server",
+                    "name": "My VM",
+                    "extra_info": {
+                        "hostname": "KarborServer",
+                        "availability_zone": "AZOne",
+                        "cell_name": "CellOne"
                       }
-                    }
-                  ]
-                }
-              ]
-            }
+                    "dependent_resources": [
+                      {
+                        "id": "99777fdd-8a5b-45ab-ba2c-52420008103f",
+                        "type": "OS::Glance::Image",
+                        "name": "cirros-0.3.4-x86_64-uec"
+                        "extra_info": {
+                            "availability_zone": "AZOne",
+                            "cell_name": "CellOne"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
 
 Protectable Plugins can return the extra_info of resource Instances.
 
 The extra_info field in resource database table is only for presentation to a user/tenant.
 The values in extra_info field can not be used and modified in karbor protection service.
 Add a new field extra_info to resources database table;
- resources
+
 +-------------------------+--------------+------+-----+---------+-------+
 | Field                   | Type         | Null | Key | Default | Extra |
-+-------------------------+--------------+------+-----+---------+-------+
++=========================+==============+======+=====+=========+=======+
 | id                      | Integer      | NO   | PRI | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | plan_id                 | varchar(255) | NO   | FOR | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | resource_id             | varchar(36)  | NO   |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | resource_type           | varchar(64)  | NO   |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | resource_name           | varchar(255) | NO   |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | resource_extra_info     | Text         | NO   |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | created_at              | Datetime     | YES  |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | updated_at              | Datetime     | YES  |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | deleted_at              | Datetime     | YES  |     | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 | deleted                 | Boolean      | NO   |     | NULL    |       |
 +-------------------------+--------------+------+-----+---------+-------+
 

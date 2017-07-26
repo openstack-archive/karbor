@@ -34,8 +34,8 @@ class WorkFlowEngine(object):
         """build flow
 
         :param flow_name: the flow name
-        :param flow_type:'linear' or 'graph',default:'graph'
-        :return:linear flow or graph flow
+        :param flow_type: 'linear' or 'graph', default:'graph'
+        :return: linear flow or graph flow
         """
         return
 
@@ -56,11 +56,11 @@ class WorkFlowEngine(object):
                     inject=None, **kwargs):
         """create a task
 
-        :param function:make a task from this callable
+        :param function: make a task from this callable
         :param requires: A OrderedSet of inputs this task requires to function.
-        :param provides:A set, string or list of items that this will be
+        :param provides: A set, string or list of items that this will be
                          providing (or could provide) to others
-        :param inject:An immutable input_name => value dictionary which
+        :param inject: An immutable input_name => value dictionary which
                        specifies any initial inputs that should be
                        automatically injected into the task scope before the
                        task execution commences

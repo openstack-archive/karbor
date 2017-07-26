@@ -22,9 +22,9 @@
 .. role:: purple
 .. role:: black
 
-==========================================
+=============================
 Pluggable Protection Provider
-==========================================
+=============================
 
 https://blueprints.launchpad.net/karbor/+spec/protection-plugin-is-design
 

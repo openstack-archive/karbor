@@ -27,7 +27,7 @@ The most important assumption we hold here is that the bank of karbor, which
 holds our protection data, is high available and reliable.
 
 Restore from what point
-================================================
+=======================
 
 In `document protection service design <https://raw.githubusercontent.com/openstack/karbor/master/doc/source/spes/protection-service/protection-service.rst>`_
 , we have described the procedure to protect resource, where for each protection
@@ -39,12 +39,12 @@ foundation where we can build our restoration.
 Checkpoint including following data:
 
 Plan:
---------------------
+-----
 This item is the plan which used to be executed and thus produced this
 checkpoint.
 
 Resource dependency graph:
-----------------------------------
+--------------------------
 The resource
 dependency graph describes the resource stack set in the plan, and the dependency
 among them and their sub resources.
@@ -58,7 +58,7 @@ is the resources stack with same/similar dependency of the original resource
 stack at the time point of protection.
 
 Resource definition data:
-------------------------------
+-------------------------
 Resource definition data is the data defined and persisted by each protection
 plugin, where protection plugin could persist the metadata of the protection
 resource, say, backup id, or the original resource, even the data to be backed
@@ -102,7 +102,7 @@ single task doesn't need care about task flow building but only needs implement
 the restore() function.
 
 options to implement ProtectionPlugin restore()
---------------------------------------------------
+-----------------------------------------------
 
 Basically, the standard protection plugin restore is to generate heat resource
 in memory, but we also tolerates some other backup protection plugin which
@@ -185,7 +185,7 @@ Considering this limitation, the protection plugin with option1 implementation
 could choose to extend heat resource to include its own resource building logic.
 
 work flow of restoration:
------------------------------
+-------------------------
 .. image:: https://raw.githubusercontent.com/openstack/karbor/master/doc/images/protection-service/restore-processing-sequence-flow.png
 
 
@@ -216,12 +216,12 @@ API or config file, and karbor could define some rules to adapt one world to
 another.
 
 Restore heat stack managed resources(TBD)
-==========================================
+=========================================
 The basic idea here is to iterate the
 original source template, and look up corresponding resource in protection
 checkpoint, and thus rebuild the source template with checkpoint data.  In this
 way, the rebuilt resource are still managed by heat stack.
 
 How to watch restoration procedure(TBD)
-========================================
+=======================================
 The basic idea is to watch corresponding heat stack.
