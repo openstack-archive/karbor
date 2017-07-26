@@ -8,24 +8,29 @@
 Installing Karbor API with mod_wsgi
 ===================================
 
-#. Install the Apache Service::
+#. Install the Apache Service
 
-    Fedora 21/RHEL7/CentOS7:
-      sudo yum install httpd
+    Fedora 21/RHEL7/CentOS7::
 
-    Fedora 22 (or higher):
-      sudo dnf install httpd
+        sudo yum install httpd
 
-    Debian/Ubuntu:
-      apt-get install apache2
+    Fedora 22 (or higher)::
 
-#. Copy ``etc/apache2/apache-karbor-api.conf`` under the apache sites::
+        sudo dnf install httpd
 
-    Fedora/RHEL7/CentOS7:
-     sudo cp etc/apache2/apache-karbor-api.conf /etc/httpd/conf.d/apache-karbor-api.conf
- 
-    Debian/Ubuntu:
-     sudo cp etc/apache2/apache-karbor-api.conf /etc/apache2/sites-available/apache-karbor-api.conf
+    Debian/Ubuntu::
+
+        apt-get install apache2
+
+#. Copy ``etc/apache2/apache-karbor-api.conf`` under the apache sites
+
+    Fedora/RHEL7/CentOS7::
+
+        sudo cp etc/apache2/apache-karbor-api.conf /etc/httpd/conf.d/apache-karbor-api.conf
+
+    Debian/Ubuntu::
+
+        sudo cp etc/apache2/apache-karbor-api.conf /etc/apache2/sites-available/apache-karbor-api.conf
 
 #. Edit ``apache-karbor-api.conf`` according to installation
    and environment.
@@ -39,11 +44,13 @@ Installing Karbor API with mod_wsgi
    * Modify the ``ErrorLog and CustomLog`` to redirect the logs to the right
      directory.
 
-#. Enable the apache watcher site and reload::
+#. Enable the apache watcher site and reload
 
-    Fedora/RHEL7/CentOS7:
-     sudo systemctl reload httpd
- 
-    Debian/Ubuntu:
-     sudo a2ensite apache-karbor-api
-     sudo apache2ctl -k restart
+    Fedora/RHEL7/CentOS7::
+
+        sudo systemctl reload httpd
+
+    Debian/Ubuntu::
+
+        sudo a2ensite apache-karbor-api
+        sudo apache2ctl -k restart
