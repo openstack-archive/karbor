@@ -25,9 +25,9 @@ Using Karbor
    :maxdepth: 2
 
    readme
-   usage
    install/index
    configuration/index
+   admin/index
 
 Available Plugins
 =================

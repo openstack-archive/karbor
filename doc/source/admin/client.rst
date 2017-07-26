@@ -1,44 +1,26 @@
-=============
-Usage Example
-=============
-Resources in OpenStack (server, volume, image, network, etc) can be protected by Karbor.
-This example will show protecting volume.
+=======================
+Using the Karbor Client
+=======================
 
+Environment Variables
+---------------------
 
-#. Before starting the karbor-protection service, the admin needs to configure a
-   Provider in /etc/karbor/providers.d/openstack-infra.conf. The Swift plugin is
-   the default bank plugin.  The admin also needs to configure the basic Swift
-   client account configuration::
+To use cinder or karbor client, we should provide Keystone authentication
+variables.
 
-    [provider]
-    name = OS Infra Provider
-    description = This provider uses OpenStack's own services (swift, cinder) as storage
-    id = cf56bd3e-97a7-4078-b6d5-f36246333fd9
-    plugin=karbor-volume-protection-plugin
-    bank=karbor-swift-bank-plugin
-
-    [swift_client]
-    swift_auth_url=http://10.229.47.230/identity/
-    swift_user=admin
-    swift_key=123456
-    swift_tenant_name=admin
-
-    [swift_bank_plugin]
-    lease_expire_window=120
-    lease_renew_window=100
-    lease_validity_window=100
-
-
-
-#. To use cinder or karbor client, we should provide Keystone authentication
-   variables::
+.. code-block:: console
 
     export OS_USERNAME=admin
     export OS_PASSWORD=123456
     export OS_TENANT_NAME=admin
     export OS_AUTH_URL=http://10.229.47.230/identity/
 
-#. List the provider::
+Provider
+--------
+
+List the provider
+
+.. code-block:: console
 
     karbor provider-list
     +--------------------------------------+-------------------+-------------------------------------------------------------------------------------+
@@ -49,7 +31,9 @@ This example will show protecting volume.
     | e4008868-be97-492c-be41-44e50ef2e16f | EISOO Provider    | This provider provides data protection for applications with EISOO AnyBackup        |
     +--------------------------------------+-------------------+-------------------------------------------------------------------------------------+
 
-#. Show the provider information::
+Show the provider information
+
+.. code-block:: console
 
     karbor provider-show cf56bd3e-97a7-4078-b6d5-f36246333fd9
     +----------------------+---------------------------------------------------------------------------------------------+
@@ -277,7 +261,12 @@ This example will show protecting volume.
     | name                 | OS Infra Provider                                                                           |
     +----------------------+---------------------------------------------------------------------------------------------+
 
-#. Use cinder client to create volumes::
+Protectables
+------------
+
+Use cinder client to create volumes
+
+.. code-block:: console
 
     cinder create 1 --name volume1
     cinder create 1 --name volume2
@@ -289,7 +278,9 @@ This example will show protecting volume.
     | 700495ee-38e6-41a0-963f-f3f9a24c0f75 | available | volume1 | 1    | lvmdriver-1 | false    |             |
     +--------------------------------------+-----------+---------+------+-------------+----------+-------------+
 
-#. List the protectable resources::
+List the protectable resources
+
+.. code-block:: console
 
     karbor protectable-list
     +-----------------------+
@@ -324,7 +315,11 @@ This example will show protecting volume.
     | type                | OS::Cinder::Volume                   |
     +---------------------+--------------------------------------+
 
-#. Create a protection plan with a provider and resources::
+Plans
+-----
+Create a protection plan with a provider and resources
+
+.. code-block:: console
 
     karbor plan-create 'OS volumes protection plan.' 'cf56bd3e-97a7-4078-b6d5-f36246333fd9' '12e2abc6-f20b-430d-9b36-1a6befd23b6c'='OS::Cinder::Volume'='volume2','700495ee-38e6-41a0-963f-f3f9a24c0f75'='OS::Cinder::Volume'='volume1'
     +-------------+----------------------------------------------------+
@@ -350,7 +345,11 @@ This example will show protecting volume.
     | status      | suspended                                          |
     +-------------+----------------------------------------------------+
 
-#. Execute a protect operation manually with a plan::
+Checkpoints
+-----------
+Execute a protect operation manually with a plan
+
+.. code-block:: console
 
     karbor checkpoint-create cf56bd3e-97a7-4078-b6d5-f36246333fd9 ef8b83f3-d0c4-48ec-8949-5c72bbf14103
     +-----------------+------------------------------------------------------+
@@ -428,7 +427,12 @@ This example will show protecting volume.
     | status          | available                                                 |
     +-----------------+-----------------------------------------------------------+
 
-#. Execute a restore operation manually with a checkpoint id::
+Restores
+--------
+
+Execute a restore operation manually with a checkpoint id
+
+.. code-block:: console
 
     karbor restore-create cf56bd3e-97a7-4078-b6d5-f36246333fd9 80f6154f-cc43-441f-8841-35ae23e17f4f
     +------------------+--------------------------------------+
@@ -468,7 +472,12 @@ This example will show protecting volume.
     | 700495ee-38e6-41a0-963f-f3f9a24c0f75 | available | volume1                                                                   | 1    | lvmdriver-1 | false    |             |
     +--------------------------------------+-----------+---------------------------------------------------------------------------+------+-------------+----------+-------------+
 
-#. Execute a delete operation manually with a checkpoint id::
+Checkpoint Delete
+-----------------
+
+Execute a delete operation manually with a checkpoint id
+
+.. code-block:: console
 
     cinder backup-list
     +--------------------------------------+--------------------------------------+-----------+------+------+--------------+---------------+
@@ -486,7 +495,12 @@ This example will show protecting volume.
     +----+-----------+--------+------+------+--------------+-----------+
     +----+-----------+--------+------+------+--------------+-----------+
 
-#. Execute a protect operation automatically with a scheduler::
+Scheduled Opeartions
+--------------------
+
+Execute a protect operation automatically with a scheduler
+
+.. code-block:: console
 
     karbor trigger-create 'My Trigger' 'time' "pattern"="BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=5;\nEND:VEVENT","format"="calendar"
     +------------+------------------------------------------------------------------------------+
