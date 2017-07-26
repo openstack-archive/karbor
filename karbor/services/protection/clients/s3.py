@@ -48,6 +48,6 @@ def create(context, conf, **kwargs):
     return botocore.session.get_session().create_client(
         's3',
         aws_access_key_id=client_config.s3_access_key,
-        aws_secret_access_key=client_config.s3_ecret_key,
+        aws_secret_access_key=client_config.s3_secret_key,
         endpoint_url=client_config.s3_endpoint
     )

@@ -33,7 +33,7 @@ class FakeS3Connection(object):
             'Keys': {}
         }
 
-    def list_objects(self, Bucket, Prefix, MaxKeys, Marker):
+    def list_objects(self, Bucket, Prefix, Marker):
         body = []
         prefix = '' if not Prefix else Prefix
         for obj in self.s3_dir[Bucket]['Keys'].keys():
@@ -41,7 +41,15 @@ class FakeS3Connection(object):
                 body.append({
                     'Key': obj
                 })
-        return {'Contents': body}
+        if len(body) == 0:
+            return {
+                'IsTruncated': False
+            }
+        else:
+            return {
+                'Contents': body,
+                'IsTruncated': False
+            }
 
     def put_object(self, Bucket, Key, Body, Metadata=None):
         if Bucket in self.s3_dir.keys():

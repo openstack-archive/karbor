@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging as log
 import math
 import time
 
@@ -33,6 +34,7 @@ swift_bank_plugin_opts = [
 ]
 
 LOG = logging.getLogger(__name__)
+log.getLogger('swiftclient').setLevel(log.WARNING)
 
 lease_opt = [cfg.IntOpt('lease_expire_window',
                         default=600,
@@ -148,8 +150,7 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
                 body = self._get_container(
                     container=self.bank_object_container,
                     prefix=prefix, end_marker=marker)
-                limit_objects = body[-limit:] if limit is not None else body
-                return [obj.get("name") for obj in limit_objects]
+                return [obj.get("name") for obj in body]
             else:
                 body = self._get_container(
                     container=self.bank_object_container,
@@ -237,13 +238,16 @@ class SwiftBankPlugin(BankPlugin, LeasePlugin):
 
     def _get_container(self, container, prefix=None, limit=None, marker=None,
                        end_marker=None):
+        full_listing = True if limit is None else False
         try:
             (_resp, body) = self.connection.get_container(
                 container=container,
                 prefix=prefix,
                 limit=limit,
                 marker=marker,
-                end_marker=end_marker)
+                end_marker=end_marker,
+                full_listing=full_listing
+            )
             return body
         except ClientException as err:
             raise SwiftConnectionFailed(reason=err)

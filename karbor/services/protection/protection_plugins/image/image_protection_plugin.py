@@ -130,6 +130,8 @@ class ProtectOperation(protection_plugin.Operation):
             data = image_response_data.read()
             if data != '':
                 bank_section.update_object("data_" + str(chunks_num), data)
+            else:
+                chunks_num -= 1
 
             # Save the chunks_num to metadata
             resource_definition = bank_section.get_object("metadata")
@@ -204,6 +206,8 @@ class RestoreOperation(protection_plugin.Operation):
             # check the chunks_num
             chunks_num = resource_definition.get("chunks_num", 0)
             if len(objects) != int(chunks_num):
+                LOG.debug('object num: {0}, chunk num: {1}'.
+                          format(len(objects), chunks_num))
                 raise exception.RestoreBackupFailed(
                     reason=" The chunks_num of restored image is invalid.",
                     resource_id=original_image_id,

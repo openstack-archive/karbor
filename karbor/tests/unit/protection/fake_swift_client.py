@@ -38,7 +38,8 @@ class FakeSwiftConnection(object):
         else:
             os.makedirs(container_dir)
 
-    def get_container(self, container, prefix, limit, marker, end_marker):
+    def get_container(self, container, prefix, limit, marker,
+                      end_marker, full_listing):
         container_dir = self.swiftdir + "/" + container
         body = []
         if prefix:
