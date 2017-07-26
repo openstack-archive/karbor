@@ -16,21 +16,18 @@ standard framework of APIs and services that allows vendors to provide plugins
 through a unified interface
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   install/index
-   configuration/index
 
 Using Karbor
 ============
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    readme
-   devstack-installation
    usage
-   contributing
-   releasenotes
+   install/index
+   configuration/index
 
 Available Plugins
 =================
@@ -41,19 +38,21 @@ Available Plugins
    protectable_plugins
    protection_plugins
 
-Karbor Code Reference
-=====================
+Contributor Docs
+================
+
+.. toctree::
+   :maxdepth: 2
+
+   contributor/index
+
+Release Notes
+=============
+
 .. toctree::
    :maxdepth: 1
 
-   devref/index
-
-Karbor Specs
-============
-.. toctree::
-   :maxdepth: 1
-
-   specs/index
+   releasenotes
 
 Indices and tables
 ==================

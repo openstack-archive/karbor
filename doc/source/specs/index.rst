@@ -1,5 +1,5 @@
-Karbor Specs
-============
+Specs
+=====
 
 This section contains detailed specification documents for
 different features inside Karbor.

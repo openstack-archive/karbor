@@ -1,8 +1,8 @@
 .. _configuring:
 
-=====================
-Configuration Options
-=====================
+===================
+Configuration Guide
+===================
 
 This section provides a list of all possible options for each configuration
 file.

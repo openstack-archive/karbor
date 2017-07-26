@@ -1,5 +1,5 @@
-Karobr Developer Reference
-==========================
+Developer Reference
+===================
 
 Code Reference
 --------------

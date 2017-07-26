@@ -1,6 +1,6 @@
-======================================
-Devstack Installation (for developers)
-======================================
+=====================
+Devstack Installation
+=====================
 
 This type of installation is for developers or testing, and not for production.
 
