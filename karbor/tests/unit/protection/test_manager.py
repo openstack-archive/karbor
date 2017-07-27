@@ -17,6 +17,7 @@ import oslo_messaging
 
 from karbor import exception
 from karbor.resource import Resource
+from karbor.services.protection.flows import utils
 from karbor.services.protection.flows import worker as flow_manager
 from karbor.services.protection import manager
 from karbor.services.protection import protectable_registry
@@ -120,8 +121,11 @@ class ProtectionServiceTest(base.TestCase):
                            'name': 'name654', 'extra_info': None}],
                          result)
 
+    @mock.patch.object(utils, 'update_operation_log')
+    @mock.patch.object(utils, 'create_operation_log')
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
-    def test_protect(self, mock_provider):
+    def test_protect(self, mock_provider, mock_operation_log_create,
+                     mock_operation_log_update):
         mock_provider.return_value = fakes.FakeProvider()
         self.pro_manager.protect(None, fakes.fake_protection_plan())
 

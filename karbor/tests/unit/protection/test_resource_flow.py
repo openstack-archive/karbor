@@ -67,7 +67,8 @@ class ResourceFlowTest(base.TestCase):
                                                  parameters)
 
         store = {
-            'checkpoint': checkpoint
+            'checkpoint': checkpoint,
+            'operation_log': None
         }
         store.update(kwargs)
 
@@ -144,9 +145,14 @@ class ResourceFlowTest(base.TestCase):
                 template = restore_heat.HeatTemplate()
                 args['kwargs'] = {
                     'heat_template': template,
-                    'restore': None
+                    'restore': None,
+                    'operation_log': None
                 }
-                kwargs.update(args['kwargs'])
+            else:
+                args['kwargs'] = {
+                    'operation_log': None
+                }
+            kwargs.update(args['kwargs'])
 
             self._walk_operation(mock_protection, operation,
                                  parameters=parameters, **kwargs)

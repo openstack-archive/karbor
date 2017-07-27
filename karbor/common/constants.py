@@ -14,15 +14,11 @@
 OPERATION_TYPES = (
     OPERATION_PROTECT,
     OPERATION_RESTORE,
-    OPERATION_DELETE,
-    OPERATION_START,
-    OPERATION_SUSPEND,
+    OPERATION_DELETE
 ) = (
     'protect',
     'restore',
-    'delete',
-    'start',
-    'suspend',
+    'delete'
 )
 
 
