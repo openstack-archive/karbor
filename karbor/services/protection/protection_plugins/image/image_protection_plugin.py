@@ -196,6 +196,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         glance_client = ClientFactory.create_client('glance', context)
         bank_section = checkpoint.get_resource_bank_section(original_image_id)
+        image = None
         try:
             resource_definition = bank_section.get_object('metadata')
             image_metadata = resource_definition['image_metadata']
@@ -249,6 +250,9 @@ class RestoreOperation(protection_plugin.Operation):
         except Exception as e:
             LOG.error("Restore image backup failed, image_id: %s.",
                       original_image_id)
+            if image is not None and hasattr(image, 'id'):
+                LOG.info("Delete the failed image, image_id: %s.", image.id)
+                glance_client.images.delete(image.id)
             raise exception.RestoreBackupFailed(
                 reason=e, resource_id=original_image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
