@@ -123,6 +123,7 @@ function configure_karbor_api {
         cp $KARBOR_DIR/etc/api-paste.ini $KARBOR_CONF_DIR
         cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR
         cp -R $KARBOR_DIR/etc/providers.d $KARBOR_CONF_DIR
+        cp $KARBOR_DIR/devstack/providers.d/* $KARBOR_CONF_DIR/providers.d
 
         iniset $KARBOR_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
         iniset $KARBOR_API_CONF DEFAULT use_syslog $SYSLOG
