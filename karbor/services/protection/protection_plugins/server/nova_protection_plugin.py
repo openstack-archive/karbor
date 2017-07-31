@@ -202,7 +202,7 @@ class RestoreOperation(protection_plugin.Operation):
                 parameters.get("restore_name", "karbor-restore-server"),
                 resource_definition)
 
-            update_method = partial(utils.udpate_resource_restore_result,
+            update_method = partial(utils.update_resource_restore_result,
                                     kwargs.get('restore'), resource.type,
                                     new_server_id)
             update_method(constants.RESOURCE_STATUS_RESTORING)
