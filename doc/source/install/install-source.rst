@@ -39,6 +39,16 @@ Create the log directory::
 
     mkdir /var/log/karbor
 
+.. note::
+
+    Karbor provides more preconfigured providers with different bank and
+    protection plugins (such as EISOO, S3, File system, Cinder snapshot
+    plugin, and more). If these were available for your environment, you
+    can consult these provider configuration files for reference, or use
+    them as-is, by copying the configuration files from 'devstack/providers.d'
+    to '/etc/karbor/providers.d'. By default, karbor use 'OS Infra Provider
+    with swift bank'.
+
 Install the client
 ------------------
 
