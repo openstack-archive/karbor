@@ -29,6 +29,7 @@ Approved Specs
     restore-resource-status
     s3-bank
     trove-database-backup-plugins
+    operation-log-api
 
 Spec Template
 -------------
