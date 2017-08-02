@@ -51,9 +51,17 @@ class ProtectOperation(base.Operation):
     def _run(self, operation_definition, param, log_ref):
         client = self._create_karbor_client(
             param.get("user_id"), param.get("project_id"))
+        provider_id = operation_definition.get("provider_id")
+        plan_id = operation_definition.get("plan_id")
+        trigger_id = param.get("trigger_id", None)
+        scheduled_operation_id = param.get("scheduled_operation_id", None)
+        extra_info = {
+            'created_by': constants.OPERATION_ENGINE,
+            'trigger_id': trigger_id,
+            'scheduled_operation_id': scheduled_operation_id
+        }
         try:
-            client.checkpoints.create(operation_definition.get("provider_id"),
-                                      operation_definition.get("plan_id"))
+            client.checkpoints.create(provider_id, plan_id, extra_info)
         except Exception:
             state = constants.OPERATION_EXE_STATE_FAILED
         else:

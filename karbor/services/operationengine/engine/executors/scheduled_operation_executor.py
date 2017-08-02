@@ -91,6 +91,8 @@ class ScheduledOperationExecutor(base.BaseExecutor):
             try:
                 param['user_id'] = operation.user_id
                 param['project_id'] = operation.project_id
+                param['trigger_id'] = operation.trigger_id
+                param['scheduled_operation_id'] = operation.id
 
                 self._operation_manager.run_operation(
                     operation.operation_type,

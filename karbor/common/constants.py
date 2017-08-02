@@ -67,6 +67,12 @@ CHECKPOINT_STATUS_DELETING = 'deleting'
 CHECKPOINT_STATUS_DELETED = 'deleted'
 CHECKPOINT_STATUS_ERROR_DELETING = 'error-deleting'
 
+CHECKPOINT_CREATED_BY = (OPERATION_ENGINE,
+                         MANUAL,
+                         ) = ('operation-engine',
+                              'manual',
+                              )
+
 # resource status
 RESOURCE_STATUS_ERROR = 'error'
 RESOURCE_STATUS_PROTECTING = 'protecting'
