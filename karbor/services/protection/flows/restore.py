@@ -203,5 +203,8 @@ def get_flow(context, workflow_engine, checkpoint, provider, restore,
             'context': context,
             'checkpoint': checkpoint,
             'restore': restore,
-            'operation_log': operation_log})
+            'new_resources': {},
+            'operation_log': operation_log
+        }
+    )
     return flow_engine

@@ -22,7 +22,6 @@ from karbor.services.protection.protection_plugins.volume. \
     cinder_protection_plugin import CinderBackupProtectionPlugin
 from karbor.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
-from karbor.services.protection.restore_heat import HeatTemplate
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
 import mock
@@ -364,7 +363,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volumes'].get.return_value.status = 'available'
             mocks['restores'].restore = RestoreResponse(volume_id)
             call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
-                       **{'restore':  None, 'heat_template': HeatTemplate()})
+                       **{'restore':  None, 'new_resources': {}})
             mocks['volumes'].update.assert_called_with(
                 volume_id,
                 **{'name': parameters['restore_name'],

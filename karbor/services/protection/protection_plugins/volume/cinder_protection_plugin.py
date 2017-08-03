@@ -286,7 +286,7 @@ class RestoreOperation(protection_plugin.Operation):
         is_success = self._check_create_complete(cinder_client, volume_id)
         if is_success:
             update_method(constants.RESOURCE_STATUS_AVAILABLE)
-            kwargs.get("heat_template").put_parameter(resource_id, volume_id)
+            kwargs.get("new_resources")[resource_id] = volume_id
         else:
             reason = 'Error creating volume'
             update_method(constants.RESOURCE_STATUS_ERROR, reason)
