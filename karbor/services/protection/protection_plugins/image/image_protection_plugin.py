@@ -78,7 +78,8 @@ class ProtectOperation(protection_plugin.Operation):
                 if is_success is not True:
                     LOG.error("The status of image (id: %s) is invalid.",
                               image_id)
-                    raise exception.CreateBackupFailed(
+                    raise exception.CreateResourceFailed(
+                        name="Image Backup",
                         reason="The status of image is invalid.",
                         resource_id=image_id,
                         resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -95,7 +96,8 @@ class ProtectOperation(protection_plugin.Operation):
             LOG.error("Create image backup failed, image_id: %s.", image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Image Backup",
                 reason=err,
                 resource_id=image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -150,7 +152,8 @@ class ProtectOperation(protection_plugin.Operation):
                           image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Image Backup",
                 reason=err,
                 resource_id=image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -176,7 +179,8 @@ class DeleteOperation(protection_plugin.Operation):
             LOG.error("delete image backup failed, image_id: %s.", image_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.DeleteBackupFailed(
+            raise exception.DeleteResourceFailed(
+                name="Image Backup",
                 reason=err,
                 resource_id=image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -207,7 +211,8 @@ class RestoreOperation(protection_plugin.Operation):
             if len(objects) != int(chunks_num):
                 LOG.debug('object num: {0}, chunk num: {1}'.
                           format(len(objects), chunks_num))
-                raise exception.RestoreBackupFailed(
+                raise exception.RestoreResourceFailed(
+                    name="Image Backup",
                     reason=" The chunks_num of restored image is invalid.",
                     resource_id=original_image_id,
                     resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -234,13 +239,15 @@ class RestoreOperation(protection_plugin.Operation):
                 if is_success is not True:
                     LOG.error('The status of image is invalid. status:%s',
                               image_info.status)
-                    raise exception.RestoreBackupFailed(
+                    raise exception.RestoreResourceFailed(
+                        name="Image Backup",
                         resource_id=image_info.id,
                         resource_type=constants.IMAGE_RESOURCE_TYPE)
 
             # check the checksum
             if image_info.checksum != image_metadata["checksum"]:
-                raise exception.RestoreBackupFailed(
+                raise exception.RestoreResourceFailed(
+                    name="Image Backup",
                     reason=" The checksum of restored image is invalid.",
                     resource_id=original_image_id,
                     resource_type=constants.IMAGE_RESOURCE_TYPE)
@@ -251,7 +258,8 @@ class RestoreOperation(protection_plugin.Operation):
             if image is not None and hasattr(image, 'id'):
                 LOG.info("Delete the failed image, image_id: %s.", image.id)
                 glance_client.images.delete(image.id)
-            raise exception.RestoreBackupFailed(
+            raise exception.RestoreResourceFailed(
+                name="Image Backup",
                 reason=e, resource_id=original_image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
         LOG.info("Finish restoring image backup, image_id: %s.",
