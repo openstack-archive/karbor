@@ -1,0 +1,48 @@
+{
+    "operation_logs": [{
+        "status": "deleted",
+        "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+        "restore_id": null,
+        "checkpoint_id": "dbc459ff-2ac6-44fa-ba15-89350d7ebd43",
+        "error_info": null,
+        "ended_at": "2017-07-28T09:02:57.000000",
+        "started_at": "2017-07-28T09:02:41.000000",
+        "id": "f0aa664b-f385-4618-bc27-9e0116cceea7",
+        "extra_info": null,
+        "plan_id": "d58ffd3e-f64e-4b67-9bb0-b86d3483e7d0",
+        "scheduled_operation_id": null,
+        "operation_type": "protect"
+    },
+    {
+        "status": "success",
+        "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+        "restore_id": "7c0d396a-981b-4953-95f5-30382ddaa8bf",
+        "checkpoint_id": "dbc459ff-2ac6-44fa-ba15-89350d7ebd43",
+        "error_info": null,
+        "ended_at": "2017-07-28T08:58:08.000000",
+        "started_at": "2017-07-28T08:57:36.000000",
+        "id": "8736649d-857e-4637-923c-3bdb35edd74e",
+        "extra_info": null,
+        "plan_id": null,
+        "scheduled_operation_id": null,
+        "operation_type": "restore"
+    },
+    {
+        "status": "available",
+        "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",
+        "restore_id": null,
+        "checkpoint_id": "dbc459ff-2ac6-44fa-ba15-89350d7ebd43",
+        "error_info": null,
+        "ended_at": "2017-07-28T08:43:22.000000",
+        "started_at": "2017-07-28T08:42:02.000000",
+        "id": "7a16c731-0658-47dd-aa3b-98ee21830e23",
+        "extra_info": null,
+        "plan_id": "d58ffd3e-f64e-4b67-9bb0-b86d3483e7d0",
+        "scheduled_operation_id": null,
+        "operation_type": "protect"
+    }],
+    "operation_logs_links": [{
+        "href": "/v1/{project_id}/operation_logs?limit={limit_num}&marker=7a16c731-0658-47dd-aa3b-98ee21830e23",
+        "rel": "next"
+    }]
+}

@@ -20,6 +20,12 @@ operation_id_1:
   in: path
   required: true
   type: UUID
+operation_log_id_1:
+  description: |
+    The UUID of the operation log.
+  in: path
+  required: true
+  type: UUID
 protectable_type_1:
   description: |
     The name of a specified protectable type.
@@ -101,6 +107,12 @@ checkpoint_id:
   in: body
   required: true
   type: UUID
+checkpoint_id_2:
+  description: |
+    The UUID of the checkpoint.
+  in: body
+  required: false
+  type: UUID
 checkpoint_list:
   description: |
     The list of ``checkpoint`` objects.
@@ -140,9 +152,27 @@ enabled:
   in: body
   required: true
   type: int
+ended_at:
+  description: |
+    The ended time of the operation.
+  in: body
+  required: false
+  type: string
+error_info:
+  description: |
+    The error info of of the operation.
+  in: body
+  required: false
+  type: dict
 extra_info:
   description: |
     The extra information for checkpoint.
+  in: body
+  required: false
+  type: dict
+extra_info_1:
+  description: |
+    The extra info of of the operation.
   in: body
   required: false
   type: dict
@@ -171,12 +201,42 @@ operation_id:
   in: body
   required: true
   type: UUID
+operation_id_2:
+  description: |
+    The UUID of the scheduled operation.
+  in: body
+  required: false
+  type: UUID
 operation_list:
   description: |
     The list of ``scheduled operation`` objects.
   in: body
   required: true
   type: array
+operation_log:
+  description: |
+    A ``operation_log`` object.
+  in: body
+  required: true
+  type: object
+operation_log_id:
+  description: |
+    The UUID of the operation_log.
+  in: body
+  required: true
+  type: UUID
+operation_log_list:
+  description: |
+    The list of ``operation_log`` objects.
+  in: body
+  required: true
+  type: array
+operation_log_status:
+  description: |
+    The status of operation logs.
+  in: body
+  required: false
+  type: string
 operation_name:
   description: |
     The name of the scheduled operation.
@@ -189,6 +249,12 @@ operation_type:
   in: body
   required: true
   type: string
+operation_type_1:
+  description: |
+    The type of the operation acitons.
+  in: body
+  required: true
+  type: UUID
 plan:
   description: |
     A ``plan`` object.
@@ -200,6 +266,12 @@ plan_id:
     The UUID of the plan.
   in: body
   required: true
+  type: UUID
+plan_id_1:
+  description: |
+    The UUID of the plan.
+  in: body
+  required: false
   type: UUID
 plan_list:
   description: |
@@ -297,6 +369,12 @@ provider_id:
   in: body
   required: true
   type: UUID
+provider_id_2:
+  description: |
+    The UUID of the provider.
+  in: body
+  required: false
+  type: UUID
 provider_list:
   description: |
     The list of ``provider`` objects.
@@ -345,6 +423,12 @@ restore_id:
     The UUID of the restore.
   in: body
   required: true
+  type: UUID
+restore_id_2:
+  description: |
+    The UUID of the restore.
+  in: body
+  required: false
   type: UUID
 restore_list:
   description: |
@@ -402,6 +486,12 @@ schema_saved_info:
   in: body
   required: true
   type: dict
+started_at:
+  description: |
+    The started time of the operation.
+  in: body
+  required: false
+  type: string
 tenant_id_1:
   description: |
     The UUID of the tenant in a multi-tenancy cloud.

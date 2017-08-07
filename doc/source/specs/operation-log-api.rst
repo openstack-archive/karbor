@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-============================================
-Refactor the clients used in protect service
-============================================
+================================================
+Add operation log API about protection to Karbor
+================================================
 
 https://blueprints.launchpad.net/karbor/+spec/operation-log-api
 
