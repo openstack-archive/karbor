@@ -8,7 +8,6 @@ ADMIN_PASSWORD=password
 
 enable_plugin karbor https://git.openstack.org/openstack/karbor master
 enable_plugin karbor-dashboard https://git.openstack.org/openstack/karbor-dashboard master
-enable_plugin heat https://git.openstack.org/openstack/heat master
 
 #run the services you want to use
 ENABLED_SERVICES=rabbit,mysql,key
@@ -17,7 +16,6 @@ ENABLED_SERVICES+=,placement-api
 ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 ENABLED_SERVICES+=,cinder,g-api,g-reg
 ENABLED_SERVICES+=,c-api,c-vol,c-sch,c-bak,horizon
-ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
 ENABLED_SERVICES+=,manila,m-api,m-sch,m-shr,m-dat
 
 #Add the karbor services
@@ -44,4 +42,3 @@ MANILA_OPTGROUP_generic1_driver_handles_share_servers=False
 MANILA_USE_SERVICE_INSTANCE_PASSWORD=True
 MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS="snapshot_support=True create_share_from_snapshot_support=True mount_snapshot_support=True driver_handles_share_servers=False"
 SHARE_DRIVER=manila.share.drivers.lvm.LVMShareDriver
-
