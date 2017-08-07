@@ -34,10 +34,6 @@ import karbor.services.protection.clients.nova
 import karbor.services.protection.flows.restore
 import karbor.services.protection.flows.worker
 import karbor.services.protection.manager
-import karbor.services.protection.protection_plugins.image.image_protection_plugin as image_protection_plugin  # noqa
-import karbor.services.protection.protection_plugins.share.share_snapshot_plugin as share_snapshot_plugin  # noqa
-import karbor.services.protection.protection_plugins.volume.cinder_protection_plugin as cinder_protection_plugin  # noqa
-import karbor.services.protection.protection_plugins.volume.volume_snapshot_plugin as volume_snapshot_plugin  # noqa
 import karbor.wsgi.eventlet_server
 
 __all__ = ['list_opts']
@@ -65,14 +61,6 @@ _opts = [
     ('nova_client', list(itertools.chain(
         karbor.common.config.service_client_opts,
         karbor.services.protection.clients.nova.nova_client_opts))),
-    ('image_backup_plugin', list(itertools.chain(
-        image_protection_plugin.image_backup_opts))),
-    ('cinder_backup_protection_plugin', list(itertools.chain(
-        cinder_protection_plugin.cinder_backup_opts))),
-    ('volume_snapshot_plugin', list(itertools.chain(
-        volume_snapshot_plugin.volume_snapshot_opts))),
-    ('manila_snapshot_plugin', list(itertools.chain(
-        share_snapshot_plugin.manila_snapshot_opts))),
     ('DEFAULT', list(itertools.chain(
         karbor.common.config.core_opts,
         karbor.common.config.debug_opts,
