@@ -1,0 +1,54 @@
+# SEOKJAE BARK <sj.bark@samsung.com>, 2017. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: karbor 0.4.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-09 02:24+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2017-08-09 01:00+0000\n"
+"Last-Translator: SEOKJAE BARK <sj.bark@samsung.com>\n"
+"Language-Team: Korean (South Korea)\n"
+"Language: ko-KR\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+msgid "0.1.0"
+msgstr "0.1.0"
+
+msgid "0.4.0"
+msgstr "0.4.0"
+
+msgid ":ref:`genindex`"
+msgstr ":ref:`genindex`"
+
+msgid ":ref:`search`"
+msgstr ":ref:`search`"
+
+msgid "Contents"
+msgstr "내용"
+
+msgid "Current Series Release Notes"
+msgstr "최신 시리즈에 대한 릴리즈 노트"
+
+msgid "Indices and tables"
+msgstr "인덱스 및 테이블"
+
+msgid "New Features"
+msgstr "새로운 기능"
+
+msgid "Newton Series Release Notes"
+msgstr "Newton 시리즈에 대한 릴리즈 노트"
+
+msgid "Other Notes"
+msgstr "기타 노트"
+
+msgid "Started using Reno for release notes"
+msgstr "릴리즈 노트 관리를 위한 Reno사용을 시작합니다"
+
+msgid "Welcome to Karbor Release Notes documentation!"
+msgstr "Karbor릴리즈 노트 문서에 오신 것을 환영합니다!"
+
+msgid "oslo-config-generator is now used to generate a karbor.conf.sample file"
+msgstr "oslo-config-generator는 karbor conf sample file을 만드는데 사용됩니다"
