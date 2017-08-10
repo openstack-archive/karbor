@@ -164,7 +164,7 @@ class DeleteOperation(protection_plugin.Operation):
         image_id = resource.id
         bank_section = checkpoint.get_resource_bank_section(image_id)
 
-        LOG.info("Deleting image backup failed, image_id: %s.", image_id)
+        LOG.info("Deleting image backup, image_id: %s.", image_id)
         try:
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_DELETING)
