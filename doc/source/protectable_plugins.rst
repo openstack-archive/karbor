@@ -33,4 +33,26 @@ Image
   :members:
   :show-inheritance:
 
+Share
+^^^^^
 
+.. autoclass:: karbor.services.protection.protectable_plugins.share.ShareProtectablePlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
+
+Network
+^^^^^^^
+
+.. autoclass:: karbor.services.protection.protectable_plugins.network.NetworkProtectablePlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
+
+Database
+^^^^^^^^
+
+.. autoclass:: karbor.services.protection.protectable_plugins.database.DatabaseInstanceProtectablePlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
