@@ -31,7 +31,15 @@ swift_client_opts = [
                help='The URL of the Keystone endpoint'),
     cfg.StrOpt('swift_tenant_name',
                help='Swift tenant/account name. '
-                    'Required when connecting to an auth 2.0 system'),
+                    'Required when connecting to an auth system'),
+    cfg.StrOpt('swift_project_domain_name',
+               default='default',
+               help='Swift project domain name.'
+                    'Required when connecting to an auth system'),
+    cfg.StrOpt('swift_user_domain_name',
+               default='default',
+               help='Swift user domain name.'
+                    'Required when connecting to an auth system'),
     cfg.StrOpt('swift_user',
                help='Swift user name, if swift_auth_url is set.'),
     cfg.StrOpt('swift_key',
@@ -72,6 +80,8 @@ def create(context, conf, **kwargs):
             username=client_config.swift_user,
             password=client_config.swift_key,
             project_name=client_config.swift_tenant_name,
+            project_domain_name=client_config.swift_project_domain_name,
+            user_domain_name=client_config.swift_user_domain_name,
         )
         session = keystone_session.Session(auth=auth)
 
