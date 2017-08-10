@@ -193,17 +193,15 @@ class RestoresTest(karbor_base.KarborBaseTest):
         volume = self.store(objects.Volume())
         volume.create(1)
         plan = self.store(objects.Plan())
-        plan.create(self.provider_id_fs_bank, [volume, ])
+        plan.create(self.provider_id_noop, [volume, ])
         checkpoint = self.store(objects.Checkpoint())
-        checkpoint.create(self.provider_id_fs_bank, plan.id)
+        checkpoint.create(self.provider_id_noop, plan.id)
 
         restore_target = self.get_restore_target(self.keystone_endpoint)
         restore = self.store(objects.Restore())
-        restore.create(self.provider_id_fs_bank, checkpoint.id,
+        restore.create(self.provider_id_noop, checkpoint.id,
                        restore_target, self.parameters, self.restore_auth)
 
         item = self.karbor_client.restores.get(restore.id)
         self.assertEqual(constants.RESTORE_STATUS_SUCCESS,
                          item.status)
-        self.assertEqual(1, len(item.resources_status))
-        self._store(item.resources_status)

@@ -11,6 +11,8 @@
 # under the License.
 from functools import partial
 
+from oslo_utils import uuidutils
+
 from karbor.common import constants
 from karbor.tests.fullstack import karbor_base as base
 from karbor.tests.fullstack import utils
@@ -423,7 +425,7 @@ class Network(object):
         super(Network, self).__init__()
         self.id = None
         self.project_id = None
-        self._name = "private-net"
+        self._name = "private-net-%s" % uuidutils.generate_uuid()
         self.neutron_client = base._get_neutron_client()
 
     def _network_status(self, status=None):
