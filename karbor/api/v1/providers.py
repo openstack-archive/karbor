@@ -394,6 +394,10 @@ class ProvidersController(wsgi.Controller):
                 msg = _("Key of extra_info in checkpoint must be string when"
                         "creating a checkpoint.")
                 raise exception.InvalidInput(reason=msg)
+        else:
+            extra_info = {
+                'created_by': constants.MANUAL
+            }
 
         checkpoint_extra_info = None
         if extra_info is not None:
