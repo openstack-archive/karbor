@@ -31,6 +31,7 @@ Plugins Development Guide
    :maxdepth: 1
 
    bank_plugins_guide
+   protectable_plugins_guide
 
 Additional References
 =====================
