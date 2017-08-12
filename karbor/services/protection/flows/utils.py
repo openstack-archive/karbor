@@ -16,6 +16,7 @@ from karbor.i18n import _
 from karbor import objects
 from karbor.objects import base as objects_base
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
@@ -24,12 +25,13 @@ LOG = logging.getLogger(__name__)
 def create_operation_log(context, checkpoint):
     checkpoint_dict = checkpoint.to_dict()
     extra_info = checkpoint_dict.get('extra_info', None)
-    create_by = (extra_info.get('create_by', None)
-                 if extra_info else None)
     scheduled_operation_id = None
-    if create_by:
-        scheduled_operation_id = create_by.get(
-            'scheduled_operation_id', None)
+    if extra_info:
+        extra_info_dict = jsonutils.loads(extra_info)
+        created_by = extra_info_dict.get('created_by', None)
+        if created_by == constants.OPERATION_ENGINE:
+            scheduled_operation_id = extra_info_dict.get(
+                'scheduled_operation_id', None)
 
     protection_plan = checkpoint_dict['protection_plan']
     plan_id = None
