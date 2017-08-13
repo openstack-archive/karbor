@@ -22,7 +22,6 @@ class Operation(object):
         :param context: current operation context (viable for clients)
         :param parameters: dictionary representing operation parameters
         :param restore: Restore object for restore operation only
-        :param heat_template: HeatTemplate for restore operation only
         """
         pass
 
@@ -36,7 +35,6 @@ class Operation(object):
         :param context: current operation context (viable for clients)
         :param parameters: dictionary representing operation parameters
         :param restore: Restore object for restore operation only
-        :param heat_template: HeatTemplate for restore operation only
         """
         pass
 
@@ -50,7 +48,6 @@ class Operation(object):
         :param context: current operation context (viable for clients)
         :param parameters: dictionary representing operation parameters
         :param restore: Restore object for restore operation only
-        :param heat_template: HeatTemplate for restore operation only
         """
         pass
 
@@ -63,7 +60,6 @@ class Operation(object):
         :param context: current operation context (viable for clients)
         :param parameters: dictionary representing operation parameters
         :param restore: Restore object for restore operation only
-        :param heat_template: HeatTemplate for restore operation only
         """
         pass
 
