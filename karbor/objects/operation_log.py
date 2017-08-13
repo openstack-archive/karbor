@@ -29,7 +29,7 @@ class OperationLog(base.KarborPersistentObject, base.KarborObject,
     fields = {
         'id': fields.UUIDField(),
         'project_id': fields.UUIDField(),
-        'operation_type': fields.UUIDField(),
+        'operation_type': fields.StringField(),
         'checkpoint_id': fields.UUIDField(nullable=True),
         'plan_id': fields.UUIDField(nullable=True),
         'provider_id': fields.UUIDField(nullable=True),
