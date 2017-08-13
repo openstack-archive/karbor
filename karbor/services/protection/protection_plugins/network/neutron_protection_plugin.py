@@ -385,8 +385,9 @@ class RestoreOperation(protection_plugin.Operation):
             security_groups = port_data["security_groups"]
             if security_groups:
                 props['security_groups'] = [
-                    new_resources.get(sg)
-                    for sg in security_groups if sg != 'default'
+                    sg
+                    for sg in security_groups
+                    if new_resources.get(sg) != 'default'
                 ]
 
             port_id = neutron_client.create_port({'port': props})['port']['id']
