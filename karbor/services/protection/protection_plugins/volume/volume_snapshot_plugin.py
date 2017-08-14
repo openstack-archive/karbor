@@ -193,6 +193,7 @@ class RestoreOperation(protection_plugin.Operation):
                 failure_statuses=VOLUME_FAILURE_STATUSES,
                 ignore_statuses=VOLUME_IGNORE_STATUSES,
             )
+            volume = cinder_client.volumes.get(volume.id)
             if is_success is not True:
                 LOG.error('The status of volume is invalid. status:%s',
                           volume.status)
