@@ -31,7 +31,7 @@ neutron_backup_opts = [
     cfg.IntOpt(
         'poll_interval', default=15,
         help='Poll interval for Neutron backup status'
-        ),
+    ),
 ]
 
 
@@ -243,7 +243,8 @@ class ProtectOperation(protection_plugin.Operation):
             LOG.error("create backup failed, network_id: %s.", network_id)
             bank_section.update_object("status",
                                        constants.CHECKPOINT_STATUS_ERROR)
-            raise exception.CreateBackupFailed(
+            raise exception.CreateResourceFailed(
+                name="Network Backup",
                 reason=err,
                 resource_id=network_id,
                 resource_type=self._SUPPORT_RESOURCE_TYPES)
@@ -308,7 +309,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         is_success = self._check_complete(neutron_client, net_ids, 'network')
         if not is_success:
-            raise Exception("Crate networks failed")
+            raise Exception("Create networks failed")
 
     def _restore_subnets(self, neutron_client, new_resources,
                          nets_meta, subs_meta):
@@ -395,7 +396,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         is_success = self._check_complete(neutron_client, port_ids, 'port')
         if not is_success:
-            raise Exception("Crate port failed")
+            raise Exception("Create port failed")
 
     def _get_new_external_gateway(self, public_network_id, gateway_info,
                                   neutron_client):
@@ -435,7 +436,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         is_success = self._check_complete(neutron_client, router_ids, 'router')
         if not is_success:
-            raise Exception("Crate router failed")
+            raise Exception("Create router failed")
 
     def _restore_routerinterfaces(self, neutron_client, new_resources,
                                   subs_meta, routers_meta, ports_meta):
@@ -626,7 +627,8 @@ class RestoreOperation(protection_plugin.Operation):
         except Exception as e:
             LOG.error("restore network backup failed, network_id: %s.",
                       network_id)
-            raise exception.RestoreBackupFailed(
+            raise exception.RestoreResourceFailed(
+                name="Network Backup",
                 reason=six.text_type(e),
                 resource_id=network_id,
                 resource_type=constants.NETWORK_RESOURCE_TYPE
@@ -655,7 +657,8 @@ class DeleteOperation(protection_plugin.Operation):
             LOG.error("Delete backup failed, network_id: %s.", network_id)
             bank_section.update_object("status",
                                        constants.RESOURCE_STATUS_ERROR)
-            raise exception.DeleteBackupFailed(
+            raise exception.DeleteResourceFailed(
+                name="Network Backup",
                 reason=err,
                 resource_id=network_id,
                 resource_type=self._SUPPORT_RESOURCE_TYPES)

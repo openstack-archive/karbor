@@ -308,11 +308,6 @@ class RestoreResourceFailed(KarborException):
                 " type=%(resource_type)s")
 
 
-class GetBackupFailed(KarborException):
-    message = _("Get Backup failed: %(reason)s, id=%(resource_id)s,"
-                " type=%(resource_type)s")
-
-
 class FlowError(KarborException):
     message = _("Flow: %(flow)s, Error: %(error)s")
 
