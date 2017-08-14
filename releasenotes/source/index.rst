@@ -8,6 +8,7 @@ Contents
    :maxdepth: 1
 
    unreleased
+   pike
    newton
 
 Indices and tables
