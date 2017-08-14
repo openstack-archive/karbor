@@ -78,7 +78,7 @@ def define_tables(meta):
         Column('provider_id', String(length=36)),
         Column('checkpoint_id', String(length=36)),
         Column('restore_target', String(length=255)),
-        Column('parameters', String(length=255)),
+        Column('parameters', Text),
         Column('status', String(length=64)),
         Column('resources_status', Text),
         Column('resources_reason', Text),
