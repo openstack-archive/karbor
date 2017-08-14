@@ -32,6 +32,7 @@ Plugins Development Guide
 
    bank_plugins_guide
    protectable_plugins_guide
+   protection_plugins_guide
 
 Additional References
 =====================
