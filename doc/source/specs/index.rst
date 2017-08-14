@@ -31,6 +31,7 @@ Approved Specs
     trove-database-backup-plugins
     operation-log-api
     policy-in-code
+    freezer-protection-plugin
 
 Spec Template
 -------------
