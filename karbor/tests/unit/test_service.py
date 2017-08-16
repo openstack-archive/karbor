@@ -34,9 +34,9 @@ test_service_opts = [
                help="Manager for testing"),
     cfg.StrOpt("test_service_listen",
                help="Host to bind test service to"),
-    cfg.IntOpt("test_service_listen_port",
-               default=0,
-               help="Port number to bind test service to"), ]
+    cfg.PortOpt("test_service_listen_port",
+                default=8799,
+                help="Port number to bind test service to"), ]
 
 CONF = cfg.CONF
 CONF.register_opts(test_service_opts)
@@ -241,7 +241,7 @@ class TestWSGIService(base.TestCase):
     @mock.patch('oslo_service.wsgi.Loader')
     def test_service_random_port(self, mock_loader):
         test_service = service.WSGIService("test_service")
-        self.assertEqual(0, test_service.port)
+        self.assertEqual(8799, test_service.port)
         test_service.start()
         self.assertNotEqual(0, test_service.port)
         test_service.stop()
