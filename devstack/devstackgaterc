@@ -18,7 +18,7 @@
 #
 
 s=rabbit,mysql,key
-s+=,n-cpu,n-api,n-cond,n-sch,n-cauth,placement-api
+s+=,n-cpu,n-api,n-cond,n-sch,n-cauth,placement-api,n-api-meta
 # n-obj has been removed from mitaka
 if [[ "stable/kilo stable/liberty" =~ $ZUUL_BRANCH ]]; then
     s+=,n-obj

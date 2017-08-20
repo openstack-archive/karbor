@@ -11,7 +11,7 @@ enable_plugin karbor-dashboard https://git.openstack.org/openstack/karbor-dashbo
 
 #run the services you want to use
 ENABLED_SERVICES=rabbit,mysql,key
-ENABLED_SERVICES+=,n-cpu,n-api,n-obj,n-cond,n-sch,n-novnc,n-cauth
+ENABLED_SERVICES+=,n-cpu,n-api,n-obj,n-cond,n-sch,n-novnc,n-cauth,n-api-meta
 ENABLED_SERVICES+=,placement-api
 ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-meta
 ENABLED_SERVICES+=,cinder,g-api,g-reg
