@@ -33,6 +33,7 @@ Approved Specs
     policy-in-code
     freezer-protection-plugin
     kubernetes-pods-protection-plugin
+    checkpoint-verify-api
 
 Spec Template
 -------------
