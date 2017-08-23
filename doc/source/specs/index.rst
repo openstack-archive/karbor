@@ -30,6 +30,7 @@ Approved Specs
     s3-bank
     trove-database-backup-plugins
     operation-log-api
+    policy-in-code
 
 Spec Template
 -------------
