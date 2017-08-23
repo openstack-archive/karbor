@@ -40,6 +40,7 @@ Approved Specs
     adding-more-protection-parameters-retention-period
     checkpoint-copy-api
     api-json-schema-validation
+    quotas
 
 Spec Template
 -------------
