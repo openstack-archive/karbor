@@ -111,8 +111,7 @@ class NetworkProtectablePluginTest(base.TestCase):
     def test_get_parent_resource_type(self):
         plugin = NetworkProtectablePlugin(self._context)
         self.assertItemsEqual(plugin.get_parent_resource_types(),
-                              (constants.SERVER_RESOURCE_TYPE,
-                               constants.PROJECT_RESOURCE_TYPE))
+                              (constants.PROJECT_RESOURCE_TYPE))
 
     @mock.patch.object(client.Client, 'list_networks')
     def test_list_resources(self, mock_client_list_networks):
