@@ -37,6 +37,7 @@ Approved Specs
     volume-glance-protection-plugin
     checkpoint-tenant-isolation
     service-management-api
+    adding-more-protection-parameters-retention-period
 
 Spec Template
 -------------
