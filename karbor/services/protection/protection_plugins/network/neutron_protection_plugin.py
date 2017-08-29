@@ -45,7 +45,8 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _get_resources_by_network(self, cntxt, neutron_client):
         try:
-            networks = neutron_client.list_networks().get('networks')
+            networks = neutron_client.list_networks(
+                project_id=cntxt.project_id).get('networks')
             networks_metadata = {}
 
             allowed_keys = [
@@ -81,7 +82,8 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _get_resources_by_subnet(self, cntxt, neutron_client):
         try:
-            subnets = neutron_client.list_subnets().get('subnets')
+            subnets = neutron_client.list_subnets(
+                project_id=cntxt.project_id).get('subnets')
             subnets_metadata = {}
 
             allowed_keys = [
@@ -118,7 +120,8 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _get_resources_by_port(self, cntxt, neutron_client):
         try:
-            ports = neutron_client.list_ports().get('ports')
+            ports = neutron_client.list_ports(
+                project_id=cntxt.project_id).get('ports')
             ports_metadata = {}
 
             allowed_keys = [
@@ -154,7 +157,8 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _get_resources_by_router(self, cntxt, neutron_client):
         try:
-            routers = neutron_client.list_routers().get('routers')
+            routers = neutron_client.list_routers(
+                project_id=cntxt.project_id).get('routers')
             routers_metadata = {}
 
             allowed_keys = [
@@ -184,7 +188,8 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _get_resources_by_security_group(self, cntxt, neutron_client):
         try:
-            sgs = neutron_client.list_security_groups().get('security_groups')
+            sgs = neutron_client.list_security_groups(
+                project_id=cntxt.project_id).get('security_groups')
             sgs_metadata = {}
 
             allowed_keys = [
