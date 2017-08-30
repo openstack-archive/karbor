@@ -20,12 +20,13 @@ class ProtectablePlugin(object):
 
     """
 
-    def __init__(self, context=None):
+    def __init__(self, context=None, conf=None):
         super(ProtectablePlugin, self).__init__()
         self._context = context
+        self._conf = conf
 
-    def instance(self, context):
-        return self.__class__(context)
+    def instance(self, context=None, conf=None):
+        return self.__class__(context, conf)
 
     @abc.abstractmethod
     def get_resource_type(self):

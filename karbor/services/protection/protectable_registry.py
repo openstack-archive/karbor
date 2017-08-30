@@ -16,6 +16,7 @@ from karbor.i18n import _
 from karbor.services.protection.graph import build_graph
 import six
 
+from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import extension
 
@@ -53,11 +54,12 @@ class ProtectableRegistry(object):
     def register_plugin(self, plugin):
         self._plugin_map[plugin.get_resource_type()] = plugin
 
-    def _get_protectable(self, context, resource_type):
+    def _get_protectable(self, context, resource_type, conf=cfg.CONF):
         if resource_type in self._protectable_map:
             return self._protectable_map[resource_type]
 
-        protectable = self._plugin_map[resource_type].instance(context)
+        protectable = self._plugin_map[resource_type].instance(
+            context, conf)
         self._protectable_map[resource_type] = protectable
         return protectable
 
