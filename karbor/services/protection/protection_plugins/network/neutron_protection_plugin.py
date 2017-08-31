@@ -486,7 +486,7 @@ class RestoreOperation(protection_plugin.Operation):
 
         return new_security_group_rules
 
-    def _create_security_group_rules(neutron_client, rules, sg_id):
+    def _create_security_group_rules(self, neutron_client, rules, sg_id):
 
         @excutils.exception_filter
         def _ignore_not_found(ex):
