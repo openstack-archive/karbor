@@ -183,7 +183,7 @@ For *each* operation the plugin can implement each of the hooks:
 
 #. **Preparation hooks**: as noted, preparation is for running tasks in
    relation to other resources in the graph. This is why two hooks exist, one
-   for running before dependent resources' preperation and one for after.
+   for running before dependent resources' preparation and one for after.
 
    #. **Prepare begin hook**: invoked before any hook of this resource and
       dependent resources has begun.
