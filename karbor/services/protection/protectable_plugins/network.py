@@ -39,8 +39,7 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
         return self._SUPPORT_RESOURCE_TYPE
 
     def get_parent_resource_types(self):
-        return (constants.SERVER_RESOURCE_TYPE,
-                constants.PROJECT_RESOURCE_TYPE)
+        return (constants.PROJECT_RESOURCE_TYPE)
 
     def _get_network_id(self):
         """Set network_id as project_id
@@ -91,40 +90,6 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                          name="Network Topology")
             return None
 
-    def _get_dependent_resources_by_server(self,
-                                           context,
-                                           parent_resource):
-        try:
-            # get metadata about network from neutron
-            net_client = self._neutron_client(context)
-            network_infos = net_client.list_networks().get('networks')
-            neutron_networks = {network["id"] for network in network_infos}
-
-            # get interface info from server
-            nova_networks = set()
-            serverid = parent_resource.id
-            nova_client = ClientFactory.create_client("nova", context)
-            interface_list = nova_client.servers.interface_list(serverid)
-
-            # check net_id in interface
-            for iface in interface_list:
-                net_id = iface.net_id
-                if net_id not in nova_networks:
-                    nova_networks.add(net_id)
-
-            # get the exsited networks
-            valid_networks = nova_networks.intersection(neutron_networks)
-            if valid_networks:
-                return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
-                                          id=self._get_network_id(),
-                                          name="Network Topology")]
-            return []
-        except Exception as e:
-            LOG.exception("List all interfaces from nova failed.")
-            raise exception.ListProtectableResourceFailed(
-                type=self._SUPPORT_RESOURCE_TYPE,
-                reason=six.text_type(e))
-
     def _get_dependent_resources_by_project(self,
                                             context,
                                             parent_resource):
@@ -148,12 +113,5 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
 
     def get_dependent_resources(self, context, parent_resource):
-        if parent_resource.type == constants.SERVER_RESOURCE_TYPE:
-            return self._get_dependent_resources_by_server(context,
-                                                           parent_resource)
-
-        if parent_resource.type == constants.PROJECT_RESOURCE_TYPE:
-            return self._get_dependent_resources_by_project(context,
-                                                            parent_resource)
-
-        return []
+        return self._get_dependent_resources_by_project(
+            context, parent_resource)
