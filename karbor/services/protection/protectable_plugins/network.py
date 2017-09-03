@@ -57,7 +57,8 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
     def list_resources(self, context, parameters=None):
         try:
             netclient = self._neutron_client(context)
-            networks = netclient.list_networks().get('networks')
+            networks = netclient.list_networks(
+                project_id=context.project_id).get('networks')
         except Exception as e:
             LOG.exception("List all summary networks from neutron failed.")
             raise exception.ListProtectableResourceFailed(
@@ -76,7 +77,8 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 return None
 
             netclient = self._neutron_client(context)
-            networks = netclient.list_networks().get('networks')
+            networks = netclient.list_networks(
+                project_id=resource_id).get('networks')
         except Exception as e:
             LOG.exception("List all summary networks from neutron failed.")
             raise exception.ListProtectableResourceFailed(
@@ -127,9 +129,10 @@ class NetworkProtectablePlugin(protectable_plugin.ProtectablePlugin):
                                             context,
                                             parent_resource):
         try:
-            tid = parent_resource.id
+            project_id = parent_resource.id
             netclient = self._neutron_client(context)
-            networks = netclient.list_networks(tenant_id=tid).get('networks')
+            networks = netclient.list_networks(
+                project_id=project_id).get('networks')
 
             if networks:
                 return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
