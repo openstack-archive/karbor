@@ -172,6 +172,18 @@ class BankSectionTest(base.TestCase):
             expected_result[2:4],
             list(section.list_objects("/", limit=2, marker="KeyB")))
 
+    def test_list_objects_with_extra_prefix_and_marker(self):
+        bank = self._create_test_bank()
+        section = BankSection(bank, "/prefix", is_writable=True)
+        section.update_object("prefix1/KeyA", "value")
+        section.update_object("prefix2/KeyB", "value")
+        section.update_object("prefix2/KeyC", "value")
+        expected_result = ["prefix2/KeyC"]
+        self.assertEqual(
+            expected_result,
+            list(section.list_objects('/prefix2/', marker="KeyB"))
+        )
+
     def test_read_only(self):
         bank = self._create_test_bank()
         section = BankSection(bank, "/prefix", is_writable=False)
