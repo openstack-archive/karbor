@@ -213,6 +213,18 @@ class BankSection(object):
             res += '/'
         return res
 
+    @staticmethod
+    def _normalize_marker_with_prefix(marker, prefix):
+        if not isinstance(marker, six.string_types):
+            raise exception.InvalidParameterValue(
+                err=_('marker must be a string')
+            )
+        marker = prefix + marker
+        res = os.path.normpath(marker)
+        if marker.endswith('/'):
+            res += '/'
+        return res
+
     def _validate_writable(self):
         if not self.is_writable:
             raise exception.BankReadonlyViolation()
@@ -237,7 +249,7 @@ class BankSection(object):
             prefix = self._prepend_prefix(prefix)
 
         if marker is not None:
-            marker = self._prepend_prefix(marker)
+            marker = self._normalize_marker_with_prefix(marker, prefix)
 
         return [
             key[len(self._prefix):]
