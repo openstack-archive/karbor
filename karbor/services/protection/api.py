@@ -82,11 +82,13 @@ class API(base.Base):
 
     def list_protectable_dependents(self, context,
                                     protectable_id,
-                                    protectable_type):
+                                    protectable_type,
+                                    protectable_name):
         return self.protection_rpcapi.list_protectable_dependents(
             context,
             protectable_id,
-            protectable_type
+            protectable_type,
+            protectable_name
         )
 
     def show_protectable_instance(self, context,

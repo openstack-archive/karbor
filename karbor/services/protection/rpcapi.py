@@ -121,13 +121,15 @@ class ProtectionAPI(object):
 
     def list_protectable_dependents(self,
                                     ctxt, protectable_id=None,
-                                    protectable_type=None):
+                                    protectable_type=None,
+                                    protectable_name=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
             'list_protectable_dependents',
             protectable_id=protectable_id,
-            protectable_type=protectable_type)
+            protectable_type=protectable_type,
+            protectable_name=protectable_name)
 
     def show_protectable_instance(self,
                                   ctxt, protectable_type=None,

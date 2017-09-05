@@ -359,14 +359,16 @@ class ProtectionManager(manager.Manager):
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_dependents(self, context,
                                     protectable_id,
-                                    protectable_type):
+                                    protectable_type,
+                                    protectable_name):
         LOG.info("Start to list dependents of resource (type:%(type)s, "
-                 "id:%(id)s)",
+                 "id:%(id)s, name:%(name)s)",
                  {'type': protectable_type,
-                  'id': protectable_id})
+                  'id': protectable_id,
+                  'name': protectable_name})
 
         parent_resource = Resource(type=protectable_type, id=protectable_id,
-                                   name="")
+                                   name=protectable_name)
 
         registry = self.protectable_registry
         try:
