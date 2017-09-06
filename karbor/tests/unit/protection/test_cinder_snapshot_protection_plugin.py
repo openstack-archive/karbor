@@ -81,7 +81,7 @@ def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
         hook(checkpoint, resource, context, parameters, **kwargs)
 
 
-class CheckpointCollection(object):
+class FakeCheckpoint(object):
     def __init__(self):
         self.bank_section = fake_bank_section
 
@@ -116,7 +116,7 @@ class CinderSnapshotProtectionPluginTest(base.TestCase):
                                     service_catalog=service_catalog)
         self.cinder_client = client_factory.ClientFactory.create_client(
             "cinder", self.cntxt)
-        self.checkpoint = CheckpointCollection()
+        self.checkpoint = FakeCheckpoint()
 
     def test_get_options_schema(self):
         options_schema = self.plugin.get_options_schema(

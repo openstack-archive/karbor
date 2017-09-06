@@ -79,9 +79,9 @@ def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
         hook(checkpoint, resource, context, parameters, **kwargs)
 
 
-class CheckpointCollection(object):
+class FakeCheckpoint(object):
     def __init__(self):
-        super(CheckpointCollection, self).__init__()
+        super(FakeCheckpoint, self).__init__()
         self.bank_section = fake_bank_section
 
     def get_resource_bank_section(self, resource_id):
@@ -112,7 +112,7 @@ class GlanceProtectionPluginTest(base.TestCase):
                                     auth_token='efgh')
         self.glance_client = client_factory.ClientFactory.create_client(
             "glance", self.cntxt)
-        self.checkpoint = CheckpointCollection()
+        self.checkpoint = FakeCheckpoint()
 
     def test_get_options_schema(self):
         options_schema = self.plugin.get_options_schema(

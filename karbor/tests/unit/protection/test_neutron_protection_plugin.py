@@ -263,7 +263,7 @@ ResourceNode = collections.namedtuple(
 )
 
 
-class CheckpointCollection(object):
+class FakeCheckpoint(object):
     def __init__(self):
         self.bank_section = fake_bank_section
 
@@ -287,7 +287,7 @@ class NeutronProtectionPluginTest(base.TestCase):
 
         self.neutron_client = client_factory.ClientFactory.create_client(
             "neutron", self.cntxt)
-        self.checkpoint = CheckpointCollection()
+        self.checkpoint = FakeCheckpoint()
 
     def test_get_options_schema(self):
         options_schema = self.plugin.get_options_schema(
