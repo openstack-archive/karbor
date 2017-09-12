@@ -20,11 +20,11 @@ _FAKE_TYPE = "Karbor::Test::Fake"
 
 
 class _FakeProtectablePlugin(ProtectablePlugin):
-    def __init__(self, cntx):
+    def __init__(self, cntx, conf=None):
         super(_FakeProtectablePlugin, self).__init__(cntx)
         self.graph = {}
 
-    def instance(self, cntx):
+    def instance(self, cntx, conf=None):
         new = self.__class__(cntx)
         new.graph = self.graph
         return new

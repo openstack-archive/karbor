@@ -48,6 +48,7 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                   SHARE_RESOURCE_TYPE,
                   NETWORK_RESOURCE_TYPE,
                   DATABASE_RESOURCE_TYPE,
+                  POD_RESOURCE_TYPE
                   ) = ('OS::Keystone::Project',
                        'OS::Nova::Server',
                        'OS::Cinder::Volume',
@@ -55,6 +56,7 @@ RESOURCE_TYPES = (PROJECT_RESOURCE_TYPE,
                        'OS::Manila::Share',
                        'OS::Neutron::Network',
                        'OS::Trove::Instance',
+                       'OS::Kubernetes::Pod',
                        )
 # plan status
 PLAN_STATUS_SUSPENDED = 'suspended'
