@@ -38,7 +38,7 @@ class ProtectOperation(base.Operation):
 
         plan = objects.Plan.get_by_id(context.get_admin_context(), plan_id)
         if provider_id != plan.provider_id:
-            reason = _("Provider_id is invalid")
+            reason = _("Provider_id is conflict")
             raise exception.InvalidOperationDefinition(reason=reason)
 
     def _execute(self, operation_definition, param):
