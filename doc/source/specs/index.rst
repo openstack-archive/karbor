@@ -32,6 +32,7 @@ Approved Specs
     operation-log-api
     policy-in-code
     freezer-protection-plugin
+    kubernetes-pods-protection-plugin
 
 Spec Template
 -------------
