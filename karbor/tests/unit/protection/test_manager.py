@@ -85,6 +85,16 @@ class ProtectionServiceTest(base.TestCase):
             result)
 
     @mock.patch.object(protectable_registry.ProtectableRegistry,
+                       'show_resource')
+    def test_show_protectable_instance_with_nonexist_id(self, mocker):
+        mocker.return_value = None
+        fake_cntx = mock.MagicMock()
+
+        result = self.pro_manager.show_protectable_instance(
+            fake_cntx, 'OS::Nova::Server', '123456')
+        self.assertEqual(None, result)
+
+    @mock.patch.object(protectable_registry.ProtectableRegistry,
                        'list_resources')
     def test_list_protectable_instances(self, mocker):
         mocker.return_value = [Resource(type='OS::Nova::Server',
