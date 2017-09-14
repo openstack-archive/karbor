@@ -27,7 +27,7 @@ class Trigger(base.KarborPersistentObject, base.KarborObject,
     fields = {
         'id': fields.UUIDField(),
         'name': fields.StringField(),
-        'project_id': fields.StringField(),
+        'project_id': fields.UUIDField(),
         'type': fields.StringField(),
         'properties': fields.DictOfStringsField(),
     }

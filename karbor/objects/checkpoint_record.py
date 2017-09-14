@@ -35,7 +35,7 @@ class CheckpointRecord(base.KarborPersistentObject, base.KarborObject,
         'checkpoint_status': fields.StringField(),
         'provider_id': fields.UUIDField(),
         'plan_id': fields.UUIDField(),
-        'operation_id': fields.StringField(nullable=True),
+        'operation_id': fields.UUIDField(nullable=True),
         'create_by': fields.StringField(nullable=True),
         'extend_info': fields.StringField(nullable=True),
     }
