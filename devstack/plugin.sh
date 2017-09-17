@@ -21,11 +21,11 @@ function _create_karbor_conf_dir {
 # ------------------------------------------------------------------
 # service              karbor      service
 function create_karbor_accounts {
+    if is_service_enabled karbor-api karbor-protection karbor-operationengine; then
+        create_service_user "$KARBOR_TRUSTEE_USER" "admin"
+    fi
 
     if is_service_enabled karbor-api; then
-
-        create_service_user "$KARBOR_SERVICE_NAME" "admin"
-
         get_or_create_service "$KARBOR_SERVICE_NAME" "$KARBOR_SERVICE_TYPE" "Application Data Protection Service"
 
         get_or_create_endpoint "$KARBOR_SERVICE_TYPE" "$REGION_NAME" \
@@ -110,8 +110,8 @@ function stop_karbor_api_uwsgi {
     stop_process karbor-api
 }
 
-function configure_karbor_api {
-    if is_service_enabled karbor-api ; then
+function configure_karbor {
+    if is_service_enabled karbor-api karbor-operationengine karbor-protection ; then
         echo "Configuring Karbor API"
 
         # generate configuration file
@@ -119,19 +119,19 @@ function configure_karbor_api {
         tox -e genconfig
         cp etc/karbor.conf.sample etc/karbor.conf
 
-        cp $KARBOR_DIR/etc/karbor.conf $KARBOR_API_CONF
+        cp $KARBOR_DIR/etc/karbor.conf $KARBOR_CONF
         cp $KARBOR_DIR/etc/api-paste.ini $KARBOR_CONF_DIR
         cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR
         cp -R $KARBOR_DIR/etc/providers.d $KARBOR_CONF_DIR
         cp $KARBOR_DIR/devstack/providers.d/* $KARBOR_CONF_DIR/providers.d
 
-        iniset $KARBOR_API_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
-        iniset $KARBOR_API_CONF DEFAULT use_syslog $SYSLOG
+        iniset $KARBOR_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+        iniset $KARBOR_CONF DEFAULT use_syslog $SYSLOG
         echo "Configuring Karbor API Database"
-        iniset $KARBOR_API_CONF database connection `database_connection_url karbor`
-        iniset_rpc_backend karbor $KARBOR_API_CONF
+        iniset $KARBOR_CONF database connection `database_connection_url karbor`
+        iniset_rpc_backend karbor $KARBOR_CONF
 
-        setup_colorized_logging $KARBOR_API_CONF DEFAULT
+        setup_colorized_logging $KARBOR_CONF DEFAULT
         echo "Configuring Karbor API colorized"
         if is_service_enabled keystone; then
 
@@ -139,26 +139,26 @@ function configure_karbor_api {
             create_karbor_cache_dir
 
             # Configure auth token middleware
-            configure_auth_token_middleware $KARBOR_API_CONF karbor \
+            configure_auth_token_middleware $KARBOR_CONF karbor \
                 $KARBOR_AUTH_CACHE_DIR
 
             # Configure for trustee
-            iniset $KARBOR_API_CONF trustee auth_type password
-            iniset $KARBOR_API_CONF trustee auth_url $KEYSTONE_AUTH_URI
-            iniset $KARBOR_API_CONF trustee username karbor
-            iniset $KARBOR_API_CONF trustee password $SERVICE_PASSWORD
-            iniset $KARBOR_API_CONF trustee user_domain_id default
+            iniset $KARBOR_CONF trustee auth_type password
+            iniset $KARBOR_CONF trustee auth_url $KEYSTONE_AUTH_URI
+            iniset $KARBOR_CONF trustee username $KARBOR_TRUSTEE_USER
+            iniset $KARBOR_CONF trustee password $SERVICE_PASSWORD
+            iniset $KARBOR_CONF trustee user_domain_id default
 
             # Configure for clients_keystone
-            iniset $KARBOR_API_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
+            iniset $KARBOR_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
 
             # Config karbor client
-            iniset $KARBOR_API_CONF karbor_client service_name $KARBOR_SERVICE_NAME
-            iniset $KARBOR_API_CONF karbor_client service_type $KARBOR_SERVICE_TYPE
-            iniset $KARBOR_API_CONF karbor_client version 1
+            iniset $KARBOR_CONF karbor_client service_name $KARBOR_SERVICE_NAME
+            iniset $KARBOR_CONF karbor_client service_type $KARBOR_SERVICE_TYPE
+            iniset $KARBOR_CONF karbor_client version 1
 
         else
-            iniset $KARBOR_API_CONF DEFAULT auth_strategy noauth
+            iniset $KARBOR_CONF DEFAULT auth_strategy noauth
         fi
     fi
 }
@@ -203,7 +203,7 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Karbor"
 
-        configure_karbor_api
+        configure_karbor
         configure_providers
 
         if [[ "$KARBOR_DEPLOY" == "mod_wsgi" ]]; then
@@ -236,10 +236,10 @@ if [[ "$Q_ENABLE_KARBOR" == "True" ]]; then
             fi
         fi
         if is_service_enabled karbor-operationengine; then
-           run_process karbor-operationengine "$KARBOR_BIN_DIR/karbor-operationengine --config-file $KARBOR_API_CONF"
+           run_process karbor-operationengine "$KARBOR_BIN_DIR/karbor-operationengine --config-file $KARBOR_CONF"
         fi
         if is_service_enabled karbor-protection; then
-           run_process karbor-protection "$KARBOR_BIN_DIR/karbor-protection --config-file $KARBOR_API_CONF"
+           run_process karbor-protection "$KARBOR_BIN_DIR/karbor-protection --config-file $KARBOR_CONF"
         fi
     fi
 

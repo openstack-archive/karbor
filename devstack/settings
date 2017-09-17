@@ -11,13 +11,14 @@ KARBOR_SERVICE_NAME=karbor
 KARBOR_SERVICE_TYPE=data-protect
 KARBOR_CONF_DIR=${KARBOR_CONF_DIR:-/etc/karbor}
 KARBOR_BIN_DIR=$(get_python_exec_prefix)
+KARBOR_CONF=$KARBOR_CONF_DIR/karbor.conf
+KARBOR_TRUSTEE_USER=karbor
 
 KARBOR_API_UWSGI_CONF=$KARBOR_CONF_DIR/karbor-uwsgi.ini
 KARBOR_API_UWSGI=$KARBOR_BIN_DIR/karbor-wsgi
 
 # karbor rest api
 KARBOR_API=$KARBOR_DIR/karbor/cmd/api.py
-KARBOR_API_CONF=$KARBOR_CONF_DIR/karbor.conf
 KARBOR_API_APACHE_TEMPLATE=$KARBOR_DIR/devstack/files/apache-karbor-api.template
 
 KARBOR_API_LISTEN_ADDRESS=${KARBOR_API_LISTEN_ADDRESS:-0.0.0.0}
