@@ -20,6 +20,26 @@ from karbor.resource import Resource
 from karbor.services.protection.protectable_plugins.volume \
     import VolumeProtectablePlugin
 
+from kubernetes.client.models.v1_cinder_volume_source \
+    import V1CinderVolumeSource
+from kubernetes.client.models.v1_object_meta import V1ObjectMeta
+from kubernetes.client.models.v1_persistent_volume import V1PersistentVolume
+from kubernetes.client.models.v1_persistent_volume_claim \
+    import V1PersistentVolumeClaim
+from kubernetes.client.models.v1_persistent_volume_claim_spec \
+    import V1PersistentVolumeClaimSpec
+from kubernetes.client.models.v1_persistent_volume_claim_status \
+    import V1PersistentVolumeClaimStatus
+from kubernetes.client.models.v1_persistent_volume_claim_volume_source \
+    import V1PersistentVolumeClaimVolumeSource
+from kubernetes.client.models.v1_persistent_volume_spec \
+    import V1PersistentVolumeSpec
+
+from kubernetes.client.models.v1_pod import V1Pod
+from kubernetes.client.models.v1_pod_spec import V1PodSpec
+from kubernetes.client.models.v1_pod_status import V1PodStatus
+from kubernetes.client.models.v1_volume import V1Volume
+
 from karbor.tests import base
 from oslo_config import cfg
 
@@ -64,7 +84,8 @@ class VolumeProtectablePluginTest(base.TestCase):
 
     def test_get_parent_resource_types(self):
         plugin = VolumeProtectablePlugin(self._context)
-        self.assertItemsEqual(("OS::Nova::Server", "OS::Keystone::Project"),
+        self.assertItemsEqual(("OS::Nova::Server", "OS::Kubernetes::Pod",
+                               "OS::Keystone::Project"),
                               plugin.get_parent_resource_types())
 
     @mock.patch.object(volumes.VolumeManager, 'list')
@@ -129,3 +150,81 @@ class VolumeProtectablePluginTest(base.TestCase):
             [Resource('OS::Cinder::Volume', '123', 'name123',
                       {'availability_zone': 'az1'})],
             plugin.get_dependent_resources(self._context, project))
+
+    @mock.patch.object(volumes.VolumeManager, 'list')
+    @mock.patch('kubernetes.client.apis.core_v1_api.'
+                'CoreV1Api.read_persistent_volume')
+    @mock.patch('kubernetes.client.apis.core_v1_api.'
+                'CoreV1Api.read_namespaced_persistent_volume_claim')
+    @mock.patch('kubernetes.client.apis.core_v1_api.'
+                'CoreV1Api.read_namespaced_pod')
+    def test_get_pod_dependent_resources(self, mock_pod_read,
+                                         mock_pvc_read,
+                                         mock_pv_read,
+                                         mock_volume_list):
+        plugin = VolumeProtectablePlugin(self._context)
+
+        pod = V1Pod(api_version="v1", kind="Pod",
+                    metadata=V1ObjectMeta(
+                        name="busybox-test",
+                        namespace="default",
+                        uid="dd8236e1-8c6c-11e7-9b7a-fa163e18e097"),
+                    spec=V1PodSpec(
+                        volumes=[V1Volume(
+                            persistent_volume_claim=(
+                                V1PersistentVolumeClaimVolumeSource(
+                                    claim_name="cinder-claim1'")))]),
+                    status=V1PodStatus(phase="Running"))
+
+        pvc = V1PersistentVolumeClaim(
+            api_version="v1",
+            kind="PersistentVolumeClaim",
+            metadata=V1ObjectMeta(
+                name="cinder-claim1",
+                namespace="default",
+                uid="fec036b7-9123-11e7-a930-fa163e18e097"),
+            spec=V1PersistentVolumeClaimSpec(
+                access_modes=["ReadWriteOnce"],
+                volume_name="pvc-fec036b7-9123-11e7-a930-fa163e18e097"),
+            status=V1PersistentVolumeClaimStatus(phase="Bound"))
+
+        pv = V1PersistentVolume(
+            api_version="v1",
+            kind="PersistentVolume",
+            metadata=V1ObjectMeta(
+                name="pvc-fec036b7-9123-11e7-a930-fa163e18e097",
+                namespace="None",
+                uid="ff43c217-9123-11e7-a930-fa163e18e097"),
+            spec=V1PersistentVolumeSpec(
+                cinder=V1CinderVolumeSource(
+                    fs_type=None,
+                    read_only=None,
+                    volume_id="7daedb1d-fc99-4a35-ab1b-b64971271d17"
+                )),
+            status=V1PersistentVolumeClaimStatus(phase="Bound"))
+
+        volumes = [
+            mock.Mock(name='Volume',
+                      id='7daedb1d-fc99-4a35-ab1b-b64971271d17',
+                      availability_zone='az1'),
+            mock.Mock(name='Volume',
+                      id='7daedb1d-fc99-4a35-ab1b-b64922441d17',
+                      availability_zone='az1'),
+        ]
+        setattr(volumes[0], 'name', 'name123')
+        setattr(volumes[1], 'name', 'name456')
+
+        mock_pod_read.return_value = pod
+        mock_pvc_read.return_value = pvc
+        mock_pv_read.return_value = pv
+        mock_volume_list.return_value = volumes
+        self.assertEqual(
+            [Resource('OS::Cinder::Volume',
+                      '7daedb1d-fc99-4a35-ab1b-b64971271d17',
+                      'name123',
+                      {'availability_zone': 'az1'})],
+            plugin.get_dependent_resources(
+                self._context,
+                Resource(id="c88b92a8-e8b4-504c-bad4-343d92061871",
+                         name="default:busybox-test",
+                         type="OS::Kubernetes::Pod")))

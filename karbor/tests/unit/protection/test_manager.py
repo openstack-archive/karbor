@@ -113,7 +113,7 @@ class ProtectionServiceTest(base.TestCase):
         fake_cntx = mock.MagicMock()
 
         result = self.pro_manager.list_protectable_dependents(
-            fake_cntx, 'fake_id', 'OS::Nova::Server')
+            fake_cntx, 'fake_id', 'OS::Nova::Server', "")
         self.assertEqual([{'type': 'OS::Cinder::Volume', 'id': '123456',
                            'name': 'name123', 'extra_info': None},
                           {'type': 'OS::Cinder::Volume', 'id': '654321',

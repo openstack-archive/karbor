@@ -206,10 +206,11 @@ class ProtectablesController(wsgi.Controller):
         for instance in instances:
             protectable_id = instance.get("id")
             instance["type"] = protectable_type
+            protectable_name = instance.get("name", None)
             if protectable_id is None:
                 raise exception.InvalidProtectableInstance()
             dependents = self.protection_api.list_protectable_dependents(
-                context, protectable_id, protectable_type)
+                context, protectable_id, protectable_type, protectable_name)
             instance["dependent_resources"] = dependents
 
         retval_instances = self._view_builder.detail_list(req, instances)
@@ -289,7 +290,8 @@ class ProtectablesController(wsgi.Controller):
             raise exc.HTTPInternalServerError(explanation=msg)
 
         dependents = self.protection_api.list_protectable_dependents(
-            context, protectable_id, protectable_type)
+            context, protectable_id, protectable_type,
+            instance.get("name", None))
         instance["dependent_resources"] = dependents
 
         retval_instance = self._view_builder.detail(req, instance)
