@@ -27,12 +27,19 @@ executables:
 * ``karbor-operationengine``: karbor operationengine script
 * ``karbor-manage``: karbor manage script
 
+Generate sample configuration file karbor.conf.sample::
+
+    #use tox
+    tox -egenconfig
+    #or direct run oslo-config-generator
+    oslo-config-generator --config-file etc/oslo-config-generator/karbor.conf
+
 Install sample configuration files::
 
     mkdir /etc/karbor
     cp etc/api-paste.ini /etc/karbor
-    cp /etc/karbor.conf /etc/karbor
-    cp /etc/policy.json /etc/karbor
+    cp etc/karbor.conf.sample /etc/karbor/karbor.conf
+    cp etc/policy.json /etc/karbor
     cp -r etc/providers.d /etc/karbor
 
 Create the log directory::
@@ -57,6 +64,14 @@ Retrieve and install karbor client::
     git clone https://git.openstack.org/openstack/python-karborclient.git
     cd python-karborclient
     python setup.py install
+
+Configure components
+--------------------
+
+#. Add system user::
+
+    groupadd karbor
+    useradd karbor -g karbor -d /var/lib/karbor -s /sbin/nologin
 
 .. include:: common_configure.rst
 
