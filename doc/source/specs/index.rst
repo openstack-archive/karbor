@@ -34,6 +34,7 @@ Approved Specs
     freezer-protection-plugin
     kubernetes-pods-protection-plugin
     checkpoint-verify-api
+    volume-glance-protection-plugin
 
 Spec Template
 -------------
