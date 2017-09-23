@@ -35,6 +35,7 @@ Approved Specs
     kubernetes-pods-protection-plugin
     checkpoint-verify-api
     volume-glance-protection-plugin
+    checkpoint-tenant-isolation
 
 Spec Template
 -------------
