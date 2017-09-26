@@ -38,6 +38,8 @@ class PlanApiTest(base.TestCase):
         super(PlanApiTest, self).setUp()
         self.controller = plans.PlansController()
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
+        self.mock_policy_check = self.mock_object(
+            context.RequestContext, 'can')
 
     @mock.patch(
         'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
@@ -50,6 +52,7 @@ class PlanApiTest(base.TestCase):
         mock_provider.return_value = fakes.PROVIDER_OS
         self.controller.create(req, body)
         self.assertTrue(mock_plan_create.called)
+        self.assertTrue(self.mock_policy_check.called)
 
     def test_plan_create_InvalidBody(self):
         plan = self._plan_in_request_body()
@@ -207,11 +210,9 @@ class PlanApiTest(base.TestCase):
             req, "1")
 
     @mock.patch(
-        'karbor.api.v1.plans.check_policy')
-    @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
     def test_plan_update_InvalidStatus(
-            self, mock_plan_get, mock_check_policy):
+            self, mock_plan_get):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
             description=DEFAULT_DESCRIPTION,

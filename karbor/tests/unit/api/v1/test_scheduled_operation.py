@@ -188,8 +188,10 @@ class ScheduledOperationApiTest(base.TestCase):
         return controller.create(req, create_trigger_param)
 
     @mock.patch(
+        'karbor.context.RequestContext.can')
+    @mock.patch(
         'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
-    def _create_plan(self, provider_id, mock_provider):
+    def _create_plan(self, provider_id, mock_provider, mock_policy):
         create_plan_param = {
             'plan': {
                 'name': '123',

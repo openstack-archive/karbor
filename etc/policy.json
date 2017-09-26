@@ -1,16 +1,4 @@
 {
-    "context_is_admin": "role:admin",
-    "admin_or_owner":  "is_admin:True or project_id:%(project_id)s",
-    "default": "rule:admin_or_owner",
-
-    "admin_api": "is_admin:True",
-
-    "plan:create": "rule:admin_or_owner",
-    "plan:update": "rule:admin_or_owner",
-    "plan:delete": "rule:admin_or_owner",
-    "plan:get": "rule:admin_or_owner",
-    "plan:get_all": "rule:admin_or_owner",
-
     "restore:create": "rule:admin_or_owner",
     "restore:update": "rule:admin_or_owner",
     "restore:get": "rule:admin_or_owner",

@@ -19,7 +19,6 @@ from oslo_utils import uuidutils
 
 from webob import exc
 
-import karbor
 from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.common import constants
@@ -28,7 +27,7 @@ from karbor.i18n import _
 
 from karbor import objects
 from karbor.objects import base as objects_base
-import karbor.policy
+from karbor.policies import plans as plan_policy
 from karbor.services.operationengine import api as operationengine_api
 from karbor.services.protection import api as protection_api
 from karbor import utils
@@ -47,23 +46,6 @@ CONF = cfg.CONF
 CONF.register_opt(query_plan_filters_opt)
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action, target_obj=None):
-    target = {
-        'project_id': context.project_id,
-        'user_id': context.user_id,
-    }
-
-    if isinstance(target_obj, objects_base.KarborObject):
-        # Turn object into dict so target.update can work
-        target.update(
-            target_obj.obj_to_primitive() or {})
-    else:
-        target.update(target_obj or {})
-
-    _action = 'plan:%s' % action
-    karbor.policy.enforce(context, _action, target)
 
 
 class PlanViewBuilder(common.ViewBuilder):
@@ -170,7 +152,7 @@ class PlansController(wsgi.Controller):
         except exception.PlanNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        check_policy(context, 'delete', plan)
+        context.can(plan_policy.DELETE_POLICY, target_obj=plan)
         plan.destroy()
         LOG.info("Delete plan request issued successfully.",
                  resource={'id': plan.id})
@@ -205,7 +187,7 @@ class PlansController(wsgi.Controller):
 
     def _get_all(self, context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-        check_policy(context, 'get_all')
+        context.can(plan_policy.GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -253,7 +235,7 @@ class PlansController(wsgi.Controller):
 
         LOG.debug('Create plan request body: %s', body)
         context = req.environ['karbor.context']
-        check_policy(context, 'create')
+        context.can(plan_policy.CREATE_POLICY)
         plan = body['plan']
         LOG.debug('Create plan request plan: %s', plan)
 
@@ -347,8 +329,7 @@ class PlansController(wsgi.Controller):
             plan = self._plan_get(context, id)
         except exception.PlanNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
-
-        check_policy(context, 'update', plan)
+        context.can(plan_policy.UPDATE_POLICY, target_obj=plan)
         self._plan_update(context, plan, update_dict)
 
         plan.update(update_dict)
@@ -363,7 +344,7 @@ class PlansController(wsgi.Controller):
 
         plan = objects.Plan.get_by_id(context, plan_id)
         try:
-            check_policy(context, 'get', plan)
+            context.can(plan_policy.GET_POLICY, target_obj=plan)
         except exception.PolicyNotAuthorized:
             # raise PlanNotFound instead to make sure karbor behaves
             # as it used to
