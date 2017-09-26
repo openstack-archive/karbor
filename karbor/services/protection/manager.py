@@ -354,7 +354,7 @@ class ProtectionManager(manager.Manager):
                        'err': six.text_type(err)})
             raise
 
-        return resource_instance.to_dict()
+        return resource_instance.to_dict() if resource_instance else None
 
     @messaging.expected_exceptions(exception.ListProtectableResourceFailed)
     def list_protectable_dependents(self, context,
