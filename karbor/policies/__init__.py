@@ -16,10 +16,12 @@ import itertools
 
 from karbor.policies import base
 from karbor.policies import plans
+from karbor.policies import restores
 
 
 def list_rules():
     return itertools.chain(
         base.list_rules(),
-        plans.list_rules()
+        plans.list_rules(),
+        restores.list_rules(),
     )

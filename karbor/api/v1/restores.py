@@ -18,7 +18,6 @@ from oslo_utils import uuidutils
 
 from webob import exc
 
-import karbor
 from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.common import constants
@@ -27,7 +26,7 @@ from karbor.i18n import _
 
 from karbor import objects
 from karbor.objects import base as objects_base
-import karbor.policy
+from karbor.policies import restores as restore_policy
 from karbor.services.protection import api as protection_api
 from karbor import utils
 
@@ -44,23 +43,6 @@ CONF = cfg.CONF
 CONF.register_opt(query_restore_filters_opt)
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action, target_obj=None):
-    target = {
-        'project_id': context.project_id,
-        'user_id': context.user_id,
-    }
-
-    if isinstance(target_obj, objects_base.KarborObject):
-        # Turn object into dict so target.update can work
-        target.update(
-            target_obj.obj_to_primitive() or {})
-    else:
-        target.update(target_obj or {})
-
-    _action = 'restore:%s' % action
-    karbor.policy.enforce(context, _action, target)
 
 
 class RestoreViewBuilder(common.ViewBuilder):
@@ -177,7 +159,7 @@ class RestoresController(wsgi.Controller):
 
     def _get_all(self, context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-        check_policy(context, 'get_all')
+        context.can(restore_policy.GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -226,7 +208,7 @@ class RestoresController(wsgi.Controller):
 
         LOG.debug('Create restore request body: %s', body)
         context = req.environ['karbor.context']
-        check_policy(context, 'create')
+        context.can(restore_policy.CREATE_POLICY)
         restore = body['restore']
         LOG.debug('Create restore request : %s', restore)
 
@@ -276,7 +258,7 @@ class RestoresController(wsgi.Controller):
             update_dict = {
                 "status": constants.RESTORE_STATUS_FAILURE
             }
-            check_policy(context, 'update', restoreobj)
+            context.can(restore_policy.UPDATE_POLICY, restoreobj)
             restoreobj = self._restore_update(context,
                                               restoreobj.get("id"),
                                               update_dict)
@@ -292,7 +274,7 @@ class RestoresController(wsgi.Controller):
 
         restore = objects.Restore.get_by_id(context, restore_id)
         try:
-            check_policy(context, 'get', restore)
+            context.can(restore_policy.GET_POLICY, restore)
         except exception.PolicyNotAuthorized:
             # raise RestoreNotFound instead to make sure karbor behaves
             # as it used to

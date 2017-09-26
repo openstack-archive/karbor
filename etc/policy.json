@@ -1,9 +1,5 @@
 {
-    "restore:create": "rule:admin_or_owner",
-    "restore:update": "rule:admin_or_owner",
-    "restore:get": "rule:admin_or_owner",
-    "restore:get_all": "rule:admin_or_owner",
-
+    
     "protectable:get": "rule:admin_or_owner",
     "protectable:get_all": "rule:admin_or_owner",
 
