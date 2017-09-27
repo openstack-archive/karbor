@@ -12,7 +12,11 @@
 
 """Utilities and helper functions."""
 import ast
+import contextlib
 import os
+import shutil
+import six
+import tempfile
 import webob.exc
 
 from keystoneclient import discover as ks_discover
@@ -175,3 +179,16 @@ def walk_class_hierarchy(clazz, encountered=None):
             for subsubclass in walk_class_hierarchy(subclass, encountered):
                 yield subsubclass
             yield subclass
+
+
+@contextlib.contextmanager
+def tempdir(**kwargs):
+    tmpdir = tempfile.mkdtemp(**kwargs)
+    try:
+        yield tmpdir
+    finally:
+        try:
+            shutil.rmtree(tmpdir)
+        except OSError as e:
+            LOG.debug('Could not remove tmpdir: %s',
+                      six.text_type(e))

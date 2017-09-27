@@ -21,7 +21,9 @@ from oslo_context import context
 from oslo_utils import timeutils
 import six
 
+from karbor import exception
 from karbor.i18n import _
+from karbor.objects import base as objects_base
 from karbor import policy
 
 CONF = cfg.CONF
@@ -85,7 +87,7 @@ class RequestContext(context.RequestContext):
         # when policy.check_is_admin invokes request logging
         # to make it loggable.
         if self.is_admin is None:
-            self.is_admin = policy.check_is_admin(self.roles, self)
+            self.is_admin = policy.check_is_admin(self)
         elif self.is_admin and 'admin' not in self.roles:
             self.roles.append('admin')
 
@@ -142,6 +144,42 @@ class RequestContext(context.RequestContext):
         ]
         kwargs = {k: values[k] for k in values if k in allowed_keys}
         return cls(**kwargs)
+
+    def can(self, action, target_obj=None, fatal=True):
+        """Verifies that the given action is valid on the target in this context.
+
+        :param action: string representing the action to be checked.
+        :param target: dictionary representing the object of the action
+            for object creation this should be a dictionary representing the
+            location of the object e.g. ``{'project_id': context.project_id}``.
+            If None, then this default target will be considered:
+            {'project_id': self.project_id, 'user_id': self.user_id}
+        :param: target_obj: dictionary representing the object which will be
+            used to update target.
+        :param fatal: if False, will return False when an
+            exception.NotAuthorized occurs.
+
+        :raises nova.exception.Forbidden: if verification fails and fatal is
+            True.
+
+        :return: returns a non-False value (not necessarily "True") if
+            authorized and False if not authorized and fatal is False.
+        """
+        target = {'project_id': self.project_id,
+                  'user_id': self.user_id}
+        if isinstance(target_obj, objects_base.KarborObject):
+            # Turn object into dict so target.update can work
+            target.update(
+                target_obj.obj_to_primitive()['karbor_object.data'] or {})
+        else:
+            target.update(target_obj or {})
+
+        try:
+            return policy.authorize(self, action, target)
+        except exception.NotAuthorized:
+            if fatal:
+                raise
+            return False
 
     def to_policy_values(self):
         policy = super(RequestContext, self).to_policy_values()

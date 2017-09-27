@@ -14,6 +14,7 @@ import logging
 import os
 
 import fixtures
+import mock
 from oslo_config import cfg
 from oslo_messaging import conffixture as messaging_conffixture
 from oslo_utils import timeutils
@@ -73,6 +74,7 @@ class TestCase(base.BaseTestCase):
         self.messaging_conf.transport_driver = 'fake'
         self.messaging_conf.response_timeout = 15
         self.useFixture(self.messaging_conf)
+
         rpc.init(CONF)
 
         conf_fixture.set_defaults(CONF)
@@ -112,3 +114,17 @@ class TestCase(base.BaseTestCase):
         """Override CONF variables for a test."""
         for k, v in kw.items():
             self.override_config(k, v)
+
+    def mock_object(self, obj, attr_name, new_attr=None, **kwargs):
+        """Use python mock to mock an object attribute
+
+        Mocks the specified objects attribute with the given value.
+        Automatically performs 'addCleanup' for the mock.
+
+        """
+        if not new_attr:
+            new_attr = mock.Mock()
+        patcher = mock.patch.object(obj, attr_name, new_attr, **kwargs)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return new_attr
