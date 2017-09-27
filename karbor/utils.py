@@ -192,3 +192,24 @@ def tempdir(**kwargs):
         except OSError as e:
             LOG.debug('Could not remove tmpdir: %s',
                       six.text_type(e))
+
+
+class DoNothing(str):
+    """Class that literally does nothing.
+
+    We inherit from str in case it's called with json.dumps.
+    """
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __getattr__(self, name):
+        return self
+
+
+DO_NOTHING = DoNothing()
+
+
+def notifications_enabled(conf):
+    """Check if oslo notifications are enabled."""
+    notifications_driver = set(conf.oslo_messaging_notifications.driver)
+    return notifications_driver and notifications_driver != {'noop'}

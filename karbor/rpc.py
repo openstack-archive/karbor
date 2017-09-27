@@ -26,13 +26,14 @@ __all__ = [
 from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher
-from oslo_serialization import jsonutils
 
 import karbor.context
 import karbor.exception
+from karbor import utils
 
 CONF = cfg.CONF
 TRANSPORT = None
+NOTIFICATION_TRANSPORT = None
 NOTIFIER = None
 
 ALLOWED_EXMODS = [
@@ -42,16 +43,24 @@ EXTRA_EXMODS = []
 
 
 def init(conf):
-    if initialized():
-        return
 
-    global TRANSPORT, NOTIFIER
+    global TRANSPORT, NOTIFICATION_TRANSPORT, NOTIFIER
     exmods = get_allowed_exmods()
     TRANSPORT = messaging.get_rpc_transport(conf,
                                             allowed_remote_exmods=exmods)
+    NOTIFICATION_TRANSPORT = messaging.get_notification_transport(
+        conf,
+        allowed_remote_exmods=exmods)
 
-    serializer = RequestContextSerializer(JsonPayloadSerializer())
-    NOTIFIER = messaging.Notifier(TRANSPORT, serializer=serializer)
+    # get_notification_transport has loaded oslo_messaging_notifications config
+    # group, so we can now check if notifications are actually enabled.
+    if utils.notifications_enabled(conf):
+        json_serializer = messaging.JsonPayloadSerializer()
+        serializer = RequestContextSerializer(json_serializer)
+        NOTIFIER = messaging.Notifier(NOTIFICATION_TRANSPORT,
+                                      serializer=serializer)
+    else:
+        NOTIFIER = utils.DO_NOTHING
 
 
 def initialized():
@@ -59,11 +68,12 @@ def initialized():
 
 
 def cleanup():
-    global TRANSPORT, NOTIFIER
+    global TRANSPORT, NOTIFICATION_TRANSPORT, NOTIFIER
     assert TRANSPORT is not None
-    assert NOTIFIER is not None
+
     TRANSPORT.cleanup()
-    TRANSPORT = NOTIFIER = None
+    NOTIFICATION_TRANSPORT.cleanup()
+    TRANSPORT = NOTIFICATION_TRANSPORT = NOTIFIER = None
 
 
 def set_defaults(control_exchange):
@@ -80,12 +90,6 @@ def clear_extra_exmods():
 
 def get_allowed_exmods():
     return ALLOWED_EXMODS + EXTRA_EXMODS
-
-
-class JsonPayloadSerializer(messaging.NoOpSerializer):
-    @staticmethod
-    def serialize_entity(context, entity):
-        return jsonutils.to_primitive(entity, convert_instances=True)
 
 
 class RequestContextSerializer(messaging.Serializer):
