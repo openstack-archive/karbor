@@ -21,7 +21,7 @@ from karbor.api.openstack import wsgi
 from karbor import exception
 from karbor.i18n import _
 
-import karbor.policy
+from karbor.policies import protectables as protectable_policy
 from karbor.services.protection import api as protection_api
 from karbor import utils
 
@@ -40,15 +40,6 @@ query_instance_filters_opts = [
 CONF = cfg.CONF
 CONF.register_opts(query_instance_filters_opts)
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action):
-    target = {
-        'project_id': context.project_id,
-        'user_id': context.user_id,
-    }
-    _action = 'protectable:%s' % action
-    karbor.policy.enforce(context, _action, target)
 
 
 class ProtectableViewBuilder(common.ViewBuilder):
@@ -135,7 +126,7 @@ class ProtectablesController(wsgi.Controller):
             msg = _("Invalid protectable type provided.")
             raise exception.InvalidInput(reason=msg)
 
-        check_policy(context, 'get')
+        context.can(protectable_policy.GET_POLICY)
         try:
             retval_protectable_type = self.protection_api.\
                 show_protectable_type(context, protectable_type)
@@ -162,7 +153,7 @@ class ProtectablesController(wsgi.Controller):
         return retval_protectable_types
 
     def _get_all(self, context):
-        check_policy(context, 'get_all')
+        context.can(protectable_policy.GET_ALL_POLICY)
 
         protectable_types = self.protection_api.list_protectable_types(context)
 
@@ -220,7 +211,7 @@ class ProtectablesController(wsgi.Controller):
     def _instances_get_all(self, context, protectable_type, marker=None,
                            limit=None, sort_keys=None, sort_dirs=None,
                            filters=None, offset=None, parameters=None):
-        check_policy(context, 'get_all')
+        context.can(protectable_policy.INSTANCES_GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -275,6 +266,7 @@ class ProtectablesController(wsgi.Controller):
             msg = _("Invalid protectable type provided.")
             raise exception.InvalidInput(reason=msg)
 
+        context.can(protectable_policy.INSTANCES_GET_POLICY)
         try:
             instance = self.protection_api.show_protectable_instance(
                 context, protectable_type, protectable_id,

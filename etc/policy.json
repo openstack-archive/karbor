@@ -1,8 +1,4 @@
 {
-    
-    "protectable:get": "rule:admin_or_owner",
-    "protectable:get_all": "rule:admin_or_owner",
-
     "provider:get": "rule:admin_or_owner",
     "provider:get_all": "rule:admin_or_owner",
     "provider:checkpoint_get": "rule:admin_or_owner",
