@@ -19,6 +19,7 @@ from karbor.policies import plans
 from karbor.policies import protectables
 from karbor.policies import providers
 from karbor.policies import restores
+from karbor.policies import scheduled_operations
 from karbor.policies import triggers
 
 
@@ -30,4 +31,5 @@ def list_rules():
         protectables.list_rules(),
         providers.list_rules(),
         triggers.list_rules(),
+        scheduled_operations.list_rules(),
     )

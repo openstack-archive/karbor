@@ -21,16 +21,11 @@ from karbor.api.openstack import wsgi
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
-from karbor import policy
+from karbor.policies import scheduled_operations as scheduled_operation_policy
 from karbor.services.operationengine import api as operationengine_api
 from karbor import utils
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action, target_obj=None):
-    _action = 'scheduled_operation:%s' % action
-    policy.enforce(context, _action, target_obj)
 
 
 class ScheduledOperationViewBuilder(common.ViewBuilder):
@@ -92,7 +87,7 @@ class ScheduledOperationController(wsgi.Controller):
         LOG.debug('Create a scheduled operation, request body: %s', body)
 
         context = req.environ['karbor.context']
-        check_policy(context, 'create')
+        context.can(scheduled_operation_policy.CREATE_POLICY)
         operation_info = body['scheduled_operation']
 
         name = operation_info.get("name", None)
@@ -148,7 +143,7 @@ class ScheduledOperationController(wsgi.Controller):
         operation = self._get_operation_by_id(context, id, ['trigger'])
         trigger = operation.trigger
 
-        check_policy(context, 'delete', operation)
+        context.can(scheduled_operation_policy.DELETE_POLICY, operation)
 
         try:
             self.operationengine_api.delete_scheduled_operation(
@@ -168,7 +163,7 @@ class ScheduledOperationController(wsgi.Controller):
 
         context = req.environ['karbor.context']
         operation = self._get_operation_by_id(context, id)
-        check_policy(context, 'get', operation)
+        context.can(scheduled_operation_policy.GET_POLICY, operation)
 
         return self._view_builder.detail(req, operation)
 
@@ -176,7 +171,7 @@ class ScheduledOperationController(wsgi.Controller):
         """Returns a list of operations, transformed through view builder."""
 
         context = req.environ['karbor.context']
-        check_policy(context, 'list')
+        context.can(scheduled_operation_policy.GET_ALL_POLICY)
 
         params = req.params.copy()
         LOG.debug('List scheduled operation start, params=%s', params)
