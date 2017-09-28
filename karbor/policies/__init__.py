@@ -17,6 +17,7 @@ import itertools
 from karbor.policies import base
 from karbor.policies import plans
 from karbor.policies import protectables
+from karbor.policies import providers
 from karbor.policies import restores
 
 
@@ -26,4 +27,5 @@ def list_rules():
         plans.list_rules(),
         restores.list_rules(),
         protectables.list_rules(),
+        providers.list_rules(),
     )

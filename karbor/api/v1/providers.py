@@ -26,7 +26,7 @@ from karbor import exception
 from karbor.i18n import _
 
 from karbor import objects
-import karbor.policy
+from karbor.policies import providers as provider_policy
 from karbor.services.protection import api as protection_api
 from karbor import utils
 
@@ -60,15 +60,6 @@ CONF.register_opts(query_provider_filters_opts)
 CONF.register_opts(query_checkpoint_filters_opts)
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action):
-    target = {
-        'project_id': context.project_id,
-        'user_id': context.user_id,
-    }
-    _action = 'provider:%s' % action
-    karbor.policy.enforce(context, _action, target)
 
 
 class ProviderViewBuilder(common.ViewBuilder):
@@ -230,7 +221,7 @@ class ProvidersController(wsgi.Controller):
 
     def _get_all(self, context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-        check_policy(context, 'get_all')
+        context.can(provider_policy.GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -272,7 +263,7 @@ class ProvidersController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         try:
-            check_policy(context, 'get')
+            context.can(provider_policy.GET_POLICY)
         except exception.PolicyNotAuthorized:
             # raise ProviderNotFound instead to make sure karbor behaves
             # as it used to
@@ -314,7 +305,7 @@ class ProvidersController(wsgi.Controller):
     def _checkpoints_get_all(self, context, provider_id, marker=None,
                              limit=None, sort_keys=None, sort_dirs=None,
                              filters=None, offset=None):
-        check_policy(context, 'checkpoint_get_all')
+        context.can(provider_policy.CHECKPOINT_GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -352,7 +343,7 @@ class ProvidersController(wsgi.Controller):
         LOG.debug('Create checkpoint request '
                   'body: %s provider_id:%s', body, provider_id)
 
-        check_policy(context, 'checkpoint_create')
+        context.can(provider_policy.CHECKPOINT_CREATE_POLICY)
         checkpoint = body['checkpoint']
         LOG.debug('Create checkpoint request checkpoint: %s',
                   checkpoint)
@@ -457,7 +448,7 @@ class ProvidersController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         try:
-            check_policy(context, 'checkpoint_get')
+            context.can(provider_policy.CHECKPOINT_GET_POLICY)
         except exception.PolicyNotAuthorized:
             # raise CheckpointNotFound instead to make sure karbor behaves
             # as it used to
@@ -487,7 +478,7 @@ class ProvidersController(wsgi.Controller):
             msg = _("Invalid checkpoint id provided.")
             raise exc.HTTPBadRequest(explanation=msg)
 
-        check_policy(context, 'checkpoint_delete')
+        context.can(provider_policy.CHECKPOINT_DELETE_POLICY)
         self.protection_api.delete(context,
                                    provider_id,
                                    checkpoint_id)
