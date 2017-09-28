@@ -11,9 +11,7 @@
 #    under the License.
 
 from functools import partial
-import os
 
-from io import BytesIO
 from karbor.common import constants
 from karbor import exception
 from karbor.services.protection.client_factory import ClientFactory
@@ -23,7 +21,6 @@ from karbor.services.protection.protection_plugins.image \
 from karbor.services.protection.protection_plugins import utils
 from oslo_config import cfg
 from oslo_log import log as logging
-
 
 image_backup_opts = [
     cfg.IntOpt('backup_image_object_size',
@@ -106,35 +103,11 @@ class ProtectOperation(protection_plugin.Operation):
 
     def _create_backup(self, glance_client, bank_section, image_id):
         try:
-            image_response = glance_client.images.data(image_id,
-                                                       do_checksum=True)
-            bank_chunk_num = int(self._data_block_size_bytes/65536)
-            LOG.debug("Creating image backup, bank_chunk_num: %s.",
-                      bank_chunk_num)
-
-            # backup the data of image
-            image_chunks_num = 0
-            chunks_num = 1
-            image_response_data = BytesIO()
-            for chunk in image_response:
-                image_response_data.write(chunk)
-                image_chunks_num += 1
-                if image_chunks_num == bank_chunk_num:
-                    image_chunks_num = 0
-                    image_response_data.seek(0, os.SEEK_SET)
-                    data = image_response_data.read(
-                        self._data_block_size_bytes)
-                    bank_section.update_object("data_" + str(chunks_num), data)
-                    image_response_data.truncate(0)
-                    image_response_data.seek(0, os.SEEK_SET)
-                    chunks_num += 1
-
-            image_response_data.seek(0, os.SEEK_SET)
-            data = image_response_data.read()
-            if data != '':
-                bank_section.update_object("data_" + str(chunks_num), data)
-            else:
-                chunks_num -= 1
+            chunks_num = utils.backup_image_to_bank(
+                glance_client,
+                image_id, bank_section,
+                self._data_block_size_bytes
+            )
 
             # Save the chunks_num to metadata
             resource_definition = bank_section.get_object("metadata")
@@ -199,36 +172,11 @@ class RestoreOperation(protection_plugin.Operation):
 
         glance_client = ClientFactory.create_client('glance', context)
         bank_section = checkpoint.get_resource_bank_section(original_image_id)
-        image = None
+        image_info = None
         try:
-            resource_definition = bank_section.get_object('metadata')
-            image_metadata = resource_definition['image_metadata']
-            objects = [key.split("/")[-1] for key in
-                       bank_section.list_objects()
-                       if (key.split("/")[-1]).startswith("data_")]
+            image_info = utils.restore_image_from_bank(
+                glance_client, bank_section, name)
 
-            # check the chunks_num
-            chunks_num = resource_definition.get("chunks_num", 0)
-            if len(objects) != int(chunks_num):
-                LOG.debug('object num: {0}, chunk num: {1}'.
-                          format(len(objects), chunks_num))
-                raise exception.RestoreResourceFailed(
-                    name="Image Backup",
-                    reason=" The chunks_num of restored image is invalid.",
-                    resource_id=original_image_id,
-                    resource_type=constants.IMAGE_RESOURCE_TYPE)
-
-            sorted_objects = sorted(objects, key=lambda s: int(s[5:]))
-            image_data = ImageBankIO(bank_section, sorted_objects)
-            disk_format = image_metadata["disk_format"]
-            container_format = image_metadata["container_format"]
-            image = glance_client.images.create(
-                disk_format=disk_format,
-                container_format=container_format,
-                name=name)
-            glance_client.images.upload(image.id, image_data)
-
-            image_info = glance_client.images.get(image.id)
             if image_info.status != "active":
                 is_success = utils.status_poll(
                     partial(get_image_status, glance_client, image_info.id),
@@ -245,49 +193,20 @@ class RestoreOperation(protection_plugin.Operation):
                         resource_id=image_info.id,
                         resource_type=constants.IMAGE_RESOURCE_TYPE)
 
-            # check the checksum
-            if image_info.checksum != image_metadata["checksum"]:
-                raise exception.RestoreResourceFailed(
-                    name="Image Backup",
-                    reason=" The checksum of restored image is invalid.",
-                    resource_id=original_image_id,
-                    resource_type=constants.IMAGE_RESOURCE_TYPE)
-            kwargs.get("new_resources")[original_image_id] = image.id
+            kwargs.get("new_resources")[original_image_id] = image_info.id
         except Exception as e:
             LOG.error("Restore image backup failed, image_id: %s.",
                       original_image_id)
-            if image is not None and hasattr(image, 'id'):
-                LOG.info("Delete the failed image, image_id: %s.", image.id)
-                glance_client.images.delete(image.id)
+            if image_info is not None and hasattr(image_info, 'id'):
+                LOG.info("Delete the failed image, image_id: %s.",
+                         image_info.id)
+                glance_client.images.delete(image_info.id)
             raise exception.RestoreResourceFailed(
                 name="Image Backup",
                 reason=e, resource_id=original_image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
         LOG.info("Finish restoring image backup, image_id: %s.",
                  original_image_id)
-
-
-class ImageBankIO(object):
-        def __init__(self, bank_section, sorted_objects):
-            super(ImageBankIO, self).__init__()
-            self.bank_section = bank_section
-            self.sorted_objects = sorted_objects
-            self.obj_size = len(sorted_objects)
-            self.length = 0
-
-        def readable(self):
-            return True
-
-        def __iter__(self):
-            return self
-
-        def read(self, length=None):
-            obj_index = self.length
-            self.length += 1
-            if self.length > self.obj_size:
-                return ''
-            return self.bank_section.get_object(
-                self.sorted_objects[obj_index])
 
 
 class GlanceProtectionPlugin(protection_plugin.ProtectionPlugin):

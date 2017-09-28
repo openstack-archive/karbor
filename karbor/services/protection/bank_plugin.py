@@ -273,3 +273,25 @@ class BankSection(object):
     @property
     def bank(self):
         return self._bank
+
+
+class BankIO(object):
+    def __init__(self, bank_section, sorted_objects):
+        super(BankIO, self).__init__()
+        self.bank_section = bank_section
+        self.sorted_objects = sorted_objects
+        self.obj_size = len(sorted_objects)
+        self.length = 0
+
+    def readable(self):
+        return True
+
+    def __iter__(self):
+        return self
+
+    def read(self, length=None):
+        obj_index = self.length
+        self.length += 1
+        if self.length > self.obj_size:
+            return ''
+        return self.bank_section.get_object(self.sorted_objects[obj_index])
