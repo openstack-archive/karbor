@@ -22,16 +22,11 @@ from karbor.api.openstack import wsgi
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
-from karbor import policy
+from karbor.policies import triggers as trigger_policy
 from karbor.services.operationengine import api as operationengine_api
 from karbor import utils
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action, target_obj=None):
-    _action = 'trigger:%s' % action
-    policy.enforce(context, _action, target_obj)
 
 
 class TriggerViewBuilder(common.ViewBuilder):
@@ -90,7 +85,7 @@ class TriggersController(wsgi.Controller):
         LOG.debug('Create a trigger, request body: %s', body)
 
         context = req.environ['karbor.context']
-        check_policy(context, 'create')
+        context.can(trigger_policy.CREATE_POLICY)
         trigger_info = body['trigger_info']
 
         trigger_name = trigger_info.get("name", None)
@@ -130,7 +125,7 @@ class TriggersController(wsgi.Controller):
         context = req.environ['karbor.context']
         trigger = self._get_trigger_by_id(context, id)
 
-        check_policy(context, 'delete', trigger)
+        context.can(trigger_policy.DELETE_POLICY, trigger)
 
         try:
             operations = objects.ScheduledOperationList.get_by_filters(
@@ -160,7 +155,7 @@ class TriggersController(wsgi.Controller):
         context = req.environ['karbor.context']
         trigger = self._get_trigger_by_id(context, id)
 
-        check_policy(context, 'update', trigger)
+        context.can(trigger_policy.UPDATE_POLICY, trigger)
 
         trigger_info = body['trigger_info']
         trigger_name = trigger_info.get("name", None)
@@ -197,14 +192,14 @@ class TriggersController(wsgi.Controller):
         context = req.environ['karbor.context']
         trigger = self._get_trigger_by_id(context, id)
 
-        check_policy(context, 'get', trigger)
+        context.can(trigger_policy.GET_POLICY, trigger)
         return self._view_builder.detail(req, trigger)
 
     def index(self, req):
         """Returns a list of triggers, transformed through view builder."""
 
         context = req.environ['karbor.context']
-        check_policy(context, 'list')
+        context.can(trigger_policy.GET_ALL_POLICY)
 
         params = req.params.copy()
         LOG.debug('List triggers start, params=%s', params)

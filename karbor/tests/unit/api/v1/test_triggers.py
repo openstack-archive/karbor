@@ -54,6 +54,8 @@ class TriggerApiTest(base.TestCase):
                 "pattern": "* * * * *"
             },
         }
+        self.mock_policy_check = self.mock_object(
+            context.RequestContext, 'can')
 
     def test_create_trigger_InvalidBody(self):
         self.assertRaises(exc.HTTPUnprocessableEntity,
