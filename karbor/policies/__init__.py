@@ -15,6 +15,7 @@
 import itertools
 
 from karbor.policies import base
+from karbor.policies import operation_logs
 from karbor.policies import plans
 from karbor.policies import protectables
 from karbor.policies import providers
@@ -32,4 +33,5 @@ def list_rules():
         providers.list_rules(),
         triggers.list_rules(),
         scheduled_operations.list_rules(),
+        operation_logs.list_rules(),
     )
