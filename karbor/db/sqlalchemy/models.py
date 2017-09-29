@@ -207,6 +207,20 @@ class OperationLog(BASE, KarborBase):
     extra_info = Column(Text)
 
 
+class Verification(BASE, KarborBase):
+    """Represents a Verification."""
+
+    __tablename__ = 'verifications'
+    id = Column(String(36), primary_key=True)
+    project_id = Column(String(255))
+    provider_id = Column(String(36))
+    checkpoint_id = Column(String(36))
+    parameters = Column(Text)
+    status = Column(String(64))
+    resources_status = Column(Text)
+    resources_reason = Column(Text)
+
+
 class CheckpointRecord(BASE, KarborBase):
     """Represents a checkpoint record."""
 
@@ -239,6 +253,7 @@ def register_models():
               ScheduledOperationState,
               ScheduledOperationLog,
               Restore,
+              Verification,
               CheckpointRecord)
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
