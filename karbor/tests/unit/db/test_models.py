@@ -541,6 +541,56 @@ class RestoreDbTestCase(ModelBaseTestCase):
                           self.ctxt, 42, {})
 
 
+class VerificationDbTestCase(ModelBaseTestCase):
+    """Unit tests for karbor.db.api.verification_*."""
+
+    fake_verification = {
+        "id": "36ea41b2-c358-48a7-9117-70cb7617410a",
+        "project_id": "586cc6ce-e286-40bd-b2b5-dd32694d9944",
+        "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c",
+        "checkpoint_id": "09edcbdc-d1c2-49c1-a212-122627b20968",
+        "parameters": "{'username': 'admin'}",
+        "status": "SUCCESS"
+    }
+
+    def setUp(self):
+        super(VerificationDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+
+    def test_verification_create(self):
+        verification = db.verification_create(self.ctxt,
+                                              self.fake_verification)
+        self.assertTrue(uuidutils.is_uuid_like(verification['id']))
+        self.assertEqual('SUCCESS', verification.status)
+
+    def test_verification_get(self):
+        verification = db.verification_create(self.ctxt,
+                                              self.fake_verification)
+        self._assertEqualObjects(verification, db.verification_get(
+            self.ctxt, verification['id']))
+
+    def test_verification_destroy(self):
+        verification = db.verification_create(self.ctxt,
+                                              self.fake_verification)
+        db.verification_destroy(self.ctxt, verification['id'])
+        self.assertRaises(exception.VerificationNotFound,
+                          db.verification_get,
+                          self.ctxt, verification['id'])
+
+    def test_verification_update(self):
+        verification = db.verification_create(self.ctxt,
+                                              self.fake_verification)
+        db.verification_update(self.ctxt, verification['id'],
+                               {'status': 'INIT'})
+        verification = db.verification_get(self.ctxt, verification['id'])
+        self.assertEqual('INIT', verification['status'])
+
+    def test_verification_update_nonexistent(self):
+        self.assertRaises(exception.VerificationNotFound,
+                          db.verification_update,
+                          self.ctxt, 42, {})
+
+
 class OperationLogTestCase(ModelBaseTestCase):
     """Unit tests for karbor.db.api.operation_log_*."""
 

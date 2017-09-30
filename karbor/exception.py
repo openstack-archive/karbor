@@ -266,6 +266,10 @@ class RestoreNotFound(NotFound):
     message = _("Restore %(restore_id)s could not be found.")
 
 
+class VerificationNotFound(NotFound):
+    message = _("Verification %(verification_id)s could not be found.")
+
+
 class OperationLogNotFound(NotFound):
     message = _("OperationLog %(restore_id)s could not be found.")
 

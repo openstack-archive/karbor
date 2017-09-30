@@ -533,6 +533,48 @@ def restore_get_all_by_project(context, project_id, marker, limit,
                                            offset=offset)
 
 
+def verification_get(context, verification_id):
+    """Get a verification or raise if it does not exist."""
+    return IMPL.verification_get(context, verification_id)
+
+
+def verification_create(context, values):
+    """Create a verification from the values dictionary."""
+    return IMPL.verification_create(context, values)
+
+
+def verification_update(context, verification_id, values):
+    """Set the given properties on a verification and update it.
+
+    Raises NotFound if verification does not exist.
+
+    """
+    return IMPL.verification_update(context, verification_id,
+                                    values)
+
+
+def verification_destroy(context, verification_id):
+    """Destroy the verification or raise if it does not exist."""
+    return IMPL.verification_destroy(context, verification_id)
+
+
+def verification_get_all(context, marker, limit, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Get all verifications."""
+    return IMPL.verification_get_all(
+        context, marker, limit, sort_keys=sort_keys,
+        sort_dirs=sort_dirs, filters=filters, offset=offset)
+
+
+def verification_get_all_by_project(context, project_id, marker, limit,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None, offset=None):
+    """Get all verifications belonging to a project."""
+    return IMPL.verification_get_all_by_project(
+        context, project_id, marker, limit, sort_keys=sort_keys,
+        sort_dirs=sort_dirs, filters=filters, offset=offset)
+
+
 def operation_log_get(context, operation_log_id):
     """Get a operation log or raise if it does not exist."""
     return IMPL.operation_log_get(context, operation_log_id)

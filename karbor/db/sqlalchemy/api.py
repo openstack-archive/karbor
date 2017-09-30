@@ -1289,7 +1289,7 @@ def _operation_log_get(context, operation_log_id, session=None):
         id=operation_log_id
     ).first()
     if not result:
-        raise exception.OperationLogNotFound(restore_id=operation_log_id)
+        raise exception.OperationLogNotFound(operation_log_id=operation_log_id)
 
     return result
 
@@ -1407,6 +1407,154 @@ def _process_operation_log_filters(query, filters):
     if filters:
         # Ensure that filters' keys exist on the model
         if not is_valid_model_filters(models.OperationLog, filters):
+            return None
+        query = query.filter_by(**filters)
+    return query
+###############################
+
+
+@require_context
+def verification_create(context, values):
+    verification_ref = models.Verification()
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+    verification_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        verification_ref.save(session)
+        return verification_ref
+
+
+@require_context
+def verification_get(context, verification_id):
+    return _verification_get(context, verification_id)
+
+
+@require_context
+def _verification_get(context, verification_id, session=None):
+    result = model_query(
+        context,
+        models.Verification,
+        session=session
+    ).filter_by(
+        id=verification_id
+    ).first()
+    if not result:
+        raise exception.VerificationNotFound(
+            verification_id=verification_id)
+
+    return result
+
+
+@require_context
+def verification_update(context, verification_id, values):
+    session = get_session()
+    with session.begin():
+        verification_ref = _verification_get(
+            context, verification_id, session=session)
+        verification_ref.update(values)
+        return verification_ref
+
+
+@require_context
+@_retry_on_deadlock
+def verification_destroy(context, verification_id):
+    session = get_session()
+    with session.begin():
+        verification_ref = _verification_get(context,
+                                             verification_id,
+                                             session=session)
+        verification_ref.delete(session=session)
+
+
+def _verification_get_query(context, session=None, project_only=False):
+    return model_query(context, models.Verification, session=session,
+                       project_only=project_only)
+
+
+@require_admin_context
+def verification_get_all(context, marker, limit, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Retrieves all verifications.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_verification_filters
+                    function for more information
+    :param offset: number of items to skip
+    :returns: list of matching verifications
+    """
+    if filters and not is_valid_model_filters(models.Verification, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.Verification)
+        if query is None:
+            return []
+        return query.all()
+
+
+@require_context
+def verification_get_all_by_project(context, project_id, marker, limit,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None, offset=None):
+    """Retrieves all verifications in a project.
+
+    If no sort parameters are specified then the returned plans are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context to query under
+    :param project_id: project for all verifications being retrieved
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_verification_filters
+                    function for more information
+    :param offset: number of items to skip
+    :returns: list of matching verifications
+    """
+    if filters and not is_valid_model_filters(models.Verification, filters):
+        return []
+
+    session = get_session()
+    with session.begin():
+        authorize_project_context(context, project_id)
+        filters = filters.copy() if filters else {}
+        filters['project_id'] = project_id
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters,
+                                         offset, models.Verification)
+        if query is None:
+            return []
+        return query.all()
+
+
+def _process_verification_filters(query, filters):
+    if filters:
+        if not is_valid_model_filters(models.Verification, filters):
             return None
         query = query.filter_by(**filters)
     return query
@@ -1585,6 +1733,10 @@ PAGINATION_HELPERS = {
     models.Plan: (_plan_get_query, _process_plan_filters, _plan_get),
     models.Restore: (_restore_get_query, _process_restore_filters,
                      _restore_get),
+    models.Verification: (
+        _verification_get_query,
+        _process_verification_filters,
+        _verification_get),
     models.Trigger: (_trigger_list_query, _trigger_list_process_filters,
                      _trigger_get),
     models.TriggerExecution: (_trigger_execution_list_query,
@@ -1607,7 +1759,6 @@ PAGINATION_HELPERS = {
         _scheduled_operation_log_list_query,
         _scheduled_operation_log_list_process_filters,
         _scheduled_operation_log_get),
-
     models.CheckpointRecord: (
         _checkpoint_record_list_query,
         _checkpoint_record_list_process_filters,

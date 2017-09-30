@@ -24,3 +24,4 @@ def register_all():
     __import__('karbor.objects.restore')
     __import__('karbor.objects.operation_log')
     __import__('karbor.objects.checkpoint_record')
+    __import__('karbor.objects.verification')
