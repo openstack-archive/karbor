@@ -41,7 +41,8 @@ LOG = logging.getLogger(__name__)
 def get_image_status(glance_client, image_id):
     LOG.debug('Polling image (image_id: %s)', image_id)
     try:
-        status = glance_client.images.get(image_id)
+        image = glance_client.images.get(image_id)
+        status = image.get('status')
     except exception.NotFound:
         status = 'not-found'
     LOG.debug('Polled image (image_id: %s) status: %s',
