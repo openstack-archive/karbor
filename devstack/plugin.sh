@@ -131,6 +131,13 @@ function configure_karbor {
         iniset $KARBOR_CONF database connection `database_connection_url karbor`
         iniset_rpc_backend karbor $KARBOR_CONF
 
+        # Configure for trustee
+        iniset $KARBOR_CONF trustee auth_type password
+        iniset $KARBOR_CONF trustee auth_url $KEYSTONE_AUTH_URI
+        iniset $KARBOR_CONF trustee username $KARBOR_TRUSTEE_USER
+        iniset $KARBOR_CONF trustee password $SERVICE_PASSWORD
+        iniset $KARBOR_CONF trustee user_domain_id default
+
         setup_colorized_logging $KARBOR_CONF DEFAULT
         echo "Configuring Karbor API colorized"
         if is_service_enabled keystone; then
@@ -142,12 +149,6 @@ function configure_karbor {
             configure_auth_token_middleware $KARBOR_CONF karbor \
                 $KARBOR_AUTH_CACHE_DIR
 
-            # Configure for trustee
-            iniset $KARBOR_CONF trustee auth_type password
-            iniset $KARBOR_CONF trustee auth_url $KEYSTONE_AUTH_URI
-            iniset $KARBOR_CONF trustee username $KARBOR_TRUSTEE_USER
-            iniset $KARBOR_CONF trustee password $SERVICE_PASSWORD
-            iniset $KARBOR_CONF trustee user_domain_id default
 
             # Configure for clients_keystone
             iniset $KARBOR_CONF clients_keystone auth_uri $KEYSTONE_AUTH_URI
