@@ -18,7 +18,7 @@ from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
 from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
-
+from karbor.services.protection import client_factory
 from karbor.services.protection.protection_plugins.volume import \
     volume_freezer_plugin_schemas
 from karbor.services.protection.protection_plugins.volume.\
@@ -94,16 +94,26 @@ class VolumeFreezerProtectionPluginTest(base.TestCase):
         plugin_config = cfg.ConfigOpts()
         plugin_config_fixture = self.useFixture(fixture.Config(plugin_config))
         plugin_config_fixture.load_raw_values(
-            group='volume_freezer_plugin',
+            group='freezer_protection_plugin',
             poll_interval=0,
         )
 
         self.plugin = FreezerProtectionPlugin(plugin_config)
-
+        self._public_url = 'http://127.0.0.1/v2.0'
+        cfg.CONF.set_default('freezer_endpoint',
+                             self._public_url,
+                             'freezer_client')
+        # due to freezer client bug, auth_uri should be specified
+        cfg.CONF.set_default('auth_uri',
+                             'http://127.0.0.1/v2.0',
+                             'freezer_client')
         self.cntxt = RequestContext(user_id='demo',
                                     project_id='fake_project_id',
                                     auth_token='fake_token')
-        self.freezer_client = mock.MagicMock()
+
+        self.freezer_client = client_factory.ClientFactory.create_client(
+            'freezer', self.cntxt
+        )
         self.checkpoint = FakeCheckpoint()
 
     def test_get_options_schema(self):
@@ -133,21 +143,25 @@ class VolumeFreezerProtectionPluginTest(base.TestCase):
                             name='fake')
 
         fake_bank_section.update_object = mock.MagicMock()
-
         protect_operation = self.plugin.get_protect_operation(resource)
         mock_freezer_create.return_value = self.freezer_client
+        mock_status_poll.return_value = True
 
         self.freezer_client.clients.list = mock.MagicMock()
         self.freezer_client.clients.list.return_value = [
             {
-                'cliend_id': 'fake_client_id'
+                'client_id': 'fake_client_id'
             }
         ]
 
         self.freezer_client.jobs.create = mock.MagicMock()
         self.freezer_client.jobs.create.return_value = "123"
+        self.freezer_client.jobs.start_job = mock.MagicMock()
+        self.freezer_client.jobs.get = mock.MagicMock()
+        self.freezer_client.jobs.get.return_value = {
+            'job_actions': []
+        }
         self.freezer_client.jobs.delete = mock.MagicMock()
-        mock_status_poll.return_value = True
         call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
                    {})
 
@@ -177,10 +191,15 @@ class VolumeFreezerProtectionPluginTest(base.TestCase):
             }
         }
         mock_freezer_create.return_value = self.freezer_client
+        mock_status_poll.return_value = True
         self.freezer_client.jobs.create = mock.MagicMock()
         self.freezer_client.jobs.create.return_value = '321'
+        self.freezer_client.jobs.start_job = mock.MagicMock()
+        self.freezer_client.jobs.get = mock.MagicMock()
+        self.freezer_client.jobs.get.return_value = {
+            'job_actions': []
+        }
         self.freezer_client.jobs.delete = mock.MagicMock()
-        mock_status_poll.return_value = True
         call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
                    {})
 
