@@ -27,7 +27,7 @@ scheduled_operations_policies = [
     policy.DocumentedRuleDefault(
         name=CREATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Create a scheduled_operation.""",
+        description='Create a scheduled_operation.',
         operations=[
             {
                 'method': 'POST',
@@ -37,7 +37,7 @@ scheduled_operations_policies = [
     policy.DocumentedRuleDefault(
         name=DELETE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Delete a scheduled_operation.""",
+        description='Delete a scheduled_operation.',
         operations=[
             {
                 'method': 'DELETE',
@@ -47,7 +47,7 @@ scheduled_operations_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get a scheduled_operation.""",
+        description='Get a scheduled_operation.',
         operations=[
             {
                 'method': 'GET',
@@ -57,7 +57,7 @@ scheduled_operations_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get scheduled_operations.""",
+        description='Get scheduled_operations.',
         operations=[
             {
                 'method': 'GET',

@@ -28,8 +28,6 @@ class ProtectablesApiTest(base.TestCase):
         super(ProtectablesApiTest, self).setUp()
         self.controller = protectables.ProtectablesController()
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
-        self.mock_policy_check = self.mock_object(
-            context.RequestContext, 'can')
 
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')

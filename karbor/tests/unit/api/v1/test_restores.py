@@ -42,8 +42,6 @@ class RestoreApiTest(base.TestCase):
         super(RestoreApiTest, self).setUp()
         self.controller = restores.RestoresController()
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
-        self.mock_policy_check = self.mock_object(
-            context.RequestContext, 'can')
 
     @mock.patch(
         'karbor.services.protection.api.API.restore')

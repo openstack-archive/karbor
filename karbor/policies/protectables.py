@@ -27,7 +27,7 @@ protectables_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Show a protectable type.""",
+        description='Show a protectable type.',
         operations=[
             {
                 'method': 'GET',
@@ -37,7 +37,7 @@ protectables_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""List protectable types.""",
+        description='List protectable types.',
         operations=[
             {
                 'method': 'GET',
@@ -47,7 +47,7 @@ protectables_policies = [
     policy.DocumentedRuleDefault(
         name=INSTANCES_GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Show a protectable instance.""",
+        description='Show a protectable instance.',
         operations=[
             {
                 'method': 'GET',
@@ -58,7 +58,7 @@ protectables_policies = [
     policy.DocumentedRuleDefault(
         name=INSTANCES_GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""List protectable instances.""",
+        description='List protectable instances.',
         operations=[
             {
                 'method': 'GET',

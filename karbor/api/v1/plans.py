@@ -329,7 +329,7 @@ class PlansController(wsgi.Controller):
             plan = self._plan_get(context, id)
         except exception.PlanNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
-        context.can(plan_policy.UPDATE_POLICY, target_obj=plan)
+
         self._plan_update(context, plan, update_dict)
 
         plan.update(update_dict)
@@ -360,6 +360,7 @@ class PlansController(wsgi.Controller):
             raise exception.InvalidPlan(reason=msg)
         # TODO(chenying) replication scene: need call rpc API when
         # the status of the plan is changed.
+        context.can(plan_policy.UPDATE_POLICY, target_obj=plan)
         if isinstance(plan, objects_base.KarborObject):
             plan.update(fields)
             plan.save()
