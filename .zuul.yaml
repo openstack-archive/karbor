@@ -1,0 +1,19 @@
+- project:
+    name: openstack/karbor
+    check:
+      jobs:
+        - karbor-dsvm-fullstack:
+            voting: false
+
+- job:
+    name: karbor-dsvm-fullstack
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/karbor-dsvm-fullstack/run
+    post-run: playbooks/legacy/karbor-dsvm-fullstack/post
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/karbor
+      - openstack/python-karborclient
+      - openstack/trove
+      - openstack/trove-dashboard
