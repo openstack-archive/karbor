@@ -26,6 +26,8 @@ extensions = [
     'reno.sphinxext',
     'oslo_config.sphinxext',
     'oslo_config.sphinxconfiggen',
+    'oslo_policy.sphinxext',
+    'oslo_policy.sphinxpolicygen',
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -47,6 +49,9 @@ config_generator_config_file = [
     ('../../etc/oslo-config-generator/karbor.conf',
      '_static/karbor'),
 ]
+
+policy_generator_config_file = '../../etc/karbor-policy-generator.conf'
+sample_policy_basename = '_static/karbor'
 
 # The suffix of source filenames.
 source_suffix = '.rst'
