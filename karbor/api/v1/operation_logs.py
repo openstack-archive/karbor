@@ -18,15 +18,13 @@ from oslo_utils import uuidutils
 
 from webob import exc
 
-import karbor
 from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor import exception
 from karbor.i18n import _
 
 from karbor import objects
-from karbor.objects import base as objects_base
-import karbor.policy
+from karbor.policies import operation_logs as operation_log_policy
 from karbor.services.operationengine import api as operationengine_api
 from karbor.services.protection import api as protection_api
 from karbor import utils
@@ -45,23 +43,6 @@ CONF = cfg.CONF
 CONF.register_opt(query_operation_log_filters_opt)
 
 LOG = logging.getLogger(__name__)
-
-
-def check_policy(context, action, target_obj=None):
-    target = {
-        'project_id': context.project_id,
-        'user_id': context.user_id,
-    }
-
-    if isinstance(target_obj, objects_base.KarborObject):
-        # Turn object into dict so target.update can work
-        target.update(
-            target_obj.obj_to_primitive() or {})
-    else:
-        target.update(target_obj or {})
-
-    _action = 'operation_log:%s' % action
-    karbor.policy.enforce(context, _action, target)
 
 
 class OperationLogViewBuilder(common.ViewBuilder):
@@ -181,7 +162,7 @@ class OperationLogsController(wsgi.Controller):
 
     def _get_all(self, context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-        check_policy(context, 'get_all')
+        context.can(operation_log_policy.GET_ALL_POLICY)
 
         if filters is None:
             filters = {}
@@ -231,7 +212,7 @@ class OperationLogsController(wsgi.Controller):
         operation_log = objects.OperationLog.get_by_id(
             context, operation_log_id)
         try:
-            check_policy(context, 'get', operation_log)
+            context.can(operation_log_policy.GET_POLICY, operation_log)
         except exception.PolicyNotAuthorized:
             raise exception.OperationLogFound(
                 operation_log_id=operation_log_id)

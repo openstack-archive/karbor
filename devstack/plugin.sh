@@ -121,7 +121,11 @@ function configure_karbor {
 
         cp $KARBOR_DIR/etc/karbor.conf $KARBOR_CONF
         cp $KARBOR_DIR/etc/api-paste.ini $KARBOR_CONF_DIR
-        cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR
+
+        if [[ -f $KARBOR_DIR/etc/policy.json ]]; then
+            cp $KARBOR_DIR/etc/policy.json $KARBOR_CONF_DIR
+        fi
+
         cp -R $KARBOR_DIR/etc/providers.d $KARBOR_CONF_DIR
         cp $KARBOR_DIR/devstack/providers.d/* $KARBOR_CONF_DIR/providers.d
 
