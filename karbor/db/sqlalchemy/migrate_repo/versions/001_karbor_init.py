@@ -121,6 +121,19 @@ def define_tables(meta):
         mysql_engine='InnoDB'
     )
 
+    trigger_executions = Table(
+        'trigger_executions', meta,
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean, nullable=False),
+        Column('id', String(length=36), primary_key=True, nullable=False),
+        Column('trigger_id', String(length=36), unique=True, nullable=False,
+               index=True),
+        Column('execution_time', DateTime, nullable=False, index=True),
+        mysql_engine='InnoDB'
+    )
+
     scheduled_operations = Table(
         'scheduled_operations', meta,
         Column('created_at', DateTime),
@@ -206,6 +219,7 @@ def define_tables(meta):
             restores,
             operation_logs,
             triggers,
+            trigger_executions,
             scheduled_operations,
             scheduled_operation_states,
             scheduled_operation_logs,

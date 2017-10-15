@@ -109,12 +109,14 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
 
     def test_scheduled_operations_create_and_scheduled(self):
         freq = 2
+        eventlet_grace = 20
         pattern = "BEGIN:VEVENT\nRRULE:FREQ=MINUTELY;INTERVAL=5;\nEND:VEVENT"
         cur_property = {'pattern': pattern, 'format': 'calendar'}
 
         operation = self.store(self._create_for_volume(cur_property))
         start_time = datetime.now().replace(microsecond=0)
         sleep_time = self._wait_timestamp(pattern, start_time, freq)
+        sleep_time += eventlet_grace
         self.assertNotEqual(0, sleep_time)
         eventlet.sleep(sleep_time)
 

@@ -74,6 +74,16 @@ class Trigger(BASE, KarborBase):
     properties = Column(Text, nullable=False)
 
 
+class TriggerExecution(BASE, KarborBase):
+    """Represents a future trigger execition"""
+
+    __tablename__ = 'trigger_executions'
+
+    id = Column(String(36), primary_key=True, nullable=False)
+    trigger_id = Column(String(36), unique=True, nullable=False, index=True)
+    execution_time = Column(DateTime, nullable=False, index=True)
+
+
 class ScheduledOperation(BASE, KarborBase):
     """Represents a scheduled operation."""
 
@@ -235,6 +245,7 @@ def register_models():
               Plan,
               Resource,
               Trigger,
+              TriggerExecution,
               ScheduledOperation,
               ScheduledOperationState,
               ScheduledOperationLog,
