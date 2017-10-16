@@ -36,6 +36,7 @@ Approved Specs
     checkpoint-verify-api
     volume-glance-protection-plugin
     checkpoint-tenant-isolation
+    service-management-api
 
 Spec Template
 -------------
