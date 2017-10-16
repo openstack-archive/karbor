@@ -28,7 +28,7 @@ triggers_policies = [
     policy.DocumentedRuleDefault(
         name=CREATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Create a trigger.""",
+        description='Create a trigger.',
         operations=[
             {
                 'method': 'POST',
@@ -38,7 +38,7 @@ triggers_policies = [
     policy.DocumentedRuleDefault(
         name=UPDATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Update a trigger.""",
+        description='Update a trigger.',
         operations=[
             {
                 'method': 'PUT',
@@ -48,7 +48,7 @@ triggers_policies = [
     policy.DocumentedRuleDefault(
         name=DELETE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Delete a trigger.""",
+        description='Delete a trigger.',
         operations=[
             {
                 'method': 'DELETE',
@@ -58,7 +58,7 @@ triggers_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get a trigger.""",
+        description='Get a trigger.',
         operations=[
             {
                 'method': 'GET',
@@ -68,7 +68,7 @@ triggers_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get triggerss.""",
+        description='Get triggerss.',
         operations=[
             {
                 'method': 'GET',

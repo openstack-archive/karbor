@@ -63,8 +63,6 @@ class ScheduledOperationApiTest(base.TestCase):
                 "provider_id": self._plan['provider_id']
             },
         }
-        self.mock_policy_check = self.mock_object(
-            context.RequestContext, 'can')
 
     def test_create_operation_InvalidBody(self):
         self.assertRaises(exc.HTTPUnprocessableEntity,

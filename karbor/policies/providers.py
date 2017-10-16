@@ -30,7 +30,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Show a protection provider.""",
+        description='Show a protection provider.',
         operations=[
             {
                 'method': 'GET',
@@ -40,7 +40,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""List protection providers.""",
+        description='List protection providers.',
         operations=[
             {
                 'method': 'GET',
@@ -50,7 +50,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=CHECKPOINT_GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Show a checkpoint.""",
+        description='Show a checkpoint.',
         operations=[
             {
                 'method': 'GET',
@@ -60,7 +60,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=CHECKPOINT_GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""List checkpoints.""",
+        description='List checkpoints.',
         operations=[
             {
                 'method': 'GET',
@@ -70,7 +70,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=CHECKPOINT_CREATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Create checkpoint.""",
+        description='Create checkpoint.',
         operations=[
             {
                 'method': 'POST',
@@ -80,7 +80,7 @@ providers_policies = [
     policy.DocumentedRuleDefault(
         name=CHECKPOINT_DELETE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Delete checkpoint.""",
+        description='Delete checkpoint.',
         operations=[
             {
                 'method': 'DELETE',

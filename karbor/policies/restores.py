@@ -27,7 +27,7 @@ restores_policies = [
     policy.DocumentedRuleDefault(
         name=CREATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Create a restore.""",
+        description='Create a restore.',
         operations=[
             {
                 'method': 'POST',
@@ -37,7 +37,7 @@ restores_policies = [
     policy.DocumentedRuleDefault(
         name=UPDATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Update a restore.""",
+        description='Update a restore.',
         operations=[
             {
                 'method': 'PUT',
@@ -47,7 +47,7 @@ restores_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get a restore.""",
+        description='Get a restore.',
         operations=[
             {
                 'method': 'GET',
@@ -57,7 +57,7 @@ restores_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get restores.""",
+        description='Get restores.',
         operations=[
             {
                 'method': 'GET',

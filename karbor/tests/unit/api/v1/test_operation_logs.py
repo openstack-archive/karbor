@@ -28,8 +28,6 @@ class OperationLogTest(base.TestCase):
         super(OperationLogTest, self).setUp()
         self.controller = operation_logs.OperationLogsController()
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
-        self.mock_policy_check = self.mock_object(
-            context.RequestContext, 'can')
 
     @mock.patch(
         'karbor.api.v1.operation_logs.'

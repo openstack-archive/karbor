@@ -28,7 +28,7 @@ plans_policies = [
     policy.DocumentedRuleDefault(
         name=CREATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Create a plan.""",
+        description='Create a plan.',
         operations=[
             {
                 'method': 'POST',
@@ -38,7 +38,7 @@ plans_policies = [
     policy.DocumentedRuleDefault(
         name=UPDATE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Update a plan.""",
+        description='Update a plan.',
         operations=[
             {
                 'method': 'PUT',
@@ -48,7 +48,7 @@ plans_policies = [
     policy.DocumentedRuleDefault(
         name=DELETE_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Delete a plan.""",
+        description='Delete a plan.',
         operations=[
             {
                 'method': 'DELETE',
@@ -58,7 +58,7 @@ plans_policies = [
     policy.DocumentedRuleDefault(
         name=GET_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get a plan.""",
+        description='Get a plan.',
         operations=[
             {
                 'method': 'GET',
@@ -68,7 +68,7 @@ plans_policies = [
     policy.DocumentedRuleDefault(
         name=GET_ALL_POLICY,
         check_str=base.RULE_ADMIN_OR_OWNER,
-        description="""Get plans.""",
+        description='Get plans.',
         operations=[
             {
                 'method': 'GET',
