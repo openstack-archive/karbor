@@ -43,3 +43,4 @@ def set_defaults(conf):
     conf.set_default('username', 'karbor', group='trustee')
     conf.set_default('password', 'password', group='trustee')
     conf.set_default('user_domain_id', 'default', group='trustee')
+    conf.set_default('trigger_poll_interval', 1)

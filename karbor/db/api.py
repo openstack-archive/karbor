@@ -192,6 +192,25 @@ def trigger_get_all_by_filters_sort(context, filters, limit=None,
 ###################
 
 
+def trigger_execution_create(context, trigger_id, time):
+    return IMPL.trigger_execution_create(context, trigger_id, time)
+
+
+def trigger_execution_get_next(context):
+    return IMPL.trigger_execution_get_next(context)
+
+
+def trigger_execution_delete(context, id, trigger_id):
+    return IMPL.trigger_execution_delete(context, id, trigger_id)
+
+
+def trigger_execution_update(context, id, current_time, new_time):
+    return IMPL.trigger_execution_update(context, id, current_time, new_time)
+
+
+###################
+
+
 def scheduled_operation_get(context, id, columns_to_join=[]):
     """Get a scheduled operation by its id.
 

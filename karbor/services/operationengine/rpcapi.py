@@ -64,10 +64,13 @@ class OperationEngineAPI(object):
                                  trigger_id=trigger_id)
 
     def create_trigger(self, ctxt, trigger):
-        return self._client.call(ctxt, 'create_trigger', trigger=trigger)
+        self._client.prepare(fanout=True).cast(ctxt, 'create_trigger',
+                                               trigger=trigger)
 
     def delete_trigger(self, ctxt, trigger_id):
-        return self._client.call(ctxt, 'delete_trigger', trigger_id=trigger_id)
+        self._client.prepare(fanout=True).cast(ctxt, 'delete_trigger',
+                                               trigger_id=trigger_id)
 
     def update_trigger(self, ctxt, trigger):
-        return self._client.call(ctxt, 'update_trigger', trigger=trigger)
+        self._client.prepare(fanout=True).cast(ctxt, 'update_trigger',
+                                               trigger=trigger)

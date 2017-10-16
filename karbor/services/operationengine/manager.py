@@ -221,15 +221,19 @@ class OperationEngineManager(manager.Manager):
 
     @messaging.expected_exceptions(exception.InvalidInput)
     def create_trigger(self, context, trigger):
+        LOG.debug('Creating trigger (id: "%s" type: "%s")',
+                  trigger.id, trigger.type)
         self.trigger_manager.add_trigger(trigger.id, trigger.type,
                                          trigger.properties)
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.DeleteTriggerNotAllowed)
     def delete_trigger(self, context, trigger_id):
+        LOG.debug('Deleting trigger (id: "%s")', trigger_id)
         self.trigger_manager.remove_trigger(trigger_id)
 
     @messaging.expected_exceptions(exception.TriggerNotFound,
                                    exception.InvalidInput)
     def update_trigger(self, context, trigger):
+        LOG.debug('Updating trigger (id: "%s")', trigger.id)
         self.trigger_manager.update_trigger(trigger.id, trigger.properties)

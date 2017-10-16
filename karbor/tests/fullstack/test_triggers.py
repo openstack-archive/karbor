@@ -11,6 +11,7 @@
 # under the License.
 
 
+from datetime import datetime
 from karbor.tests.fullstack import karbor_base
 from karbor.tests.fullstack import karbor_objects as objects
 
@@ -39,6 +40,29 @@ class TriggersTest(karbor_base.KarborBaseTest):
                        name=trigger_name)
         trigger = self.karbor_client.triggers.get(trigger.id)
         self.assertEqual(trigger_name, trigger.name)
+
+    def test_triggers_update(self):
+        trigger_name = "FullStack Trigger Test Update"
+        pattern1 = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
+        pattern2 = "BEGIN:VEVENT\nRRULE:FREQ=DAILY;INTERVAL=1;\nEND:VEVENT"
+        trigger = self.store(objects.Trigger())
+        trigger.create('time', {'pattern': pattern1, 'format': 'calendar'},
+                       name=trigger_name)
+        properties = {
+            'properties': {
+                'pattern': pattern2,
+                'format': 'calendar',
+                'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+            }
+        }
+
+        self.karbor_client.triggers.update(
+            trigger.id,
+            properties,
+        )
+
+        trigger = self.karbor_client.triggers.get(trigger.id)
+        self.assertEqual(trigger.properties['pattern'], pattern2)
 
     def test_triggers_delete(self):
         pattern = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"

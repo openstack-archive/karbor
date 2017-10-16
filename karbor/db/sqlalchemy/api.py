@@ -445,6 +445,109 @@ def trigger_get_all_by_filters_sort(context, filters, limit=None, marker=None,
 ###################
 
 
+def _trigger_execution_list_query(context, session, **kwargs):
+    return model_query(context, models.TriggerExecution, session=session)
+
+
+def _trigger_execution_list_process_filters(query, filters):
+    exact_match_filter_names = ['id', 'trigger_id', 'execution_time']
+    query = _list_common_process_exact_filter(models.Trigger, query, filters,
+                                              exact_match_filter_names)
+    return query
+
+
+def _trigger_execution_get(context, id, session=None):
+    result = model_query(context, models.TriggerExecution,
+                         session=session).filter_by(id=id)
+    result = result.first()
+
+    if not result:
+        raise exception.TriggerNotFound(id=id)
+
+    return result
+
+
+def trigger_execution_update(context, id, old_time, new_time):
+    session = get_session()
+    try:
+        with session.begin():
+            result = model_query(
+                context, models.TriggerExecution, session=session
+            ).filter_by(
+                id=id, execution_time=old_time
+            ).update({"execution_time": new_time})
+    except Exception as e:
+        LOG.warning("Unable to update trigger execution (%(execution)s): "
+                    "%(exc)s",
+                    {"execution": id, "exc": e})
+        return False
+    else:
+        LOG.debug("Updated trigger execution (%(execution)s) from %(old_time)s"
+                  " to %(new_time)s",
+                  {"execution": id, "old_time": old_time, "new_time": new_time}
+                  )
+        return result == 1
+
+
+def trigger_execution_create(context, trigger_id, time):
+    trigger_ex_ref = models.TriggerExecution()
+    trigger_ex_ref.update({
+        'id': uuidutils.generate_uuid(),
+        'trigger_id': trigger_id,
+        'execution_time': time,
+    })
+    trigger_ex_ref.save(get_session())
+    return trigger_ex_ref
+
+
+def trigger_execution_delete(context, id, trigger_id):
+    filters = {}
+    if id:
+        filters['id'] = id
+    if trigger_id:
+        filters['trigger_id'] = trigger_id
+
+    session = get_session()
+    try:
+        with session.begin():
+            deleted = model_query(
+                context, models.TriggerExecution, session=session
+            ).filter_by(**filters).delete()
+    except Exception as e:
+        LOG.warning("Unable to delete trigger (%(trigger)s) execution "
+                    "(%(execution)s): %(exc)s",
+                    {"trigger": trigger_id, "execution": id, "exc": e})
+        return False
+    else:
+        LOG.debug("Deleted trigger (%(trigger)s) execution (%(execution)s)",
+                  {"trigger": trigger_id, "execution": id})
+        return deleted == 1
+
+
+def trigger_execution_get_next(context):
+    session = get_session()
+    try:
+        with session.begin():
+            query = _generate_paginate_query(
+                context, session,
+                marker=None,
+                limit=1,
+                sort_keys=('execution_time', ),
+                sort_dirs=('asc', ),
+                filters=None,
+                paginate_type=models.TriggerExecution,
+            )
+            result = query.first()
+    except Exception as e:
+        LOG.warning("Unable to get next trigger execution %s", e)
+        return None
+    else:
+        return result
+
+
+###################
+
+
 def scheduled_operation_get(context, id, columns_to_join=[]):
     return _scheduled_operation_get(context, id,
                                     columns_to_join=columns_to_join)
@@ -1484,6 +1587,9 @@ PAGINATION_HELPERS = {
                      _restore_get),
     models.Trigger: (_trigger_list_query, _trigger_list_process_filters,
                      _trigger_get),
+    models.TriggerExecution: (_trigger_execution_list_query,
+                              _trigger_execution_list_process_filters,
+                              _trigger_execution_get),
     models.ScheduledOperation: (_scheduled_operation_list_query,
                                 _scheduled_operation_list_process_filters,
                                 _scheduled_operation_get),
