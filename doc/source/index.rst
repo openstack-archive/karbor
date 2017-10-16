@@ -54,6 +54,14 @@ Release Notes
 
    releasenotes
 
+Sample Files
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   sample_policy
+
 Indices and tables
 ==================
 
