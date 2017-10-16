@@ -10,11 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from karbor import exception
 from karbor.exception import ListProtectableResourceFailed
-from karbor.i18n import _
 from karbor.services.protection.graph import build_graph
-import six
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -23,13 +20,8 @@ from stevedore import extension
 LOG = logging.getLogger(__name__)
 
 
-class ProtectablePluginLoadFailed(exception.KarborException):
-    message = _("Could not load %(name)s: %(error)s")
-
-
-def _raise_extension_exception(extmanager, ep, err):
-    raise ProtectablePluginLoadFailed(name=ep.name,
-                                      error=six.text_type(err))
+def _warn_missing_protectable(extmanager, ep, err):
+    LOG.warning("Could not load %(name)s: %(error)s")
 
 
 class ProtectableRegistry(object):
@@ -46,7 +38,7 @@ class ProtectableRegistry(object):
         mgr = extension.ExtensionManager(
             namespace='karbor.protectables',
             invoke_on_load=True,
-            on_load_failure_callback=_raise_extension_exception)
+            on_load_failure_callback=_warn_missing_protectable)
 
         for e in mgr:
             self.register_plugin(e.obj)
