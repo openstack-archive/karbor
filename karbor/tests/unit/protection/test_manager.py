@@ -149,10 +149,21 @@ class ProtectionServiceTest(base.TestCase):
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     def test_show_checkpoint(self, mock_provider):
         mock_provider.return_value = fakes.FakeProvider()
-        context = mock.MagicMock()
+        context = mock.MagicMock(project_id='fake_project_id')
         cp = self.pro_manager.show_checkpoint(context, 'provider1',
                                               'fake_checkpoint')
         self.assertEqual('fake_checkpoint', cp['id'])
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_show_checkpoint_not_allowed(self, mock_provider):
+        mock_provider.return_value = fakes.FakeProvider()
+        context = mock.MagicMock(
+            project_id='fake_project_id_1',
+            is_admin=False
+        )
+        self.assertRaises(oslo_messaging.ExpectedException,
+                          self.pro_manager.show_checkpoint,
+                          context, 'provider1', 'fake_checkpoint')
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     @mock.patch.object(fakes.FakeCheckpointCollection, 'get')

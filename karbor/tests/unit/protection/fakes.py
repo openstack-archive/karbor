@@ -66,7 +66,8 @@ def fake_protection_plan():
                            {"id": "D", "type": "fake", "name": "fake"}],
                        'protection_provider': None,
                        'parameters': {},
-                       'provider_id': 'fake_id'
+                       'provider_id': 'fake_id',
+                       'project_id': 'fake_project_id'
                        }
     return protection_plan
 
@@ -248,6 +249,7 @@ class FakeCheckpoint(object):
         super(FakeCheckpoint, self).__init__()
         self.id = 'fake_checkpoint'
         self.status = 'available'
+        self.project_id = 'fake_project_id'
         self.resource_graph = resource_graph
 
     def purge(self):
@@ -266,7 +268,7 @@ class FakeCheckpoint(object):
             "status": self.status,
             "resource_graph": self.resource_graph,
             "protection_plan": None,
-            "project_id": None
+            "project_id": self.project_id
         }
 
 

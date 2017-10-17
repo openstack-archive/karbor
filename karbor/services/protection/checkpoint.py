@@ -139,6 +139,24 @@ class Checkpoint(object):
         return Checkpoint(checkpoint_section, indices_section,
                           bank_lease, checkpoint_id)
 
+    @staticmethod
+    def _get_checkpoint_path_by_provider(
+            provider_id, project_id, timestamp, checkpoint_id):
+        return "/by-provider/%s/%s/%s@%s" % (
+            provider_id, project_id, timestamp, checkpoint_id)
+
+    @staticmethod
+    def _get_checkpoint_path_by_plan(
+            plan_id, project_id, created_at, timestamp, checkpoint_id):
+        return "/by-plan/%s/%s/%s/%s@%s" % (
+            plan_id, project_id, created_at, timestamp, checkpoint_id)
+
+    @staticmethod
+    def _get_checkpoint_path_by_date(
+            created_at, project_id, timestamp, checkpoint_id):
+        return "/by-date/%s/%s/%s@%s" % (
+            created_at, project_id, timestamp, checkpoint_id)
+
     @classmethod
     def create_in_section(cls, checkpoints_section, indices_section,
                           bank_lease, owner_id, plan,
@@ -150,6 +168,7 @@ class Checkpoint(object):
         created_at = timeutils.utcnow().strftime('%Y-%m-%d')
 
         provider_id = plan.get("provider_id")
+        project_id = plan.get("project_id")
         extra_info = None
         if checkpoint_properties:
             extra_info = checkpoint_properties.get("extra_info", None)
@@ -161,7 +180,7 @@ class Checkpoint(object):
                 "status": constants.CHECKPOINT_STATUS_PROTECTING,
                 "owner_id": owner_id,
                 "provider_id": provider_id,
-                "project_id": plan.get("project_id"),
+                "project_id": project_id,
                 "protection_plan": {
                     "id": plan.get("id"),
                     "name": plan.get("name"),
@@ -175,19 +194,21 @@ class Checkpoint(object):
         )
 
         indices_section.update_object(
-            key="/by-provider/%s/%s@%s" % (provider_id, timestamp,
-                                           checkpoint_id),
+            key=cls._get_checkpoint_path_by_provider(
+                provider_id, project_id, timestamp, checkpoint_id),
             value=checkpoint_id
         )
 
         indices_section.update_object(
-            key="/by-date/%s/%s@%s" % (created_at, timestamp, checkpoint_id),
+            key=cls._get_checkpoint_path_by_date(
+                created_at, project_id, timestamp, checkpoint_id),
             value=checkpoint_id
         )
 
         indices_section.update_object(
-            key="/by-plan/%s/%s/%s@%s" % (
-                plan.get("id"), created_at, timestamp, checkpoint_id),
+            key=cls._get_checkpoint_path_by_plan(
+                plan.get("id"), project_id, created_at, timestamp,
+                checkpoint_id),
             value=checkpoint_id)
 
         return Checkpoint(checkpoint_section,
@@ -213,13 +234,16 @@ class Checkpoint(object):
             timestamp = self._md_cache["timestamp"]
             plan_id = self._md_cache["protection_plan"]["id"]
             provider_id = self._md_cache["protection_plan"]["provider_id"]
+            project_id = self._md_cache["project_id"]
             self._indices_section.delete_object(
-                "/by-provider/%s/%s@%s" % (provider_id, timestamp, self.id))
+                self._get_checkpoint_path_by_provider(
+                    provider_id, project_id, timestamp, self.id))
             self._indices_section.delete_object(
-                "/by-date/%s/%s@%s" % (created_at, timestamp, self.id))
+                self._get_checkpoint_path_by_date(
+                    created_at, project_id, timestamp, self.id))
             self._indices_section.delete_object(
-                "/by-plan/%s/%s/%s@%s" % (
-                    plan_id, created_at, timestamp, self.id))
+                self._get_checkpoint_path_by_plan(
+                    plan_id, project_id, created_at, timestamp, self.id))
 
             self._checkpoint_section.delete_object(_INDEX_FILE_NAME)
         else:
@@ -233,13 +257,16 @@ class Checkpoint(object):
         timestamp = self._md_cache["timestamp"]
         plan_id = self._md_cache["protection_plan"]["id"]
         provider_id = self._md_cache["protection_plan"]["provider_id"]
+        project_id = self._md_cache["project_id"]
         self._indices_section.delete_object(
-            "/by-provider/%s/%s@%s" % (provider_id, timestamp, self.id))
+            self._get_checkpoint_path_by_provider(
+                provider_id, project_id, timestamp, self.id))
         self._indices_section.delete_object(
-            "/by-date/%s/%s@%s" % (created_at, timestamp, self.id))
+            self._get_checkpoint_path_by_date(
+                created_at, project_id, timestamp, self.id))
         self._indices_section.delete_object(
-            "/by-plan/%s/%s/%s@%s" % (
-                plan_id, created_at, timestamp, self.id))
+            self._get_checkpoint_path_by_plan(
+                plan_id, project_id, created_at, timestamp, self.id))
 
     def get_resource_bank_section(self, resource_id):
         prefix = "/resource-data/%s/" % resource_id
@@ -255,8 +282,8 @@ class CheckpointCollection(object):
         self._checkpoints_section = bank.get_sub_section("/checkpoints")
         self._indices_section = bank.get_sub_section("/indices")
 
-    def list_ids(self, provider_id, limit=None, marker=None, plan_id=None,
-                 start_date=None, end_date=None, sort_dir=None):
+    def list_ids(self, project_id, provider_id, limit=None, marker=None,
+                 plan_id=None, start_date=None, end_date=None, sort_dir=None):
         marker_checkpoint = None
         if marker is not None:
             checkpoint_section = self._checkpoints_section.get_sub_section(
@@ -270,24 +297,26 @@ class CheckpointCollection(object):
                 end_date = timeutils.utcnow()
 
         if plan_id is None and start_date is None:
-            prefix = "/by-provider/%s/" % provider_id
+            prefix = "/by-provider/%s/%s/" % (provider_id, project_id)
             if marker is not None:
                 marker = "/%s" % marker
         elif plan_id is not None:
-            prefix = "/by-plan/%s/" % plan_id
+            prefix = "/by-plan/%s/%s/" % (plan_id, project_id)
             if marker is not None:
                 date = marker_checkpoint["created_at"]
-                marker = "/by-plan/%s/%s/%s" % (plan_id, date, marker)
+                marker = "/by-plan/%s/%s/%s/%s" % (
+                    plan_id, project_id, date, marker)
         else:
             prefix = "/by-date/"
             if marker is not None:
                 date = marker_checkpoint["created_at"]
-                marker = "/by-date/%s/%s" % (date, marker)
+                marker = "/by-date/%s/%s/%s" % (date, project_id, marker)
 
-        return self._list_ids(prefix, limit, marker, start_date, end_date,
-                              sort_dir)
+        return self._list_ids(project_id, prefix, limit, marker, start_date,
+                              end_date, sort_dir)
 
-    def _list_ids(self, prefix, limit, marker, start_date, end_date, sort_dir):
+    def _list_ids(self, project_id, prefix, limit, marker, start_date,
+                  end_date, sort_dir):
         if start_date is None:
             return [key[key.find("@") + 1:]
                     for key in self._indices_section.list_objects(
@@ -301,8 +330,10 @@ class CheckpointCollection(object):
             for key in self._indices_section.list_objects(prefix=prefix,
                                                           marker=marker,
                                                           sort_dir=sort_dir):
-                date = datetime.strptime(key.split("/")[-2], "%Y-%m-%d")
-                if start_date <= date <= end_date:
+                date = datetime.strptime(key.split("/")[-3], "%Y-%m-%d")
+                checkpoint_project_id = key.split("/")[-2]
+                if start_date <= date <= end_date and (
+                        checkpoint_project_id == project_id):
                     ids.append(key[key.find("@") + 1:])
                 if limit is not None and len(ids) == limit:
                     return ids

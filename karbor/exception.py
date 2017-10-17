@@ -242,6 +242,14 @@ class DeleteTriggerNotAllowed(NotAuthorized):
     message = _("Can not delete trigger %(trigger_id)s")
 
 
+class AccessCheckpointNotAllowed(NotAuthorized):
+    message = _("Access checkpoint %(checkpoint_id)s is not allowed")
+
+
+class DeleteCheckpointNotAllowed(NotAuthorized):
+    message = _("Delete checkpoint %(checkpoint_id)s is not allowed")
+
+
 class ClassNotFound(NotFound):
     message = _("Class %(class_name)s could not be found: %(exception)s")
 

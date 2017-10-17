@@ -197,6 +197,7 @@ class ProtectionManager(manager.Manager):
                         "is invalid.")
                 raise exception.InvalidInput(reason=msg)
 
+    @messaging.expected_exceptions(exception.DeleteCheckpointNotAllowed)
     def delete(self, context, provider_id, checkpoint_id):
         LOG.info("Starting protection service:delete action")
         LOG.debug('provider_id :%s checkpoint_id:%s', provider_id,
@@ -210,6 +211,13 @@ class ProtectionManager(manager.Manager):
                       checkpoint_id)
             raise exception.InvalidInput(
                 reason=_("Invalid checkpoint_id or provider_id"))
+
+        checkpoint_dict = checkpoint.to_dict()
+        if not context.is_admin and (
+                context.project_id != checkpoint_dict['project_id']):
+            LOG.warn("Delete checkpoint(%s) is not allowed." % checkpoint_id)
+            raise exception.DeleteCheckpointNotAllowed(
+                checkpoint_id=checkpoint_id)
 
         if checkpoint.status not in [
             constants.CHECKPOINT_STATUS_AVAILABLE,
@@ -259,9 +267,11 @@ class ProtectionManager(manager.Manager):
                 filters.get("end_date"), "%Y-%m-%d")
         sort_dir = None if sort_dirs is None else sort_dirs[0]
         provider = self.provider_registry.show_provider(provider_id)
+        project_id = context.project_id
         checkpoint_ids = provider.list_checkpoints(
-            provider_id, limit=limit, marker=marker, plan_id=plan_id,
-            start_date=start_date, end_date=end_date, sort_dir=sort_dir)
+            project_id, provider_id, limit=limit, marker=marker,
+            plan_id=plan_id, start_date=start_date, end_date=end_date,
+            sort_dir=sort_dir)
         checkpoints = []
         for checkpoint_id in checkpoint_ids:
             checkpoint = provider.get_checkpoint(checkpoint_id)
@@ -269,12 +279,18 @@ class ProtectionManager(manager.Manager):
         return checkpoints
 
     @messaging.expected_exceptions(exception.ProviderNotFound,
-                                   exception.CheckpointNotFound)
+                                   exception.CheckpointNotFound,
+                                   exception.AccessCheckpointNotAllowed)
     def show_checkpoint(self, context, provider_id, checkpoint_id):
         provider = self.provider_registry.show_provider(provider_id)
 
         checkpoint = provider.get_checkpoint(checkpoint_id)
-        return checkpoint.to_dict()
+        checkpoint_dict = checkpoint.to_dict()
+        if not context.is_admin and (
+                context.project_id != checkpoint_dict['project_id']):
+            raise exception.AccessCheckpointNotAllowed(
+                checkpoint_id=checkpoint_id)
+        return checkpoint_dict
 
     def list_protectable_types(self, context):
         LOG.info("Start to list protectable types.")
