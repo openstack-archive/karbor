@@ -22,6 +22,7 @@ from karbor.policies import providers
 from karbor.policies import restores
 from karbor.policies import scheduled_operations
 from karbor.policies import triggers
+from karbor.policies import verifications
 
 
 def list_rules():
@@ -34,4 +35,5 @@ def list_rules():
         triggers.list_rules(),
         scheduled_operations.list_rules(),
         operation_logs.list_rules(),
+        verifications.list_rules()
     )

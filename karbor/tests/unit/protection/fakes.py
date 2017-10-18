@@ -223,6 +223,9 @@ class FakeProtectionPlugin(protection_plugin.ProtectionPlugin):
     def get_delete_operation(self, *args, **kwargs):
         return MockOperation()
 
+    def get_verify_operation(self, *args, **kwargs):
+        return MockOperation()
+
     @classmethod
     def get_supported_resources_types(cls):
         return cls.SUPPORTED_RESOURCES

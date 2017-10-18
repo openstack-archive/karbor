@@ -75,6 +75,12 @@ RESTORE_SCHEMA = {
     }
 }
 
+VERIFY_SCHEMA = {
+    "title": "Cinder Volume Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Cinder Protection Saved Info",
     "type": "object",

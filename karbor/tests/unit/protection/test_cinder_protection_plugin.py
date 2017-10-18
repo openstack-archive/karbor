@@ -372,6 +372,37 @@ class CinderProtectionPluginTest(base.TestCase):
                 None, resource.type, volume_id, 'available')
 
     @mock.patch('karbor.services.protection.clients.cinder.create')
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_verify_result')
+    def test_verify_succeed(self, mock_update_verify, mock_cinder_create):
+        resource = Resource(
+            id="123",
+            type=constants.VOLUME_RESOURCE_TYPE,
+            name="fake",
+        )
+        checkpoint = self._get_checkpoint()
+        section = checkpoint.get_resource_bank_section()
+        section.update_object('metadata', {
+            'backup_id': '456',
+        })
+        parameters = {}
+
+        operation = self.plugin.get_verify_operation(resource)
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            backups=mock.DEFAULT,
+            volumes=mock.DEFAULT,
+        ) as mocks:
+            volume_id = '123'
+            mocks['backups'].get.return_value = mock.Mock()
+            mocks['backups'].get.return_value.status = 'available'
+            call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
+                       **{'verify':  None, 'new_resources': {}})
+            mock_update_verify.assert_called_with(
+                None, resource.type, volume_id, 'available')
+
+    @mock.patch('karbor.services.protection.clients.cinder.create')
     def test_restore_fail_volume_0(self, mock_cinder_create):
         resource = Resource(
             id="123",

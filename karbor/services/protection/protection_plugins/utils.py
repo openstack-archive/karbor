@@ -107,3 +107,19 @@ def status_poll(get_status_func, interval, success_statuses=set(),
 
     loop = loopingcall.FixedIntervalLoopingCall(_poll)
     return loop.start(interval=interval, initial_delay=interval).wait()
+
+
+def update_resource_verify_result(verify_record, resource_type, resource_id,
+                                  status, reason=''):
+    try:
+        verify_record.update_resource_status(resource_type, resource_id,
+                                             status, reason)
+        verify_record.save()
+    except Exception:
+        LOG.error('Unable to update verify result. '
+                  'resource type: %(resource_type)s, '
+                  'resource id: %(resource_id)s, '
+                  'status: %(status)s, reason: %(reason)s',
+                  {'resource_type': resource_type, 'resource_id': resource_id,
+                   'status': status, 'reason': reason})
+        raise

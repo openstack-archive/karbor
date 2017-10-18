@@ -41,6 +41,7 @@ ResourceHooks = namedtuple('ResourceHooks', [
 
 OPERATION_EXTRA_ARGS = {
     constants.OPERATION_RESTORE: ['restore', 'new_resources'],
+    constants.OPERATION_VERIFY: ['verify', 'new_resources'],
 }
 
 

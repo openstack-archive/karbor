@@ -95,3 +95,24 @@ def create_operation_log_restore(context, restore):
         LOG.error('Error creating operation log. checkpoint: %s',
                   restore.id)
         raise
+
+
+def create_operation_log_verify(context, verify):
+    operation_log_properties = {
+        'project_id': verify.get('project_id'),
+        'operation_type': constants.OPERATION_VERIFY,
+        'checkpoint_id': verify.get('checkpoint_id'),
+        'plan_id': verify.get('plan_id', None),
+        'provider_id': verify.get('provider_id'),
+        'status': verify.get('status'),
+        'started_at': timeutils.utcnow()
+    }
+    try:
+        operation_log = objects.OperationLog(context=context,
+                                             **operation_log_properties)
+        operation_log.create()
+        return operation_log
+    except Exception:
+        LOG.error('Error creating operation log. verify: %s',
+                  verify.id)
+        raise

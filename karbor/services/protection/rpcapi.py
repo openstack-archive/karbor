@@ -52,6 +52,13 @@ class ProtectionAPI(object):
             restore=restore,
             restore_auth=restore_auth)
 
+    def verification(self, ctxt, verification=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'verification',
+            verification=verification)
+
     def protect(self, ctxt, plan=None, checkpoint_properties=None):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(

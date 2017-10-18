@@ -20,6 +20,7 @@ from karbor import exception
 from karbor.services.protection.flows import delete as flow_delete
 from karbor.services.protection.flows import protect as flow_protect
 from karbor.services.protection.flows import restore as flow_restore
+from karbor.services.protection.flows import verify as flow_verify
 
 workflow_opts = [
     cfg.StrOpt(
@@ -72,6 +73,15 @@ class Worker(object):
                 provider,
                 restore,
                 restore_auth,
+            )
+        elif operation_type == constants.OPERATION_VERIFY:
+            verify = kwargs.get('verify')
+            flow = flow_verify.get_flow(
+                context,
+                self.workflow_engine,
+                checkpoint,
+                provider,
+                verify
             )
         elif operation_type == constants.OPERATION_DELETE:
             flow = flow_delete.get_flow(

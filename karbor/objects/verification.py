@@ -107,7 +107,7 @@ class VerificationList(base.ObjectListBase, base.KarborObject):
     VERSION = '1.0'
 
     fields = {
-        'objects': fields.ListOfObjectsField('verification'),
+        'objects': fields.ListOfObjectsField('Verification'),
     }
 
     @base.remotable_classmethod

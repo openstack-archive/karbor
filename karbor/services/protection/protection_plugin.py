@@ -83,6 +83,13 @@ class ProtectionPlugin(object):
         """
         raise NotImplementedError
 
+    def get_verify_operation(self, resource):
+        """Returns the verify Operation for this resource
+
+        :returns: Operation for the resource
+        """
+        raise NotImplementedError
+
     def get_delete_operation(self, resource):
         """Returns the delete Operation for this resource
 
@@ -117,6 +124,14 @@ class ProtectionPlugin(object):
     @classmethod
     def get_restore_schema(cls, resource_type):
         """Returns the restore schema for a resource type
+
+        :returns: a dictionary representing the schema
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def get_verify_schema(cls, resource_type):
+        """Returns the verify schema for a resource type
 
         :returns: a dictionary representing the schema
         """

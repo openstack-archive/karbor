@@ -311,6 +311,46 @@ class RestoreOperation(protection_plugin.Operation):
         )
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        resource_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(resource_id)
+        resource_metadata = bank_section.get_object('metadata')
+        cinder_client = ClientFactory.create_client('cinder', context)
+        LOG.info('Verifying the volume backup, volume_id: %s', resource_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, resource_id)
+
+        backup_id = resource_metadata['backup_id']
+        try:
+            volume_backup = cinder_client.backups.get(backup_id)
+            backup_status = volume_backup.status
+        except Exception as ex:
+            LOG.error('Error get volume backup (backup_id: %(backup_id)s): '
+                      '%(reason)s', {'backup_id': backup_id, 'reason': ex})
+            reason = 'Error getting volume backup.'
+            update_method(constants.RESOURCE_STATUS_ERROR, reason)
+            raise
+
+        if backup_status == 'available':
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = (
+                'The status of volume backup status is %s.' % backup_status)
+            update_method(backup_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Volume Backup",
+                reason=reason,
+                resource_id=resource_id,
+                resource_type=resource.type
+            )
+
+
 class DeleteOperation(protection_plugin.Operation):
     def __init__(self, poll_interval):
         super(DeleteOperation, self).__init__()
@@ -380,6 +420,10 @@ class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
         return cinder_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return cinder_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(cls, resources_type):
         return cinder_schemas.SAVED_INFO_SCHEMA
 
@@ -394,6 +438,9 @@ class CinderBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         return DeleteOperation(self._poll_interval)

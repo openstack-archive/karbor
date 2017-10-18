@@ -169,6 +169,44 @@ class ProtectionManager(manager.Manager):
                 error=_("Failed to create flow"))
         self._spawn(self.worker.run_flow, flow)
 
+    @messaging.expected_exceptions(exception.ProviderNotFound,
+                                   exception.CheckpointNotFound,
+                                   exception.CheckpointNotAvailable,
+                                   exception.FlowError,
+                                   exception.InvalidInput)
+    def verification(self, context, verification):
+        LOG.info("Starting verify service:verify action")
+
+        checkpoint_id = verification["checkpoint_id"]
+        provider_id = verification["provider_id"]
+        provider = self.provider_registry.show_provider(provider_id)
+        if not provider:
+            raise exception.ProviderNotFound(provider_id=provider_id)
+
+        self.validate_verify_parameters(verification, provider)
+
+        checkpoint_collection = provider.get_checkpoint_collection()
+        checkpoint = checkpoint_collection.get(checkpoint_id)
+
+        if checkpoint.status != constants.CHECKPOINT_STATUS_AVAILABLE:
+            raise exception.CheckpointNotAvailable(
+                checkpoint_id=checkpoint_id)
+
+        try:
+            flow = self.worker.get_flow(
+                context=context,
+                operation_type=constants.OPERATION_VERIFY,
+                checkpoint=checkpoint,
+                provider=provider,
+                verify=verification)
+        except Exception:
+            LOG.exception("Failed to create verify flow checkpoint: %s",
+                          checkpoint_id)
+            raise exception.FlowError(
+                flow="verify",
+                error=_("Failed to create flow"))
+        self._spawn(self.worker.run_flow, flow)
+
     def validate_restore_parameters(self, restore, provider):
         parameters = restore["parameters"]
         if not parameters:
@@ -194,6 +232,34 @@ class ProtectionManager(manager.Manager):
             if not set(parameter_value.keys()).issubset(
                     set(properties.keys())):
                 msg = _("The restore property of restore parameters "
+                        "is invalid.")
+                raise exception.InvalidInput(reason=msg)
+
+    def validate_verify_parameters(self, verify, provider):
+        parameters = verify["parameters"]
+        if not parameters:
+            return
+        verify_schema = provider.extended_info_schema.get(
+            "verify_schema", None)
+        if verify_schema is None:
+            msg = _("The verify schema of plugin must be provided.")
+            raise exception.InvalidInput(reason=msg)
+        for resource_key, parameter_value in parameters.items():
+            if "#" in resource_key:
+                resource_type, resource_id = resource_key.split("#")
+                if not uuidutils.is_uuid_like(resource_id):
+                    msg = _("The resource_id must be a uuid.")
+                    raise exception.InvalidInput(reason=msg)
+            else:
+                resource_type = resource_key
+            if (resource_type not in constants.RESOURCE_TYPES) or (
+                    resource_type not in verify_schema):
+                msg = _("The key of verify parameters is invalid.")
+                raise exception.InvalidInput(reason=msg)
+            properties = verify_schema[resource_type]["properties"]
+            if not set(parameter_value.keys()).issubset(
+                    set(properties.keys())):
+                msg = _("The verify property of verify parameters "
                         "is invalid.")
                 raise exception.InvalidInput(reason=msg)
 

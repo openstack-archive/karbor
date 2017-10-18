@@ -27,6 +27,9 @@ class API(base.Base):
     def restore(self, context, restore, restore_auth):
         return self.protection_rpcapi.restore(context, restore, restore_auth)
 
+    def verification(self, context, verification):
+        return self.protection_rpcapi.verification(context, verification)
+
     def protect(self, context, plan, checkpoint_properties):
         return self.protection_rpcapi.protect(context, plan,
                                               checkpoint_properties)

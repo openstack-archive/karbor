@@ -14,11 +14,13 @@
 OPERATION_TYPES = (
     OPERATION_PROTECT,
     OPERATION_RESTORE,
-    OPERATION_DELETE
+    OPERATION_DELETE,
+    OPERATION_VERIFY,
 ) = (
     'protect',
     'restore',
-    'delete'
+    'delete',
+    'verify'
 )
 
 
@@ -104,3 +106,7 @@ OPERATION_EXE_STATE_DROPPED_OUT_OF_WINDOW = 'dropped_out_of_window'
 RESTORE_STATUS_SUCCESS = 'success'
 RESTORE_STATUS_FAILURE = 'fail'
 RESTORE_STATUS_IN_PROGRESS = 'in_progress'
+
+VERIFICATION_STATUS_SUCCESS = 'success'
+VERIFICATION_STATUS_FAILURE = 'fail'
+VERIFICATION_STATUS_IN_PROGRESS = 'in_progress'
