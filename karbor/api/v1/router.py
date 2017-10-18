@@ -19,6 +19,7 @@ from karbor.api.v1 import protectables
 from karbor.api.v1 import providers
 from karbor.api.v1 import restores
 from karbor.api.v1 import scheduled_operations
+from karbor.api.v1 import services
 from karbor.api.v1 import triggers
 from karbor.api.v1 import verifications
 
@@ -37,6 +38,7 @@ class APIRouter(base_wsgi.Router):
         scheduled_operation_resources = scheduled_operations.create_resource()
         operation_log_resources = operation_logs.create_resource()
         verification_resources = verifications.create_resource()
+        service_resources = services.create_resource()
 
         mapper.resource("plan", "plans",
                         controller=plans_resources,
@@ -102,6 +104,10 @@ class APIRouter(base_wsgi.Router):
                         member={})
         mapper.resource("verification", "verifications",
                         controller=verification_resources,
+                        collection={},
+                        member={'action': 'POST'})
+        mapper.resource("os-service", "os-services",
+                        controller=service_resources,
                         collection={},
                         member={'action': 'POST'})
         super(APIRouter, self).__init__(mapper)

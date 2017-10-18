@@ -63,6 +63,11 @@ class Service(base.KarborPersistentObject, base.KarborObject,
         db_service = db.service_get_by_args(context, host, binary_key)
         return cls._from_db_object(context, cls(context), db_service)
 
+    @base.remotable_classmethod
+    def get_by_id(cls, context, id):
+        db_service = db.service_get(context, id)
+        return cls._from_db_object(context, cls(context), db_service)
+
     @base.remotable
     def create(self):
         if self.obj_attr_is_set('id'):
@@ -99,6 +104,12 @@ class ServiceList(base.ObjectListBase, base.KarborObject):
     @base.remotable_classmethod
     def get_all(cls, context, filters=None):
         services = db.service_get_all(context, filters)
+        return base.obj_make_list(context, cls(context), objects.Service,
+                                  services)
+
+    @base.remotable_classmethod
+    def get_all_by_args(cls, context, host, binary):
+        services = db.service_get_all_by_args(context, host, binary)
         return base.obj_make_list(context, cls(context), objects.Service,
                                   services)
 

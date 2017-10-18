@@ -253,6 +253,20 @@ def service_get_all(context, disabled=None):
 
 
 @require_admin_context
+def service_get_all_by_args(context, host, binary):
+    results = model_query(
+        context,
+        models.Service
+    )
+    if host is not None:
+        results = results.filter_by(host=host)
+    if binary is not None:
+        results = results.filter_by(binary=binary)
+
+    return results.all()
+
+
+@require_admin_context
 def service_get_all_by_topic(context, topic, disabled=None):
     query = model_query(
         context,
@@ -340,7 +354,7 @@ def service_update(context, service_id, values):
     session = get_session()
     with session.begin():
         service_ref = _service_get(context, service_id, session=session)
-        if ('disabled' in values):
+        if 'disabled' in values:
             service_ref['modified_at'] = timeutils.utcnow()
             service_ref['updated_at'] = literal_column('updated_at')
         service_ref.update(values)
