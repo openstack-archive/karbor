@@ -147,14 +147,14 @@ class PluggableProtectionProvider(object):
     def get_checkpoint(self, checkpoint_id):
         return self.get_checkpoint_collection().get(checkpoint_id)
 
-    def list_checkpoints(self, provider_id, limit=None, marker=None,
-                         plan_id=None, start_date=None, end_date=None,
-                         sort_dir=None):
+    def list_checkpoints(self, project_id, provider_id, limit=None,
+                         marker=None, plan_id=None, start_date=None,
+                         end_date=None, sort_dir=None):
         checkpoint_collection = self.get_checkpoint_collection()
         return checkpoint_collection.list_ids(
-            provider_id=provider_id, limit=limit, marker=marker,
-            plan_id=plan_id, start_date=start_date, end_date=end_date,
-            sort_dir=sort_dir)
+            project_id=project_id, provider_id=provider_id, limit=limit,
+            marker=marker, plan_id=plan_id, start_date=start_date,
+            end_date=end_date, sort_dir=sort_dir)
 
 
 class ProviderRegistry(object):

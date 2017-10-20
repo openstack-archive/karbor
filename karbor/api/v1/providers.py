@@ -431,6 +431,8 @@ class ProvidersController(wsgi.Controller):
                                               checkpoint_id)
         except exception.CheckpointNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
+        except exception.AccessCheckpointNotAllowed as error:
+            raise exc.HTTPForbidden(explanation=error.msg)
 
         LOG.info("Show checkpoint request issued successfully.")
         LOG.info("checkpoint: %s", checkpoint)
@@ -479,9 +481,10 @@ class ProvidersController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         context.can(provider_policy.CHECKPOINT_DELETE_POLICY)
-        self.protection_api.delete(context,
-                                   provider_id,
-                                   checkpoint_id)
+        try:
+            self.protection_api.delete(context, provider_id, checkpoint_id)
+        except exception.DeleteCheckpointNotAllowed as error:
+            raise exc.HTTPForbidden(explantion=error.msg)
 
         LOG.info("Delete checkpoint request issued successfully.")
         return {}
