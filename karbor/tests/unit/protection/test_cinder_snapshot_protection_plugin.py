@@ -47,7 +47,8 @@ class FakeBankPlugin(BankPlugin):
 
 
 fake_bank = Bank(FakeBankPlugin())
-fake_bank_section = BankSection(bank=fake_bank, section="fake")
+fake_bank_section = BankSection(bank=fake_bank,
+                                section="fake")
 
 ResourceNode = collections.namedtuple(
     "ResourceNode",
@@ -195,3 +196,37 @@ class CinderSnapshotProtectionPluginTest(base.TestCase):
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
         self.assertEqual([constants.VOLUME_RESOURCE_TYPE], types)
+
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_verify_result')
+    def test_verify_succeed(self, mock_update_verify, mock_cinder_create):
+        resource = Resource(
+            id="123",
+            type=constants.VOLUME_RESOURCE_TYPE,
+            name="fake",
+        )
+        checkpoint = self.checkpoint
+        section = checkpoint.get_resource_bank_section(resource)
+        section.update_object('metadata', {
+            'snapshot_id': '456',
+        })
+        parameters = {}
+
+        operation = self.plugin.get_verify_operation(resource)
+        mock_cinder_create.return_value = self.cinder_client
+        with mock.patch.multiple(
+            self.cinder_client,
+            volume_snapshots=mock.DEFAULT,
+            volumes=mock.DEFAULT,
+        ) as mocks:
+            volume_id = '123'
+            mocks['volume_snapshots'].get.return_value = mock.Mock()
+            mocks['volume_snapshots'].get.return_value.status = 'available'
+            fake_bank_section.get_object = mock.MagicMock()
+            fake_bank_section.get_object.return_value = {
+                "snapshot_id": "456"}
+            call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
+                       **{'verify':  None, 'new_resources': {}})
+            mock_update_verify.assert_called_with(
+                None, resource.type, volume_id, 'available')

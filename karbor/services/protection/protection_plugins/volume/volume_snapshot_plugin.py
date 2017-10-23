@@ -220,6 +220,48 @@ class RestoreOperation(protection_plugin.Operation):
                  original_volume_id)
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        original_volume_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(original_volume_id)
+        cinder_client = ClientFactory.create_client('cinder', context)
+        resource_metadata = bank_section.get_object('metadata')
+        LOG.info('Verifying the volume snapshot, volume_id: %s',
+                 original_volume_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, original_volume_id)
+
+        snapshot_id = resource_metadata['snapshot_id']
+        try:
+            volume_snapshot = cinder_client.volume_snapshots.get(snapshot_id)
+            snapshot_status = volume_snapshot.status
+        except Exception as ex:
+            LOG.error('Getting volume snapshot (snapshot_id: %(snapshot_id)s):'
+                      '%(reason)s fails',
+                      {'snapshot_id': snapshot_id, 'reason': ex})
+            reason = 'Getting volume backup fails.'
+            update_method(constants.RESOURCE_STATUS_ERROR, reason)
+            raise
+
+        if snapshot_status == 'available':
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of volume snapshot status is %s.'
+                      % snapshot_status)
+            update_method(snapshot_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Volume snapshot",
+                reason=reason,
+                resource_id=original_volume_id,
+                resource_type=resource.type
+            )
+
+
 class DeleteOperation(protection_plugin.Operation):
     def __init__(self, poll_interval):
         super(DeleteOperation, self).__init__()
@@ -290,6 +332,10 @@ class VolumeSnapshotProtectionPlugin(protection_plugin.ProtectionPlugin):
         return volume_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return volume_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(cls, resources_type):
         return volume_schemas.SAVED_INFO_SCHEMA
 
@@ -302,6 +348,9 @@ class VolumeSnapshotProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         return DeleteOperation(self._poll_interval)

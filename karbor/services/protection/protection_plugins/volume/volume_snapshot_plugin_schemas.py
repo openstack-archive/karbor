@@ -56,6 +56,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Volume snapshot Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Volume Protection Saved Info",
     "type": "object",
