@@ -50,6 +50,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Share snapshot Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Share Protection Saved Info",
     "type": "object",
