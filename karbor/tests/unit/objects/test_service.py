@@ -98,3 +98,14 @@ class TestServiceList(test_objects.BaseObjectsTestCase):
             self.context, 'foo', disabled='bar')
         self.assertEqual(1, len(services))
         TestService._compare(self, db_service, services[0])
+
+    @mock.patch('karbor.db.service_get_all_by_args')
+    def test_get_all_by_args(self, service_get_all_by_args):
+        db_service = fake_service.fake_db_service()
+        service_get_all_by_args.return_value = [db_service]
+        services = objects.ServiceList.get_all_by_args(
+            self.context, 'fake-host', 'fake-service')
+        service_get_all_by_args.assert_called_once_with(
+            self.context, 'fake-host', 'fake-service')
+        self.assertEqual(1, len(services))
+        TestService._compare(self, db_service, services[0])
