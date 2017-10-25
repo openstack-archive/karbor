@@ -185,6 +185,35 @@ class DeleteOperation(protection_plugin.Operation):
                 resource_type=constants.POD_RESOURCE_TYPE)
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        original_pod_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(
+            original_pod_id)
+        LOG.info('Verifying the pod backup, pod_id: %s.', original_pod_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, original_pod_id)
+
+        backup_status = bank_section.get_object("status")
+
+        if backup_status == constants.RESOURCE_STATUS_AVAILABLE:
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of pod backup status is %s.'
+                      % backup_status)
+            update_method(backup_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Pod backup",
+                reason=reason,
+                resource_id=original_pod_id,
+                resource_type=resource.type)
+
+
 class RestoreOperation(protection_plugin.Operation):
     def __init__(self, poll_interval):
         super(RestoreOperation, self).__init__()
@@ -313,6 +342,10 @@ class PodProtectionPlugin(protection_plugin.ProtectionPlugin):
         return pod_plugin_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return pod_plugin_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(cls, resource_type):
         return pod_plugin_schemas.SAVED_INFO_SCHEMA
 
@@ -325,6 +358,9 @@ class PodProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         return DeleteOperation()
