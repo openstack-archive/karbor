@@ -37,6 +37,12 @@ RESTORE_SCHEMA = {
     "required": ["backup_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Image Protection Verify",
+    "type": "object",
+    "properties": {}
+}
+
 # TODO(hurong)
 SAVED_INFO_SCHEMA = {
     "title": "Image Protection Saved Info",
