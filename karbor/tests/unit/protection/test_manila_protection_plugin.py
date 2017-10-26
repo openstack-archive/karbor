@@ -192,6 +192,30 @@ class ManilaProtectionPluginTest(base.TestCase):
         call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
                    {})
 
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_verify_result')
+    @mock.patch('karbor.services.protection.clients.manila.create')
+    def test_verify_snapshot(self, mock_manila_create, mock_update_verify):
+        resource = Resource(id="123",
+                            type=constants.SHARE_RESOURCE_TYPE,
+                            name='fake')
+        mock_manila_create.return_value = self.manila_client
+        self.manila_client.share_snapshots.get = mock.MagicMock()
+        self.manila_client.share_snapshots.get.return_value = Snapshot(
+            id="1234",
+            status="available"
+        )
+
+        fake_bank_section.get_object = mock.MagicMock()
+        fake_bank_section.get_object.return_value = {
+            "snapshot_id": "1234"}
+
+        verify_operation = self.plugin.get_verify_operation(resource)
+        call_hooks(verify_operation, self.checkpoint, resource, self.cntxt,
+                   {})
+        mock_update_verify.assert_called_with(
+            None, resource.type, resource.id, 'available')
+
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
         self.assertEqual([constants.SHARE_RESOURCE_TYPE], types)

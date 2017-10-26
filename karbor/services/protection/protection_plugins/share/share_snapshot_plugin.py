@@ -218,6 +218,48 @@ class RestoreOperation(protection_plugin.Operation):
                  original_share_id)
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        original_share_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(original_share_id)
+        manila_client = ClientFactory.create_client('manila', context)
+        resource_metadata = bank_section.get_object('metadata')
+        LOG.info('Verifying the share snapshot, share_id: %s',
+                 original_share_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, original_share_id)
+
+        snapshot_id = resource_metadata['snapshot_id']
+        try:
+            share_snapshot = manila_client.share_snapshots.get(snapshot_id)
+            snapshot_status = share_snapshot.status
+        except Exception as ex:
+            LOG.error('Getting share snapshot (snapshot_id: %(snapshot_id)s):'
+                      '%(reason)s fails',
+                      {'snapshot_id': snapshot_id, 'reason': ex})
+            reason = 'Getting share snapshot fails.'
+            update_method(constants.RESOURCE_STATUS_ERROR, reason)
+            raise
+
+        if snapshot_status == 'available':
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of share snapshot status is %s.'
+                      % snapshot_status)
+            update_method(snapshot_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Share snapshot",
+                reason=reason,
+                resource_id=original_share_id,
+                resource_type=resource.type
+            )
+
+
 class DeleteOperation(protection_plugin.Operation):
     def __init__(self, poll_interval):
         super(DeleteOperation, self).__init__()
@@ -288,6 +330,10 @@ class ManilaSnapshotProtectionPlugin(protection_plugin.ProtectionPlugin):
         return share_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return share_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(cls, resources_type):
         return share_schemas.SAVED_INFO_SCHEMA
 
@@ -300,6 +346,9 @@ class ManilaSnapshotProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         return DeleteOperation(self._poll_interval)
