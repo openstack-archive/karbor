@@ -194,6 +194,30 @@ class TroveProtectionPluginTest(base.TestCase):
         call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
                    {})
 
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_verify_result')
+    @mock.patch('karbor.services.protection.clients.trove.create')
+    def test_verify_backup(self, mock_trove_create, mock_update_verify):
+        resource = Resource(id="123",
+                            type=constants.DATABASE_RESOURCE_TYPE,
+                            name='fake')
+        mock_trove_create.return_value = self.trove_client
+        self.trove_client.backups.get = mock.MagicMock()
+        self.trove_client.backups.get.return_value = Backup(
+            id="1234",
+            status="COMPLETED"
+        )
+
+        fake_bank_section.get_object = mock.MagicMock()
+        fake_bank_section.get_object.return_value = {
+            "backup_id": "1234"}
+
+        verify_operation = self.plugin.get_verify_operation(resource)
+        call_hooks(verify_operation, self.checkpoint, resource, self.cntxt,
+                   {})
+        mock_update_verify.assert_called_with(
+            None, resource.type, resource.id, 'available')
+
     def test_get_supported_resources_types(self):
         types = self.plugin.get_supported_resources_types()
         self.assertEqual(types,

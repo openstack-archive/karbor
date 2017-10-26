@@ -43,6 +43,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Database backup Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Database Instance Protection Saved Info",
     "type": "object",

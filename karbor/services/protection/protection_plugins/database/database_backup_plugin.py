@@ -218,6 +218,48 @@ class RestoreOperation(protection_plugin.Operation):
                  "instance_id: %s.", original_instance_id)
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        original_instance_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(
+            original_instance_id)
+        trove_client = ClientFactory.create_client('trove', context)
+        resource_metadata = bank_section.get_object('metadata')
+        LOG.info('Verifying the database instance, instance_id: %s',
+                 original_instance_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, original_instance_id)
+
+        backup_id = resource_metadata['backup_id']
+        try:
+            instance_backup = trove_client.backups.get(backup_id)
+            backup_status = instance_backup.status
+        except Exception as ex:
+            LOG.error('Getting database backup (backup_id: %(backup_id)s):'
+                      '%(reason)s fails',
+                      {'backup_id': backup_id, 'reason': ex})
+            reason = 'Getting database backup fails.'
+            update_method(constants.RESOURCE_STATUS_ERROR, reason)
+            raise
+
+        if backup_status == 'COMPLETED':
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of database backup status is %s.'
+                      % backup_status)
+            update_method(backup_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Database backup",
+                reason=reason,
+                resource_id=original_instance_id,
+                resource_type=resource.type)
+
+
 class DeleteOperation(protection_plugin.Operation):
     def __init__(self, poll_interval):
         super(DeleteOperation, self).__init__()
@@ -288,6 +330,10 @@ class DatabaseBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
         return database_instance_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return database_instance_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(cls, resources_type):
         return database_instance_schemas.SAVED_INFO_SCHEMA
 
@@ -300,6 +346,9 @@ class DatabaseBackupProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         return DeleteOperation(self._poll_interval)
