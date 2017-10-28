@@ -11,7 +11,6 @@
 # under the License.
 
 import logging
-import os
 
 import fixtures
 import mock
@@ -93,17 +92,6 @@ class TestCase(base.BaseTestCase):
             _DB_CACHE = Database(sqla_api, migration,
                                  sql_connection=CONF.database.connection)
         self.useFixture(_DB_CACHE)
-
-        self.override_config('policy_file',
-                             os.path.join(
-                                 os.path.abspath(
-                                     os.path.join(
-                                         os.path.dirname(__file__),
-                                         '..',
-                                     )
-                                 ),
-                                 'tests/unit/policy.json'),
-                             group='oslo_policy')
 
     def override_config(self, name, override, group=None):
         """Cleanly override CONF variables."""
