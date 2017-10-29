@@ -11,6 +11,7 @@
 #    under the License.
 
 import mock
+from oslo_config import cfg
 from oslo_utils import uuidutils
 from webob import exc
 
@@ -51,6 +52,7 @@ class ScheduledOperationApiTest(base.TestCase):
         self.ctxt = context.RequestContext('demo', 'fakeproject', True)
         self.req = fakes.HTTPRequest.blank('/v1/scheduled_operations')
 
+        cfg.CONF.set_default('time_format', 'crontab')
         trigger = self._create_trigger()
         self._plan = self._create_plan(uuidutils.generate_uuid())
         self.default_create_operation_param = {

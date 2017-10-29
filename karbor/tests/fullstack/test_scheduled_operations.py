@@ -24,7 +24,10 @@ from karbor.tests.fullstack import karbor_objects as objects
 from karbor.tests.fullstack import utils
 
 pattern = "BEGIN:VEVENT\nRRULE:FREQ=WEEKLY;INTERVAL=1;\nEND:VEVENT"
-DEFAULT_PROPERTY = {'pattern': pattern}
+DEFAULT_PROPERTY = {
+    'pattern': pattern,
+    'format': 'calendar'
+}
 
 
 class ScheduledOperationsTest(karbor_base.KarborBaseTest):

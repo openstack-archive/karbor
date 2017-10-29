@@ -39,10 +39,6 @@ time_trigger_opts = [
                default=1800,
                help='The maximum window time'),
 
-    cfg.StrOpt('time_format',
-               default='calendar',
-               choices=['crontab', 'calendar'],
-               help='The type of time format which is used to compute time'),
     cfg.IntOpt('trigger_poll_interval',
                default=15,
                help='Interval, in seconds, in which Karbor will poll for '

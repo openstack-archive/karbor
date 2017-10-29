@@ -65,6 +65,7 @@ _opts = [
         karbor.common.config.core_opts,
         karbor.common.config.debug_opts,
         karbor.common.config.global_opts,
+        karbor.common.config.global_trigger_opts,
         karbor.api.common.api_common_opts,
         karbor.api.v1.protectables.query_instance_filters_opts,
         karbor.api.v1.providers.query_provider_filters_opts,
