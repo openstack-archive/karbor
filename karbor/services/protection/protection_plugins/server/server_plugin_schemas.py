@@ -30,6 +30,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Server Protection Verify",
+    "type": "object",
+    "properties": {}
+}
+
 # TODO(luobin)
 SAVED_INFO_SCHEMA = {
     "title": "Server Protection Saved Info",
