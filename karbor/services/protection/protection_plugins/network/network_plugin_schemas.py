@@ -30,6 +30,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Network Protection Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Network Protection Saved Info",
     "type": "object",

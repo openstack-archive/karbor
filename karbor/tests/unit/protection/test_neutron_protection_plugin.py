@@ -388,3 +388,19 @@ class NeutronProtectionPluginTest(base.TestCase):
 
         call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
                    {})
+
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_verify_result')
+    def test_verify_backup(self,  mock_update_verify):
+        resource = Resource(id="abcd",
+                            type=constants.NETWORK_RESOURCE_TYPE,
+                            name="test")
+
+        fake_bank_section.get_object = mock.MagicMock()
+        fake_bank_section.get_object.return_value = 'available'
+
+        verify_operation = self.plugin.get_verify_operation(resource)
+        call_hooks(verify_operation, self.checkpoint, resource, self.cntxt,
+                   {})
+        mock_update_verify.assert_called_with(
+            None, resource.type, resource.id, 'available')

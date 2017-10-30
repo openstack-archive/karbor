@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import copy
+from functools import partial
 from neutronclient.common import exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -253,6 +254,36 @@ class ProtectOperation(protection_plugin.Operation):
                 reason=err,
                 resource_id=network_id,
                 resource_type=self._SUPPORT_RESOURCE_TYPES)
+
+
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        network_id = get_network_id(context)
+        bank_section = checkpoint.get_resource_bank_section(
+            network_id)
+        LOG.info('Verifying the network backup, network_id: %s.',
+                 network_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, network_id)
+
+        backup_status = bank_section.get_object("status")
+
+        if backup_status == constants.RESOURCE_STATUS_AVAILABLE:
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of network backup status is %s.'
+                      % backup_status)
+            update_method(backup_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Network backup",
+                reason=reason,
+                resource_id=network_id,
+                resource_type=resource.type)
 
 
 class RestoreOperation(protection_plugin.Operation):
@@ -694,6 +725,10 @@ class NeutronProtectionPlugin(protection_plugin.ProtectionPlugin):
         return network_plugin_schemas.RESTORE_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resources_type):
+        return network_plugin_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info_schema(self, resources_type):
         return network_plugin_schemas.SAVED_INFO_SCHEMA
 
@@ -707,6 +742,9 @@ class NeutronProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_restore_operation(self, resource):
         return RestoreOperation(self._poll_interval)
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
 
     def get_delete_operation(self, resource):
         # TODO(chenhuayi)
