@@ -393,3 +393,35 @@ class CheckpointNotBeDeleted(KarborException):
 class GetProtectionNetworkSubResourceFailed(KarborException):
     message = _("Get protection network sub-resources of type %(type)s failed:"
                 " %(reason)s")
+
+
+class QuotaNotFound(NotFound):
+    message = _("Quota could not be found")
+
+
+class QuotaResourceUnknown(QuotaNotFound):
+    message = _("Unknown quota resources %(unknown)s.")
+
+
+class ProjectQuotaNotFound(QuotaNotFound):
+    message = _("Quota for project %(project_id)s could not be found.")
+
+
+class QuotaClassNotFound(QuotaNotFound):
+    message = _("Quota class %(class_name)s could not be found.")
+
+
+class QuotaUsageNotFound(QuotaNotFound):
+    message = _("Quota usage for project %(project_id)s could not be found.")
+
+
+class ReservationNotFound(QuotaNotFound):
+    message = _("Quota reservation %(uuid)s could not be found.")
+
+
+class OverQuota(KarborException):
+    message = _("Quota exceeded for resources: %(overs)s")
+
+
+class InvalidReservationExpiration(Invalid):
+    message = _("Invalid reservation expiration %(expire)s.")

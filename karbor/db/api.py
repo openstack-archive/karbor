@@ -675,3 +675,144 @@ def purge_deleted_rows(context, age_in_days):
     :returns: number of deleted rows
     """
     return IMPL.purge_deleted_rows(context, age_in_days=age_in_days)
+
+
+####################
+
+
+def quota_create(context, project_id, resource, limit):
+    """Create a quota for the given project and resource."""
+    return IMPL.quota_create(context, project_id, resource, limit)
+
+
+def quota_get(context, project_id, resource):
+    """Retrieve a quota or raise if it does not exist."""
+    return IMPL.quota_get(context, project_id, resource)
+
+
+def quota_get_all_by_project(context, project_id):
+    """Retrieve all quotas associated with a given project."""
+    return IMPL.quota_get_all_by_project(context, project_id)
+
+
+def quota_update(context, project_id, resource, limit):
+    """Update a quota or raise if it does not exist."""
+    return IMPL.quota_update(context, project_id, resource, limit)
+
+
+def quota_destroy(context, project_id, resource):
+    """Destroy the quota or raise if it does not exist."""
+    return IMPL.quota_destroy(context, project_id, resource)
+
+
+###################
+
+
+def quota_class_create(context, class_name, resource, limit):
+    """Create a quota class for the given name and resource."""
+    return IMPL.quota_class_create(context, class_name, resource, limit)
+
+
+def quota_class_get(context, class_name, resource):
+    """Retrieve a quota class or raise if it does not exist."""
+    return IMPL.quota_class_get(context, class_name, resource)
+
+
+def quota_class_get_all_by_name(context, class_name):
+    """Retrieve all quotas associated with a given quota class."""
+    return IMPL.quota_class_get_all_by_name(context, class_name)
+
+
+def quota_class_update(context, class_name, resource, limit):
+    """Update a quota class or raise if it does not exist."""
+    return IMPL.quota_class_update(context, class_name, resource, limit)
+
+
+def quota_class_destroy(context, class_name, resource):
+    """Destroy the quota class or raise if it does not exist."""
+    return IMPL.quota_class_destroy(context, class_name, resource)
+
+
+def quota_class_destroy_all_by_name(context, class_name):
+    """Destroy all quotas associated with a given quota class."""
+    return IMPL.quota_class_destroy_all_by_name(context, class_name)
+
+
+###################
+
+
+def quota_usage_create(context, project_id, resource, in_use, reserved,
+                       until_refresh):
+    """Create a quota usage for the given project and resource."""
+    return IMPL.quota_usage_create(context, project_id, resource,
+                                   in_use, reserved, until_refresh)
+
+
+def quota_usage_get(context, project_id, resource):
+    """Retrieve a quota usage or raise if it does not exist."""
+    return IMPL.quota_usage_get(context, project_id, resource)
+
+
+def quota_usage_get_all_by_project(context, project_id):
+    """Retrieve all usage associated with a given resource."""
+    return IMPL.quota_usage_get_all_by_project(context, project_id)
+
+
+###################
+
+
+def reservation_create(context, uuid, usage, project_id, resource, delta,
+                       expire):
+    """Create a reservation for the given project and resource."""
+    return IMPL.reservation_create(context, uuid, usage, project_id,
+                                   resource, delta, expire)
+
+
+def reservation_get(context, uuid):
+    """Retrieve a reservation or raise if it does not exist."""
+    return IMPL.reservation_get(context, uuid)
+
+
+def reservation_get_all_by_project(context, project_id):
+    """Retrieve all reservations associated with a given project."""
+    return IMPL.reservation_get_all_by_project(context, project_id)
+
+
+def reservation_destroy(context, uuid):
+    """Destroy the reservation or raise if it does not exist."""
+    return IMPL.reservation_destroy(context, uuid)
+
+
+###################
+
+
+def quota_reserve(context, resources, quotas, deltas, expire,
+                  until_refresh, max_age, project_id=None):
+    """Check quotas and create appropriate reservations."""
+    return IMPL.quota_reserve(context, resources, quotas, deltas, expire,
+                              until_refresh, max_age, project_id=project_id)
+
+
+def reservation_commit(context, reservations, project_id=None):
+    """Commit quota reservations."""
+    return IMPL.reservation_commit(context, reservations,
+                                   project_id=project_id)
+
+
+def reservation_rollback(context, reservations, project_id=None):
+    """Roll back quota reservations."""
+    return IMPL.reservation_rollback(context, reservations,
+                                     project_id=project_id)
+
+
+def quota_destroy_all_by_project(context, project_id):
+    """Destroy all quotas associated with a given project."""
+    return IMPL.quota_destroy_all_by_project(context, project_id)
+
+
+def reservation_expire(context):
+    """Roll back any expired reservations."""
+    return IMPL.reservation_expire(context)
+
+
+###################
