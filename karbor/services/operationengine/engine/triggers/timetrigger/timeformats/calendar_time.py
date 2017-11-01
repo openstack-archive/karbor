@@ -14,13 +14,11 @@ import os
 from datetime import timedelta
 from dateutil import rrule
 from icalendar import Calendar
-from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 
-from karbor import exception
-from karbor.i18n import _
 from karbor.services.operationengine.engine.triggers.timetrigger import \
     timeformats
+from karbor import utils
 
 
 RATE = 2
@@ -46,20 +44,11 @@ class ICal(timeformats.TimeFormat):
 
     def __init__(self, start_time, pattern):
         super(ICal, self).__init__(start_time, pattern)
-        cal = Calendar.from_ical(self._decode_calendar_pattern(pattern))
+        cal = Calendar.from_ical(utils.decode_calendar_pattern(pattern))
         vevent = cal.walk('VEVENT')[0]
         self.dtstart = start_time
         self.min_freq = self._get_min_freq(vevent)
         self.rrule_obj = self._get_rrule_obj(vevent, start_time)
-
-    @staticmethod
-    def _decode_calendar_pattern(pattern):
-        try:
-            pattern.index('\\')
-            pattern_dict = jsonutils.loads('{"pattern": "%s"}' % pattern)
-            return pattern_dict["pattern"]
-        except Exception:
-            return pattern
 
     @staticmethod
     def _get_rrule_obj(vevent, dtstart):
@@ -85,25 +74,7 @@ class ICal(timeformats.TimeFormat):
 
         :param pattern: The pattern of the icalendar time
         """
-        try:
-            cal_obj = Calendar.from_ical(cls._decode_calendar_pattern(pattern))
-        except Exception:
-            msg = (_("The trigger pattern(%s) is invalid") % pattern)
-            raise exception.InvalidInput(msg)
-
-        try:
-            vevent = cal_obj.walk('VEVENT')[0]
-        except Exception:
-            msg = (_("The trigger pattern(%s) must include less than one "
-                     "VEVENT component") % pattern)
-            raise exception.InvalidInput(msg)
-
-        try:
-            vevent.decoded('RRULE')
-        except Exception:
-            msg = (_("The first VEVENT component of trigger pattern(%s) must "
-                     "include less than one RRULE property") % pattern)
-            raise exception.InvalidInput(msg)
+        utils.validate_calendar_time_format(pattern)
 
     def compute_next_time(self, current_time):
         """Compute next time

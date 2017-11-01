@@ -9,7 +9,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+from oslo_config import cfg
 from webob import exc
 
 from karbor.api.v1 import triggers as trigger_api
@@ -45,6 +45,7 @@ class TriggerApiTest(base.TestCase):
         self.controller.operationengine_api = FakeRemoteOperationApi()
         self.ctxt = context.RequestContext('demo', 'fakeproject',
                                            True)
+        cfg.CONF.set_default('time_format', 'crontab')
         self.req = fakes.HTTPRequest.blank('/v1/triggers')
         self.default_create_trigger_param = {
             "name": "123",
