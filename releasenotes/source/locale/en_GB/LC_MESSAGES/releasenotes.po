@@ -1,0 +1,61 @@
+# Andi Chandler <andi@gowling.com>, 2017. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: karbor 0.5.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-01 01:11+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2017-10-26 11:45+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "0.1.0"
+msgstr "0.1.0"
+
+msgid "0.4.0"
+msgstr "0.4.0"
+
+msgid ":ref:`genindex`"
+msgstr ":ref:`genindex`"
+
+msgid ":ref:`search`"
+msgstr ":ref:`search`"
+
+msgid "Add support for using S3 comptatible storage as bank plugin."
+msgstr "Add support for using S3 compatible storage as bank plugin."
+
+msgid "Contents"
+msgstr "Contents"
+
+msgid "Current Series Release Notes"
+msgstr "Current Series Release Notes"
+
+msgid "Indices and tables"
+msgstr "Indices and tables"
+
+msgid "New Features"
+msgstr "New Features"
+
+msgid "Newton Series Release Notes"
+msgstr "Newton Series Release Notes"
+
+msgid "Other Notes"
+msgstr "Other Notes"
+
+msgid "Pike Series Release Notes"
+msgstr "Pike Series Release Notes"
+
+msgid "Started using Reno for release notes"
+msgstr "Started using Reno for release notes"
+
+msgid "Welcome to Karbor Release Notes documentation!"
+msgstr "Welcome to Karbor Release Notes documentation!"
+
+msgid "oslo-config-generator is now used to generate a karbor.conf.sample file"
+msgstr ""
+"oslo-config-generator is now used to generate a karbor.conf.sample file"
