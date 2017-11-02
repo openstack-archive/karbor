@@ -2154,7 +2154,9 @@ def quota_usage_create(context, project_id, resource, in_use, reserved,
     quota_usage_ref.until_refresh = until_refresh
     if not session:
         session = get_session()
-    with session.begin():
+        with session.begin():
+            quota_usage_ref.save(session=session)
+    else:
         quota_usage_ref.save(session=session)
 
     return quota_usage_ref
@@ -2202,7 +2204,9 @@ def reservation_create(context, uuid, usage, project_id, resource, delta,
     reservation_ref.expire = expire
     if not session:
         session = get_session()
-    with session.begin():
+        with session.begin():
+            reservation_ref.save(session=session)
+    else:
         reservation_ref.save(session=session)
     return reservation_ref
 

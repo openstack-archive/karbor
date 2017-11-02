@@ -15,6 +15,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import excutils
 from oslo_utils import uuidutils
 
 from webob import exc
@@ -28,6 +29,7 @@ from karbor.i18n import _
 from karbor import objects
 from karbor.objects import base as objects_base
 from karbor.policies import plans as plan_policy
+from karbor import quota
 from karbor.services.operationengine import api as operationengine_api
 from karbor.services.protection import api as protection_api
 from karbor import utils
@@ -44,6 +46,7 @@ query_plan_filters_opt = cfg.ListOpt('query_plan_filters',
                                           "'description']")
 CONF = cfg.CONF
 CONF.register_opt(query_plan_filters_opt)
+QUOTAS = quota.QUOTAS
 
 LOG = logging.getLogger(__name__)
 
@@ -153,7 +156,19 @@ class PlansController(wsgi.Controller):
             raise exc.HTTPNotFound(explanation=error.msg)
 
         context.can(plan_policy.DELETE_POLICY, target_obj=plan)
+        project_id = plan.project_id
+        try:
+            reserve_opts = {'plans': -1}
+            reservations = QUOTAS.reserve(context,
+                                          project_id=project_id,
+                                          **reserve_opts)
+        except Exception:
+            reservations = None
+            LOG.exception("Failed to update usages deleting plan.")
         plan.destroy()
+        if reservations:
+            QUOTAS.commit(context, reservations,
+                          project_id=project_id)
         LOG.info("Delete plan request issued successfully.",
                  resource={'id': plan.id})
 
@@ -276,8 +291,24 @@ class PlansController(wsgi.Controller):
             'parameters': parameters,
         }
 
-        plan = objects.Plan(context=context, **plan_properties)
-        plan.create()
+        try:
+            reserve_opts = {'plans': 1}
+            reservations = QUOTAS.reserve(context, **reserve_opts)
+        except exception.OverQuota as e:
+            quota.process_reserve_over_quota(
+                context, e,
+                resource='plans')
+        try:
+            plan = objects.Plan(context=context, **plan_properties)
+            plan.create()
+            QUOTAS.commit(context, reservations)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                try:
+                    if plan and 'id' in plan:
+                        plan.destroy()
+                finally:
+                    QUOTAS.rollback(context, reservations)
 
         retval = self._view_builder.detail(req, plan)
 

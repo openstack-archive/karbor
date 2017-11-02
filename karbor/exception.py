@@ -425,3 +425,23 @@ class OverQuota(KarborException):
 
 class InvalidReservationExpiration(Invalid):
     message = _("Invalid reservation expiration %(expire)s.")
+
+
+class InvalidQuotaValue(Invalid):
+    message = _("Change would make usage less than 0 for the following "
+                "resources: %(unders)s.")
+
+
+class QuotaError(KarborException):
+    message = _("Quota exceeded: code=%(code)s")
+    code = 413
+    headers = {'Retry-After': '0'}
+    safe = True
+
+
+class PlanLimitExceeded(QuotaError):
+    message = _("Maximum number of plans allowed (%(allowed)d) exceeded")
+
+
+class UnexpectedOverQuota(QuotaError):
+    message = _("Unexpected over quota on %(name)s.")

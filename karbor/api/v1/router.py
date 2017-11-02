@@ -17,6 +17,8 @@ from karbor.api.v1 import operation_logs
 from karbor.api.v1 import plans
 from karbor.api.v1 import protectables
 from karbor.api.v1 import providers
+from karbor.api.v1 import quota_classes
+from karbor.api.v1 import quotas
 from karbor.api.v1 import restores
 from karbor.api.v1 import scheduled_operations
 from karbor.api.v1 import services
@@ -39,6 +41,8 @@ class APIRouter(base_wsgi.Router):
         operation_log_resources = operation_logs.create_resource()
         verification_resources = verifications.create_resource()
         service_resources = services.create_resource()
+        quota_resources = quotas.create_resource()
+        quota_class_resources = quota_classes.create_resource()
 
         mapper.resource("plan", "plans",
                         controller=plans_resources,
@@ -108,6 +112,24 @@ class APIRouter(base_wsgi.Router):
                         member={'action': 'POST'})
         mapper.resource("os-service", "os-services",
                         controller=service_resources,
+                        collection={},
+                        member={'action': 'POST'})
+        mapper.resource("quota", "quotas",
+                        controller=quota_resources,
+                        collection={},
+                        member={'action': 'POST'})
+        mapper.connect("quota",
+                       "/{project_id}/quotas/{id}/defaults",
+                       controller=quota_resources,
+                       action='defaults',
+                       conditions={"method": ['GET']})
+        mapper.connect("quota",
+                       "/{project_id}/quotas/{id}/detail",
+                       controller=quota_resources,
+                       action='detail',
+                       conditions={"method": ['GET']})
+        mapper.resource("quota_class", "quota_classes",
+                        controller=quota_class_resources,
                         collection={},
                         member={'action': 'POST'})
         super(APIRouter, self).__init__(mapper)

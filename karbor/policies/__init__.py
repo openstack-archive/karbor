@@ -19,6 +19,8 @@ from karbor.policies import operation_logs
 from karbor.policies import plans
 from karbor.policies import protectables
 from karbor.policies import providers
+from karbor.policies import quota_classes
+from karbor.policies import quotas
 from karbor.policies import restores
 from karbor.policies import scheduled_operations
 from karbor.policies import services
@@ -38,4 +40,6 @@ def list_rules():
         operation_logs.list_rules(),
         verifications.list_rules(),
         services.list_rules(),
+        quotas.list_rules(),
+        quota_classes.list_rules(),
     )
