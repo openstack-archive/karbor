@@ -17,11 +17,14 @@ from datetime import timedelta
 from oslo_config import cfg
 from oslo_utils import uuidutils
 import six
+import uuid
 
 from karbor import context
 from karbor import db
 from karbor import exception
 from karbor.tests import base
+
+from oslo_utils import timeutils
 
 
 CONF = cfg.CONF
@@ -707,3 +710,144 @@ class CheckpointRecordTestCase(ModelBaseTestCase):
         self.assertRaises(exception.CheckpointRecordNotFound,
                           db.checkpoint_record_update,
                           self.ctxt, 42, {})
+
+
+class QuotaDbTestCase(ModelBaseTestCase):
+    """Unit tests for karbor.db.api.quota_*."""
+
+    def setUp(self):
+        super(QuotaDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+        self.project_id = "586cc6ce-e286-40bd-b2b5-dd32694d9944"
+        self.resource = "volume_backups"
+        self.limit = 10
+
+    def test_quota_create(self):
+        quota = db.quota_create(self.ctxt, self.project_id,
+                                self.resource, self.limit)
+        self.assertEqual("volume_backups", quota.resource)
+        db.quota_destroy(self.ctxt, self.project_id, self.resource)
+
+    def test_quota_get(self):
+        quota = db.quota_create(self.ctxt, self.project_id,
+                                self.resource, self.limit)
+        self._assertEqualObjects(quota, db.quota_get(
+            self.ctxt, quota.project_id, quota.resource))
+        db.quota_destroy(self.ctxt, self.project_id, self.resource)
+
+    def test_quota_destroy(self):
+        quota = db.quota_create(self.ctxt, self.project_id,
+                                self.resource, self.limit)
+        db.quota_destroy(self.ctxt, quota.project_id, quota.resource)
+        self.assertRaises(exception.ProjectQuotaNotFound, db.quota_get,
+                          self.ctxt, quota.project_id, quota.resource)
+
+    def test_quota_update(self):
+        quota = db.quota_create(self.ctxt, self.project_id,
+                                self.resource, self.limit)
+        db.quota_update(self.ctxt, quota.project_id, quota.resource,
+                        20)
+        quota = db.quota_get(self.ctxt, self.project_id, self.resource)
+        self.assertEqual(20, quota.hard_limit)
+
+
+class QuotaClassDbTestCase(ModelBaseTestCase):
+    """Unit tests for karbor.db.api.quota_class_*."""
+
+    def setUp(self):
+        super(QuotaClassDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+        self.class_name = "default"
+        self.resource = "volume_backups"
+        self.limit = 10
+
+    def test_quota_class_create(self):
+        quota_class = db.quota_class_create(self.ctxt, self.class_name,
+                                            self.resource, self.limit)
+        self.assertEqual("volume_backups", quota_class.resource)
+        db.quota_class_destroy(self.ctxt, self.class_name, self.resource)
+
+    def test_quota_class_get(self):
+        quota_class = db.quota_class_create(self.ctxt, self.class_name,
+                                            self.resource, self.limit)
+        self._assertEqualObjects(quota_class, db.quota_class_get(
+            self.ctxt, quota_class.class_name, quota_class.resource))
+        db.quota_class_destroy(self.ctxt, self.class_name, self.resource)
+
+    def test_quota_class_destroy(self):
+        quota_class = db.quota_class_create(self.ctxt, self.class_name,
+                                            self.resource, self.limit)
+        db.quota_class_destroy(self.ctxt, self.class_name, self.resource)
+        self.assertRaises(exception.QuotaClassNotFound, db.quota_class_get,
+                          self.ctxt, quota_class.class_name,
+                          quota_class.resource)
+
+    def test_quota_class_update(self):
+        quota_class = db.quota_class_create(self.ctxt, self.class_name,
+                                            self.resource, self.limit)
+        db.quota_class_update(self.ctxt, quota_class.class_name,
+                              quota_class.resource, 20)
+        quota_class = db.quota_class_get(self.ctxt, self.class_name,
+                                         self.resource)
+        self.assertEqual(20, quota_class.hard_limit)
+
+
+class QuotaUsageDbTestCase(ModelBaseTestCase):
+    """Unit tests for karbor.db.api.quota_usage_*."""
+
+    def setUp(self):
+        super(QuotaUsageDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+        self.project_id = "586cc6ce-e286-40bd-b2b5-dd32694d9944"
+        self.resource = "volume_backups"
+        self.in_use = 10
+        self.reserved = 10
+        self.until_refresh = 0
+
+    def test_quota_usage_create(self):
+        quota_usage = db.quota_usage_create(
+            self.ctxt, self.project_id, "volume_backups", self.in_use,
+            self.reserved, self.until_refresh)
+        self.assertEqual("volume_backups", quota_usage.resource)
+
+    def test_quota_usage_get(self):
+        quota_usage = db.quota_usage_create(
+            self.ctxt, self.project_id, "volume_backups_get", self.in_use,
+            self.reserved, self.until_refresh)
+        self._assertEqualObjects(quota_usage, db.quota_usage_get(
+            self.ctxt, self.project_id, "volume_backups_get"))
+
+
+class ReservationDbTestCase(ModelBaseTestCase):
+    """Unit tests for karbor.db.api.reservation_*."""
+
+    def setUp(self):
+        super(ReservationDbTestCase, self).setUp()
+        self.ctxt = context.get_admin_context()
+        self.project_id = "586cc6ce-e286-40bd-b2b5-dd32694d9944"
+        self.resource = "volume_backups"
+        self.in_use = 10
+        self.reserved = 10
+        self.until_refresh = 0
+
+    def test_reservation_create(self):
+        quota_usage = db.quota_usage_create(
+            self.ctxt, self.project_id, "volume_backups", self.in_use,
+            self.reserved, self.until_refresh)
+        reservation = db.reservation_create(
+            self.ctxt, str(uuid.uuid4()), quota_usage,
+            self.project_id, "volume_backups", 1,
+            timeutils.utcnow())
+        self.assertEqual("volume_backups", quota_usage.resource)
+        self.assertEqual("volume_backups", reservation.resource)
+
+    def test_reservation_get(self):
+        quota_usage = db.quota_usage_create(
+            self.ctxt, self.project_id, "volume_backups_get", self.in_use,
+            self.reserved, self.until_refresh)
+        reservation = db.reservation_create(
+            self.ctxt, str(uuid.uuid4()), quota_usage,
+            self.project_id, "volume_backups_get", 1,
+            timeutils.utcnow())
+        self._assertEqualObjects(reservation, db.reservation_get(
+            self.ctxt, reservation.uuid))
