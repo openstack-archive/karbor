@@ -816,3 +816,8 @@ def reservation_expire(context):
 
 
 ###################
+
+
+def authorize_project_context(context, project_id):
+    """Ensures a request has permission to access the given project."""
+    return IMPL.authorize_project_context(context, project_id)
