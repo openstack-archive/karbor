@@ -157,16 +157,21 @@ class PlansController(wsgi.Controller):
 
         context.can(plan_policy.DELETE_POLICY, target_obj=plan)
         project_id = plan.project_id
+
+        try:
+            plan.destroy()
+        except Exception:
+            msg = _("Failed to destroy a plan.")
+            raise exc.HTTPServerError(reason=msg)
+
         try:
             reserve_opts = {'plans': -1}
             reservations = QUOTAS.reserve(context,
                                           project_id=project_id,
                                           **reserve_opts)
         except Exception:
-            reservations = None
             LOG.exception("Failed to update usages deleting plan.")
-        plan.destroy()
-        if reservations:
+        else:
             QUOTAS.commit(context, reservations,
                           project_id=project_id)
         LOG.info("Delete plan request issued successfully.",
