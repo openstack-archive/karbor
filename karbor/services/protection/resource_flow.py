@@ -42,6 +42,7 @@ ResourceHooks = namedtuple('ResourceHooks', [
 OPERATION_EXTRA_ARGS = {
     constants.OPERATION_RESTORE: ['restore', 'new_resources'],
     constants.OPERATION_VERIFY: ['verify', 'new_resources'],
+    constants.OPERATION_COPY: ['checkpoint', 'checkpoint_copy'],
 }
 
 
@@ -99,6 +100,14 @@ class ResourceFlowGraphWalkerListener(graph.GraphWalkerListener):
             'parameters': parameters,
             'resource': resource,
         }
+        if self.operation_type == constants.OPERATION_COPY:
+            injects['checkpoint'] = self.parameters.get(
+                'checkpoint')
+            injects['checkpoint_copy'] = self.parameters.get(
+                'checkpoint_copy')
+            injects['operation_log'] = self.parameters.get(
+                'operation_log')
+
         requires = OPERATION_EXTRA_ARGS.get(self.operation_type, [])
         requires.append('operation_log')
         task = self.workflow_engine.create_task(method,

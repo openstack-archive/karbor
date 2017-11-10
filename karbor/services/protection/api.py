@@ -34,6 +34,9 @@ class API(base.Base):
         return self.protection_rpcapi.protect(context, plan,
                                               checkpoint_properties)
 
+    def copy(self, context, plan):
+        return self.protection_rpcapi.copy(context, plan)
+
     def delete(self, context, provider_id, checkpoint_id):
         return self.protection_rpcapi.delete(
             context,

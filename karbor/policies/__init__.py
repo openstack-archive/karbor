@@ -15,6 +15,7 @@
 import itertools
 
 from karbor.policies import base
+from karbor.policies import copies
 from karbor.policies import operation_logs
 from karbor.policies import plans
 from karbor.policies import protectables
@@ -42,4 +43,5 @@ def list_rules():
         services.list_rules(),
         quotas.list_rules(),
         quota_classes.list_rules(),
+        copies.list_rules(),
     )

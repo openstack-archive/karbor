@@ -130,6 +130,53 @@ class ProtectionManager(manager.Manager):
         self._spawn(self.worker.run_flow, flow)
         return checkpoint.id
 
+    @messaging.expected_exceptions(exception.InvalidPlan,
+                                   exception.ProviderNotFound,
+                                   exception.FlowError)
+    def copy(self, context, plan):
+        """create copy of checkpoint for the given plan
+
+        :param plan: Define that protection plan should be done
+        """
+
+        LOG.info("Starting protection service:copy action.")
+        LOG.debug("Creating the checkpoint copy for the plan: %s", plan)
+
+        if not plan:
+            raise exception.InvalidPlan(
+                reason=_('The protection plan is None'))
+        provider_id = plan.get('provider_id', None)
+        plan_id = plan.get('id', None)
+        provider = self.provider_registry.show_provider(provider_id)
+        checkpoints = None
+        checkpoint_collection = provider.get_checkpoint_collection()
+        try:
+            checkpoints = self.list_checkpoints(context, provider_id,
+                                                filters={'plan_id': plan_id})
+        except Exception as e:
+            LOG.exception("Failed to get checkpoints for the plan: %s",
+                          plan_id)
+            exc = exception.FlowError(flow="copy",
+                                      error="Failed to get checkpoints")
+            six.raise_from(exc, e)
+        try:
+            flow, checkpoint_copy = self.worker.get_flow(
+                context=context,
+                protectable_registry=self.protectable_registry,
+                operation_type=constants.OPERATION_COPY,
+                plan=plan,
+                provider=provider,
+                checkpoint=checkpoints,
+                checkpoint_collection=checkpoint_collection)
+        except Exception as e:
+            LOG.exception("Failed to create copy flow, plan: %s",
+                          plan_id)
+            raise exception.FlowError(
+                flow="copy",
+                error=e.msg if hasattr(e, 'msg') else 'Internal error')
+        self._spawn(self.worker.run_flow, flow)
+        return checkpoint_copy
+
     @messaging.expected_exceptions(exception.ProviderNotFound,
                                    exception.CheckpointNotFound,
                                    exception.CheckpointNotAvailable,

@@ -74,6 +74,10 @@ class Checkpoint(object):
         return self._md_cache["status"]
 
     @property
+    def extra_info(self):
+        return self._md_cache["extra_info"]
+
+    @property
     def project_id(self):
         return self._md_cache["project_id"]
 
@@ -99,6 +103,10 @@ class Checkpoint(object):
     @status.setter
     def status(self, value):
         self._md_cache["status"] = value
+
+    @extra_info.setter
+    def extra_info(self, value):
+        self._md_cache["extra_info"] = value
 
     @resource_graph.setter
     def resource_graph(self, resource_graph):
@@ -170,14 +178,18 @@ class Checkpoint(object):
         provider_id = plan.get("provider_id")
         project_id = plan.get("project_id")
         extra_info = None
+        checkpoint_status = constants.CHECKPOINT_STATUS_PROTECTING
         if checkpoint_properties:
             extra_info = checkpoint_properties.get("extra_info", None)
+            status = checkpoint_properties.get("status", None)
+            if status:
+                checkpoint_status = status
         checkpoint_section.update_object(
             key=_INDEX_FILE_NAME,
             value={
                 "version": cls.VERSION,
                 "id": checkpoint_id,
-                "status": constants.CHECKPOINT_STATUS_PROTECTING,
+                "status": checkpoint_status,
                 "owner_id": owner_id,
                 "provider_id": provider_id,
                 "project_id": project_id,

@@ -16,11 +16,13 @@ OPERATION_TYPES = (
     OPERATION_RESTORE,
     OPERATION_DELETE,
     OPERATION_VERIFY,
+    OPERATION_COPY,
 ) = (
     'protect',
     'restore',
     'delete',
-    'verify'
+    'verify',
+    'copy'
 )
 
 
@@ -66,6 +68,9 @@ PLAN_STATUS_STARTED = 'started'
 
 CHECKPOINT_STATUS_ERROR = 'error'
 CHECKPOINT_STATUS_PROTECTING = 'protecting'
+CHECKPOINT_STATUS_WAIT_COPYING = 'wait_copying'
+CHECKPOINT_STATUS_COPYING = 'copying'
+CHECKPOINT_STATUS_COPY_FINISHED = 'finished'
 CHECKPOINT_STATUS_AVAILABLE = 'available'
 CHECKPOINT_STATUS_DELETING = 'deleting'
 CHECKPOINT_STATUS_DELETED = 'deleted'

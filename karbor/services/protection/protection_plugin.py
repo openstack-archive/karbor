@@ -90,6 +90,13 @@ class ProtectionPlugin(object):
         """
         raise NotImplementedError
 
+    def get_copy_operation(self, resource):
+        """Returns the copy Operation for this resource
+
+        :returns: Operation for the resource
+        """
+        raise NotImplementedError
+
     def get_delete_operation(self, resource):
         """Returns the delete Operation for this resource
 

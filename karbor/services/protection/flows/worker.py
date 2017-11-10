@@ -17,6 +17,7 @@ from oslo_utils import importutils
 
 from karbor.common import constants
 from karbor import exception
+from karbor.services.protection.flows import copy as flow_copy
 from karbor.services.protection.flows import delete as flow_delete
 from karbor.services.protection.flows import protect as flow_protect
 from karbor.services.protection.flows import restore as flow_restore
@@ -90,6 +91,20 @@ class Worker(object):
                 checkpoint,
                 provider,
             )
+        elif operation_type == constants.OPERATION_COPY:
+            plan = kwargs.get('plan', None)
+            protectable_registry = kwargs.get('protectable_registry', None)
+            checkpoint_collection = kwargs.get('checkpoint_collection', None)
+            flow, checkpoint_copy = flow_copy.get_flows(
+                context,
+                protectable_registry,
+                self.workflow_engine,
+                plan,
+                provider,
+                checkpoint,
+                checkpoint_collection,
+            )
+            return flow, checkpoint_copy
         else:
             raise exception.InvalidParameterValue(
                 err='unknown operation type %s' % operation_type
