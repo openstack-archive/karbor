@@ -8,8 +8,8 @@
 - job:
     name: karbor-dsvm-fullstack
     parent: legacy-dsvm-base
-    run: playbooks/legacy/karbor-dsvm-fullstack/run
-    post-run: playbooks/legacy/karbor-dsvm-fullstack/post
+    run: playbooks/legacy/karbor-dsvm-fullstack/run.yaml
+    post-run: playbooks/legacy/karbor-dsvm-fullstack/post.yaml
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
