@@ -1,4 +1,4 @@
-1. Edit the ``/etc/karbor/karbor.conf`` file and complete the following
+#. Edit the ``/etc/karbor/karbor.conf`` file and complete the following
    actions:
 
    * In the ``[database]`` section, configure database access:
@@ -19,7 +19,7 @@
 
         [DEFAULT]
         ...
-        transport_url = rabbit://openstack:RABBIT_PASS@controller
+        transport_url = rabbit://openstack:RABBIT_PASS@controller:5672
 
      Replace ``RABBIT_PASS`` with the password you chose for the
      ``openstack`` account in ``RabbitMQ``.
@@ -63,7 +63,7 @@
      Replace ``KARBOR_PASS`` with the password you chose for the
      ``karbor`` user in the Identity service.
 
-2. Populate the Data Protection database:
+#. Populate the Data Protection database:
 
    .. code-block:: console
 
