@@ -38,6 +38,7 @@ Approved Specs
     checkpoint-tenant-isolation
     service-management-api
     adding-more-protection-parameters-retention-period
+    checkpoint-copy-api
 
 Spec Template
 -------------
