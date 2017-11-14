@@ -86,6 +86,8 @@ class ResourceFlowTest(base.TestCase):
             elif operation == constants.OPERATION_VERIFY:
                 kwargs['new_resources'] = {}
                 kwargs['verify'] = None
+            elif operation == constants.OPERATION_COPY:
+                kwargs['checkpoint_copy'] = None
             self._walk_operation(mock_protection, operation, **kwargs)
 
     @mock.patch('karbor.tests.unit.protection.fakes.FakeProtectionPlugin')
@@ -105,6 +107,8 @@ class ResourceFlowTest(base.TestCase):
             elif operation == constants.OPERATION_VERIFY:
                 kwargs['new_resources'] = {}
                 kwargs['verify'] = None
+            elif operation == constants.OPERATION_COPY:
+                kwargs['checkpoint_copy'] = None
             self._walk_operation(mock_protection, operation, **kwargs)
 
             self.assertEqual(mock_operation.on_prepare_begin.call_count,
@@ -133,6 +137,8 @@ class ResourceFlowTest(base.TestCase):
                 self.assertEqual(v, result[k])
 
         for operation in constants.OPERATION_TYPES:
+            if operation == constants.OPERATION_COPY:
+                continue
             fake_operation = fakes.FakeOperation()
             get_operation_attr = 'get_{}_operation'.format(operation)
             getattr(
@@ -153,6 +159,8 @@ class ResourceFlowTest(base.TestCase):
             elif operation == constants.OPERATION_VERIFY:
                 kwargs['new_resources'] = {}
                 kwargs['verify'] = None
+            elif operation == constants.OPERATION_COPY:
+                kwargs['checkpoint_copy'] = None
 
             self._walk_operation(mock_protection, operation,
                                  parameters=parameters, **kwargs)

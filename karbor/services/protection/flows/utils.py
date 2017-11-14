@@ -22,7 +22,7 @@ from oslo_utils import timeutils
 LOG = logging.getLogger(__name__)
 
 
-def create_operation_log(context, checkpoint):
+def create_operation_log(context, checkpoint, operation_type=None):
     checkpoint_dict = checkpoint.to_dict()
     extra_info = checkpoint_dict.get('extra_info', None)
     scheduled_operation_id = None
@@ -41,7 +41,9 @@ def create_operation_log(context, checkpoint):
         provider_id = protection_plan.get("provider_id")
     operation_log_properties = {
         'project_id': checkpoint_dict['project_id'],
-        'operation_type': constants.OPERATION_PROTECT,
+        'operation_type': (
+            constants.OPERATION_PROTECT if operation_type is None
+            else operation_type),
         'checkpoint_id': checkpoint_dict['id'],
         'plan_id': plan_id,
         'provider_id': provider_id,

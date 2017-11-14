@@ -67,6 +67,13 @@ class ProtectionAPI(object):
             plan=plan,
             checkpoint_properties=checkpoint_properties)
 
+    def copy(self, ctxt, plan=None):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'copy',
+            plan=plan)
+
     def delete(self, ctxt, provider_id, checkpoint_id):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
