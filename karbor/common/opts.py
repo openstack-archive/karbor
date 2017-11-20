@@ -22,7 +22,7 @@ import karbor.exception
 import karbor.service
 import karbor.services.operationengine.engine.executors.green_thread_executor as green_thread_executor  # noqa
 import karbor.services.operationengine.engine.executors.thread_pool_executor as thread_pool_executor  # noqa
-import karbor.services.operationengine.engine.triggers.timetrigger.time_trigger as time_trigger  # noqa
+import karbor.services.operationengine.engine.triggers.timetrigger as time_trigger  # noqa
 import karbor.services.operationengine.karbor_client
 import karbor.services.operationengine.manager
 import karbor.services.operationengine.operations.base as base

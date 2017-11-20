@@ -22,6 +22,7 @@ class BaseTrigger(object):
     """Trigger base class that all Triggers should inherit from"""
 
     TRIGGER_TYPE = ""
+    IS_ENABLED = True
 
     def __init__(self, trigger_id, trigger_property, executor):
         super(BaseTrigger, self).__init__()
@@ -68,4 +69,9 @@ class TriggerHandler(loadables.BaseLoader):
 
 def all_triggers():
     """Get all trigger classes."""
-    return TriggerHandler().get_all_classes()
+    all_classes = TriggerHandler().get_all_classes()
+    for trigger_class in all_classes[:]:
+        if trigger_class.TRIGGER_TYPE == 'time' and (
+                not trigger_class.IS_ENABLED):
+            all_classes.remove(trigger_class)
+    return all_classes
