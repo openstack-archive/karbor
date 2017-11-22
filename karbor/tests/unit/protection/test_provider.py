@@ -36,6 +36,31 @@ resource_graph = {
 }
 
 
+def set_provider_list(provider_registry):
+    provider_registry.providers = {
+        'fake_provider_id_1': FakeProvider(
+            id='fake_provider_id_1',
+            name='fake_provider_name_1',
+            description='',
+            extended_info_schema=''
+        ),
+        'fake_provider_id_2': FakeProvider(
+            id='fake_provider_id_2',
+            name='fake_provider_name_2',
+            description='',
+            extended_info_schema=''
+        )
+    }
+
+
+class FakeProvider(object):
+    def __init__(self, id, name, description, extended_info_schema):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.extended_info_schema = extended_info_schema
+
+
 class ProviderRegistryTest(base.TestCase):
     def setUp(self):
         super(ProviderRegistryTest, self).setUp()
@@ -66,6 +91,18 @@ class ProviderRegistryTest(base.TestCase):
     def test_list_provider(self):
         pr = provider.ProviderRegistry()
         self.assertEqual(1, len(pr.list_providers()))
+
+    def test_list_provider_with_marker(self):
+        pr = provider.ProviderRegistry()
+        set_provider_list(pr)
+        self.assertEqual(
+            1, len(pr.list_providers(marker='fake_provider_id_1')))
+
+    def test_list_provider_with_limit(self):
+        pr = provider.ProviderRegistry()
+        set_provider_list(pr)
+        self.assertEqual(
+            1, len(pr.list_providers(limit=1)))
 
     def test_show_provider(self):
         pr = provider.ProviderRegistry()

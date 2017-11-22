@@ -197,11 +197,23 @@ class ProviderRegistry(object):
 
     def list_providers(self, marker=None, limit=None, sort_keys=None,
                        sort_dirs=None, filters=None):
-        # TODO(wangliuan) How to use the list option
-        return [dict(id=provider.id, name=provider.name,
+        # TODO(jiaopengju) How to use sort_keys, sort_dirs and filters
+        provider_ids = sorted(self.providers.keys())
+        provider_list = sorted(
+            self.providers.values(), key=lambda item: item.id)
+        if marker is not None and marker in provider_ids:
+            provider_list = provider_list[provider_ids.index(marker) + 1:]
+        valid_providers = []
+        for provider in provider_list:
+            valid_providers.append(
+                dict(id=provider.id,
+                     name=provider.name,
                      description=provider.description,
-                     extended_info_schema=provider.extended_info_schema)
-                for provider in self.providers.values()]
+                     extended_info_schema=provider.extended_info_schema
+                     ))
+            if limit is not None and len(valid_providers) == limit:
+                return valid_providers
+        return valid_providers
 
     def show_provider(self, provider_id):
         try:
