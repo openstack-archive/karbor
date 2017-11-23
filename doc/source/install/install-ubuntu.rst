@@ -15,7 +15,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # apt-get install karbor
+      # pip install karbor
 
 .. include:: common_configure.rst
 
