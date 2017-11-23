@@ -26,6 +26,11 @@ RESTORE_SCHEMA = {
             "title": "Restore Server Name",
             "description": "The name of the restore server",
         },
+        "restore_net_id": {
+            "type": "string",
+            "title": "Restore Server Net Id",
+            "description": "The net id of the restore server"
+        }
     },
     "required": ["restore_name"]
 }

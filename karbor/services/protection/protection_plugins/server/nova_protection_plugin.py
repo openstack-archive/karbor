@@ -229,10 +229,11 @@ class RestoreOperation(protection_plugin.Operation):
             new_resources = kwargs.get("new_resources")
 
             # restore server instance
+            restore_net_id = parameters.get("restore_net_id", None)
             new_server_id = self._restore_server_instance(
                 nova_client, new_resources, original_server_id,
                 parameters.get("restore_name", "karbor-restore-server"),
-                resource_definition)
+                restore_net_id, resource_definition)
 
             update_method = partial(utils.update_resource_restore_result,
                                     kwargs.get('restore'), resource.type,
@@ -269,7 +270,7 @@ class RestoreOperation(protection_plugin.Operation):
             )
 
     def _restore_server_instance(self, nova_client, new_resources,
-                                 original_id, restore_name,
+                                 original_id, restore_name, restore_net_id,
                                  resource_definition):
         server_metadata = resource_definition["server_metadata"]
         properties = {
@@ -312,7 +313,9 @@ class RestoreOperation(protection_plugin.Operation):
                 for security_group in server_metadata["security_groups"]
             ]
 
-        if server_metadata.get("networks"):
+        if restore_net_id is not None:
+            properties["nics"] = [{'net-id': restore_net_id}]
+        elif server_metadata.get("networks"):
             properties["nics"] = [
                 {'net-id': network}
                 for network in server_metadata["networks"]
