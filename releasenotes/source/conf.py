@@ -11,7 +11,6 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pbr.version
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -41,9 +40,11 @@ master_doc = 'index'
 project = u'karbor'
 copyright = u'2016, Karbor Developers'
 
-karbor_version = pbr.version.VersionInfo('karbor')
+# Release notes are version independent.
 # The short X.Y version.
-version = karbor_version.canonical_version_string()
+version = ''
+# The full version, including alpha/beta/rc tags.
+release = ''
 
 # openstackdocstheme options
 repository_name = 'openstack/karbor'
