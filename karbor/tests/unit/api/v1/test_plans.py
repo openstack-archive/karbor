@@ -49,41 +49,37 @@ class PlanApiTest(base.TestCase):
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         mock_provider.return_value = fakes.PROVIDER_OS
-        self.controller.create(req, body)
+        self.controller.create(req, body=body)
         self.assertTrue(mock_plan_create.called)
 
     def test_plan_create_InvalidBody(self):
         plan = self._plan_in_request_body()
         body = {"planxx": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.assertRaises(exc.HTTPUnprocessableEntity, self.controller.create,
-                          req, body)
+        self.assertRaises(exception.ValidationError, self.controller.create,
+                          req, body=body)
 
     def test_plan_create_InvalidProviderId(self):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
             description=DEFAULT_DESCRIPTION,
             provider_id="",
-            status=constants.PLAN_STATUS_SUSPENDED,
-            project_id=DEFAULT_PROJECT_ID,
             resources=[])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.assertRaises(exception.InvalidInput, self.controller.create,
-                          req, body)
+        self.assertRaises(exception.ValidationError, self.controller.create,
+                          req, body=body)
 
     def test_plan_create_InvalidResources(self):
         plan = self._plan_in_request_body(
             name=DEFAULT_NAME,
             description=DEFAULT_DESCRIPTION,
             provider_id=DEFAULT_PROVIDER_ID,
-            status=constants.PLAN_STATUS_SUSPENDED,
-            project_id=DEFAULT_PROJECT_ID,
             resources=[])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(exception.InvalidInput, self.controller.create,
-                          req, body)
+                          req, body=body)
 
     @mock.patch(
         'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
@@ -93,57 +89,51 @@ class PlanApiTest(base.TestCase):
             name=DEFAULT_NAME,
             description=DEFAULT_DESCRIPTION,
             provider_id=DEFAULT_PROVIDER_ID,
-            status=constants.PLAN_STATUS_SUSPENDED,
-            project_id=DEFAULT_PROJECT_ID,
             parameters=parameters)
         body = {"plan": plan}
         mock_provider.return_value = fakes.PROVIDER_OS
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(exc.HTTPBadRequest, self.controller.create,
-                          req, body)
+                          req, body=body)
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_update')
     def test_plan_update(self, mock_plan_update, mock_plan_get):
-        plan = self._plan_in_request_body()
+        plan = self._plan_update_request_body()
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.controller.update(
-            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
         self.assertTrue(mock_plan_update.called)
         self.assertTrue(mock_plan_get.called)
 
     def test_plan_update_InvalidBody(self):
-        plan = self._plan_in_request_body()
+        plan = self._plan_update_request_body()
         body = {"planxx": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(
-            exc.HTTPBadRequest, self.controller.update,
-            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
+            exception.ValidationError, self.controller.update,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
 
     def test_plan_update_InvalidId(self):
-        plan = self._plan_in_request_body()
+        plan = self._plan_update_request_body()
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(
             exc.HTTPNotFound, self.controller.update,
-            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
 
     def test_plan_update_InvalidResources(self):
-        plan = self._plan_in_request_body(
+        plan = self._plan_update_request_body(
             name=DEFAULT_NAME,
-            description=DEFAULT_DESCRIPTION,
-            provider_id=DEFAULT_PROVIDER_ID,
-            status=constants.PLAN_STATUS_SUSPENDED,
-            project_id=DEFAULT_PROJECT_ID,
             resources=[{'key1': 'value1'}])
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.assertRaises(
             exception.InvalidInput, self.controller.update,
-            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body)
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._get_all')
@@ -179,7 +169,7 @@ class PlanApiTest(base.TestCase):
         plan = self._plan_in_request_body(parameters={})
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
-        self.controller.create(req, body)
+        self.controller.create(req, body=body)
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
@@ -211,12 +201,9 @@ class PlanApiTest(base.TestCase):
         'karbor.api.v1.plans.PlansController._plan_get')
     def test_plan_update_InvalidStatus(
             self, mock_plan_get):
-        plan = self._plan_in_request_body(
+        plan = self._plan_update_request_body(
             name=DEFAULT_NAME,
-            description=DEFAULT_DESCRIPTION,
-            provider_id=DEFAULT_PROVIDER_ID,
             status=constants.PLAN_STATUS_STARTED,
-            project_id=DEFAULT_PROJECT_ID,
             resources=DEFAULT_RESOURCES)
         body = {"plan": plan}
         req = fakes.HTTPRequest.blank('/v1/plans')
@@ -224,23 +211,30 @@ class PlanApiTest(base.TestCase):
         self.assertRaises(exception.InvalidPlan,
                           self.controller.update, req,
                           "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
-                          body)
+                          body=body)
 
     def _plan_in_request_body(self, name=DEFAULT_NAME,
                               description=DEFAULT_DESCRIPTION,
                               provider_id=DEFAULT_PROVIDER_ID,
-                              status=constants.PLAN_STATUS_SUSPENDED,
-                              project_id=DEFAULT_PROJECT_ID,
                               resources=DEFAULT_RESOURCES,
                               parameters=DEFAULT_PARAMETERS):
         plan_req = {
             'name': name,
             'description': description,
             'provider_id': provider_id,
-            'status': status,
-            'project_id': project_id,
             'resources': resources,
             'parameters': parameters,
+        }
+
+        return plan_req
+
+    def _plan_update_request_body(self, name=DEFAULT_NAME,
+                                  status=constants.PLAN_STATUS_STARTED,
+                                  resources=DEFAULT_RESOURCES):
+        plan_req = {
+            'name': name,
+            'resources': resources,
+            'status': status,
         }
 
         return plan_req

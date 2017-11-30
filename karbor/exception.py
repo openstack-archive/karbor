@@ -445,3 +445,11 @@ class PlanLimitExceeded(QuotaError):
 
 class UnexpectedOverQuota(QuotaError):
     message = _("Unexpected over quota on %(name)s.")
+
+
+class InvalidName(Invalid):
+    message = _("An invalid 'name' value was provided. %(reason)s")
+
+
+class ValidationError(Invalid):
+    message = "%(detail)s"

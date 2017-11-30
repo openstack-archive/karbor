@@ -208,5 +208,5 @@ class ScheduledOperationApiTest(base.TestCase):
         controller = plan_api.PlansController()
         mock_provider.return_value = fakes.PROVIDER_OS
         req = fakes.HTTPRequest.blank('/v1/plans')
-        plan = controller.create(req, create_plan_param)
+        plan = controller.create(req, body=create_plan_param)
         return plan['plan']
