@@ -22,6 +22,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import plans as plan_schema
+from karbor.api import validation
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _
@@ -248,6 +250,7 @@ class PlansController(wsgi.Controller):
         """Return plan search options allowed by non-admin."""
         return CONF.query_plan_filters
 
+    @validation.schema(plan_schema.create)
     def create(self, req, body):
         """Creates a new plan."""
         if not self.is_valid_body(body, 'plan'):
@@ -319,6 +322,7 @@ class PlansController(wsgi.Controller):
 
         return retval
 
+    @validation.schema(plan_schema.update)
     def update(self, req, id, body):
         """Update a plan."""
         context = req.environ['karbor.context']
