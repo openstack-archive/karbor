@@ -39,6 +39,7 @@ Approved Specs
     service-management-api
     adding-more-protection-parameters-retention-period
     checkpoint-copy-api
+    api-json-schema-validation
 
 Spec Template
 -------------
