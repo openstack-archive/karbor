@@ -45,7 +45,7 @@ CONF.register_opts(cinder_client_opts, group=CONFIG_GROUP)
 CONF.set_default('service_name', 'cinderv3', CONFIG_GROUP)
 CONF.set_default('service_type', 'volumev3', CONFIG_GROUP)
 
-CINDERCLIENT_VERSION = '3'
+CINDERCLIENT_VERSION = '3.43'
 
 
 def create(context, conf, **kwargs):

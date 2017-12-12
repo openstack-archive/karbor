@@ -20,6 +20,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import restores as restore_schema
+from karbor.api import validation
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _
@@ -201,6 +203,7 @@ class RestoresController(wsgi.Controller):
         """Return restores search options allowed by non-admin."""
         return CONF.query_restore_filters
 
+    @validation.schema(restore_schema.create)
     def create(self, req, body):
         """Creates a new restore."""
         if not self.is_valid_body(body, 'restore'):
