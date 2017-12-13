@@ -135,6 +135,6 @@ class ProvidersApiTest(base.TestCase):
         self.controller.checkpoints_create(
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
-            body)
+            body=body)
         self.assertTrue(mock_plan_create.called)
         self.assertTrue(mock_protect.called)

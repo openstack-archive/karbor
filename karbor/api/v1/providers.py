@@ -21,6 +21,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import checkpoints as checkpoint_schema
+from karbor.api import validation
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _
@@ -333,6 +335,7 @@ class ProvidersController(wsgi.Controller):
         LOG.info("Get all checkpoints completed successfully.")
         return checkpoints
 
+    @validation.schema(checkpoint_schema.create)
     def checkpoints_create(self, req, provider_id, body):
         """Creates a new checkpoint."""
         if not self.is_valid_body(body, 'checkpoint'):
