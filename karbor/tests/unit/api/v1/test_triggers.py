@@ -9,6 +9,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from datetime import datetime
+
 from oslo_config import cfg
 from webob import exc
 
@@ -52,20 +54,21 @@ class TriggerApiTest(base.TestCase):
             "type": "time",
             "properties": {
                 "format": "crontab",
-                "pattern": "* * * * *"
+                "pattern": "* * * * *",
+                'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
             },
         }
 
     def test_create_trigger_InvalidBody(self):
-        self.assertRaises(exc.HTTPUnprocessableEntity,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          self.req, {})
+                          self.req, body={})
 
     def test_create_trigger_InvalidName(self):
         body = self._get_create_trigger_request_body()
-        self.assertRaises(exc.HTTPBadRequest,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
     def test_create_trigger_invalid_trigger_type(self):
         param = self.default_create_trigger_param.copy()
@@ -73,7 +76,7 @@ class TriggerApiTest(base.TestCase):
         body = self._get_create_trigger_request_body(param)
         self.assertRaises(exc.HTTPBadRequest,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
     def test_create_trigger_invalid_trigger_formt_type(self):
         param = self.default_create_trigger_param.copy()
@@ -81,14 +84,14 @@ class TriggerApiTest(base.TestCase):
         body = self._get_create_trigger_request_body(param)
         self.assertRaises(exc.HTTPBadRequest,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
     def test_create_trigger(self):
         name = 'every minutes'
         param = self.default_create_trigger_param.copy()
         param['name'] = name
         body = self._get_create_trigger_request_body(param)
-        trigger = self.controller.create(self.req, body)
+        trigger = self.controller.create(self.req, body=body)
         self.assertEqual(name, trigger['trigger_info']['name'])
 
     def test_delete_trigger_binded_with_operation(self):
@@ -118,7 +121,7 @@ class TriggerApiTest(base.TestCase):
         param['properties']['window'] = 10
         body = self._get_create_trigger_request_body(param)
         trigger1 = self.controller.update(
-            self.req, trigger['trigger_info']['id'], body)
+            self.req, trigger['trigger_info']['id'], body=body)
 
         self.assertEqual(name, trigger1['trigger_info']['name'])
         self.assertEqual(10, int(
@@ -154,7 +157,7 @@ class TriggerApiTest(base.TestCase):
     def _create_one_trigger(self):
         param = self.default_create_trigger_param.copy()
         body = self._get_create_trigger_request_body(param)
-        return self.controller.create(self.req, body)
+        return self.controller.create(self.req, body=body)
 
     def _get_create_trigger_request_body(self, param={}):
         return {"trigger_info": param}

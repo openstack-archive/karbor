@@ -187,7 +187,7 @@ class ScheduledOperationApiTest(base.TestCase):
         controller = trigger_api.TriggersController()
         controller.operationengine_api = test_triggers.FakeRemoteOperationApi()
         req = fakes.HTTPRequest.blank('/v1/triggers')
-        return controller.create(req, create_trigger_param)
+        return controller.create(req, body=create_trigger_param)
 
     @mock.patch(
         'karbor.context.RequestContext.can')
