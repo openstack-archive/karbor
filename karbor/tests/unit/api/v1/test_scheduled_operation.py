@@ -67,23 +67,23 @@ class ScheduledOperationApiTest(base.TestCase):
         }
 
     def test_create_operation_InvalidBody(self):
-        self.assertRaises(exc.HTTPUnprocessableEntity,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          self.req, {})
+                          self.req, body={})
 
     def test_create_operation_InvalidName(self):
         body = self._get_create_operation_request_body()
-        self.assertRaises(exc.HTTPBadRequest,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
     def test_create_operation_invalid_trigger(self):
         param = self.default_create_operation_param.copy()
         param['trigger_id'] = 123
         body = self._get_create_operation_request_body(param)
-        self.assertRaises(exc.HTTPBadRequest,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
     def test_create_operation_receive_invalid_except(self):
         self.remote_operation_api._create_operation_exception =\
@@ -93,7 +93,7 @@ class ScheduledOperationApiTest(base.TestCase):
         body = self._get_create_operation_request_body(param)
         self.assertRaises(exc.HTTPBadRequest,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
         self.remote_operation_api._create_operation_exception = None
 
@@ -105,7 +105,7 @@ class ScheduledOperationApiTest(base.TestCase):
         body = self._get_create_operation_request_body(param)
         self.assertRaises(exc.HTTPInternalServerError,
                           self.controller.create,
-                          self.req, body)
+                          self.req, body=body)
 
         self.remote_operation_api._create_operation_exception = None
 
@@ -114,7 +114,7 @@ class ScheduledOperationApiTest(base.TestCase):
         param = self.default_create_operation_param.copy()
         param['name'] = name
         body = self._get_create_operation_request_body(param)
-        operation = self.controller.create(self.req, body)
+        operation = self.controller.create(self.req, body=body)
         self.assertEqual(name, operation['scheduled_operation']['name'])
 
     def test_delete_operation_receive_NotFound_except(self):
@@ -168,7 +168,7 @@ class ScheduledOperationApiTest(base.TestCase):
     def _create_one_operation(self):
         param = self.default_create_operation_param.copy()
         body = self._get_create_operation_request_body(param)
-        return self.controller.create(self.req, body)
+        return self.controller.create(self.req, body=body)
 
     def _get_create_operation_request_body(self, param={}):
         return {"scheduled_operation": param}
