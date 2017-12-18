@@ -21,6 +21,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import triggers as trigger_schema
+from karbor.api import validation
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
@@ -78,6 +80,7 @@ class TriggersController(wsgi.Controller):
         self.operationengine_api = operationengine_api.API()
         super(TriggersController, self).__init__()
 
+    @validation.schema(trigger_schema.create)
     def create(self, req, body):
         """Creates a new trigger."""
 
@@ -159,6 +162,7 @@ class TriggersController(wsgi.Controller):
 
         trigger.destroy()
 
+    @validation.schema(trigger_schema.update)
     def update(self, req, id, body):
         """Update a trigger"""
 
