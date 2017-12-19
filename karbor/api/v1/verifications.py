@@ -20,6 +20,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import verifications as verification_schema
+from karbor.api import validation
 from karbor.common import constants
 from karbor import exception
 from karbor.i18n import _
@@ -195,6 +197,7 @@ class VerificationsController(wsgi.Controller):
         LOG.info("Get all verifications completed successfully.")
         return verifications
 
+    @validation.schema(verification_schema.create)
     def create(self, req, body):
         """Creates a new verification."""
         if not self.is_valid_body(body, 'verification'):

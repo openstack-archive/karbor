@@ -16,7 +16,6 @@ from oslo_config import cfg
 from webob import exc
 
 from karbor.api.v1 import verifications
-from karbor.common import constants
 from karbor import context
 from karbor import exception
 from karbor.tests import base
@@ -46,7 +45,7 @@ class VerificationApiTest(base.TestCase):
         verification = self._verification_in_request_body()
         body = {"verification": verification}
         req = fakes.HTTPRequest.blank('/v1/verifications')
-        self.controller.create(req, body)
+        self.controller.create(req, body=body)
         self.assertTrue(mock_verification_create.called)
         self.assertTrue(mock_rpc_verification.called)
 
@@ -54,25 +53,25 @@ class VerificationApiTest(base.TestCase):
         verification = self._verification_in_request_body()
         body = {"verificationxx": verification}
         req = fakes.HTTPRequest.blank('/v1/verifications')
-        self.assertRaises(exc.HTTPUnprocessableEntity,
+        self.assertRaises(exception.ValidationError,
                           self.controller.create,
-                          req, body)
+                          req, body=body)
 
     def test_verification_create_InvalidProviderId(self):
         verification = self._verification_in_request_body(
             provider_id="")
         body = {"verification": verification}
         req = fakes.HTTPRequest.blank('/v1/verifications')
-        self.assertRaises(exception.InvalidInput, self.controller.create,
-                          req, body)
+        self.assertRaises(exception.ValidationError, self.controller.create,
+                          req, body=body)
 
     def test_verification_create_Invalidcheckpoint_id(self):
         verification = self._verification_in_request_body(
             checkpoint_id="")
         body = {"verification": verification}
         req = fakes.HTTPRequest.blank('/v1/verifications')
-        self.assertRaises(exception.InvalidInput, self.controller.create,
-                          req, body)
+        self.assertRaises(exception.ValidationError, self.controller.create,
+                          req, body=body)
 
     @mock.patch(
         'karbor.api.v1.verifications.'
@@ -98,17 +97,13 @@ class VerificationApiTest(base.TestCase):
             req, "1")
 
     def _verification_in_request_body(
-            self, project_id=DEFAULT_PROJECT_ID,
-            provider_id=DEFAULT_PROVIDER_ID,
+            self, provider_id=DEFAULT_PROVIDER_ID,
             checkpoint_id=DEFAULT_CHECKPOINT_ID,
-            parameters=DEFAULT_PARAMETERS,
-            status=constants.RESOURCE_STATUS_STARTED):
+            parameters=DEFAULT_PARAMETERS):
         verification_req = {
-            'project_id': project_id,
             'provider_id': provider_id,
             'checkpoint_id': checkpoint_id,
             'parameters': parameters,
-            'status': status,
         }
 
         return verification_req
