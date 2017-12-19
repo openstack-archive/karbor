@@ -143,7 +143,7 @@ metadata = {
     'type': ['object', 'null'],
     'patternProperties': {
         '^[a-zA-Z0-9-_:.# ]{1,255}$': {
-            'type': ['boolean', 'string']
+            'type': ['boolean', 'string', 'integer']
         }
     },
     'additionalProperties': False

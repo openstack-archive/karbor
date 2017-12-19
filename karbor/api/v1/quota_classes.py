@@ -19,6 +19,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import quota_classes as quota_class_schema
+from karbor.api import validation
 from karbor import db
 from karbor import exception
 from karbor.i18n import _
@@ -74,6 +76,7 @@ class QuotaClassesController(wsgi.Controller):
         return self._view_builder.detail_list(req, quota_class,
                                               quota_class_name)
 
+    @validation.schema(quota_class_schema.update)
     def update(self, req, id, body):
         context = req.environ['karbor.context']
 
