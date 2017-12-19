@@ -38,7 +38,7 @@ class QuotaApiTest(base.TestCase):
             '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
             use_admin_context=True)
         self.controller.update(
-            req, '73f74f90a1754bd7ad658afb3272323f', body)
+            req, '73f74f90a1754bd7ad658afb3272323f', body=body)
         self.assertTrue(mock_quota_update.called)
 
     def test_quota_update_invalid_project_id(self):
@@ -47,7 +47,7 @@ class QuotaApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank(
             '/v1/quotas/111', use_admin_context=True)
         self.assertRaises(exc.HTTPBadRequest, self.controller.update,
-                          req, '111', body)
+                          req, '111', body=body)
 
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_project_quotas')

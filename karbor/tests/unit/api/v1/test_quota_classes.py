@@ -37,7 +37,7 @@ class QuotaClassApiTest(base.TestCase):
             '/v1/quota_classes/73f74f90a1754bd7ad658afb3272323f',
             use_admin_context=True)
         self.controller.update(
-            req, '73f74f90a1754bd7ad658afb3272323f', body)
+            req, '73f74f90a1754bd7ad658afb3272323f', body=body)
         self.assertTrue(mock_quota_update.called)
 
     @mock.patch(
