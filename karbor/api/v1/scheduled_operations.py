@@ -18,6 +18,9 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import scheduled_operations as \
+    scheduled_operation_schema
+from karbor.api import validation
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
@@ -77,6 +80,7 @@ class ScheduledOperationController(wsgi.Controller):
         self.operationengine_api = operationengine_api.API()
         super(ScheduledOperationController, self).__init__()
 
+    @validation.schema(scheduled_operation_schema.create)
     def create(self, req, body):
         """Creates a new scheduled operation."""
 
