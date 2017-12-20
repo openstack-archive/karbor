@@ -200,8 +200,6 @@ class VerificationsController(wsgi.Controller):
     @validation.schema(verification_schema.create)
     def create(self, req, body):
         """Creates a new verification."""
-        if not self.is_valid_body(body, 'verification'):
-            raise exc.HTTPUnprocessableEntity()
 
         LOG.debug('Create verification request body: %s', body)
         context = req.environ['karbor.context']
@@ -209,21 +207,7 @@ class VerificationsController(wsgi.Controller):
         verification = body['verification']
         LOG.debug('Create verification request : %s', verification)
 
-        if not verification.get("provider_id"):
-            msg = _("provider_id must be provided when creating "
-                    "a verification.")
-            raise exception.InvalidInput(reason=msg)
-
-        if not verification.get("checkpoint_id"):
-            msg = _("checkpoint_id must be provided when creating "
-                    "a verification.")
-            raise exception.InvalidInput(reason=msg)
-
         parameters = verification.get("parameters")
-        if not isinstance(parameters, dict):
-            msg = _("parameters must be a dict when creating"
-                    " a verification.")
-            raise exception.InvalidInput(reason=msg)
 
         verification_properties = {
             'project_id': context.project_id,

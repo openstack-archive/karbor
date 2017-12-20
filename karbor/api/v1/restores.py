@@ -206,8 +206,6 @@ class RestoresController(wsgi.Controller):
     @validation.schema(restore_schema.create)
     def create(self, req, body):
         """Creates a new restore."""
-        if not self.is_valid_body(body, 'restore'):
-            raise exc.HTTPUnprocessableEntity()
 
         LOG.debug('Create restore request body: %s', body)
         context = req.environ['karbor.context']
@@ -215,30 +213,8 @@ class RestoresController(wsgi.Controller):
         restore = body['restore']
         LOG.debug('Create restore request : %s', restore)
 
-        if not restore.get("provider_id"):
-            msg = _("provider_id must be provided when creating "
-                    "a restore.")
-            raise exception.InvalidInput(reason=msg)
-
-        if not restore.get("checkpoint_id"):
-            msg = _("checkpoint_id must be provided when creating "
-                    "a restore.")
-            raise exception.InvalidInput(reason=msg)
-
         parameters = restore.get("parameters")
-        if not isinstance(parameters, dict):
-            msg = _("parameters must be a dict when creating"
-                    " a restore.")
-            raise exception.InvalidInput(reason=msg)
-
-        # restore_auth and restore_target are optional
-        restore_auth = restore.get("restore_auth")
-        if restore_auth is not None:
-            if not isinstance(restore_auth, dict):
-                msg = _("restore_auth must be a dict when creating"
-                        " a restore.")
-                raise exception.InvalidInput(reason=msg)
-
+        restore_auth = restore.get("restore_auth", None)
         restore_properties = {
             'project_id': context.project_id,
             'provider_id': restore.get('provider_id'),

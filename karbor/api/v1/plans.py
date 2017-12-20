@@ -253,8 +253,6 @@ class PlansController(wsgi.Controller):
     @validation.schema(plan_schema.create)
     def create(self, req, body):
         """Creates a new plan."""
-        if not self.is_valid_body(body, 'plan'):
-            raise exc.HTTPUnprocessableEntity()
 
         LOG.debug('Create plan request body: %s', body)
         context = req.environ['karbor.context']
@@ -262,23 +260,8 @@ class PlansController(wsgi.Controller):
         plan = body['plan']
         LOG.debug('Create plan request plan: %s', plan)
 
-        if not plan.get("provider_id"):
-            msg = _("provider_id must be provided when creating "
-                    "a plan.")
-            raise exception.InvalidInput(reason=msg)
-
         parameters = plan.get("parameters", None)
 
-        if parameters is None:
-            msg = _("parameters must be provided when creating "
-                    "a plan.")
-            raise exception.InvalidInput(reason=msg)
-
-        if not isinstance(parameters, dict):
-            msg = _("parameters must be a dict when creating a plan.")
-            raise exception.InvalidInput(reason=msg)
-
-        self.validate_name_and_description(plan)
         self.validate_plan_resources(plan)
         self.validate_plan_parameters(context, plan)
 
@@ -327,18 +310,6 @@ class PlansController(wsgi.Controller):
         """Update a plan."""
         context = req.environ['karbor.context']
 
-        if not body:
-            msg = _("Missing request body")
-            raise exc.HTTPBadRequest(explanation=msg)
-
-        if 'plan' not in body:
-            msg = _("Missing required element '%s' in request body") % 'plan'
-            raise exc.HTTPBadRequest(explanation=msg)
-
-        if not uuidutils.is_uuid_like(id):
-            msg = _("Invalid plan id provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
-
         plan = body['plan']
         update_dict = {}
 
@@ -354,7 +325,6 @@ class PlansController(wsgi.Controller):
             msg = _("Missing updated parameters in request body.")
             raise exc.HTTPBadRequest(explanation=msg)
 
-        self.validate_name_and_description(update_dict)
         if update_dict.get("resources"):
             self.validate_plan_resources(update_dict)
 
