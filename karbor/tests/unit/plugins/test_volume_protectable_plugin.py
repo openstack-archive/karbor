@@ -151,6 +151,7 @@ class VolumeProtectablePluginTest(base.TestCase):
                       {'availability_zone': 'az1'})],
             plugin.get_dependent_resources(self._context, project))
 
+    @mock.patch('kubernetes.client.api_client.ApiClient.__del__')
     @mock.patch.object(volumes.VolumeManager, 'list')
     @mock.patch('kubernetes.client.apis.core_v1_api.'
                 'CoreV1Api.read_persistent_volume')
@@ -161,7 +162,8 @@ class VolumeProtectablePluginTest(base.TestCase):
     def test_get_pod_dependent_resources(self, mock_pod_read,
                                          mock_pvc_read,
                                          mock_pv_read,
-                                         mock_volume_list):
+                                         mock_volume_list,
+                                         mock_delete):
         plugin = VolumeProtectablePlugin(self._context)
 
         pod = V1Pod(api_version="v1", kind="Pod",
@@ -171,9 +173,11 @@ class VolumeProtectablePluginTest(base.TestCase):
                         uid="dd8236e1-8c6c-11e7-9b7a-fa163e18e097"),
                     spec=V1PodSpec(
                         volumes=[V1Volume(
+                            name="name123",
                             persistent_volume_claim=(
                                 V1PersistentVolumeClaimVolumeSource(
-                                    claim_name="cinder-claim1'")))]),
+                                    claim_name="cinder-claim1'")))],
+                        containers=[]),
                     status=V1PodStatus(phase="Running"))
 
         pvc = V1PersistentVolumeClaim(

@@ -46,9 +46,10 @@ class PodProtectablePluginTest(base.TestCase):
         self.assertEqual(("OS::Keystone::Project"),
                          plugin.get_parent_resource_types())
 
+    @mock.patch('kubernetes.client.api_client.ApiClient.__del__')
     @mock.patch('kubernetes.client.apis.core_v1_api.'
                 'CoreV1Api.list_namespaced_pod')
-    def test_list_resources(self, mock_pod_list):
+    def test_list_resources(self, mock_pod_list, mock_pod_delete):
         plugin = K8sPodProtectablePlugin(self._context, cfg.CONF)
 
         pod = V1Pod(api_version="v1", kind="Pod",
@@ -65,9 +66,10 @@ class PodProtectablePluginTest(base.TestCase):
                      'default:busybox-test')],
             plugin.list_resources(self._context))
 
+    @mock.patch('kubernetes.client.api_client.ApiClient.__del__')
     @mock.patch('kubernetes.client.apis.core_v1_api.'
                 'CoreV1Api.read_namespaced_pod')
-    def test_show_resource(self, mock_pod_get):
+    def test_show_resource(self, mock_pod_get, mock_pod_delete):
         plugin = K8sPodProtectablePlugin(self._context, cfg.CONF)
 
         pod = V1Pod(api_version="v1", kind="Pod",

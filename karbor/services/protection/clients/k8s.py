@@ -12,7 +12,7 @@
 
 from kubernetes import client
 from kubernetes.client import api_client
-from kubernetes.client import ConfigurationObject
+from kubernetes.client.configuration import Configuration
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -44,11 +44,11 @@ def create(context, conf, **kwargs):
     LOG.info('Creating the kubernetes client with url %s.',
              client_config.k8s_host)
 
-    config = ConfigurationObject()
+    config = Configuration()
     config.host = client_config.k8s_host
     config.ssl_ca_cert = client_config.k8s_ssl_ca_cert
     config.cert_file = client_config.k8s_cert_file
     config.key_file = client_config.k8s_key_file
-    k8s_api_client = api_client.ApiClient(config=config)
+    k8s_api_client = api_client.ApiClient(config)
     k8s_core_v1_api = client.CoreV1Api(k8s_api_client)
     return k8s_core_v1_api
