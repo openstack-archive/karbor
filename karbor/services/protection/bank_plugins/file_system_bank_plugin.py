@@ -186,4 +186,6 @@ class FileSystemBankPlugin(BankPlugin):
             LOG.error("List objects failed. err: %s", err)
             raise exception.BankListObjectsFailed(reason=err)
         else:
+            if prefix is not None:
+                file_lists = [(prefix + file_name) for file_name in file_lists]
             return file_lists[-limit:] if limit is not None else file_lists
