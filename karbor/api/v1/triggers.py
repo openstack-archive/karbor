@@ -86,8 +86,6 @@ class TriggersController(wsgi.Controller):
 
         LOG.debug('Create trigger start')
 
-        if not self.is_valid_body(body, 'trigger_info'):
-            raise exc.HTTPUnprocessableEntity()
         LOG.debug('Create a trigger, request body: %s', body)
 
         context = req.environ['karbor.context']
@@ -97,10 +95,6 @@ class TriggersController(wsgi.Controller):
         trigger_name = trigger_info.get("name", None)
         trigger_type = trigger_info.get("type", None)
         trigger_property = trigger_info.get("properties", None)
-        if not trigger_name or not trigger_type or not trigger_property:
-            msg = _("Trigger name or type or property is not provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
-        self.validate_name_and_description(trigger_info)
 
         trigger_format = trigger_property.get('format', None)
         if trigger_format != CONF.time_format:

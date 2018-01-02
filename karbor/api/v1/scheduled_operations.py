@@ -86,8 +86,6 @@ class ScheduledOperationController(wsgi.Controller):
 
         LOG.debug('Create scheduled operation start')
 
-        if not self.is_valid_body(body, 'scheduled_operation'):
-            raise exc.HTTPUnprocessableEntity()
         LOG.debug('Create a scheduled operation, request body: %s', body)
 
         context = req.environ['karbor.context']
@@ -101,8 +99,6 @@ class ScheduledOperationController(wsgi.Controller):
         if not all([name, operation_type, operation_definition]):
             msg = _("Operation name or type or definition is not provided.")
             raise exc.HTTPBadRequest(explanation=msg)
-
-        self.validate_name_and_description(operation_info)
 
         trigger_id = operation_info.get("trigger_id", None)
         trigger = self._get_trigger_by_id(context, trigger_id)

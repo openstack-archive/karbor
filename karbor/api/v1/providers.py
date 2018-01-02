@@ -338,8 +338,6 @@ class ProvidersController(wsgi.Controller):
     @validation.schema(checkpoint_schema.create)
     def checkpoints_create(self, req, provider_id, body):
         """Creates a new checkpoint."""
-        if not self.is_valid_body(body, 'checkpoint'):
-            raise exc.HTTPUnprocessableEntity()
 
         context = req.environ['karbor.context']
 
@@ -357,15 +355,6 @@ class ProvidersController(wsgi.Controller):
             raise exception.InvalidInput(reason=msg)
 
         plan_id = checkpoint.get("plan_id")
-
-        if not plan_id:
-            msg = _("plan_id must be provided when creating "
-                    "a checkpoint.")
-            raise exception.InvalidInput(reason=msg)
-
-        if not uuidutils.is_uuid_like(plan_id):
-            msg = _("Invalid plan id provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
 
         plan = objects.Plan.get_by_id(context, plan_id)
         if not plan:
