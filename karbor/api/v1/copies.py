@@ -20,6 +20,8 @@ from webob import exc
 
 from karbor.api import common
 from karbor.api.openstack import wsgi
+from karbor.api.schemas import copies as copy_schema
+from karbor.api import validation
 from karbor import exception
 from karbor.i18n import _
 
@@ -58,10 +60,9 @@ class CopiesController(wsgi.Controller):
         self.protection_api = protection_api.API()
         super(CopiesController, self).__init__()
 
+    @validation.schema(copy_schema.create)
     def create(self, req, provider_id, body):
         """Creates a new copy."""
-        if not self.is_valid_body(body, 'copy'):
-            raise exc.HTTPUnprocessableEntity()
 
         LOG.debug('Create copy request body: %s', body)
         context = req.environ['karbor.context']
@@ -69,20 +70,11 @@ class CopiesController(wsgi.Controller):
         copy = body['copy']
         plan_id = copy.get("plan_id", None)
 
-        if not uuidutils.is_uuid_like(plan_id):
-            msg = _("Invalid plan id provided.")
-            raise exception.InvalidInput(reason=msg)
-
         if not uuidutils.is_uuid_like(provider_id):
             msg = _("Invalid provider id provided.")
             raise exception.InvalidInput(reason=msg)
 
         parameters = copy.get("parameters", None)
-        if parameters:
-            if not isinstance(parameters, dict):
-                msg = _("The parameters must be a dict when creating"
-                        " a copy.")
-                raise exception.InvalidInput(reason=msg)
 
         try:
             plan = objects.Plan.get_by_id(context, plan_id)
