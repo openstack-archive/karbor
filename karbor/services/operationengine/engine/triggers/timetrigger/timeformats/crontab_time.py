@@ -14,9 +14,10 @@ from croniter import croniter
 from datetime import datetime
 from oslo_utils import timeutils
 
+from karbor import exception
+from karbor.i18n import _
 from karbor.services.operationengine.engine.triggers.timetrigger import \
     timeformats
-from karbor import utils
 
 
 class Crontab(timeformats.TimeFormat):
@@ -28,7 +29,15 @@ class Crontab(timeformats.TimeFormat):
 
     @classmethod
     def check_time_format(cls, pattern):
-        utils.validate_crontab_time_format(pattern)
+        if not pattern:
+            msg = (_("The trigger pattern is None"))
+            raise exception.InvalidInput(msg)
+
+        try:
+            croniter(pattern)
+        except Exception:
+            msg = (_("The trigger pattern(%s) is invalid") % pattern)
+            raise exception.InvalidInput(msg)
 
     def compute_next_time(self, current_time):
         time = current_time if current_time >= self._start_time else (

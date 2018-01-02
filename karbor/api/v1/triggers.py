@@ -13,8 +13,6 @@
 """The triggers api."""
 
 from datetime import datetime
-
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
 from webob import exc
@@ -30,7 +28,6 @@ from karbor.policies import triggers as trigger_policy
 from karbor.services.operationengine import api as operationengine_api
 from karbor import utils
 
-CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -95,16 +92,6 @@ class TriggersController(wsgi.Controller):
         trigger_name = trigger_info.get("name", None)
         trigger_type = trigger_info.get("type", None)
         trigger_property = trigger_info.get("properties", None)
-
-        trigger_format = trigger_property.get('format', None)
-        if trigger_format != CONF.time_format:
-            msg = _("Trigger format(%s) is invalid.") % trigger_format
-            raise exc.HTTPBadRequest(explanation=msg)
-        trigger_pattern = trigger_property.get('pattern', None)
-        if CONF.time_format == 'calendar':
-            utils.validate_calendar_time_format(trigger_pattern)
-        if CONF.time_format == 'crontab':
-            utils.validate_crontab_time_format(trigger_pattern)
 
         trigger_property.setdefault(
             'start_time', datetime.utcnow().replace(microsecond=0))

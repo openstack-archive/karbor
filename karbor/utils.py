@@ -19,12 +19,9 @@ import six
 import tempfile
 import webob.exc
 
-from croniter import croniter
-from icalendar import Calendar
 from keystoneclient import discover as ks_discover
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from oslo_utils import importutils
 from oslo_utils import strutils
 from oslo_utils import timeutils
@@ -35,49 +32,6 @@ from stevedore import driver
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-
-
-def decode_calendar_pattern(pattern):
-    try:
-        pattern.index('\\')
-        pattern_dict = jsonutils.loads('{"pattern": "%s"}' % pattern)
-        return pattern_dict["pattern"]
-    except Exception:
-        return pattern
-
-
-def validate_calendar_time_format(pattern):
-    try:
-        cal_obj = Calendar.from_ical(decode_calendar_pattern(pattern))
-    except Exception:
-        msg = (_("The trigger pattern(%s) is invalid") % pattern)
-        raise exception.InvalidInput(msg)
-
-    try:
-        vevent = cal_obj.walk('VEVENT')[0]
-    except Exception:
-        msg = (_("The trigger pattern(%s) must include less than one "
-                 "VEVENT component") % pattern)
-        raise exception.InvalidInput(msg)
-
-    try:
-        vevent.decoded('RRULE')
-    except Exception:
-        msg = (_("The first VEVENT component of trigger pattern(%s) must "
-                 "include less than one RRULE property") % pattern)
-        raise exception.InvalidInput(msg)
-
-
-def validate_crontab_time_format(pattern):
-    if not pattern:
-        msg = (_("The trigger pattern is None"))
-        raise exception.InvalidInput(msg)
-
-    try:
-        croniter(pattern)
-    except Exception:
-        msg = (_("The trigger pattern(%s) is invalid") % pattern)
-        raise exception.InvalidInput(msg)
 
 
 def find_config(config_path):
