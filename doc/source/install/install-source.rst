@@ -34,12 +34,19 @@ Generate sample configuration file karbor.conf.sample::
     #or direct run oslo-config-generator
     oslo-config-generator --config-file etc/oslo-config-generator/karbor.conf
 
+Generate sample policy file policy.yaml.sample::
+
+    #use tox
+    tox -egenpolicy
+    #or direct run oslopolicy-sample-generator
+    oslopolicy-sample-generator --config-file=etc/karbor-policy-generator.conf
+
 Install sample configuration files::
 
     mkdir /etc/karbor
     cp etc/api-paste.ini /etc/karbor
     cp etc/karbor.conf.sample /etc/karbor/karbor.conf
-    cp etc/policy.json /etc/karbor
+    cp etc/policy.yaml.sample /etc/karbor/policy.yaml
     cp -r etc/providers.d /etc/karbor
 
 Create the log directory::
