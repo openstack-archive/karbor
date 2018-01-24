@@ -203,14 +203,22 @@ class ProviderRegistry(object):
             self.providers.values(), key=lambda item: item.id)
         if marker is not None and marker in provider_ids:
             provider_list = provider_list[provider_ids.index(marker) + 1:]
+        filters = filters if filters else {}
         valid_providers = []
         for provider in provider_list:
-            valid_providers.append(
-                dict(id=provider.id,
-                     name=provider.name,
-                     description=provider.description,
-                     extended_info_schema=provider.extended_info_schema
-                     ))
+            provider_dict = dict(
+                id=provider.id,
+                name=provider.name,
+                description=provider.description,
+                extended_info_schema=provider.extended_info_schema
+            )
+            for key, value in filters.items():
+                if key in provider_dict.keys() and \
+                        value != provider_dict[key]:
+                    break
+            else:
+                valid_providers.append(provider_dict)
+
             if limit is not None and len(valid_providers) == limit:
                 return valid_providers
         return valid_providers
