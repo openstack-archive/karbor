@@ -29,7 +29,7 @@ holds our protection data, is high available and reliable.
 Restore from what point
 =======================
 
-In `document protection service design <https://raw.githubusercontent.com/openstack/karbor/master/doc/source/spes/protection-service/protection-service.rst>`_
+In `document protection service design <https://github.com/openstack/karbor/blob/master/doc/source/specs/protection-service/protection-service.rst>`_
 , we have described the procedure to protect resource, where for each protection
 plan execution, we will persist a checkpoint in bank.
 
