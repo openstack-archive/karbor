@@ -1,5 +1,4 @@
 - project:
-    name: openstack/karbor
     check:
       jobs:
         - karbor-dsvm-fullstack:
