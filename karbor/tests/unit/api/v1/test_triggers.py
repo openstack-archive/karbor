@@ -31,6 +31,9 @@ class FakeRemoteOperationApi(object):
             msg = (_("Invalid trigger time format type"))
             raise exception.InvalidInput(msg)
 
+    def verify_trigger(self, context, trigger):
+        pass
+
     def delete_trigger(self, context, trigger_id):
         pass
 

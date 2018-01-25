@@ -104,6 +104,7 @@ class TriggersController(wsgi.Controller):
         }
         try:
             trigger = objects.Trigger(context=context, **trigger_definition)
+            self.operationengine_api.verify_trigger(context, trigger)
             self.operationengine_api.create_trigger(context, trigger)
             trigger.create()
         except exception.Invalid as ex:

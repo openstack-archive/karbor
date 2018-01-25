@@ -39,6 +39,9 @@ class FakeTriggerManager(object):
     def unregister_operation(self, trigger_id, operation_id, **kwargs):
         pass
 
+    def check_trigger_definition(self, trigger_type, trigger_definition):
+        pass
+
     def add_trigger(self, trigger_id, trigger_type, trigger_property):
         self._trigger[trigger_id] = []
 
@@ -149,6 +152,12 @@ class OperationEngineManagerTestCase(base.TestCase):
         # resume
         self.manager.suspend_scheduled_operation(self.ctxt, op_id, trigger_id)
         unregister.assert_called_once_with(trigger_id, op_id)
+
+    @mock.patch.object(FakeTriggerManager, 'check_trigger_definition')
+    def test_verify_trigger(self, check_trigger_definition):
+        self.manager.verify_trigger(self.ctxt, self._trigger)
+        check_trigger_definition.assert_called_once_with(
+            self._trigger.type, self._trigger.properties)
 
     def _create_one_trigger(self):
         trigger_info = {

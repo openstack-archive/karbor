@@ -63,6 +63,9 @@ class OperationEngineAPI(object):
                                  operation_id=operation_id,
                                  trigger_id=trigger_id)
 
+    def verify_trigger(self, ctxt, trigger):
+        return self._client.call(ctxt, 'verify_trigger', trigger=trigger)
+
     def create_trigger(self, ctxt, trigger):
         self._client.prepare(fanout=True).cast(ctxt, 'create_trigger',
                                                trigger=trigger)
