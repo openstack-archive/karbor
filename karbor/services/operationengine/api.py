@@ -40,6 +40,9 @@ class API(base.Base):
         self.operationengine_rpcapi.resume_scheduled_operation(
             context, operation_id, trigger_id)
 
+    def verify_trigger(self, context, trigger):
+        self.operationengine_rpcapi.verify_trigger(context, trigger)
+
     def create_trigger(self, context, trigger):
         self.operationengine_rpcapi.create_trigger(context, trigger)
 

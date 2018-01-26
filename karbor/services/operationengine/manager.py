@@ -220,6 +220,13 @@ class OperationEngineManager(manager.Manager):
             raise
 
     @messaging.expected_exceptions(exception.InvalidInput)
+    def verify_trigger(self, context, trigger):
+        LOG.debug('Verifying trigger (id: "%s" type: "%s")',
+                  trigger.id, trigger.type)
+        self.trigger_manager.check_trigger_definition(
+            trigger.type, trigger.properties)
+
+    @messaging.expected_exceptions(exception.InvalidInput)
     def create_trigger(self, context, trigger):
         LOG.debug('Creating trigger (id: "%s" type: "%s")',
                   trigger.id, trigger.type)
