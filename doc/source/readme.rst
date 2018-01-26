@@ -74,7 +74,7 @@ provider implementation to easily add specialize options.
 Example
 ~~~~~~~
 
-Let’s take the OpenStack::Cinder::Volume resource *Protect* action.
+Let's take the OpenStack::Cinder::Volume resource *Protect* action.
 
 One of the action parameters in the Parameters Schema will be
 "Consistency Level"::

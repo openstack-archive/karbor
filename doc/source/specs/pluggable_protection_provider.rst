@@ -175,7 +175,7 @@ For *each* operation the pluggin can implement each of the hooks:
    #. **Prepare begin hook**: invoked before any hook of this resource and
       dependent resources has begun.
 
-      For tasks that need to happen before any dependent resource’s operations
+      For tasks that need to happen before any dependent resource's operations
       begin
 
       Hook method name: **on_prepare_begin**
@@ -184,7 +184,7 @@ For *each* operation the pluggin can implement each of the hooks:
       resources are complete.
 
       For tasks that finish the work began in *prepare begin hook*, for tasks that
-      require that the dependent resource’s prepare phase finished
+      require that the dependent resource's prepare phase finished
 
       Hook method name: **on_prepare_finish**
 
@@ -241,7 +241,7 @@ Notes:
 
     :red:`Red`: The resource Complete depends on the resource Main
 
-    :black:`Black`: Parent resource Complete depends on the child resource’s
+    :black:`Black`: Parent resource Complete depends on the child resource's
     Complete
 
 
