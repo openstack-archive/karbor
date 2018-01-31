@@ -31,20 +31,20 @@ from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         return
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         return
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         return
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         return
 
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return
 
 

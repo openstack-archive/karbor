@@ -107,7 +107,8 @@ class ProtectionManager(manager.Manager):
         checkpoint_collection = provider.get_checkpoint_collection()
         try:
             checkpoint = checkpoint_collection.create(plan,
-                                                      checkpoint_properties)
+                                                      checkpoint_properties,
+                                                      context=context)
         except Exception as e:
             LOG.exception("Failed to create checkpoint, plan: %s", plan_id)
             exc = exception.FlowError(flow="protect",
@@ -318,7 +319,8 @@ class ProtectionManager(manager.Manager):
         provider = self.provider_registry.show_provider(provider_id)
         try:
             checkpoint_collection = provider.get_checkpoint_collection()
-            checkpoint = checkpoint_collection.get(checkpoint_id)
+            checkpoint = checkpoint_collection.get(checkpoint_id,
+                                                   context=context)
         except Exception:
             LOG.error("get checkpoint failed, checkpoint_id:%s",
                       checkpoint_id)
@@ -384,10 +386,11 @@ class ProtectionManager(manager.Manager):
         checkpoint_ids = provider.list_checkpoints(
             project_id, provider_id, limit=limit, marker=marker,
             plan_id=plan_id, start_date=start_date, end_date=end_date,
-            sort_dir=sort_dir)
+            sort_dir=sort_dir, context=context)
         checkpoints = []
         for checkpoint_id in checkpoint_ids:
-            checkpoint = provider.get_checkpoint(checkpoint_id)
+            checkpoint = provider.get_checkpoint(checkpoint_id,
+                                                 context=context)
             checkpoints.append(checkpoint.to_dict())
         return checkpoints
 
@@ -397,7 +400,7 @@ class ProtectionManager(manager.Manager):
     def show_checkpoint(self, context, provider_id, checkpoint_id):
         provider = self.provider_registry.show_provider(provider_id)
 
-        checkpoint = provider.get_checkpoint(checkpoint_id)
+        checkpoint = provider.get_checkpoint(checkpoint_id, context=context)
         checkpoint_dict = checkpoint.to_dict()
         if not context.is_admin and (
                 context.project_id != checkpoint_dict['project_id']):

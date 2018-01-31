@@ -27,17 +27,17 @@ class _InMemoryBankPlugin(BankPlugin):
         super(_InMemoryBankPlugin, self).__init__(config)
         self._data = OrderedDict()
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         self._data[key] = value
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         try:
             return deepcopy(self._data[key])
         except KeyError:
             raise exception.BankGetObjectFailed('no such object')
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         marker_found = marker is None
         for key in self._data.keys():
             if marker is not True and key != marker:
@@ -51,7 +51,7 @@ class _InMemoryBankPlugin(BankPlugin):
             else:
                 marker_found = True
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         del self._data[key]
 
     def get_owner_id(self):

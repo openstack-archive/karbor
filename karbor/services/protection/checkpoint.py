@@ -141,7 +141,7 @@ class Checkpoint(object):
 
     @classmethod
     def get_by_section(cls, checkpoints_section, indices_section,
-                       bank_lease, checkpoint_id):
+                       bank_lease, checkpoint_id, context=None):
         # TODO(yuvalbr) add validation that the checkpoint exists
         checkpoint_section = checkpoints_section.get_sub_section(checkpoint_id)
         return Checkpoint(checkpoint_section, indices_section,
@@ -168,7 +168,8 @@ class Checkpoint(object):
     @classmethod
     def create_in_section(cls, checkpoints_section, indices_section,
                           bank_lease, owner_id, plan,
-                          checkpoint_id=None, checkpoint_properties=None):
+                          checkpoint_id=None, checkpoint_properties=None,
+                          context=None):
         checkpoint_id = checkpoint_id or cls._generate_id()
         checkpoint_section = checkpoints_section.get_sub_section(checkpoint_id)
 
@@ -202,39 +203,44 @@ class Checkpoint(object):
                 "extra_info": extra_info,
                 "created_at": created_at,
                 "timestamp": timestamp
-            }
+            },
+            context=context
         )
 
         indices_section.update_object(
             key=cls._get_checkpoint_path_by_provider(
                 provider_id, project_id, timestamp, checkpoint_id),
-            value=checkpoint_id
+            value=checkpoint_id,
+            context=context
         )
 
         indices_section.update_object(
             key=cls._get_checkpoint_path_by_date(
                 created_at, project_id, timestamp, checkpoint_id),
-            value=checkpoint_id
+            value=checkpoint_id,
+            context=context
         )
 
         indices_section.update_object(
             key=cls._get_checkpoint_path_by_plan(
                 plan.get("id"), project_id, created_at, timestamp,
                 checkpoint_id),
-            value=checkpoint_id)
+            value=checkpoint_id,
+            context=context)
 
         return Checkpoint(checkpoint_section,
                           indices_section,
                           bank_lease,
                           checkpoint_id)
 
-    def commit(self):
+    def commit(self, context=None):
         self._checkpoint_section.update_object(
             key=_INDEX_FILE_NAME,
             value=self._md_cache,
+            context=context
         )
 
-    def purge(self):
+    def purge(self, context=None):
         """Purge the index file of the checkpoint.
 
         Can only be done if the checkpoint has no other files apart from the
@@ -261,9 +267,9 @@ class Checkpoint(object):
         else:
             raise RuntimeError(_("Could not delete: Checkpoint is not empty"))
 
-    def delete(self):
+    def delete(self, context=None):
         self.status = constants.CHECKPOINT_STATUS_DELETED
-        self.commit()
+        self.commit(context=context)
         # delete indices
         created_at = self._md_cache["created_at"]
         timestamp = self._md_cache["timestamp"]
@@ -272,13 +278,16 @@ class Checkpoint(object):
         project_id = self._md_cache["project_id"]
         self._indices_section.delete_object(
             self._get_checkpoint_path_by_provider(
-                provider_id, project_id, timestamp, self.id))
+                provider_id, project_id, timestamp, self.id),
+            context=context)
         self._indices_section.delete_object(
             self._get_checkpoint_path_by_date(
-                created_at, project_id, timestamp, self.id))
+                created_at, project_id, timestamp, self.id),
+            context=context)
         self._indices_section.delete_object(
             self._get_checkpoint_path_by_plan(
-                plan_id, project_id, created_at, timestamp, self.id))
+                plan_id, project_id, created_at, timestamp, self.id),
+            context=context)
 
     def get_resource_bank_section(self, resource_id):
         prefix = "/resource-data/%s/" % resource_id
@@ -295,7 +304,8 @@ class CheckpointCollection(object):
         self._indices_section = bank.get_sub_section("/indices")
 
     def list_ids(self, project_id, provider_id, limit=None, marker=None,
-                 plan_id=None, start_date=None, end_date=None, sort_dir=None):
+                 plan_id=None, start_date=None, end_date=None, sort_dir=None,
+                 context=None):
         marker_checkpoint = None
         if marker is not None:
             checkpoint_section = self._checkpoints_section.get_sub_section(
@@ -325,23 +335,25 @@ class CheckpointCollection(object):
                 marker = "/by-date/%s/%s/%s" % (date, project_id, marker)
 
         return self._list_ids(project_id, prefix, limit, marker, start_date,
-                              end_date, sort_dir)
+                              end_date, sort_dir, context=context)
 
     def _list_ids(self, project_id, prefix, limit, marker, start_date,
-                  end_date, sort_dir):
+                  end_date, sort_dir, context=None):
         if start_date is None:
             return [key[key.find("@") + 1:]
                     for key in self._indices_section.list_objects(
                     prefix=prefix,
                     limit=limit,
                     marker=marker,
-                    sort_dir=sort_dir
+                    sort_dir=sort_dir,
+                    context=context
                     )]
         else:
             ids = []
             for key in self._indices_section.list_objects(prefix=prefix,
                                                           marker=marker,
-                                                          sort_dir=sort_dir):
+                                                          sort_dir=sort_dir,
+                                                          context=context):
                 date = datetime.strptime(key.split("/")[-3], "%Y-%m-%d")
                 checkpoint_project_id = key.split("/")[-2]
                 if start_date <= date <= end_date and (
@@ -351,14 +363,15 @@ class CheckpointCollection(object):
                     return ids
             return ids
 
-    def get(self, checkpoint_id):
+    def get(self, checkpoint_id, context=None):
         # TODO(saggi): handle multiple instances of the same checkpoint
         return Checkpoint.get_by_section(self._checkpoints_section,
                                          self._indices_section,
                                          self._bank_lease,
-                                         checkpoint_id)
+                                         checkpoint_id,
+                                         context=context)
 
-    def create(self, plan, checkpoint_properties=None):
+    def create(self, plan, checkpoint_properties=None, context=None):
         # TODO(saggi): Serialize plan to checkpoint. Will be done in
         # future patches.
         return Checkpoint.create_in_section(
@@ -367,4 +380,5 @@ class CheckpointCollection(object):
             self._bank_lease,
             self._bank.get_owner_id(),
             plan,
-            checkpoint_properties=checkpoint_properties)
+            checkpoint_properties=checkpoint_properties,
+            context=context)

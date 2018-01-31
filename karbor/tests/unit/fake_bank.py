@@ -25,18 +25,18 @@ class FakeBankPlugin(bank_plugin.BankPlugin):
         config.register_opts(fake_bank_opts, 'fake_bank')
         self.fake_host = config['fake_bank']['fake_host']
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         return
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         return
 
     def list_objects(self, prefix=None, limit=None,
-                     marker=None, sort_dir=None):
+                     marker=None, sort_dir=None, context=None):
         return
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         return
 
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return

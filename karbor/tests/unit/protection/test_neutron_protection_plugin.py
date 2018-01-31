@@ -227,16 +227,17 @@ class FakeBankPlugin(BankPlugin):
     def create_object(self, key, value):
         self._objects[key] = value
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         self._objects[key] = value
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         value = self._objects.get(key, None)
         if value is None:
             raise Exception
         return value
 
-    def list_objects(self, prefix=None, limit=None, marker=None):
+    def list_objects(self, prefix=None, limit=None, marker=None,
+                     sort_dir=None, context=None):
         objects_name = []
         if prefix is not None:
             for key, value in self._objects.items():
@@ -246,10 +247,10 @@ class FakeBankPlugin(BankPlugin):
             objects_name = self._objects.keys()
         return objects_name
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         self._objects.pop(key)
 
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return
 
 fake_checkpointid = "checkpoint_id"

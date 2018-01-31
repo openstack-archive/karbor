@@ -135,10 +135,10 @@ class FileSystemBankPlugin(BankPlugin):
             LOG.exception(_("List the object failed. path: %s"), obj_file_path)
             raise
 
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return self.owner_id
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         LOG.debug("FsBank: update_object. key: %s", key)
         self._validate_path(key)
         try:
@@ -151,7 +151,7 @@ class FileSystemBankPlugin(BankPlugin):
             raise exception.BankUpdateObjectFailed(reason=err,
                                                    key=key)
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         LOG.debug("FsBank: delete_object. key: %s", key)
         self._validate_path(key)
         try:
@@ -161,7 +161,7 @@ class FileSystemBankPlugin(BankPlugin):
             raise exception.BankDeleteObjectFailed(reason=err,
                                                    key=key)
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         LOG.debug("FsBank: get_object. key: %s", key)
         self._validate_path(key)
         try:
@@ -178,7 +178,7 @@ class FileSystemBankPlugin(BankPlugin):
         return data
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         LOG.debug("FsBank: list_objects. key: %s", prefix)
         try:
             file_lists = self._list_object(prefix)

@@ -41,24 +41,24 @@ class BankPlugin(object):
         self._config = config
 
     @abc.abstractmethod
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         return
 
     @abc.abstractmethod
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         return
 
     @abc.abstractmethod
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         return
 
     @abc.abstractmethod
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         return
 
     @abc.abstractmethod
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return
 
 
@@ -114,16 +114,18 @@ class Bank(object):
                 err=_('Invalid parameter: must not contain "." or ".." parts')
             )
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         self._validate_key(key)
-        return self._plugin.update_object(self._normalize_key(key), value)
+        return self._plugin.update_object(self._normalize_key(key), value,
+                                          context=context)
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         self._validate_key(key)
-        return self._plugin.get_object(self._normalize_key(key))
+        return self._plugin.get_object(self._normalize_key(key),
+                                       context=context)
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         if not prefix:
             prefix = "/"
 
@@ -133,12 +135,14 @@ class Bank(object):
             prefix=norm_prefix,
             limit=limit,
             marker=marker,
-            sort_dir=sort_dir
+            sort_dir=sort_dir,
+            context=context
         )
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         self._validate_key(key)
-        return self._plugin.delete_object(self._normalize_key(key))
+        return self._plugin.delete_object(self._normalize_key(key),
+                                          context=context)
 
     def get_sub_section(self, section, is_writable=True):
         return BankSection(self, section, is_writable)
@@ -229,20 +233,22 @@ class BankSection(object):
         if not self.is_writable:
             raise exception.BankReadonlyViolation()
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         self._validate_writable()
         return self._bank.update_object(
             self._prepend_prefix(key),
             value,
+            context=context
         )
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         return self._bank.get_object(
             self._prepend_prefix(key),
+            context=context
         )
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         if not prefix:
             prefix = self._prefix
         else:
@@ -257,14 +263,16 @@ class BankSection(object):
                 prefix,
                 limit,
                 marker,
-                sort_dir
+                sort_dir,
+                context=context
             )
         ]
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         self._validate_writable()
         return self._bank.delete_object(
             self._prepend_prefix(key),
+            context=context
         )
 
     def get_owner_id(self):

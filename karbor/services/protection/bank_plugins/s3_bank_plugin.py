@@ -111,10 +111,10 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
             )
         return self._connection
 
-    def get_owner_id(self):
+    def get_owner_id(self, context=None):
         return self.owner_id
 
-    def update_object(self, key, value):
+    def update_object(self, key, value, context=None):
         serialized = False
         try:
             if not isinstance(value, str):
@@ -130,7 +130,7 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
             LOG.error("update object failed, err: %s.", err)
             raise exception.BankUpdateObjectFailed(reason=err, key=key)
 
-    def delete_object(self, key):
+    def delete_object(self, key, context=None):
         try:
             self._delete_object(bucket=self.bank_object_bucket,
                                 obj=key)
@@ -138,7 +138,7 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
             LOG.error("delete object failed, err: %s.", err)
             raise exception.BankDeleteObjectFailed(reason=err, key=key)
 
-    def get_object(self, key):
+    def get_object(self, key, context=None):
         try:
             return self._get_object(bucket=self.bank_object_bucket,
                                     obj=key)
@@ -147,7 +147,7 @@ class S3BankPlugin(BankPlugin, LeasePlugin):
             raise exception.BankGetObjectFailed(reason=err, key=key)
 
     def list_objects(self, prefix=None, limit=None, marker=None,
-                     sort_dir=None):
+                     sort_dir=None, context=None):
         try:
             response = self._get_bucket(
                 bucket=self.bank_object_bucket,
