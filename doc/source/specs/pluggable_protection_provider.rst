@@ -252,5 +252,5 @@ use this mechanism to only return tasks when appropriate for it's scheme.
 
 References
 ==========
-1. `Class Diagram Source <http://raw.githubusercontent.com/openstack/karbor/master/doc/images/specs/pluggable_protection_provider.pu>`_
+1. `Class Diagram Source <https://github.com/openstack/karbor/blob/master/doc/source/specs/pluggable_protection_provider.pu>`_
 2. `Dependency graph building algorithm <https://docs.google.com/document/d/1Mkd9RgUVdiRL6iei8Nqzzx4xteKIcd-yjMLEkV4Jc9s/edit#>`_
