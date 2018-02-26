@@ -33,7 +33,7 @@ class Versions(object):
                 'links': [
                     {
                         'rel': 'self',
-                        'href': '%s/%s/' % (req.host_url, path),
+                        'href': '%s/data-protect/%s/' % (req.host_url, path),
                     },
                 ],
             }

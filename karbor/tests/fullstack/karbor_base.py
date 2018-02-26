@@ -13,10 +13,13 @@
 from cinderclient import client as cinder_client
 from glanceclient import client as glance_client
 from karborclient import client as karbor_client
+from keystoneauth1 import identity
+from keystoneauth1 import session
 from manilaclient import client as manilaclient
 from neutronclient.v2_0 import client as neutron_client
 from novaclient import client as nova_client
 
+import functools
 import os_client_config
 
 from oslotest import base
@@ -53,55 +56,58 @@ def _get_endpoint(service_type):
     )
 
 
-def _get_client_args(service_type, endpoint_type="publicURL"):
-    cloud_config = _get_cloud_config()
-    keystone_session = cloud_config.get_session_client(service_type)
-    keystone_auth = cloud_config.get_auth()
-    region_name = cloud_config.get_region_name()
-    return {
-        'session': keystone_session,
-        'auth': keystone_auth,
-        'service_type': service_type,
-        'endpoint_type': endpoint_type,
-        'region_name': region_name,
-    }
+def get_client_from_cloud_config(client):
+    creds = _credentials()
+    return get_client(
+        client,
+        auth_url=creds['auth_url'] + '/v3',
+        username=creds['username'],
+        password=creds['password'],
+        project_name=creds['project_name'],
+        project_domain_id=creds['project_domain_id'],
+        user_domain_id=creds['user_domain_id'],
+    )
+
+
+def get_client(client, **kwargs):
+    auth = identity.Password(**kwargs)
+    sess = session.Session(auth=auth)
+    return client(session=sess)
 
 
 def _get_karbor_client(api_version='1'):
-    kwargs = _get_client_args('data-protect')
-    client = karbor_client.Client(api_version, **kwargs)
-    return client
+    return get_client_from_cloud_config(
+        functools.partial(
+            karbor_client.Client, api_version, service_type='data-protect'))
 
 
 def _get_cinder_client(api_version='3'):
-    kwargs = _get_client_args('volumev3')
-    client = cinder_client.Client(api_version, **kwargs)
-    return client
+    return get_client_from_cloud_config(
+        functools.partial(
+            cinder_client.Client, api_version, service_type='volumev3'))
 
 
 def _get_manila_client(api_version='2'):
-    kwargs = _get_client_args('sharev2')
-    client = manilaclient.Client(api_version, **kwargs)
-    return client
+    return get_client_from_cloud_config(
+        functools.partial(
+            manilaclient.Client, api_version, service_type='sharev2'))
 
 
 def _get_glance_client(api_version='2'):
-    kwargs = _get_client_args('image')
-    kwargs.pop('endpoint_type')
-    client = glance_client.Client(api_version, **kwargs)
-    return client
+    return get_client_from_cloud_config(
+        functools.partial(
+            glance_client.Client, api_version, service_type='image'))
 
 
-def _get_nova_client(api_version='2.26'):
-    kwargs = _get_client_args('compute')
-    client = nova_client.Client(api_version, **kwargs)
-    return client
+def _get_nova_client(api_version='2'):
+    return get_client_from_cloud_config(
+        functools.partial(
+            nova_client.Client, api_version, service_type='compute'))
 
 
-def _get_neutron_client(api_version='2'):
-    kwargs = _get_client_args('network')
-    client = neutron_client.Client(**kwargs)
-    return client
+def _get_neutron_client():
+    return get_client_from_cloud_config(
+        functools.partial(neutron_client.Client, service_type='network'))
 
 
 class ObjectStore(object):
