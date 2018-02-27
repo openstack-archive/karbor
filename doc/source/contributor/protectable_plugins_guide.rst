@@ -14,7 +14,7 @@ the guide also gives an overview of the existing protectable plugins.
 Before you read this document, it is recommended to:
 
 #. Deploy an OpenStack environment with the latest Karbor version.
-See the `Karbor Installation Guide <https://docs.openstack.org/developer/karbor/installation.html>`_.
+See the `Karbor Installation Guide <https://docs.openstack.org/karbor/latest/install/index.html>`_.
 
 
 Overview
