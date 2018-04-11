@@ -16,3 +16,4 @@
       - openstack/python-karborclient
       - openstack/trove
       - openstack/trove-dashboard
+      - openstack/manila-tempest-plugin
