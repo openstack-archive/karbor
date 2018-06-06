@@ -78,7 +78,7 @@ A new protection plugin about the kubernetes pod need be implemented.
 2. Restore Operation:
    The persistent volumes of the pod will be restored by Cinder Volume plugins.
 
-   Get the the configurations and metadata in etcd service about the pod from bank, and create
+   Get the configurations and metadata in etcd service about the pod from bank, and create
    a new pod with restored persistent volumes from cinder in the kubernetes cluster.
 
 3. Delete Operation:
