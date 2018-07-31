@@ -35,7 +35,7 @@
         copy_links: true
         verify_host: true
         rsync_opts:
-          - --include=/.testrepository/tmp*
+          - --include=/.stestr/tmp*
           - --include=*/
           - --exclude=*
           - --prune-empty-dirs
@@ -48,7 +48,7 @@
         copy_links: true
         verify_host: true
         rsync_opts:
-          - --include=**/*testrepository.subunit.gz
+          - --include=**/*stestr.subunit.gz
           - --include=*/
           - --exclude=*
           - --prune-empty-dirs

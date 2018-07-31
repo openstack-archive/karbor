@@ -29,7 +29,7 @@ nosetests.xml
 .testrepository
 .venv
 .log
-
+!.stestr.conf
 # Translations
 *.mo
 
