@@ -211,6 +211,15 @@ class VolumeGlanceProtectionPluginTest(base.TestCase):
 
         call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
                    {})
+        self.cinder_client.volumes.upload_to_image.assert_called_with(
+            volume=Volume(id='2345', status='available', size=1),
+            force=True,
+            image_name='temporary_image_of_2345',
+            container_format="bare",
+            disk_format="raw",
+            visibility="private",
+            protected=False
+        )
 
     def test_delete_backup(self):
         resource = Resource(id="123",

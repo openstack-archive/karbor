@@ -170,7 +170,9 @@ class ProtectOperation(protection_plugin.Operation):
             force=True,
             image_name='temporary_image_of_{0}'.format(temporary_volume.id),
             container_format="bare",
-            disk_format="raw"
+            disk_format="raw",
+            visibility="private",
+            protected=False
         )
         image_id = image[1]['os-volume_upload_image']['image_id']
         is_success = utils.status_poll(
