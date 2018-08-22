@@ -1,8 +1,16 @@
 - project:
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - check-requirements
+      - publish-openstack-sphinx-docs
     name: openstack/karbor
     check:
       jobs:
         - karbor-dsvm-fullstack:
+            voting: false
+
+        - openstack-tox-cover:
             voting: false
 
 - job:
