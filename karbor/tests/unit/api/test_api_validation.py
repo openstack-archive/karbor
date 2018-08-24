@@ -11,7 +11,6 @@
 #    under the License.
 
 import re
-import sys
 
 import fixtures
 import six
@@ -234,7 +233,7 @@ class PatternPropertiesTestCase(APIValidationTestCase):
         self.check_validation_error(self.post, body={'0123456789a': 'bar'},
                                     expected_detail=details)
 
-        if sys.version[:3] == '3.5':
+        if six.PY3:
             detail = "expected string or bytes-like object"
         else:
             detail = "expected string or buffer"
