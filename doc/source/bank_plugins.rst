@@ -17,3 +17,12 @@ Local Filesystem
   :noindex:
   :members:
   :show-inheritance:
+
+
+S3
+""
+
+.. autoclass:: karbor.services.protection.bank_plugins.s3_bank_plugin.S3BankPlugin
+  :noindex:
+  :members:
+  :show-inheritance:

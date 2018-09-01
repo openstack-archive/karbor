@@ -56,3 +56,11 @@ Database
   :noindex:
   :members:
   :show-inheritance:
+
+Pod
+^^^
+
+.. autoclass:: karbor.services.protection.protectable_plugins.pod.K8sPodProtectablePlugin()
+  :noindex:
+  :members:
+  :show-inheritance:

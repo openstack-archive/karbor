@@ -356,6 +356,7 @@ Execute a protect operation manually with a plan
     | Property        | Value                                                |
     +-----------------+------------------------------------------------------+
     | created_at      | None                                                 |
+    | extra_info      | {"created_by": "manual"}                             |
     | id              | 80f6154f-cc43-441f-8841-35ae23e17f4f                 |
     | project_id      | 31478a6f980d4e73a3bdac3ad04a3605                     |
     | protection_plan | {                                                    |
@@ -390,6 +391,7 @@ Execute a protect operation manually with a plan
     | Property        | Value                                                     |
     +-----------------+-----------------------------------------------------------+
     | created_at      | 2017-02-13                                                |
+    | extra_info      | {"created_by": "manual"}                                  |
     | id              | 80f6154f-cc43-441f-8841-35ae23e17f4f                      |
     | project_id      | 31478a6f980d4e73a3bdac3ad04a3605                          |
     | protection_plan | {                                                         |
