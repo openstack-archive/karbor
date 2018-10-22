@@ -1,0 +1,13 @@
+---
+prelude: >
+    Added new tool ``karbor-status upgrade check``.
+features:
+  - |
+    New framework for ``karbor-status upgrade check`` command is added.
+    This framework allows adding various checks which can be run before a
+    Karbor upgrade to ensure if the upgrade can be performed safely.
+upgrade:
+  - |
+    Operator can now use new CLI tool ``karbor-status upgrade check``
+    to check if Karbor deployment can be safely upgraded from
+    N-1 to N release.
