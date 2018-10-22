@@ -27,6 +27,31 @@ Cinder Backup
   :members:
   :show-inheritance:
 
+Snapshot
+""""""""
+
+.. autoclass:: karbor.services.protection.protection_plugins.volume.volume_snapshot_plugin.VolumeSnapshotProtectionPlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
+
+Freezer
+"""""""
+
+.. autoclass:: karbor.services.protection.protection_plugins.volume.volume_freezer_plugin.FreezerProtectionPlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
+
+Glance
+""""""
+
+.. autoclass:: karbor.services.protection.protection_plugins.volume.volume_glance_plugin.VolumeGlanceProtectionPlugin()
+  :noindex:
+  :members:
+  :show-inheritance:
+
+
 Image
 ^^^^^
 
