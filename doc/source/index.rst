@@ -27,6 +27,7 @@ Using Karbor
    readme
    install/index
    configuration/index
+   cli/index
    admin/index
 
 Available Plugins
