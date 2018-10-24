@@ -12,10 +12,11 @@ service from source.
 Install the services
 --------------------
 
-Retrieve and install karbor::
+Retrieve and install karbor with required packages::
 
     git clone https://git.openstack.org/openstack/karbor
     cd karbor
+    sudo pip install -e .
     python setup.py install
 
 This procedure installs the ``karbor`` python library and the following
