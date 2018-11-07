@@ -41,13 +41,11 @@ class FreezerClientTest(base.TestCase):
     @mock.patch('freezerclient.v1.client.Client')
     def test_create_client(self, create, get_url):
         get_url.return_value = self._public_url
-        client_version = freezer.FREEZERCLIENT_VERSION
 
         session = keystone_session.Session(auth=None)
         freezer.create(self._context, cfg.CONF, session=session)
         create.assert_called_with(endpoint=self._public_url,
-                                  session=session,
-                                  version=client_version)
+                                  session=session)
 
     @mock.patch('karbor.services.protection.clients.utils.get_url')
     @mock.patch('freezerclient.v1.client.Client')
@@ -59,7 +57,6 @@ class FreezerClientTest(base.TestCase):
         cfg.CONF.set_default('auth_uri',
                              self._auth_url,
                              freezer.CONFIG_GROUP)
-        client_version = freezer.FREEZERCLIENT_VERSION
         args = {
             'project_id': self._context.project_id,
             'project_name': self._context.project_name,
@@ -67,7 +64,6 @@ class FreezerClientTest(base.TestCase):
             'insecure': client_config.freezer_auth_insecure,
             'endpoint': self._public_url,
             'token': self._context.auth_token,
-            'version': client_version,
             'auth_url': self._auth_url,
         }
 

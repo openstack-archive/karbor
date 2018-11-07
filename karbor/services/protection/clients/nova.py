@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging as log
 from novaclient import client as nc
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -66,4 +67,5 @@ def create(context, conf, **kwargs):
             err="The parameter session is None.")
 
     return nc.Client(NOVACLIENT_VERSION, extensions=extensions,
-                     session=kwargs.get('session'), endpoint_override=url)
+                     session=kwargs.get('session'), endpoint_override=url,
+                     logger=log.getLogger('novaclient'))

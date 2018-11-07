@@ -46,8 +46,6 @@ CONF.register_opts(freezer_client_opts, group=CONFIG_GROUP)
 CONF.set_default('service_name', 'freezer', CONFIG_GROUP)
 CONF.set_default('service_type', 'backup', CONFIG_GROUP)
 
-FREEZERCLIENT_VERSION = '3'
-
 
 def create(context, conf, **kwargs):
     conf.register_opts(freezer_client_opts, group=CONFIG_GROUP)
@@ -57,10 +55,8 @@ def create(context, conf, **kwargs):
                         append_project_fmt='%(url)s/%(project)s', **kwargs)
 
     if kwargs.get('session'):
-        return freezer_client.Client(version=FREEZERCLIENT_VERSION,
-                                     session=kwargs.get('session'),
-                                     endpoint=url
-                                     )
+        return freezer_client.Client(session=kwargs.get('session'),
+                                     endpoint=url)
     args = {
         'project_id': context.project_id,
         'project_name': context.project_name,
@@ -68,7 +64,6 @@ def create(context, conf, **kwargs):
         'insecure': client_config.freezer_auth_insecure,
         'endpoint': url,
         'token': context.auth_token,
-        'version': FREEZERCLIENT_VERSION,
         'auth_url': client_config.auth_uri
     }
     return freezer_client.Client(**args)
