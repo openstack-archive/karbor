@@ -34,7 +34,6 @@
         ...
         auth_uri = http://controller/identity
         auth_url = http://controller/identity_admin
-        memcached_servers = controller:11211
         auth_type = password
         project_domain_name = default
         user_domain_name = default
