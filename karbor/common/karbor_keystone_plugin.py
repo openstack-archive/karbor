@@ -89,17 +89,21 @@ class KarborKeystonePlugin(object):
 
     def get_service_endpoint(self, service_name, service_type,
                              region_id, interface='public'):
+        if self._auth_uri and self._auth_uri.endswith('/'):
+            base_url = self._auth_uri[:-1]
+        else:
+            base_url = self._auth_uri
         try:
             service = self.client.services.list(
                 name=service_name,
                 service_type=service_type,
-                base_url=self.auth_uri)
+                base_url=base_url)
 
             endpoint = self.client.endpoints.list(
                 service=service[0],
                 interface=interface,
                 region_id=region_id,
-                base_url=self.auth_uri)
+                base_url=base_url)
 
             return endpoint[0].url if endpoint else None
 
