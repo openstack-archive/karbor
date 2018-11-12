@@ -59,6 +59,16 @@ class FileSystemBankPluginTest(base.TestCase):
         self.assertIn('/list/key-1', objects)
         self.assertIn('/list/key-2', objects)
 
+    def test_list_objects_with_contain_sub_dir(self):
+        self.fs_bank_plugin.update_object("/list/key-1", "value-1")
+        self.fs_bank_plugin.update_object("/list/sub/key-2", "value-2")
+        self.fs_bank_plugin.update_object("/list/sub/key-3", "value-3")
+        objects = self.fs_bank_plugin.list_objects(prefix="/list/")
+        self.assertEqual(3, len(objects))
+        self.assertIn("/list/key-1", objects)
+        self.assertIn("/list/sub/key-2", objects)
+        self.assertIn("/list/sub/key-3", objects)
+
     def test_update_object(self):
         self.fs_bank_plugin.update_object("/key-1", "value-1")
         self.fs_bank_plugin.update_object("/key-1", "value-2")

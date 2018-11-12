@@ -121,16 +121,11 @@ class FileSystemBankPlugin(BankPlugin):
             LOG.debug(_("Path is not a directory. name: %s"), obj_file_path)
             return ()
         try:
-            if os.path.isdir(obj_file_path):
-                return os.listdir(obj_file_path)
-            else:
-                base_dir = os.path.dirname(obj_file_path)
-                base_name = os.path.basename(obj_file_path)
-                return (
-                    base_dir + '/' + obj_file
-                    for obj_file in os.listdir(base_dir)
-                    if obj_file.startswith(base_name)
-                )
+            file_list = []
+            for root, sub_dirs, files in os.walk(obj_file_path):
+                for file_path in files:
+                    file_list.append(os.path.join(root, file_path))
+            return file_list
         except OSError:
             LOG.exception(_("List the object failed. path: %s"), obj_file_path)
             raise
@@ -186,6 +181,7 @@ class FileSystemBankPlugin(BankPlugin):
             LOG.error("List objects failed. err: %s", err)
             raise exception.BankListObjectsFailed(reason=err)
         else:
-            if prefix is not None:
-                file_lists = [(prefix + file_name) for file_name in file_lists]
+            container_path_length = len(self.object_container_path)
+            file_lists = [(
+                file_name[container_path_length:]) for file_name in file_lists]
             return file_lists[-limit:] if limit is not None else file_lists
