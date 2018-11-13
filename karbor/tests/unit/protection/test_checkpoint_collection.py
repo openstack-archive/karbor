@@ -69,6 +69,32 @@ class CheckpointCollectionTest(base.TestCase):
             project_id="fake_project_id_2", provider_id=provider_id_2,
             plan_id="fake_plan_id_2")), checkpoints_plan_2)
 
+    def test_list_checkpoints_by_plan_id_and_filter_by_start_date(self):
+        collection = self._create_test_collection()
+        date1 = datetime.strptime("2018-11-12", "%Y-%m-%d")
+        date2 = datetime.strptime("2018-11-13", "%Y-%m-%d")
+        timeutils.utcnow = mock.MagicMock()
+        timeutils.utcnow.return_value = date1
+        plan = fake_protection_plan()
+        plan["id"] = "fake_plan_id"
+        plan['provider_id'] = "fake_provider_id"
+        plan["project_id"] = "fake_project_id"
+        provider_id = plan['provider_id']
+        checkpoints_plan_date1 = {
+            collection.create(plan).id for i in range(10)}
+        timeutils.utcnow = mock.MagicMock()
+        timeutils.utcnow.return_value = date2
+        checkpoints_plan_date2 = {
+            collection.create(plan).id for i in range(10)}
+        self.assertEqual(set(collection.list_ids(
+            project_id="fake_project_id", provider_id=provider_id,
+            plan_id="fake_plan_id", start_date=date1, end_date=date1)),
+            checkpoints_plan_date1)
+        self.assertEqual(set(collection.list_ids(
+            project_id="fake_project_id", provider_id=provider_id,
+            plan_id="fake_plan_id", start_date=date2)),
+            checkpoints_plan_date2)
+
     def test_list_checkpoints_by_date(self):
         collection = self._create_test_collection()
         date1 = datetime.strptime("2016-06-12", "%Y-%m-%d")

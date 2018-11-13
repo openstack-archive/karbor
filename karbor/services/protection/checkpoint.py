@@ -354,8 +354,11 @@ class CheckpointCollection(object):
                                                           marker=marker,
                                                           sort_dir=sort_dir,
                                                           context=context):
-                date = datetime.strptime(key.split("/")[-3], "%Y-%m-%d")
-                checkpoint_project_id = key.split("/")[-2]
+                date_cursor = -2 if (prefix.find('by-plan') >= 0) else -3
+                project_id_cursor = -3 if (prefix.find('by-plan') >= 0) else -2
+                date = datetime.strptime(
+                    key.split("/")[date_cursor], "%Y-%m-%d")
+                checkpoint_project_id = key.split("/")[project_id_cursor]
                 if start_date <= date <= end_date and (
                         checkpoint_project_id == project_id):
                     ids.append(key[key.find("@") + 1:])
