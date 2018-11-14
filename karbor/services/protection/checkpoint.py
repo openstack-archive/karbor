@@ -326,13 +326,12 @@ class CheckpointCollection(object):
             prefix = "/by-plan/%s/%s/" % (plan_id, project_id)
             if marker is not None:
                 date = marker_checkpoint["created_at"]
-                marker = "/by-plan/%s/%s/%s/%s" % (
-                    plan_id, project_id, date, marker)
+                marker = "/%s/%s" % (date, marker)
         else:
             prefix = "/by-date/"
             if marker is not None:
                 date = marker_checkpoint["created_at"]
-                marker = "/by-date/%s/%s/%s" % (date, project_id, marker)
+                marker = "/%s/%s/%s" % (date, project_id, marker)
 
         return self._list_ids(project_id, prefix, limit, marker, start_date,
                               end_date, sort_dir, context=context)

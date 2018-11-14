@@ -95,6 +95,20 @@ class CheckpointCollectionTest(base.TestCase):
             plan_id="fake_plan_id", start_date=date2)),
             checkpoints_plan_date2)
 
+    def test_list_checkpoints_by_plan_with_marker(self):
+        collection = self._create_test_collection()
+        plan = fake_protection_plan()
+        plan["id"] = "fake_plan_id"
+        plan['provider_id'] = "fake_provider_id"
+        plan["project_id"] = "fake_project_id"
+        provider_id = plan['provider_id']
+        checkpoints_plan = {collection.create(plan, {
+            'checkpoint_id': i}).id for i in range(10)}
+        checkpoints_sorted = sorted(checkpoints_plan)
+        self.assertEqual(len(collection.list_ids(
+            project_id="fake_project_id", provider_id=provider_id,
+            plan_id="fake_plan_id", marker=checkpoints_sorted[0])) < 10, True)
+
     def test_list_checkpoints_by_date(self):
         collection = self._create_test_collection()
         date1 = datetime.strptime("2016-06-12", "%Y-%m-%d")
@@ -120,6 +134,24 @@ class CheckpointCollectionTest(base.TestCase):
             start_date=date2,
             end_date=date2)),
             checkpoints_date_2)
+
+    def test_list_checkpoints_by_date_with_marker(self):
+        collection = self._create_test_collection()
+        date = datetime.strptime("2018-11-12", "%Y-%m-%d")
+        timeutils.utcnow = mock.MagicMock()
+        timeutils.utcnow.return_value = date
+        plan = fake_protection_plan()
+        plan["id"] = "fake_plan_id"
+        plan['provider_id'] = "fake_provider_id"
+        plan["project_id"] = "fake_project_id"
+        provider_id = plan['provider_id']
+        checkpoints_plan = {collection.create(plan, {
+            'checkpoint_id': i}).id for i in range(10)}
+        checkpoints_sorted = sorted(checkpoints_plan)
+        self.assertEqual(len(collection.list_ids(
+            project_id="fake_project_id", provider_id=provider_id,
+            start_date=date,
+            marker=checkpoints_sorted[0])) < 10, True)
 
     def test_delete_checkpoint(self):
         collection = self._create_test_collection()
