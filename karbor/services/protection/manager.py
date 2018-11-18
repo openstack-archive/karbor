@@ -369,7 +369,8 @@ class ProtectionManager(manager.Manager):
                                    exception.CheckpointNotFound,
                                    exception.BankListObjectsFailed)
     def list_checkpoints(self, context, provider_id, marker=None, limit=None,
-                         sort_keys=None, sort_dirs=None, filters=None):
+                         sort_keys=None, sort_dirs=None, filters=None,
+                         all_tenants=False):
         LOG.info("Starting list checkpoints. provider_id:%s", provider_id)
         plan_id = filters.get("plan_id", None)
         start_date = None
@@ -380,13 +381,14 @@ class ProtectionManager(manager.Manager):
         if filters.get("end_date", None):
             end_date = datetime.strptime(
                 filters.get("end_date"), "%Y-%m-%d")
+
         sort_dir = None if sort_dirs is None else sort_dirs[0]
         provider = self.provider_registry.show_provider(provider_id)
         project_id = context.project_id
         checkpoint_ids = provider.list_checkpoints(
             project_id, provider_id, limit=limit, marker=marker,
             plan_id=plan_id, start_date=start_date, end_date=end_date,
-            sort_dir=sort_dir, context=context)
+            sort_dir=sort_dir, context=context, all_tenants=all_tenants)
         checkpoints = []
         for checkpoint_id in checkpoint_ids:
             checkpoint = provider.get_checkpoint(checkpoint_id,

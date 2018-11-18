@@ -303,9 +303,49 @@ class CheckpointCollection(object):
         self._checkpoints_section = bank.get_sub_section("/checkpoints")
         self._indices_section = bank.get_sub_section("/indices")
 
+    @staticmethod
+    def _get_prefix_and_marker_by_provider(provider_id, project_id, marker,
+                                           marker_checkpoint, all_tenants):
+        if all_tenants:
+            prefix = "/by-provider/%s/" % provider_id
+            marker = "/%s/%s" % (
+                marker_checkpoint["project_id"], marker) if marker else marker
+        else:
+            prefix = "/by-provider/%s/%s/" % (provider_id, project_id)
+            marker = "/%s" % marker if marker else marker
+        return prefix, marker
+
+    @staticmethod
+    def _get_prefix_and_marker_by_plan(plan_id, project_id, marker,
+                                       marker_checkpoint, all_tenants):
+        if all_tenants:
+            prefix = "/by-plan/%s/" % plan_id
+            marker = "/%s/%s/%s" % (
+                marker_checkpoint["project_id"],
+                marker_checkpoint["created_at"], marker) if marker else marker
+        else:
+            prefix = "/by-plan/%s/%s/" % (plan_id, project_id)
+            marker = "/%s/%s" % (
+                marker_checkpoint["created_at"], marker) if marker else marker
+        return prefix, marker
+
+    @staticmethod
+    def _get_prefix_and_marker_by_date(project_id, marker, marker_checkpoint,
+                                       all_tenants):
+        prefix = "/by-date/"
+        if all_tenants:
+            marker = "/%s/%s/%s" % (
+                marker_checkpoint["created_at"],
+                marker_checkpoint["project_id"], marker) if marker else marker
+        else:
+            marker = "/%s/%s/%s" % (
+                marker_checkpoint["created_at"], project_id,
+                marker) if marker else marker
+        return prefix, marker
+
     def list_ids(self, project_id, provider_id, limit=None, marker=None,
                  plan_id=None, start_date=None, end_date=None, sort_dir=None,
-                 context=None):
+                 context=None, all_tenants=False):
         marker_checkpoint = None
         if marker is not None:
             checkpoint_section = self._checkpoints_section.get_sub_section(
@@ -319,25 +359,22 @@ class CheckpointCollection(object):
                 end_date = timeutils.utcnow()
 
         if plan_id is None and start_date is None:
-            prefix = "/by-provider/%s/%s/" % (provider_id, project_id)
-            if marker is not None:
-                marker = "/%s" % marker
+            prefix, marker = self._get_prefix_and_marker_by_provider(
+                provider_id, project_id, marker,
+                marker_checkpoint, all_tenants)
         elif plan_id is not None:
-            prefix = "/by-plan/%s/%s/" % (plan_id, project_id)
-            if marker is not None:
-                date = marker_checkpoint["created_at"]
-                marker = "/%s/%s" % (date, marker)
+            prefix, marker = self._get_prefix_and_marker_by_plan(
+                plan_id, project_id, marker, marker_checkpoint, all_tenants)
         else:
-            prefix = "/by-date/"
-            if marker is not None:
-                date = marker_checkpoint["created_at"]
-                marker = "/%s/%s/%s" % (date, project_id, marker)
+            prefix, marker = self._get_prefix_and_marker_by_date(
+                project_id, marker, marker_checkpoint, all_tenants)
 
         return self._list_ids(project_id, prefix, limit, marker, start_date,
-                              end_date, sort_dir, context=context)
+                              end_date, sort_dir, context=context,
+                              all_tenants=all_tenants)
 
     def _list_ids(self, project_id, prefix, limit, marker, start_date,
-                  end_date, sort_dir, context=None):
+                  end_date, sort_dir, context=None, all_tenants=False):
         if start_date is None:
             return [key[key.find("@") + 1:]
                     for key in self._indices_section.list_objects(
@@ -359,7 +396,8 @@ class CheckpointCollection(object):
                     key.split("/")[date_cursor], "%Y-%m-%d")
                 checkpoint_project_id = key.split("/")[project_id_cursor]
                 if start_date <= date <= end_date and (
-                        checkpoint_project_id == project_id):
+                        all_tenants or (
+                            checkpoint_project_id == project_id)):
                     ids.append(key[key.find("@") + 1:])
                 if limit is not None and len(ids) == limit:
                     return ids

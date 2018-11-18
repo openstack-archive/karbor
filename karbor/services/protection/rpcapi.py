@@ -92,7 +92,7 @@ class ProtectionAPI(object):
 
     def list_checkpoints(self, ctxt, provider_id, marker=None,
                          limit=None, sort_keys=None,
-                         sort_dirs=None, filters=None):
+                         sort_dirs=None, filters=None, all_tenants=False):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
             ctxt,
@@ -102,7 +102,9 @@ class ProtectionAPI(object):
             limit=limit,
             sort_keys=sort_keys,
             sort_dirs=sort_dirs,
-            filters=filters)
+            filters=filters,
+            all_tenants=all_tenants
+        )
 
     def list_protectable_types(self, ctxt):
         cctxt = self.client.prepare(version='1.0')

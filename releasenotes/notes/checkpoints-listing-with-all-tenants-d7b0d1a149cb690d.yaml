@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Add support for listing checkpoints by admin with all_tenants.

@@ -52,7 +52,7 @@ class API(base.Base):
         )
 
     def list_checkpoints(self, context, provider_id, marker, limit,
-                         sort_keys, sort_dirs, filters, offset):
+                         sort_keys, sort_dirs, filters, offset, all_tenants):
         return self.protection_rpcapi.list_checkpoints(
             context,
             provider_id,
@@ -60,7 +60,8 @@ class API(base.Base):
             limit,
             sort_keys,
             sort_dirs,
-            filters
+            filters,
+            all_tenants
         )
 
     def list_protectable_types(self, context):

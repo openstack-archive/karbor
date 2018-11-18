@@ -311,7 +311,8 @@ class ProvidersController(wsgi.Controller):
 
         if filters is None:
             filters = {}
-
+        all_tenants = utils.get_bool_param(
+            'all_tenants', filters) and context.is_admin
         try:
             if limit is not None:
                 limit = int(limit)
@@ -325,12 +326,16 @@ class ProvidersController(wsgi.Controller):
         if filters:
             LOG.debug("Searching by: %s.", six.text_type(filters))
 
+        if all_tenants:
+            del filters['all_tenants']
         checkpoints = self.protection_api.list_checkpoints(
             context, provider_id, marker, limit,
             sort_keys=sort_keys,
             sort_dirs=sort_dirs,
             filters=filters,
-            offset=offset)
+            offset=offset,
+            all_tenants=all_tenants
+        )
 
         LOG.info("Get all checkpoints completed successfully.")
         return checkpoints
