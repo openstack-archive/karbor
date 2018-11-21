@@ -147,6 +147,46 @@ class ProtectionServiceTest(base.TestCase):
                           fakes.fake_protection_plan())
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_list_checkpoints(self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_provider.list_checkpoints = mock.MagicMock()
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id')
+        self.pro_manager.list_checkpoints(context, 'provider1', filters={},
+                                          all_tenants=False)
+        fake_provider.list_checkpoints.assert_called_once_with(
+            'fake_project_id', 'provider1', limit=None, marker=None,
+            plan_id=None, start_date=None, end_date=None,
+            sort_dir=None, context=context, all_tenants=False)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_list_checkpoints_with_all_tenants(self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_provider.list_checkpoints = mock.MagicMock()
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id')
+        self.pro_manager.list_checkpoints(context, 'provider1', filters={},
+                                          all_tenants=True)
+        fake_provider.list_checkpoints.assert_called_once_with(
+            'fake_project_id', 'provider1', limit=None, marker=None,
+            plan_id=None, start_date=None, end_date=None,
+            sort_dir=None, context=context, all_tenants=True)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_list_checkpoints_with_all_tenants_and_filter_by_project_id(
+            self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_provider.list_checkpoints = mock.MagicMock()
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id')
+        self.pro_manager.list_checkpoints(context, 'provider1', filters={
+            'project_id': 'fake_project_id1'}, all_tenants=True)
+        fake_provider.list_checkpoints.assert_called_once_with(
+            'fake_project_id1', 'provider1', limit=None, marker=None,
+            plan_id=None, start_date=None, end_date=None,
+            sort_dir=None, context=context, all_tenants=False)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     def test_show_checkpoint(self, mock_provider):
         mock_provider.return_value = fakes.FakeProvider()
         context = mock.MagicMock(project_id='fake_project_id')
