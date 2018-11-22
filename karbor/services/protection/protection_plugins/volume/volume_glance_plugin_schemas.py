@@ -43,6 +43,12 @@ RESTORE_SCHEMA = {
     "required": ["restore_name"]
 }
 
+VERIFY_SCHEMA = {
+    "title": "Volume Glance Protection Verify",
+    "type": "object",
+    "properties": {}
+}
+
 SAVED_INFO_SCHEMA = {
     "title": "Volume Glance Protection Saved Info",
     "type": "object",

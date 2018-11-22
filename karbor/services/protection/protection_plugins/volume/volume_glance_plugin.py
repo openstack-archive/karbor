@@ -418,6 +418,36 @@ class RestoreOperation(protection_plugin.Operation):
                 resource_type=constants.VOLUME_RESOURCE_TYPE)
 
 
+class VerifyOperation(protection_plugin.Operation):
+    def __init__(self):
+        super(VerifyOperation, self).__init__()
+
+    def on_main(self, checkpoint, resource, context, parameters, **kwargs):
+        original_volume_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(
+            original_volume_id)
+        LOG.info('Verifying the volume backup, volume id: %s',
+                 original_volume_id)
+
+        update_method = partial(
+            utils.update_resource_verify_result,
+            kwargs.get('verify'), resource.type, original_volume_id)
+
+        backup_status = bank_section.get_object("status")
+
+        if backup_status == constants.RESOURCE_STATUS_AVAILABLE:
+            update_method(constants.RESOURCE_STATUS_AVAILABLE)
+        else:
+            reason = ('The status of volume backup status is %s.'
+                      % backup_status)
+            update_method(backup_status, reason)
+            raise exception.VerifyResourceFailed(
+                name="Volume backup",
+                reason=reason,
+                resource_id=original_volume_id,
+                resource_type=resource.type)
+
+
 class DeleteOperation(protection_plugin.Operation):
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         volume_id = resource.id
@@ -474,6 +504,10 @@ class VolumeGlanceProtectionPlugin(protection_plugin.ProtectionPlugin):
         return volume_schemas.SAVED_INFO_SCHEMA
 
     @classmethod
+    def get_verify_schema(cls, resource_type):
+        return volume_schemas.VERIFY_SCHEMA
+
+    @classmethod
     def get_saved_info(cls, metadata_store, resource):
         pass
 
@@ -487,3 +521,6 @@ class VolumeGlanceProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_delete_operation(self, resource):
         return DeleteOperation()
+
+    def get_verify_operation(self, resource):
+        return VerifyOperation()
