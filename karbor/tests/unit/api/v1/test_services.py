@@ -25,21 +25,30 @@ class ServiceApiTest(base.TestCase):
 
     @mock.patch('karbor.objects.service.ServiceList.get_all_by_args')
     def test_service_list_with_admin_context(self, mock_get_all_by_args):
-        req = fakes.HTTPRequest.blank('/v1/services?host=host1',
+        req = fakes.HTTPRequest.blank('/v1/os-services?host=host1',
                                       use_admin_context=True)
         self.controller.index(req)
         self.assertTrue(mock_get_all_by_args.called)
 
     def test_service_list_with_non_admin_context(self):
-        req = fakes.HTTPRequest.blank('/v1/services', use_admin_context=False)
+        req = fakes.HTTPRequest.blank('/v1/os-services',
+                                      use_admin_context=False)
         self.assertRaises(
             exception.PolicyNotAuthorized, self.controller.index, req)
+
+    @mock.patch('karbor.objects.service.ServiceList.get_all_by_args')
+    def test_service_list_with_invalid_services(self, mock_get_all_by_args):
+        req = fakes.HTTPRequest.blank('/v1/os-services',
+                                      use_admin_context=True)
+        mock_get_all_by_args.side_effect = exception.NotFound()
+        self.assertRaises(exc.HTTPBadRequest, self.controller.index, req)
 
     @mock.patch('karbor.utils.service_is_up')
     @mock.patch('karbor.objects.service.Service.get_by_id')
     def test_service_update_with_admin_context(
             self, mock_get_by_id, mock_service_is_up):
-        req = fakes.HTTPRequest.blank('/v1/services/1', use_admin_context=True)
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
+                                      use_admin_context=True)
         body = {
             "status": 'disabled',
             'disabled_reason': 'reason'
@@ -53,7 +62,7 @@ class ServiceApiTest(base.TestCase):
         self.assertTrue(mock_service.save.called)
 
     def test_service_update_with_non_admin_context(self):
-        req = fakes.HTTPRequest.blank('/v1/services/1',
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
                                       use_admin_context=False)
         body = {
             "status": 'disabled',
@@ -69,7 +78,8 @@ class ServiceApiTest(base.TestCase):
 
     @mock.patch('karbor.objects.service.Service.get_by_id')
     def test_update_protection_services(self, mock_get_by_id):
-        req = fakes.HTTPRequest.blank('/v1/services/1', use_admin_context=True)
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
+                                      use_admin_context=True)
         body = {
             "status": 'disabled',
             'disabled_reason': 'reason'
