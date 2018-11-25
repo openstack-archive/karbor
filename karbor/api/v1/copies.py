@@ -89,7 +89,8 @@ class CopiesController(wsgi.Controller):
         filters = {'plan_id': plan_id}
         checkpoints = self.protection_api.list_checkpoints(
             context, provider_id, marker=None, limit=None,
-            sort_keys=None, sort_dirs=None, filters=filters, offset=None)
+            sort_keys=None, sort_dirs=None, filters=filters, offset=None,
+            all_tenants=False)
 
         if not checkpoints:
             msg = _("The plan has not been protected.")
