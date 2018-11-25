@@ -75,6 +75,16 @@ class RestoreApiTest(base.TestCase):
         self.assertRaises(exception.ValidationError, self.controller.create,
                           req, body=body)
 
+    @mock.patch('karbor.services.protection.api.API.restore')
+    def test_restore_create_with_checkpoint_not_allowed_exception(
+            self, mock_restore):
+        mock_restore.side_effect = exception.AccessCheckpointNotAllowed
+        restore = self._restore_in_request_body()
+        body = {"restore": restore}
+        req = fakes.HTTPRequest.blank('/v1/restores')
+        self.assertRaises(exc.HTTPForbidden, self.controller.create,
+                          req, body=body)
+
     @mock.patch(
         'karbor.api.v1.restores.RestoresController._get_all')
     def test_restore_list_detail(self, moak_get_all):

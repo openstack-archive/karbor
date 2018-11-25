@@ -182,7 +182,8 @@ class ProtectionManager(manager.Manager):
                                    exception.CheckpointNotFound,
                                    exception.CheckpointNotAvailable,
                                    exception.FlowError,
-                                   exception.InvalidInput)
+                                   exception.InvalidInput,
+                                   exception.AccessCheckpointNotAllowed)
     def restore(self, context, restore, restore_auth):
         LOG.info("Starting restore service:restore action")
 
@@ -196,6 +197,11 @@ class ProtectionManager(manager.Manager):
 
         checkpoint_collection = provider.get_checkpoint_collection()
         checkpoint = checkpoint_collection.get(checkpoint_id)
+
+        if not context.is_admin and (
+                checkpoint.project_id != context.project_id):
+            raise exception.AccessCheckpointNotAllowed(
+                checkpoint_id=checkpoint_id)
 
         if checkpoint.status != constants.CHECKPOINT_STATUS_AVAILABLE:
             raise exception.CheckpointNotAvailable(
