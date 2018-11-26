@@ -97,6 +97,16 @@ class PlanApiTest(base.TestCase):
                           req, body=body)
 
     @mock.patch(
+        'karbor.services.protection.rpcapi.ProtectionAPI.show_provider')
+    def test_plan_create_InvalidProvider(self, mock_provider):
+        plan = self._plan_in_request_body()
+        body = {"plan": plan}
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        mock_provider.side_effect = exception.NotFound()
+        self.assertRaises(exc.HTTPBadRequest, self.controller.create,
+                          req, body=body)
+
+    @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_update')
