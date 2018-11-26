@@ -232,6 +232,8 @@ class RestoresController(wsgi.Controller):
         # call restore rpc API of protection service
         try:
             self.protection_api.restore(context, restoreobj, restore_auth)
+        except exception.AccessCheckpointNotAllowed as error:
+            raise exc.HTTPForbidden(explanation=error.msg)
         except Exception:
             # update the status of restore
             update_dict = {

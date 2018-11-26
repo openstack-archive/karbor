@@ -147,6 +147,20 @@ class ProtectionServiceTest(base.TestCase):
                           fakes.fake_protection_plan())
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_restore_with_project_id_not_same(self, mock_provider):
+        mock_provider.return_value = fakes.FakeProvider()
+        context = mock.MagicMock(project_id='fake_project_id_1',
+                                 is_admin=False)
+        fake_restore = {
+            'checkpoint_id': 'fake_checkpoint',
+            'provider_id': 'fake_provider_id',
+            'parameters': None
+        }
+        self.assertRaises(
+            oslo_messaging.ExpectedException, self.pro_manager.restore,
+            context, fake_restore, None)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     def test_list_checkpoints(self, mock_provider):
         fake_provider = fakes.FakeProvider()
         fake_provider.list_checkpoints = mock.MagicMock()
