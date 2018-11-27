@@ -133,10 +133,6 @@ class PlansController(wsgi.Controller):
 
         LOG.info("Show plan with id: %s", id, context=context)
 
-        if not uuidutils.is_uuid_like(id):
-            msg = _("Invalid plan id provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
-
         try:
             plan = self._plan_get(context, id)
         except exception.PlanNotFound as error:
