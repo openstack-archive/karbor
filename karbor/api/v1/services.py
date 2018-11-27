@@ -88,9 +88,9 @@ class ServiceController(wsgi.Controller):
         try:
             services = objects.ServiceList.get_all_by_args(
                 context, host, binary)
-        except exception as e:
-            LOG.error('List service failed, reason: %s' % e)
-            raise
+        except Exception as e:
+            msg = (_('List service failed, reason: %s') % e)
+            raise exc.HTTPBadRequest(explanation=msg)
         return self._view_builder.detail_list(req, services)
 
     def update(self, req, id, body):
