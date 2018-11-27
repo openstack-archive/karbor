@@ -93,6 +93,30 @@ class RestoreApiTest(base.TestCase):
         self.assertTrue(moak_get_all.called)
 
     @mock.patch(
+        'karbor.api.v1.restores.RestoresController._get_all')
+    def test_restore_index_limit_offset(self, mock_get_all):
+        req = fakes.HTTPRequest.blank(
+            '/v1/restores?limit=2&offset=1')
+        self.controller.index(req)
+        self.assertTrue(mock_get_all.called)
+
+        req = fakes.HTTPRequest.blank('/v1/restores?limit=-1&offset=1')
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
+        req = fakes.HTTPRequest.blank('/v1/restores?limit=a&offset=1')
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
+        url = '/v1/restores?limit=2&offset=43543564546567575'
+        req = fakes.HTTPRequest.blank(url)
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.index,
+                          req)
+
+    @mock.patch(
         'karbor.api.v1.restores.RestoresController.'
         '_restore_get')
     def test_restore_show(self, moak_restore_get):
