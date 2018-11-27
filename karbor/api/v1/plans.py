@@ -403,7 +403,7 @@ class PlansController(wsgi.Controller):
         try:
             provider = self.protection_api.show_provider(
                 context, plan["provider_id"])
-        except exception:
+        except Exception:
             msg = _("The provider could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
         options_schema = provider.get(
