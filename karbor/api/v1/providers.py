@@ -228,16 +228,6 @@ class ProvidersController(wsgi.Controller):
         if filters is None:
             filters = {}
 
-        try:
-            if limit is not None:
-                limit = int(limit)
-                if limit <= 0:
-                    msg = _('limit param must be positive')
-                    raise exception.InvalidInput(reason=msg)
-        except ValueError:
-            msg = _('limit param must be an integer')
-            raise exception.InvalidInput(reason=msg)
-
         if filters:
             LOG.debug("Searching by: %s.", six.text_type(filters))
 
