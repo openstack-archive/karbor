@@ -49,6 +49,7 @@ update = {
                 'name': parameter_types.name,
                 'status': {'type': ['string', 'null']},
                 'resources': parameter_types.resources,
+                'description': parameter_types.description,
             },
             'required': [],
             'additionalProperties': False,
