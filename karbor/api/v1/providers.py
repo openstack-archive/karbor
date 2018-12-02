@@ -476,6 +476,45 @@ class ProvidersController(wsgi.Controller):
         LOG.info("Delete checkpoint request issued successfully.")
         return {}
 
+    def _checkpoint_reset_state(self, context, provider_id,
+                                checkpoint_id, state):
+        try:
+            self.protection_api.reset_state(context, provider_id,
+                                            checkpoint_id, state)
+        except exception.AccessCheckpointNotAllowed as error:
+            raise exc.HTTPForbidden(explanation=error.msg)
+        except exception.CheckpointNotFound as error:
+            raise exc.HTTPNotFound(explanation=error.msg)
+        except exception.CheckpointNotBeReset as error:
+            raise exc.HTTPBadRequest(explanation=error.msg)
+        LOG.info("Reset checkpoint state request issued successfully.")
+        return {}
+
+    @validation.schema(checkpoint_schema.update)
+    def checkpoints_update(self, req, provider_id, checkpoint_id, body):
+        """Reset a checkpoint's state"""
+        context = req.environ['karbor.context']
+
+        LOG.info("Reset checkpoint state with id: %s", checkpoint_id)
+        LOG.info("provider_id: %s.", provider_id)
+
+        if not uuidutils.is_uuid_like(provider_id):
+            msg = _("Invalid provider id provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        if not uuidutils.is_uuid_like(checkpoint_id):
+            msg = _("Invalid checkpoint id provided.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        context.can(provider_policy.CHECKPOINT_UPDATE_POLICY)
+        if body.get("os-resetState"):
+            state = body["os-resetState"]["state"]
+            return self._checkpoint_reset_state(
+                context, provider_id, checkpoint_id, state)
+        else:
+            msg = _("Invalid input.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
 
 def create_resource():
     return wsgi.Resource(ProvidersController())

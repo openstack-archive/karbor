@@ -390,6 +390,10 @@ class CheckpointNotBeDeleted(KarborException):
     message = _("The checkpoint %(checkpoint_id)s can not be deleted.")
 
 
+class CheckpointNotBeReset(KarborException):
+    message = _("The checkpoint %(checkpoint_id)s can not be reset.")
+
+
 class GetProtectionNetworkSubResourceFailed(KarborException):
     message = _("Get protection network sub-resources of type %(type)s failed:"
                 " %(reason)s")

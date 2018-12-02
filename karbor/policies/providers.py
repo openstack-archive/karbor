@@ -24,6 +24,7 @@ CHECKPOINT_GET_POLICY = 'provider:checkpoint_get'
 CHECKPOINT_GET_ALL_POLICY = 'provider:checkpoint_get_all'
 CHECKPOINT_CREATE_POLICY = 'provider:checkpoint_create'
 CHECKPOINT_DELETE_POLICY = 'provider:checkpoint_delete'
+CHECKPOINT_UPDATE_POLICY = 'provider:checkpoint_update'
 
 
 providers_policies = [
@@ -87,6 +88,17 @@ providers_policies = [
                 'path': '/providers/{provider_id}/checkpoints/{checkpoint_id}'
             }
         ]),
+    policy.DocumentedRuleDefault(
+        name=CHECKPOINT_UPDATE_POLICY,
+        check_str=base.RULE_ADMIN_OR_OWNER,
+        description='Reset checkpoint state.',
+        operations=[
+            {
+                'method': 'PUT',
+                'path': '/providers/{provider_id}/checkpoints/{checkpoint_id}'
+            }
+        ]
+    )
 ]
 
 

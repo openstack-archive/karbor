@@ -44,6 +44,14 @@ class API(base.Base):
             checkpoint_id
         )
 
+    def reset_state(self, context, provider_id, checkpoint_id, state):
+        return self.protection_rpcapi.reset_state(
+            context,
+            provider_id,
+            checkpoint_id,
+            state
+        )
+
     def show_checkpoint(self, context, provider_id, checkpoint_id):
         return self.protection_rpcapi.show_checkpoint(
             context,

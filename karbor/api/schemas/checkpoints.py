@@ -35,3 +35,22 @@ create = {
     'required': ['checkpoint'],
     'additionalProperties': False,
 }
+
+update = {
+    'type': 'object',
+    'properties': {
+        'os-resetState': {
+            'type': 'object',
+            'properties': {
+                'state': {
+                    'type': 'string',
+                    'enum': ['available', 'error'],
+                },
+            },
+            'required': ['state'],
+            'additionalProperties': False,
+        },
+    },
+    'required': [],
+    'additionalProperties': False,
+}
