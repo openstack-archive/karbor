@@ -76,19 +76,36 @@ class VerificationApiTest(base.TestCase):
     @mock.patch(
         'karbor.api.v1.verifications.'
         'VerificationsController._get_all')
-    def test_verification_list_detail(self, moak_get_all):
+    def test_verification_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/verifications')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
+
+    @mock.patch(
+        'karbor.api.v1.verifications.'
+        'VerificationsController._get_all')
+    @mock.patch('karbor.api.common.ViewBuilder._get_collection_links')
+    def test_verification_list_detail_with_verifications_links(self,
+                                                               mock_get_links,
+                                                               mock_get_all):
+        except_value = [{
+            "rel": "next",
+            "href": "/v1/verifications?marker"
+        }]
+        req = fakes.HTTPRequest.blank('/v1/verifications')
+        mock_get_links.return_value = except_value
+        return_value = self.controller.index(req)
+        self.assertTrue(mock_get_all.called)
+        self.assertEqual(return_value['verifications_links'], except_value)
 
     @mock.patch(
         'karbor.api.v1.verifications.'
         'VerificationsController._verification_get')
-    def test_verification_show(self, moak_verification_get):
+    def test_verification_show(self, mock_verification_get):
         req = fakes.HTTPRequest.blank('/v1/verifications')
         self.controller.show(
             req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
-        self.assertTrue(moak_verification_get.called)
+        self.assertTrue(mock_verification_get.called)
 
     def test_verification_show_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/verifications/1')
