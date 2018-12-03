@@ -233,6 +233,54 @@ class ProtectionServiceTest(base.TestCase):
                           'provider1',
                           'non_existent_checkpoint')
 
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_checkpoint_state_reset(self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_checkpoint = fakes.FakeCheckpoint()
+        fake_checkpoint.commit = mock.MagicMock()
+        fake_provider.get_checkpoint = mock.MagicMock(
+            return_value=fake_checkpoint)
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id', is_admin=True)
+        self.pro_manager.reset_state(context, 'provider1', 'fake_checkpoint',
+                                     'error')
+        self.assertEqual(fake_checkpoint.status, 'error')
+        self.assertEqual(True, fake_checkpoint.commit.called)
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_checkpoint_state_reset_with_access_not_allowed(
+            self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_checkpoint = fakes.FakeCheckpoint()
+        fake_provider.get_checkpoint = mock.MagicMock(
+            return_value=fake_checkpoint)
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id_01',
+                                 is_admin=False)
+        self.assertRaises(oslo_messaging.ExpectedException,
+                          self.pro_manager.reset_state,
+                          context,
+                          'fake_project_id',
+                          'fake_checkpoint_id',
+                          'error')
+
+    @mock.patch.object(provider.ProviderRegistry, 'show_provider')
+    def test_checkpoint_state_reset_with_wrong_checkpoint_state(
+            self, mock_provider):
+        fake_provider = fakes.FakeProvider()
+        fake_checkpoint = fakes.FakeCheckpoint()
+        fake_checkpoint.status = 'deleting'
+        fake_provider.get_checkpoint = mock.MagicMock(
+            return_value=fake_checkpoint)
+        mock_provider.return_value = fake_provider
+        context = mock.MagicMock(project_id='fake_project_id', is_admin=True)
+        self.assertRaises(oslo_messaging.ExpectedException,
+                          self.pro_manager.reset_state,
+                          context,
+                          'fake_project_id',
+                          'fake_checkpoint_id',
+                          'error')
+
     def tearDown(self):
         flow_manager.Worker._load_engine = self.load_engine
         super(ProtectionServiceTest, self).tearDown()

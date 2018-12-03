@@ -18,6 +18,7 @@ from webob import exc
 
 from karbor.api.v1 import providers
 from karbor import context
+from karbor import exception
 from karbor.tests import base
 from karbor.tests.unit.api import fakes
 
@@ -138,3 +139,98 @@ class ProvidersApiTest(base.TestCase):
             body=body)
         self.assertTrue(mock_plan_create.called)
         self.assertTrue(mock_protect.called)
+
+    @mock.patch('karbor.services.protection.api.API.reset_state')
+    def test_checkpoints_update_reset_state(self, mock_reset_state):
+        req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
+                                      'checkpoints/{checkpoint_id}')
+        body = {
+            'os-resetState': {'state': 'error'}
+        }
+        self.controller.checkpoints_update(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body=body)
+        self.assertTrue(mock_reset_state.called)
+
+    def test_checkpoints_update_reset_state_with_invalid_provider_id(self):
+        req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
+                                      'checkpoints/{checkpoint_id}')
+        body = {
+            'os-resetState': {'state': 'error'}
+        }
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.checkpoints_update,
+            req,
+            'invalid_provider_id',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body=body)
+
+    def test_checkpoints_update_reset_state_with_invalid_checkpoint_id(self):
+        req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
+                                      'checkpoints/{checkpoint_id}')
+        body = {
+            'os-resetState': {'state': 'error'}
+        }
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.checkpoints_update,
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            'invalid_checkpoint_id',
+            body=body)
+
+    def test_checkpoints_update_reset_state_with_invalid_body(self):
+        req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
+                                      'checkpoints/{checkpoint_id}')
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.checkpoints_update,
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body={})
+        self.assertRaises(
+            exception.ValidationError,
+            self.controller.checkpoints_update,
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body={'os-resetState': {'state': 'invalid_state'}})
+
+    @mock.patch('karbor.services.protection.api.API.reset_state')
+    def test_checkpoints_update_reset_state_with_protection_api_exceptions(
+            self, mock_reset_state):
+        req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
+                                      'checkpoints/{checkpoint_id}')
+        body = {
+            'os-resetState': {'state': 'error'}
+        }
+        mock_reset_state.side_effect = exception.AccessCheckpointNotAllowed(
+            checkpoint_id='2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.assertRaises(exc.HTTPForbidden,
+                          self.controller.checkpoints_update,
+                          req,
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          body=body)
+
+        mock_reset_state.side_effect = exception.CheckpointNotFound(
+            checkpoint_id='2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.assertRaises(exc.HTTPNotFound,
+                          self.controller.checkpoints_update,
+                          req,
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          body=body)
+
+        mock_reset_state.side_effect = exception.CheckpointNotBeReset(
+            checkpoint_id='2220f8b1-975d-4621-a872-fa9afb43cb6c')
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.checkpoints_update,
+                          req,
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+                          body=body)

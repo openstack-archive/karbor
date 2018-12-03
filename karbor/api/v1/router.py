@@ -96,6 +96,12 @@ class APIRouter(base_wsgi.Router):
                        controller=providers_resources,
                        action='checkpoints_delete',
                        conditions={"method": ['DELETE']})
+        mapper.connect("provider",
+                       "/{project_id}/providers/{provider_id}/checkpoints/"
+                       "{checkpoint_id}",
+                       controller=providers_resources,
+                       action='checkpoints_update',
+                       conditions={'method': ['PUT']})
         mapper.resource("trigger", "triggers",
                         controller=trigger_resources,
                         collection={},

@@ -363,6 +363,30 @@ class ProtectionManager(manager.Manager):
             ))
         self._spawn(self.worker.run_flow, flow)
 
+    @messaging.expected_exceptions(exception.AccessCheckpointNotAllowed,
+                                   exception.CheckpointNotBeReset)
+    def reset_state(self, context, provider_id, checkpoint_id, state):
+        provider = self.provider_registry.show_provider(provider_id)
+
+        checkpoint = provider.get_checkpoint(checkpoint_id, context=context)
+        checkpoint_dict = checkpoint.to_dict()
+        if not context.is_admin and (
+                context.project_id != checkpoint_dict['project_id']):
+            raise exception.AccessCheckpointNotAllowed(
+                checkpoint_id=checkpoint_id)
+
+        if checkpoint.status not in [
+            constants.CHECKPOINT_STATUS_AVAILABLE,
+            constants.CHECKPOINT_STATUS_ERROR,
+            constants.CHECKPOINT_STATUS_COPYING,
+            constants.CHECKPOINT_STATUS_WAIT_COPYING,
+            constants.CHECKPOINT_STATUS_COPY_FINISHED
+        ]:
+            raise exception.CheckpointNotBeReset(
+                checkpoint_id=checkpoint_id)
+        checkpoint.status = state
+        checkpoint.commit()
+
     def start(self, plan):
         # TODO(wangliuan)
         pass

@@ -82,6 +82,15 @@ class ProtectionAPI(object):
             provider_id=provider_id,
             checkpoint_id=checkpoint_id)
 
+    def reset_state(self, ctxt, provider_id, checkpoint_id, state):
+        cctxt = self.client.prepare(version='1.0')
+        return cctxt.call(
+            ctxt,
+            'reset_state',
+            provider_id=provider_id,
+            checkpoint_id=checkpoint_id,
+            state=state)
+
     def show_checkpoint(self, ctxt, provider_id, checkpoint_id):
         cctxt = self.client.prepare(version='1.0')
         return cctxt.call(
