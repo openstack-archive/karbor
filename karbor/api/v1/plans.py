@@ -303,6 +303,7 @@ class PlansController(wsgi.Controller):
             'name',
             'resources',
             'status',
+            'description',
         }
         for key in valid_update_keys.intersection(plan):
             update_dict[key] = plan[key]
