@@ -2,7 +2,7 @@
 Karbor CLI Documentation
 ========================
 
-In this section you will find information on Karbor’s command line
+In this section you will find information on Karbor's command line
 interface.
 
 .. toctree::
