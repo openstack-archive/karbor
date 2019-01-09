@@ -230,6 +230,10 @@ class RestoreOperation(protection_plugin.Operation):
 
             # restore server instance
             restore_net_id = parameters.get("restore_net_id", None)
+            restore_flavor_id = parameters.get("restore_flavor_id", None)
+            if restore_flavor_id:
+                resource_definition["server_metadata"]['flavor'] = (
+                    restore_flavor_id)
             new_server_id = self._restore_server_instance(
                 nova_client, new_resources, original_server_id,
                 parameters.get("restore_name", "karbor-restore-server"),

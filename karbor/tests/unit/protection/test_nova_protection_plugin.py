@@ -29,7 +29,7 @@ from karbor.tests import base
 
 class Server(object):
     def __init__(self, id, addresses, availability_zone,
-                 flavor, key_name, security_groups):
+                 flavor, key_name, security_groups, status):
         super(Server, self).__init__()
         self.id = id
         self.addresses = addresses
@@ -37,6 +37,7 @@ class Server(object):
         self.flavor = flavor
         self.key_name = key_name
         self.security_groups = security_groups
+        self.status = status
 
 
 class Volume(object):
@@ -94,7 +95,8 @@ FakeServers = {
                                    'rel': 'bookmark'}
                               ]},
                       key_name=None,
-                      security_groups="default"),
+                      security_groups="default",
+                      status="ACTIVE"),
     "vm_id_2": Server(id="vm_id_2",
                       addresses={'fake_net': [
                           {'OS-EXT-IPS-MAC:mac_addr': 'mac_address_2',
@@ -109,7 +111,8 @@ FakeServers = {
                                    'rel': 'bookmark'}
                               ]},
                       key_name=None,
-                      security_groups="default")
+                      security_groups="default",
+                      status="ACTIVE")
 }
 
 FakeVolumes = {
@@ -453,6 +456,59 @@ class NovaProtectionPluginTest(base.TestCase):
 
         call_hooks(delete_operation, self.checkpoint, resource, self.cntxt,
                    {})
+
+    @mock.patch('karbor.services.protection.protection_plugins.utils.'
+                'update_resource_restore_result')
+    @mock.patch('karbor.services.protection.clients.neutron.create')
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    @mock.patch('karbor.services.protection.clients.nova.create')
+    @mock.patch('karbor.services.protection.clients.cinder.create')
+    def test_restore_backup_with_parameters(self, mock_cinder_client,
+                                            mock_nova_client,
+                                            mock_glance_client,
+                                            mock_neutron_client,
+                                            mock_update_result):
+        resource = Resource(id='vm_id_1',
+                            type=constants.SERVER_RESOURCE_TYPE,
+                            name='fake_vm')
+        fake_bank._plugin._objects[
+            "/resource_data/checkpoint_id/vm_id_1/metadata"] = {
+            "server_metadata": {
+                "availability_zone": "nova",
+                "key_name": None,
+                "floating_ips": [],
+                "flavor": "fake_flavor_id_1",
+                "networks": ["fake_net_id_1"],
+                "security_groups": [{"name": "default"}]},
+            "boot_metadata": {
+                "boot_image_id": "fake_image_id",
+                "boot_device_type": "image"},
+            "attach_metadata": {},
+            "resource_id": "vm_id_1"}
+        restore_operation = self.plugin.get_restore_operation(resource)
+        mock_cinder_client.return_value = self.cinder_client
+        mock_nova_client.return_value = self.nova_client
+        mock_glance_client.return_value = self.glance_client
+        mock_neutron_client.return_value = self.neutron_client
+        parameters = {'restore_net_id': 'fake_net_id_2',
+                      'restore_flavor_id': 'fake_flavor_id_2'}
+        checkpoint = Checkpoint()
+        new_resources = {"new_resources": {"fake_image_id": "fake_image_id"}}
+        self.nova_client.servers.create = mock.MagicMock()
+        self.nova_client.servers.create.return_value = FakeServers['vm_id_2']
+        call_hooks(restore_operation, checkpoint, resource, self.cntxt,
+                   parameters, **new_resources)
+        properties = {
+            "availability_zone": "nova",
+            "flavor": "fake_flavor_id_2",
+            "name": "karbor-restore-server",
+            "image": "fake_image_id",
+            "key_name": None,
+            "security_groups": ['default'],
+            "nics": [{'net-id': 'fake_net_id_2'}],
+            "userdata": None
+        }
+        self.nova_client.servers.create.assert_called_with(**properties)
 
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
                 'update_resource_verify_result')

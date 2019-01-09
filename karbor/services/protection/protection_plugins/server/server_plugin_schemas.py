@@ -30,6 +30,11 @@ RESTORE_SCHEMA = {
             "type": "string",
             "title": "Restore Server Net Id",
             "description": "The net id of the restore server"
+        },
+        "restore_flavor_id": {
+            "type": "string",
+            "title": "Restore Server Flavor Id",
+            "description": "The flavor id of the restore server"
         }
     },
     "required": ["restore_name"]
