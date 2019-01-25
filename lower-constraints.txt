@@ -44,7 +44,7 @@ jsonpatch==1.21
 jsonpointer==2.0
 jsonschema==2.6.0
 keystoneauth1==3.4.0
-keystonemiddleware==4.17.0
+keystonemiddleware==4.18.0
 kombu==4.1.0
 kubernetes==5.0.0
 linecache2==1.0.0

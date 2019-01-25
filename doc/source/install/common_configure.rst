@@ -32,7 +32,7 @@
 
         [keystone_authtoken]
         ...
-        auth_uri = http://controller/identity
+        www_authenticate_uri = http://keystone1.example.com/identity
         auth_url = http://controller/identity_admin
         auth_type = password
         project_domain_name = default
