@@ -115,6 +115,16 @@ class ScheduledOperationApiTest(base.TestCase):
         operation = self.controller.create(self.req, body=body)
         self.assertEqual(name, operation['scheduled_operation']['name'])
 
+    def test_create_retention_scheduled_operation(self):
+        name = 'my retention protect'
+        param = self.default_create_operation_param.copy()
+        param['name'] = name
+        param['operation_definition']['retention_duration'] = 100
+        param['operation_definition']['max_backups'] = 3
+        body = self._get_create_operation_request_body(param)
+        operation = self.controller.create(self.req, body=body)
+        self.assertEqual(name, operation['scheduled_operation']['name'])
+
     def test_delete_operation_receive_NotFound_except(self):
         self.remote_operation_api._delete_operation_exception =\
             exception.ScheduledOperationStateNotFound(op_id=None)

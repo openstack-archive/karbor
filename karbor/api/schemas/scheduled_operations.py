@@ -36,7 +36,7 @@ create = {
                         'plan_id': parameter_types.uuid,
                     },
                     'required': ['provider_id', 'plan_id'],
-                    'additionalProperties': False,
+                    'additionalProperties': True,
                 },
 
             },
