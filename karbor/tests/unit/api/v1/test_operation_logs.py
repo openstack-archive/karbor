@@ -32,19 +32,19 @@ class OperationLogTest(base.TestCase):
     @mock.patch(
         'karbor.api.v1.operation_logs.'
         'OperationLogsController._get_all')
-    def test_operation_log_list_detail(self, moak_get_all):
+    def test_operation_log_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/operation_logs')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.api.v1.operation_logs.'
         'OperationLogsController._get_all')
-    def test_operation_log_index_limit_offset(self, moak_get_all):
+    def test_operation_log_index_limit_offset(self, mock_get_all):
         req = fakes.HTTPRequest.blank(
             '/v1/operation_logs?limit=2&offset=1')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
         req = fakes.HTTPRequest.blank('/v1/operation_logs?limit=-1&offset=1')
         self.assertRaises(exc.HTTPBadRequest,
@@ -65,10 +65,10 @@ class OperationLogTest(base.TestCase):
     @mock.patch(
         'karbor.api.v1.operation_logs.'
         'OperationLogsController._operation_log_get')
-    def test_operation_log_show(self, moak_get):
+    def test_operation_log_show(self, mock_get):
         req = fakes.HTTPRequest.blank('/v1/operation_logs')
         self.controller.show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
-        self.assertTrue(moak_get.called)
+        self.assertTrue(mock_get.called)
 
     def test_operation_log_show_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/operation_logs/1')
