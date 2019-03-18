@@ -51,6 +51,16 @@ class QuotaApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_project_quotas')
+    def test_quota_detail(self, mock_quota_get):
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        self.controller.detail(
+            req, '73f74f90a1754bd7ad658afb3272323f')
+        self.assertTrue(mock_quota_get.called)
+
+    @mock.patch(
+        'karbor.quota.DbQuotaDriver.get_project_quotas')
     def test_quota_show(self, moak_quota_get):
         req = fakes.HTTPRequest.blank(
             '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
