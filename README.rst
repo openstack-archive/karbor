@@ -37,7 +37,7 @@ Design for multiple perspectives:
 * User: Protect App Deployment
 
   * Configure and manage custom protection plans on the deployed resources
-    (topology, VMs, volumes, images, …)
+    (topology, VMs, volumes, images, ...)
 
 * Admin: Define Protectable Resources
 
