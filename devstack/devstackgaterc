@@ -32,8 +32,8 @@ s+=,karbor,karbor-api,karbor-operationengine,karbor-protection
 ENABLED_SERVICES=$s
 export ENABLED_SERVICES
 
-DEVSTACK_LOCAL_CONFIG+="enable_plugin karbor git://git.openstack.org/openstack/karbor"
-DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat git://git.openstack.org/openstack/heat"
+DEVSTACK_LOCAL_CONFIG+="enable_plugin karbor https://git.openstack.org/openstack/karbor"
+DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin heat https://git.openstack.org/openstack/heat"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_REPLICAS=1"
 DEVSTACK_LOCAL_CONFIG+=$'\n'"SWIFT_DATA_DIR=$DEST/data"
