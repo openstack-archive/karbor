@@ -170,6 +170,7 @@ class TriggersController(wsgi.Controller):
                 raise exc.HTTPBadRequest(explanation=msg)
             try:
                 trigger.properties = trigger_property
+                self.operationengine_api.verify_trigger(context, trigger)
                 self.operationengine_api.update_trigger(context, trigger)
             except exception.InvalidInput as ex:
                 raise exc.HTTPBadRequest(explanation=ex.msg)
