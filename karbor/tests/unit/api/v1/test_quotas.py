@@ -17,10 +17,12 @@ from webob import exc
 
 from karbor.api.v1 import quotas
 from karbor import context
+from karbor import exception
 from karbor.tests import base
 from karbor.tests.unit.api import fakes
 
 CONF = cfg.CONF
+INVALID_PROJECT_ID = '111'
 
 
 class QuotaApiTest(base.TestCase):
@@ -41,13 +43,29 @@ class QuotaApiTest(base.TestCase):
             req, '73f74f90a1754bd7ad658afb3272323f', body=body)
         self.assertTrue(mock_quota_update.called)
 
-    def test_quota_update_invalid_project_id(self):
+    def test_quota_update_with_invalid_project_id(self):
         quota = self._quota_in_request_body()
         body = {"quota": quota}
         req = fakes.HTTPRequest.blank(
             '/v1/quotas/111', use_admin_context=True)
         self.assertRaises(exc.HTTPBadRequest, self.controller.update,
-                          req, '111', body=body)
+                          req, INVALID_PROJECT_ID, body=body)
+
+    def test_quota_update_with_invalid_type_value(self):
+        body = {"quota": {"plans": "fakevalue"}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        self.assertRaises(exc.HTTPBadRequest, self.controller.update,
+                          req, "73f74f90a1754bd7ad658afb3272323f", body=body)
+
+    def test_quota_update_with_invalid_num_value(self):
+        body = {"quota": {"plans": -2}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        self.assertRaises(exc.HTTPBadRequest, self.controller.update,
+                          req, "73f74f90a1754bd7ad658afb3272323f", body=body)
 
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_defaults')
@@ -59,6 +77,13 @@ class QuotaApiTest(base.TestCase):
             req, '73f74f90a1754bd7ad658afb3272323f')
         self.assertTrue(mock_quota_get.called)
 
+    def test_quota_defaults_with_invalid_project_id(self):
+        req = fakes.HTTPRequest.blank('/v1/quotas/111',
+                                      use_admin_context=True)
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.defaults,
+            req, INVALID_PROJECT_ID)
+
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_project_quotas')
     def test_quota_detail(self, mock_quota_get):
@@ -69,15 +94,30 @@ class QuotaApiTest(base.TestCase):
             req, '73f74f90a1754bd7ad658afb3272323f')
         self.assertTrue(mock_quota_get.called)
 
+    def test_quota_detail_with_invalid_project_id(self):
+        req = fakes.HTTPRequest.blank('/v1/quotas/111',
+                                      use_admin_context=True)
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.detail,
+            req, INVALID_PROJECT_ID)
+
+    def test_quota_detail_with_project_authorize_failed(self):
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=False)
+        self.assertRaises(
+            exc.HTTPForbidden, self.controller.detail,
+            req, '73f74f90a1754bd7ad658afb3272323f')
+
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_project_quotas')
-    def test_quota_show(self, moak_quota_get):
+    def test_quota_show(self, mock_quota_get):
         req = fakes.HTTPRequest.blank(
             '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
             use_admin_context=True)
         self.controller.show(
             req, '73f74f90a1754bd7ad658afb3272323f')
-        self.assertTrue(moak_quota_get.called)
+        self.assertTrue(mock_quota_get.called)
 
     def test_quota_show_invalid(self):
         req = fakes.HTTPRequest.blank('/v1/quotas/1',
@@ -86,22 +126,38 @@ class QuotaApiTest(base.TestCase):
             exc.HTTPBadRequest, self.controller.show,
             req, "1")
 
+    def test_quota_show_with_project_authorize_failed(self):
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=False)
+        self.assertRaises(
+            exc.HTTPForbidden, self.controller.show,
+            req, '73f74f90a1754bd7ad658afb3272323f')
+
     @mock.patch(
         'karbor.quota.DbQuotaDriver.destroy_all_by_project')
-    def test_quota_delete(self, moak_restore_get):
+    def test_quota_delete(self, mock_restore_get):
         req = fakes.HTTPRequest.blank(
             '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
             use_admin_context=True)
         self.controller.delete(
             req, '73f74f90a1754bd7ad658afb3272323f')
-        self.assertTrue(moak_restore_get.called)
+        self.assertTrue(mock_restore_get.called)
 
-    def test_quota_delete_invalid(self):
+    def test_quota_delete_with_invalid_project_id(self):
         req = fakes.HTTPRequest.blank('/v1/quotas/1',
                                       use_admin_context=True)
         self.assertRaises(
             exc.HTTPBadRequest, self.controller.delete,
             req, "1")
+
+    def test_quota_delete_with_non_admin_context(self):
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=False)
+        self.assertRaises(
+            exception.PolicyNotAuthorized, self.controller.delete,
+            req, "73f74f90a1754bd7ad658afb3272323f")
 
     def _quota_in_request_body(self):
         quota_req = {
