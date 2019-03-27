@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from datetime import datetime
+import mock
 from webob import exc
 
 from karbor.api.v1 import triggers as trigger_api
@@ -126,6 +127,22 @@ class TriggerApiTest(base.TestCase):
         self.assertEqual(name, trigger1['trigger_info']['name'])
         self.assertEqual(10, int(
             trigger1['trigger_info']['properties']['window']))
+
+    @mock.patch('karbor.services.operationengine.engine.triggers.timetrigger.'
+                'time_trigger.utils.check_trigger_definition')
+    def test_update_trigger_invalid_windows(self,
+                                            mock_check_trigger_definition):
+        trigger = self._create_one_trigger()
+
+        name = 'every minutes'
+        param = self.default_create_trigger_param.copy()
+        param['name'] = name
+        param['properties']['window'] = 'abc'
+        body = self._get_create_trigger_request_body(param)
+        mock_check_trigger_definition.return_value = exception.InvalidInput
+        self.assertRaises(exception.ValidationError,
+                          self.controller.update,
+                          self.req, trigger['trigger_info']['id'], body=body)
 
     def test_show_trigger_not_exist(self):
         self.assertRaises(exc.HTTPNotFound,
