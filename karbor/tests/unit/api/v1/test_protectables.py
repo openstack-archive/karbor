@@ -13,6 +13,7 @@
 
 import mock
 from oslo_config import cfg
+from webob import exc
 
 from karbor.api.v1 import protectables
 from karbor import context
@@ -31,44 +32,77 @@ class ProtectablesApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_list_detail(self, moak_get_all):
+    def test_protectables_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/protectables')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.services.protection.api.API.show_protectable_type')
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
     def test_protectables_show(
-            self, moak_get_all, moak_show_protectable_type):
+            self, mock_get_all, mock_show_protectable_type):
         req = fakes.HTTPRequest.blank('/v1/protectables')
-        moak_get_all.return_value = ["OS::Keystone::Project"]
+        mock_get_all.return_value = ["OS::Keystone::Project"]
         self.controller.show(req, 'OS::Keystone::Project')
-        self.assertTrue(moak_get_all.called)
-        self.assertTrue(moak_show_protectable_type.called)
+        self.assertTrue(mock_get_all.called)
+        self.assertTrue(mock_show_protectable_type.called)
 
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_show_Invalid(self, moak_get_all):
+    def test_protectables_show_Invalid(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/protectables')
-        moak_get_all.return_value = ["OS::Keystone::Project"]
+        mock_get_all.return_value = ["OS::Keystone::Project"]
         self.assertRaises(exception.InvalidInput, self.controller.show,
                           req, "1")
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.services.protection.api.API.'
         'list_protectable_instances')
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_instances_index(self, moak_get_all,
-                                          moak_list_protectable_instances):
+    def test_protectables_instances_index(self, mock_get_all,
+                                          mock_list_protectable_instances):
         req = fakes.HTTPRequest.blank('/v1/protectables')
-        moak_get_all.return_value = ["OS::Keystone::Project"]
+        mock_get_all.return_value = ["OS::Keystone::Project"]
         self.controller.instances_index(req, 'OS::Keystone::Project')
-        self.assertTrue(moak_get_all.called)
-        self.assertTrue(moak_list_protectable_instances.called)
+        self.assertTrue(mock_get_all.called)
+        self.assertTrue(mock_list_protectable_instances.called)
+
+    @mock.patch(
+        'karbor.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_index_Invalid(self, mock_get_all):
+        req = fakes.HTTPRequest.blank('/v1/protectables')
+        mock_get_all.return_value = ["OS::Keystone::Project"]
+        self.assertRaises(exception.InvalidInput,
+                          self.controller.instances_index,
+                          req, 'abc')
+
+    @mock.patch(
+        'karbor.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_index_InvalidPara(self, mock_get_all):
+        req = fakes.HTTPRequest.blank('/v1/protectables?parameters=abc')
+        mock_get_all.return_value = ["OS::Keystone::Project"]
+        self.assertRaises(exception.InvalidInput,
+                          self.controller.instances_index,
+                          req, 'OS::Keystone::Project')
+
+    @mock.patch(
+        'karbor.services.protection.api.API.'
+        'list_protectable_instances')
+    @mock.patch(
+        'karbor.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_index_InvalidInstance(
+            self, mock_get_all,
+            mock_list_protectable_instances):
+        req = fakes.HTTPRequest.blank('/v1/protectables')
+        mock_get_all.return_value = ["OS::Keystone::Project"]
+        mock_list_protectable_instances.return_value = [{"name": "abc"}]
+        self.assertRaises(exception.InvalidProtectableInstance,
+                          self.controller.instances_index,
+                          req, 'OS::Keystone::Project')
 
     @mock.patch(
         'karbor.services.protection.api.API.'
@@ -78,16 +112,66 @@ class ProtectablesApiTest(base.TestCase):
         'show_protectable_instance')
     @mock.patch(
         'karbor.api.v1.protectables.ProtectablesController._get_all')
-    def test_protectables_instances_show(self, moak_get_all,
-                                         moak_show_protectable_instance,
-                                         moak_list_protectable_dependents):
+    def test_protectables_instances_show(self, mock_get_all,
+                                         mock_show_protectable_instance,
+                                         mock_list_protectable_dependents):
         req = fakes.HTTPRequest.blank('/v1/protectables')
-        moak_get_all.return_value = ["OS::Keystone::Project"]
+        mock_get_all.return_value = ["OS::Keystone::Project"]
         self.controller.instances_show(
             req,
             'OS::Keystone::Project',
             'efc6a88b-9096-4bb6-8634-cda182a6e12a',
         )
-        self.assertTrue(moak_get_all.called)
-        self.assertTrue(moak_show_protectable_instance.called)
-        self.assertTrue(moak_list_protectable_dependents.called)
+        self.assertTrue(mock_get_all.called)
+        self.assertTrue(mock_show_protectable_instance.called)
+        self.assertTrue(mock_list_protectable_dependents.called)
+
+    def test_protectables_instances_show_InvalidParam(self):
+        req = fakes.HTTPRequest.blank('/v1/protectables?parameters=abc')
+        self.assertRaises(exception.InvalidInput,
+                          self.controller.instances_show,
+                          req,
+                          'OS::Keystone::Project',
+                          'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+
+    @mock.patch(
+        'karbor.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_show_InvalidType(self, mock_get_all):
+        req = fakes.HTTPRequest.blank('/v1/protectables')
+        mock_get_all.return_value = ["OS::Keystone::Project"]
+        self.assertRaises(exception.InvalidInput,
+                          self.controller.instances_show,
+                          req,
+                          'abc',
+                          'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+
+    @mock.patch(
+        'karbor.services.protection.api.API.'
+        'show_protectable_instance')
+    @mock.patch(
+        'karbor.api.v1.protectables.ProtectablesController._get_all')
+    def test_protectables_instances_show_Invalid(
+            self,
+            mock_get_all,
+            mock_show_protectable_instance):
+        req = fakes.HTTPRequest.blank('/v1/protectables')
+        mock_get_all.return_value = ["OS::Keystone::Project"]
+        mock_show_protectable_instance.side_effect = \
+            exception.ProtectableResourceNotFound
+        self.assertRaises(exc.HTTPNotFound,
+                          self.controller.instances_show,
+                          req,
+                          'OS::Keystone::Project',
+                          'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+        mock_show_protectable_instance.side_effect = exception.KarborException
+        self.assertRaises(exc.HTTPInternalServerError,
+                          self.controller.instances_show,
+                          req,
+                          'OS::Keystone::Project',
+                          'efc6a88b-9096-4bb6-8634-cda182a6e12a')
+        mock_show_protectable_instance.return_value = None
+        self.assertRaises(exc.HTTPInternalServerError,
+                          self.controller.instances_show,
+                          req,
+                          'OS::Keystone::Project',
+                          'efc6a88b-9096-4bb6-8634-cda182a6e12a')
