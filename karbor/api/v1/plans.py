@@ -308,7 +308,7 @@ class PlansController(wsgi.Controller):
         for key in valid_update_keys.intersection(plan):
             update_dict[key] = plan[key]
 
-        if update_dict is None:
+        if not update_dict:
             msg = _("Missing updated parameters in request body.")
             raise exc.HTTPBadRequest(explanation=msg)
 

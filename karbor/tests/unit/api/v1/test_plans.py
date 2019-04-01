@@ -126,6 +126,10 @@ class PlanApiTest(base.TestCase):
         self.assertRaises(
             exception.ValidationError, self.controller.update,
             req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
+        body = {"plan": {}}
+        self.assertRaises(
+            exc.HTTPBadRequest, self.controller.update,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398", body=body)
 
     def test_plan_update_InvalidId(self):
         plan = self._plan_update_request_body()
