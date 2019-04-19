@@ -20,7 +20,7 @@
     post-run: playbooks/legacy/karbor-dsvm-fullstack/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/karbor
       - openstack/python-karborclient
       - openstack/trove
