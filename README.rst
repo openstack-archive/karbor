@@ -55,7 +55,7 @@ Links
 
 * Free software: Apache license
 * Documentation: https://docs.openstack.org/karbor/latest/
-* Source: https://git.openstack.org/cgit/openstack/karbor
+* Source: https://opendev.org/openstack/karbor
 * Bugs: https://bugs.launchpad.net/karbor
 * Release notes: https://docs.openstack.org/karbor/latest/releasenotes.html
 
@@ -77,4 +77,3 @@ Limitations
 
 * Only 1 Bank plugin per Protection Plan
 * Automatic object discovery not supported
-
