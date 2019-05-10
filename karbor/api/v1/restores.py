@@ -23,6 +23,8 @@ from karbor.api.openstack import wsgi
 from karbor.api.schemas import restores as restore_schema
 from karbor.api import validation
 from karbor.common import constants
+from karbor.common import notification
+from karbor.common.notification import StartNotification
 from karbor import exception
 from karbor.i18n import _
 
@@ -200,6 +202,8 @@ class RestoresController(wsgi.Controller):
         LOG.debug('Create restore request body: %s', body)
         context = req.environ['karbor.context']
         context.can(restore_policy.CREATE_POLICY)
+        context.notification = notification.KarborRestoreCreate(
+            context, request=req)
         restore = body['restore']
         LOG.debug('Create restore request : %s', restore)
 
@@ -221,7 +225,8 @@ class RestoresController(wsgi.Controller):
 
         # call restore rpc API of protection service
         try:
-            self.protection_api.restore(context, restoreobj, restore_auth)
+            with StartNotification(context, parameters=parameters):
+                self.protection_api.restore(context, restoreobj, restore_auth)
         except exception.AccessCheckpointNotAllowed as error:
             raise exc.HTTPForbidden(explanation=error.msg)
         except Exception:

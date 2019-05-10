@@ -25,6 +25,8 @@ from karbor.api.openstack import wsgi
 from karbor.api.schemas import plans as plan_schema
 from karbor.api import validation
 from karbor.common import constants
+from karbor.common import notification
+from karbor.common.notification import StartNotification
 from karbor import exception
 from karbor.i18n import _
 
@@ -147,7 +149,8 @@ class PlansController(wsgi.Controller):
         context = req.environ['karbor.context']
 
         LOG.info("Delete plan with id: %s", id, context=context)
-
+        context.notification = notification.KarborPlanDelete(
+            context, request=req)
         try:
             plan = self._plan_get(context, id)
         except exception.PlanNotFound as error:
@@ -157,7 +160,8 @@ class PlansController(wsgi.Controller):
         project_id = plan.project_id
 
         try:
-            plan.destroy()
+            with StartNotification(context, id=id):
+                plan.destroy()
         except Exception:
             msg = _("Failed to destroy a plan.")
             raise exc.HTTPServerError(reason=msg)
@@ -245,6 +249,8 @@ class PlansController(wsgi.Controller):
         context.can(plan_policy.CREATE_POLICY)
         plan = body['plan']
         LOG.debug('Create plan request plan: %s', plan)
+        context.notification = notification.KarborPlanCreate(
+            context, request=req)
 
         parameters = plan.get("parameters", None)
 
@@ -277,7 +283,9 @@ class PlansController(wsgi.Controller):
                 resource='plans')
         try:
             plan = objects.Plan(context=context, **plan_properties)
-            plan.create()
+            with StartNotification(
+                    context, name=plan.get('name', None)):
+                plan.create()
             QUOTAS.commit(context, reservations)
         except Exception:
             with excutils.save_and_reraise_exception():
@@ -295,6 +303,8 @@ class PlansController(wsgi.Controller):
     def update(self, req, id, body):
         """Update a plan."""
         context = req.environ['karbor.context']
+        context.notification = notification.KarborPlanUpdate(
+            context, request=req)
 
         plan = body['plan']
         update_dict = {}
@@ -327,9 +337,9 @@ class PlansController(wsgi.Controller):
         except exception.PlanNotFound as error:
             raise exc.HTTPNotFound(explanation=error.msg)
 
-        self._plan_update(context, plan, update_dict)
-
-        plan.update(update_dict)
+        with StartNotification(context, id=id):
+            self._plan_update(context, plan, update_dict)
+            plan.update(update_dict)
 
         retval = self._view_builder.detail(req, plan)
         return retval

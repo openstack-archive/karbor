@@ -21,6 +21,8 @@ from karbor.api.openstack import wsgi
 from karbor.api.schemas import scheduled_operations as \
     scheduled_operation_schema
 from karbor.api import validation
+from karbor.common import notification
+from karbor.common.notification import StartNotification
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
@@ -90,6 +92,8 @@ class ScheduledOperationController(wsgi.Controller):
 
         context = req.environ['karbor.context']
         context.can(scheduled_operation_policy.CREATE_POLICY)
+        context.notification = notification.KarborScheduledOpsCreate(
+            context, request=req)
         operation_info = body['scheduled_operation']
 
         name = operation_info.get("name", None)
@@ -123,7 +127,8 @@ class ScheduledOperationController(wsgi.Controller):
             self._raise_unknown_exception(ex)
 
         try:
-            self._create_scheduled_operation(context, operation)
+            with StartNotification(context, operation_obj=operation_obj):
+                self._create_scheduled_operation(context, operation)
         except Exception:
             try:
                 operation.destroy()
@@ -140,14 +145,17 @@ class ScheduledOperationController(wsgi.Controller):
         LOG.debug('Delete scheduled operation(%s) start', id)
 
         context = req.environ['karbor.context']
+        context.notification = notification.KarborScheduledOpsDelete(
+            context, request=req)
         operation = self._get_operation_by_id(context, id, ['trigger'])
         trigger = operation.trigger
 
         context.can(scheduled_operation_policy.DELETE_POLICY, operation)
 
         try:
-            self.operationengine_api.delete_scheduled_operation(
-                context, id, trigger.id)
+            with StartNotification(context, id=id):
+                self.operationengine_api.delete_scheduled_operation(
+                    context, id, trigger.id)
 
         except (exception.ScheduledOperationStateNotFound,
                 exception.TriggerNotFound,

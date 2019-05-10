@@ -21,6 +21,8 @@ from karbor.api import common
 from karbor.api.openstack import wsgi
 from karbor.api.schemas import triggers as trigger_schema
 from karbor.api import validation
+from karbor.common import notification
+from karbor.common.notification import StartNotification
 from karbor import exception
 from karbor.i18n import _
 from karbor import objects
@@ -88,6 +90,8 @@ class TriggersController(wsgi.Controller):
         context = req.environ['karbor.context']
         context.can(trigger_policy.CREATE_POLICY)
         trigger_info = body['trigger_info']
+        context.notification = notification.KarborTriggerCreate(
+            context, request=req)
 
         trigger_name = trigger_info.get("name", None)
         trigger_type = trigger_info.get("type", None)
@@ -103,10 +107,13 @@ class TriggersController(wsgi.Controller):
             'properties': trigger_property,
         }
         try:
-            trigger = objects.Trigger(context=context, **trigger_definition)
-            self.operationengine_api.verify_trigger(context, trigger)
-            self.operationengine_api.create_trigger(context, trigger)
-            trigger.create()
+            with StartNotification(
+                    context, name=trigger_name):
+                trigger = objects.Trigger(
+                    context=context, **trigger_definition)
+                self.operationengine_api.verify_trigger(context, trigger)
+                self.operationengine_api.create_trigger(context, trigger)
+                trigger.create()
         except exception.Invalid as ex:
             raise exc.HTTPBadRequest(explanation=ex.msg)
         except Exception as ex:
@@ -121,6 +128,8 @@ class TriggersController(wsgi.Controller):
 
         context = req.environ['karbor.context']
         trigger = self._get_trigger_by_id(context, id)
+        context.notification = notification.KarborTriggerDelete(
+            context, request=req)
 
         context.can(trigger_policy.DELETE_POLICY, trigger)
 
@@ -135,7 +144,8 @@ class TriggersController(wsgi.Controller):
             raise exc.HTTPFailedDependency(explanation=msg)
 
         try:
-            self.operationengine_api.delete_trigger(context, id)
+            with StartNotification(context, id=id):
+                self.operationengine_api.delete_trigger(context, id)
         except exception.TriggerNotFound as ex:
             pass
         except (exception.DeleteTriggerNotAllowed,
@@ -152,6 +162,8 @@ class TriggersController(wsgi.Controller):
 
         context = req.environ['karbor.context']
         trigger = self._get_trigger_by_id(context, id)
+        context.notification = notification.KarborTriggerUpdate(
+            context, request=req)
 
         context.can(trigger_policy.UPDATE_POLICY, trigger)
 
@@ -177,7 +189,8 @@ class TriggersController(wsgi.Controller):
             except (exception.TriggerNotFound, Exception) as ex:
                 self._raise_unknown_exception(ex)
         try:
-            trigger.save()
+            with StartNotification(context, id=id):
+                trigger.save()
         except Exception as ex:
             self._raise_unknown_exception(ex)
 

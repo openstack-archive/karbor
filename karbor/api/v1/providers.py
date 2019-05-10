@@ -24,6 +24,8 @@ from karbor.api.openstack import wsgi
 from karbor.api.schemas import checkpoints as checkpoint_schema
 from karbor.api import validation
 from karbor.common import constants
+from karbor.common import notification
+from karbor.common.notification import StartNotification
 from karbor import exception
 from karbor.i18n import _
 
@@ -337,6 +339,8 @@ class ProvidersController(wsgi.Controller):
         """Creates a new checkpoint."""
 
         context = req.environ['karbor.context']
+        context.notification = notification.KarborCheckpointCreate(
+            context, request=req)
 
         LOG.debug('Create checkpoint request '
                   'body: %s provider_id:%s', body, provider_id)
@@ -404,9 +408,11 @@ class ProvidersController(wsgi.Controller):
         else:
             checkpoint_id = None
             try:
-                checkpoint_id = self.protection_api.protect(
-                    context, plan, checkpoint_properties)
-                QUOTAS.commit(context, reservations)
+                with StartNotification(
+                        context, checkpoint_properties=checkpoint_properties):
+                    checkpoint_id = self.protection_api.protect(
+                        context, plan, checkpoint_properties)
+                    QUOTAS.commit(context, reservations)
             except Exception as error:
                 if not checkpoint_id:
                     QUOTAS.rollback(context, reservations)
@@ -471,6 +477,8 @@ class ProvidersController(wsgi.Controller):
         """Delete a checkpoint."""
         context = req.environ['karbor.context']
         context.can(provider_policy.CHECKPOINT_DELETE_POLICY)
+        context.notification = notification.KarborCheckpointDelete(
+            context, request=req)
 
         LOG.info("Delete checkpoint with id: %s.", checkpoint_id)
         LOG.info("provider_id: %s.", provider_id)
@@ -484,7 +492,8 @@ class ProvidersController(wsgi.Controller):
         project_id = checkpoint.get('project_id')
 
         try:
-            self.protection_api.delete(context, provider_id, checkpoint_id)
+            with StartNotification(context, checkpoint_id=checkpoint_id):
+                self.protection_api.delete(context, provider_id, checkpoint_id)
         except exception.DeleteCheckpointNotAllowed as error:
             raise exc.HTTPForbidden(explantion=error.msg)
 
@@ -518,6 +527,8 @@ class ProvidersController(wsgi.Controller):
     def checkpoints_update(self, req, provider_id, checkpoint_id, body):
         """Reset a checkpoint's state"""
         context = req.environ['karbor.context']
+        context.notification = notification.KarborCheckpointUpdate(
+            context, request=req)
 
         LOG.info("Reset checkpoint state with id: %s", checkpoint_id)
         LOG.info("provider_id: %s.", provider_id)
@@ -531,10 +542,12 @@ class ProvidersController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         context.can(provider_policy.CHECKPOINT_UPDATE_POLICY)
+
         if body.get("os-resetState"):
-            state = body["os-resetState"]["state"]
-            return self._checkpoint_reset_state(
-                context, provider_id, checkpoint_id, state)
+            with StartNotification(context, checkpoint_id=checkpoint_id):
+                state = body["os-resetState"]["state"]
+                return self._checkpoint_reset_state(
+                    context, provider_id, checkpoint_id, state)
         else:
             msg = _("Invalid input.")
             raise exc.HTTPBadRequest(explanation=msg)
