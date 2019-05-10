@@ -198,6 +198,12 @@ class PlanApiTest(base.TestCase):
             exc.HTTPBadRequest, self.controller.show,
             req, "1")
 
+    def test_plan_show_InvalidPlanId(self):
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.assertRaises(
+            exc.HTTPNotFound, self.controller.show,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398")
+
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
     def test_plan_delete(self, moak_plan_get):
@@ -211,6 +217,24 @@ class PlanApiTest(base.TestCase):
             exc.HTTPBadRequest, self.controller.delete,
             req, "1")
 
+    def test_plan_delete_InvalidPlanId(self):
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        self.assertRaises(
+            exc.HTTPNotFound, self.controller.delete,
+            req, "2a9ce1f3-cc1a-4516-9435-0ebb13caa398")
+
+    @mock.patch(
+        'karbor.api.v1.plans.PlansController._plan_get')
+    def test_plan_delete_authorize_failed(
+            self, mock_plan_get):
+        plan = self._plan_in_request_body()
+        plan['project_id'] = DEFAULT_PROJECT_ID
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        mock_plan_get.return_value = plan
+        self.assertRaises(exception.PolicyNotAuthorized,
+                          self.controller.delete, req,
+                          "2a9ce1f3-cc1a-4516-9435-0ebb13caa398")
+
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
     def test_plan_update_InvalidStatus(
@@ -223,6 +247,22 @@ class PlanApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank('/v1/plans')
         mock_plan_get.return_value = plan
         self.assertRaises(exception.InvalidPlan,
+                          self.controller.update, req,
+                          "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
+                          body=body)
+
+    @mock.patch(
+        'karbor.api.v1.plans.PlansController._plan_get')
+    def test_plan_update_InvalidInput(
+            self, mock_plan_get):
+        plan = self._plan_update_request_body(
+            name=DEFAULT_NAME,
+            status=constants.PLAN_STATUS_SUSPENDED,
+            resources=DEFAULT_RESOURCES)
+        body = {"plan": plan}
+        req = fakes.HTTPRequest.blank('/v1/plans')
+        mock_plan_get.return_value = plan
+        self.assertRaises(exception.InvalidInput,
                           self.controller.update, req,
                           "2a9ce1f3-cc1a-4516-9435-0ebb13caa398",
                           body=body)
