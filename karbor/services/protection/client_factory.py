@@ -81,9 +81,13 @@ class ClientFactory(object):
     def get_client_module(cls, service):
         if not cls._factory:
             cls._factory = {}
-            for module in cls._list_clients():
-                module = importutils.import_module(module)
-                cls._factory[module.SERVICE] = module
+            for client_module in cls._list_clients():
+                try:
+                    client_module = importutils.import_module(client_module)
+                except ImportError:
+                    LOG.error('No module named %s', client_module)
+                else:
+                    cls._factory[client_module.SERVICE] = client_module
         return cls._factory.get(service)
 
     @classmethod
