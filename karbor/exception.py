@@ -447,6 +447,10 @@ class PlanLimitExceeded(QuotaError):
     message = _("Maximum number of plans allowed (%(allowed)d) exceeded")
 
 
+class CheckpointLimitExceeded(QuotaError):
+    message = _("Maximum number of checkpoints allowed (%(allowed)d) exceeded")
+
+
 class UnexpectedOverQuota(QuotaError):
     message = _("Unexpected over quota on %(name)s.")
 

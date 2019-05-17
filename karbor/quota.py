@@ -36,6 +36,9 @@ quota_opts = [
     cfg.IntOpt('quota_plans',
                default=50,
                help='The number of volume backups allowed per project'),
+    cfg.IntOpt('quota_checkpoints',
+               default=-1,
+               help='The number of checkpoints allowed per project'),
     cfg.IntOpt('reservation_expire',
                default=86400,
                help='number of seconds until a reservation expires'),
@@ -766,13 +769,18 @@ QUOTAS = QuotaEngine()
 resources = [
     ReservableResource('plans', None,
                        'quota_plans'),
+    ReservableResource('checkpoints', None,
+                       'quota_checkpoints'),
 ]
 
 
 QUOTAS.register_resources(resources)
 
 
-OVER_QUOTA_RESOURCE_EXCEPTIONS = {'plans': exception.PlanLimitExceeded}
+OVER_QUOTA_RESOURCE_EXCEPTIONS = {
+    'plans': exception.PlanLimitExceeded,
+    'checkpoints': exception.CheckpointLimitExceeded
+}
 
 
 def process_reserve_over_quota(context, over_quota_exception,

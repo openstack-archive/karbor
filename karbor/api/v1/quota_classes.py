@@ -44,6 +44,7 @@ class QuotaClassesViewBuilder(common.ViewBuilder):
         """Detailed view of a single quota class."""
         keys = (
             'plans',
+            'checkpoints',
         )
         view = {key: quota.get(key) for key in keys}
         if quota_class:
