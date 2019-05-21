@@ -8,7 +8,7 @@
 API Service
 ===========
 
-https://review.openstack.org/#/c/266338/
+https://review.opendev.org/#/c/266338/
 
 The APIs expose Application Data Protection services to the Karbor user.
 

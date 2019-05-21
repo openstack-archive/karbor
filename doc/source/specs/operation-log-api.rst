@@ -253,5 +253,5 @@ None
 References
 ==========
 
-[1]  https://review.openstack.org/#/c/298060/
+[1]  https://review.opendev.org/#/c/298060/
 

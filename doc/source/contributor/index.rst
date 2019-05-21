@@ -15,7 +15,7 @@ Communication and Meetings
 ==========================
 
 - Karbor Launchpad Link: \ https://launchpad.net/karbor
-- Karbor Code Review: \ https://review.openstack.org/#/q/karbor+status:open,n,z
+- Karbor Code Review: \ https://review.opendev.org/#/q/karbor+status:open,n,z
 - Karbor Code Repository: \ https://github.com/openstack/karbor
 - Karbor daily IRC Channel: #openstack-karbor
 - Karbor IRC Meeting: every two weeks (on odd weeks) on Tuesday at 0900 UTC in
