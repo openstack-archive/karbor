@@ -29,6 +29,7 @@ from karbor.i18n import _
 
 from karbor import objects
 from karbor.policies import providers as provider_policy
+from karbor import quota
 from karbor.services.protection import api as protection_api
 from karbor import utils
 
@@ -44,6 +45,7 @@ query_provider_filters_opts = [
         )
     ),
 ]
+QUOTAS = quota.QUOTAS
 
 query_checkpoint_filters_opts = [
     cfg.ListOpt(
@@ -391,20 +393,33 @@ class ProvidersController(wsgi.Controller):
             },
             "extra_info": checkpoint_extra_info
         }
+
         try:
-            checkpoint_id = self.protection_api.protect(context, plan,
-                                                        checkpoint_properties)
-        except Exception as error:
-            msg = _("Create checkpoint failed: %s") % error
-            raise exc.HTTPBadRequest(explanation=msg)
+            reserve_opts = {'checkpoints': 1}
+            reservations = QUOTAS.reserve(context, **reserve_opts)
+        except exception.OverQuota as e:
+            quota.process_reserve_over_quota(
+                context, e,
+                resource='checkpoints')
+        else:
+            checkpoint_id = None
+            try:
+                checkpoint_id = self.protection_api.protect(
+                    context, plan, checkpoint_properties)
+                QUOTAS.commit(context, reservations)
+            except Exception as error:
+                if not checkpoint_id:
+                    QUOTAS.rollback(context, reservations)
+                msg = _("Create checkpoint failed: %s") % error
+                raise exc.HTTPBadRequest(explanation=msg)
 
-        checkpoint_properties['id'] = checkpoint_id
+            checkpoint_properties['id'] = checkpoint_id
 
-        LOG.info("Create the checkpoint successfully. checkpoint_id:%s",
-                 checkpoint_id)
-        returnval = self._checkpoint_view_builder.detail(
-            req, checkpoint_properties)
-        return returnval
+            LOG.info("Create the checkpoint successfully. checkpoint_id:%s",
+                     checkpoint_id)
+            returnval = self._checkpoint_view_builder.detail(
+                req, checkpoint_properties)
+            return returnval
 
     def checkpoints_show(self, req, provider_id, checkpoint_id):
         """Return data about the given checkpoint id."""
@@ -455,23 +470,32 @@ class ProvidersController(wsgi.Controller):
     def checkpoints_delete(self, req, provider_id, checkpoint_id):
         """Delete a checkpoint."""
         context = req.environ['karbor.context']
+        context.can(provider_policy.CHECKPOINT_DELETE_POLICY)
 
         LOG.info("Delete checkpoint with id: %s.", checkpoint_id)
         LOG.info("provider_id: %s.", provider_id)
+        try:
+            checkpoint = self._checkpoint_get(context, provider_id,
+                                              checkpoint_id)
+        except exception.CheckpointNotFound as error:
+            raise exc.HTTPNotFound(explanation=error.msg)
+        except exception.AccessCheckpointNotAllowed as error:
+            raise exc.HTTPForbidden(explanation=error.msg)
+        project_id = checkpoint.get('project_id')
 
-        if not uuidutils.is_uuid_like(provider_id):
-            msg = _("Invalid provider id provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
-
-        if not uuidutils.is_uuid_like(checkpoint_id):
-            msg = _("Invalid checkpoint id provided.")
-            raise exc.HTTPBadRequest(explanation=msg)
-
-        context.can(provider_policy.CHECKPOINT_DELETE_POLICY)
         try:
             self.protection_api.delete(context, provider_id, checkpoint_id)
         except exception.DeleteCheckpointNotAllowed as error:
             raise exc.HTTPForbidden(explantion=error.msg)
+
+        try:
+            reserve_opts = {'checkpoints': -1}
+            reservations = QUOTAS.reserve(
+                context, project_id=project_id, **reserve_opts)
+        except Exception:
+            LOG.exception("Failed to update usages after deleting checkpoint.")
+        else:
+            QUOTAS.commit(context, reservations, project_id=project_id)
 
         LOG.info("Delete checkpoint request issued successfully.")
         return {}

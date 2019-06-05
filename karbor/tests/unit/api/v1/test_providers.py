@@ -53,10 +53,10 @@ class ProvidersApiTest(base.TestCase):
     @mock.patch(
         'karbor.services.protection.api.API.'
         'show_checkpoint')
-    def test_checkpoint_show(self, moak_show_checkpoint):
+    def test_checkpoint_show(self, mock_show_checkpoint):
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
-        moak_show_checkpoint.return_value = {
+        mock_show_checkpoint.return_value = {
             "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
             "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
             "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
@@ -66,7 +66,7 @@ class ProvidersApiTest(base.TestCase):
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
             '2220f8b1-975d-4621-a872-fa9afb43cb6c'
         )
-        self.assertTrue(moak_show_checkpoint.called)
+        self.assertTrue(mock_show_checkpoint.called)
 
     @mock.patch(
         'karbor.services.protection.api.API.'
@@ -101,54 +101,40 @@ class ProvidersApiTest(base.TestCase):
             '2220f8b1-975d-4621-a872-fa9afb43cb6c')
         self.assertTrue(moak_list_checkpoints.called)
 
-    @mock.patch(
-        'karbor.services.protection.api.API.'
-        'delete')
-    def test_checkpoints_delete(self, moak_delete):
+    @mock.patch('karbor.quota.QuotaEngine.commit')
+    @mock.patch('karbor.quota.QuotaEngine.reserve')
+    @mock.patch('karbor.services.protection.api.API.show_checkpoint')
+    @mock.patch('karbor.services.protection.api.API.delete')
+    def test_checkpoints_delete(self, mock_delete, mock_show_checkpoint,
+                                mock_reserve, mock_commit):
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
+        mock_show_checkpoint.return_value = {
+            "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
+            "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
+            "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
+        }
         self.controller.checkpoints_delete(
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
             '2220f8b1-975d-4621-a872-fa9afb43cb6c')
-        self.assertTrue(moak_delete.called)
+        self.assertTrue(mock_delete.called)
+        self.assertTrue(mock_reserve.called)
+        self.assertTrue(mock_commit.called)
 
-    def test_checkpoints_delete_with_invalid_provider_id(self):
-        req = fakes.HTTPRequest.blank('/v1/providers/'
-                                      '{provider_id}/checkpoints/')
-        invalid_provider_id = '1'
-        self.assertRaises(exc.HTTPBadRequest,
-                          self.controller.checkpoints_delete,
-                          req,
-                          invalid_provider_id,
-                          '2220f8b1-975d-4621-a872-fa9afb43cb6c'
-                          )
-
-    def test_checkpoints_delete_with_invalid_checkpoint_id(self):
-        req = fakes.HTTPRequest.blank('/v1/providers/'
-                                      '{provider_id}/checkpoints/')
-        invalid_checkpoint_id = '1'
-        self.assertRaises(exc.HTTPBadRequest,
-                          self.controller.checkpoints_delete,
-                          req,
-                          '2220f8b1-975d-4621-a872-fa9afb43cb6c',
-                          invalid_checkpoint_id
-                          )
-
-    @mock.patch(
-        'karbor.services.protection.api.API.'
-        'protect')
-    @mock.patch(
-        'karbor.objects.plan.Plan.get_by_id')
-    def test_checkpoints_create(self, mock_plan_create,
-                                mock_protect):
+    @mock.patch('karbor.quota.QuotaEngine.commit')
+    @mock.patch('karbor.quota.QuotaEngine.reserve')
+    @mock.patch('karbor.services.protection.api.API.protect')
+    @mock.patch('karbor.objects.plan.Plan.get_by_id')
+    def test_checkpoints_create(self, mock_plan_get, mock_protect,
+                                mock_reserve, mock_commit):
         checkpoint = {
             "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
         }
         body = {"checkpoint": checkpoint}
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
-        mock_plan_create.return_value = {
+        mock_plan_get.return_value = {
             "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6",
             "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
         }
@@ -159,78 +145,57 @@ class ProvidersApiTest(base.TestCase):
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',
             body=body)
-        self.assertTrue(mock_plan_create.called)
+        self.assertTrue(mock_plan_get.called)
+        self.assertTrue(mock_reserve.called)
         self.assertTrue(mock_protect.called)
+        self.assertTrue(mock_commit.called)
 
-    @mock.patch(
-        'karbor.services.protection.api.API.'
-        'protect')
-    @mock.patch(
-        'karbor.objects.plan.Plan.get_by_id')
-    def test_checkpoints_create_with_invalid_provider_id(self,
-                                                         mock_plan_create,
-                                                         mock_protect):
-        checkpoint = {
-            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
-        }
+    @mock.patch('karbor.quota.process_reserve_over_quota')
+    @mock.patch('karbor.quota.QuotaEngine.reserve')
+    @mock.patch('karbor.services.protection.api.API.protect')
+    @mock.patch('karbor.objects.plan.Plan.get_by_id')
+    def test_checkpoints_create_with_over_quota_exception(
+            self, mock_plan_get, mock_protect, mock_quota_reserve,
+            mock_process_reserve_over_quota):
+        checkpoint = {"plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"}
         body = {"checkpoint": checkpoint}
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
-        mock_plan_create.return_value = {
+        mock_plan_get.return_value = {
             "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6",
             "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
         }
         mock_protect.return_value = {
             "checkpoint_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
         }
-        invalid_provider_id = None
-        self.assertRaises(exception.InvalidInput,
-                          self.controller.checkpoints_create, req,
-                          invalid_provider_id,
-                          body=body)
+        mock_quota_reserve.side_effect = exception.OverQuota
+        self.controller.checkpoints_create(
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body=body)
+        self.assertTrue(mock_process_reserve_over_quota.called)
 
-    @mock.patch(
-        'karbor.services.protection.api.API.'
-        'protect')
-    @mock.patch(
-        'karbor.objects.plan.Plan.get_by_id')
-    def test_checkpoints_create_with_non_exist_plan(self,
-                                                    mock_plan_create,
-                                                    mock_protect):
-        checkpoint = {
-            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
-        }
-        body = {"checkpoint": checkpoint}
-        req = fakes.HTTPRequest.blank(
-            '/v1/providers/{provider_id}/checkpoints/')
-        mock_plan_create.return_value = None
-        mock_protect.return_value = {
-            "checkpoint_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"
-        }
-        self.assertRaises(exception.PlanNotFound,
-                          self.controller.checkpoints_create, req,
-                          "2220f8b1-975d-4621-a872-fa9afb43cb6c", body=body)
-
-    @mock.patch(
-        'karbor.services.protection.api.API.protect')
-    @mock.patch(
-        'karbor.objects.plan.Plan.get_by_id')
-    def test_checkpoints_create_with_invalid_plan(self,
-                                                  mock_plan_create,
-                                                  mock_protect):
+    @mock.patch('karbor.quota.QuotaEngine.rollback')
+    @mock.patch('karbor.services.protection.api.API.protect')
+    @mock.patch('karbor.objects.plan.Plan.get_by_id')
+    def test_checkpoint_create_failed_with_protection_exception(
+            self, mock_plan_get, mock_protect, mock_quota_rollback):
         checkpoint = {"plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"}
         body = {"checkpoint": checkpoint}
-        req = fakes.HTTPRequest.blank(
-            '/v1/providers/{provider_id}/checkpoints/')
-        mock_plan_create.return_value = \
-            {"plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6",
-             "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"}
-        mock_protect.return_value = \
-            {"checkpoint_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6"}
-        self.assertRaises(exception.InvalidPlan,
-                          self.controller.checkpoints_create,
-                          req, "2220f8b1-5ea6-4621-a872-fa9afb43cb6c",
-                          body=body)
+        req = fakes.HTTPRequest.blank('/v1/providers/'
+                                      '{provider_id}/checkpoints/')
+        mock_plan_get.return_value = {
+            "plan_id": "2c3a12ee-5ea6-406a-8b64-862711ff85e6",
+            "provider_id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
+        }
+        mock_protect.side_effect = Exception
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.checkpoints_create,
+            req,
+            '2220f8b1-975d-4621-a872-fa9afb43cb6c',
+            body=body)
+        self.assertTrue(mock_quota_rollback.called)
 
     @mock.patch('karbor.services.protection.api.API.reset_state')
     def test_checkpoints_update_reset_state(self, mock_reset_state):
