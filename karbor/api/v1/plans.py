@@ -384,9 +384,6 @@ class PlansController(wsgi.Controller):
             raise exception.InvalidInput(reason=msg)
 
     def validate_plan_parameters(self, context, plan):
-        parameters = plan["parameters"]
-        if not parameters:
-            return
         try:
             provider = self.protection_api.show_provider(
                 context, plan["provider_id"])
@@ -398,6 +395,9 @@ class PlansController(wsgi.Controller):
         if options_schema is None:
             msg = _("The option_schema of plugin must be provided.")
             raise exc.HTTPBadRequest(explanation=msg)
+        parameters = plan["parameters"]
+        if not parameters:
+            return
         for resource_key, parameter_value in parameters.items():
             if "#" in resource_key:
                 resource_type, resource_id = resource_key.split("#")
