@@ -153,8 +153,6 @@ class QuotasController(wsgi.Controller):
                     db.quota_update(context, project_id, key, value)
                 except exception.ProjectQuotaNotFound:
                     db.quota_create(context, project_id, key, value)
-                except exception.AdminRequired:
-                    raise exc.HTTPForbidden()
 
         LOG.info("Update quotas successfully.",
                  resource={'id': project_id})
@@ -184,11 +182,7 @@ class QuotasController(wsgi.Controller):
             msg = _("Invalid project id provided.")
             raise exc.HTTPBadRequest(explanation=msg)
         context.can(quota_policy.DELETE_POLICY)
-        try:
-            db.authorize_project_context(context, id)
-            QUOTAS.destroy_all_by_project(context, id)
-        except exception.NotAuthorized:
-            raise exc.HTTPForbidden()
+        QUOTAS.destroy_all_by_project(context, id)
 
         LOG.info("Delete quotas successfully.",
                  resource={'id': id})
