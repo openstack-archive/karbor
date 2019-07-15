@@ -67,6 +67,15 @@ class QuotaApiTest(base.TestCase):
         self.assertRaises(exc.HTTPBadRequest, self.controller.update,
                           req, "73f74f90a1754bd7ad658afb3272323f", body=body)
 
+    def test_quota_update_with_not_admin_context(self):
+        body = {"quota": {"plans": 20}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=False)
+        self.assertRaises(
+            exception.PolicyNotAuthorized, self.controller.update,
+            req, "73f74f90a1754bd7ad658afb3272323f", body=body)
+
     @mock.patch(
         'karbor.quota.DbQuotaDriver.get_defaults')
     def test_quota_defaults(self, mock_quota_get):
