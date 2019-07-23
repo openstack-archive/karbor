@@ -41,6 +41,7 @@ Approved Specs
     checkpoint-copy-api
     api-json-schema-validation
     quotas
+    image-boot-server-backup-with-data
 
 Spec Template
 -------------
