@@ -139,8 +139,11 @@ class ImageProtectablePluginTest(base.TestCase):
         mock_server_get.return_value = vm
         mock_image_get.return_value = image
         self.assertEqual(plugin.get_dependent_resources(self._context, vm),
-                         [resource.Resource(type=constants.IMAGE_RESOURCE_TYPE,
-                                            id='123', name='name123')])
+                         [resource.Resource(
+                             type=constants.IMAGE_RESOURCE_TYPE,
+                             id='123',
+                             name='name123',
+                             extra_info={'server_id': 'server1'})])
 
     @mock.patch.object(images.Controller, 'list')
     def test_get_project_dependent_resources(self, mock_image_list):

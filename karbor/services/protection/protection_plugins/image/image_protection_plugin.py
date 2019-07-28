@@ -30,6 +30,10 @@ image_backup_opts = [
                     'the size of image\'s chunk).'),
     cfg.IntOpt('poll_interval', default=10,
                help='Poll interval for image status'),
+    cfg.BoolOpt('enable_server_snapshot',
+                default=True,
+                help='Enable server snapshot when server is '
+                     'the parent resource of image')
 ]
 
 LOG = logging.getLogger(__name__)
@@ -47,23 +51,46 @@ def get_image_status(glance_client, image_id):
     return status
 
 
+def get_server_status(nova_client, server_id):
+    LOG.debug('Polling server (server_id: %s)', server_id)
+    try:
+        server = nova_client.servers.get(server_id)
+        status = server.status
+    except exception.NotFound:
+        status = 'not-found'
+    LOG.debug('Polled server (server_id: %s) status: %s', server_id, status)
+    return status
+
+
 class ProtectOperation(protection_plugin.Operation):
     def __init__(self, backup_image_object_size,
-                 poll_interval):
+                 poll_interval, enable_server_snapshot):
         super(ProtectOperation, self).__init__()
         self._data_block_size_bytes = backup_image_object_size
         self._interval = poll_interval
+        self._enable_server_snapshot = enable_server_snapshot
 
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
-        image_id = resource.id
-        bank_section = checkpoint.get_resource_bank_section(image_id)
-
-        resource_definition = {"resource_id": image_id}
+        LOG.debug('Start creating image backup, resource info: %s',
+                  resource.to_dict())
+        resource_id = resource.id
+        bank_section = checkpoint.get_resource_bank_section(resource_id)
         glance_client = ClientFactory.create_client('glance', context)
+        bank_section.update_object("status",
+                                   constants.RESOURCE_STATUS_PROTECTING)
+        resource_definition = {'resource_id': resource_id}
+        if resource.extra_info and self._enable_server_snapshot:
+            image_id = self._create_server_snapshot(context, glance_client,
+                                                    parameters, resource,
+                                                    resource_definition,
+                                                    resource_id)
+            need_delete_temp_image = True
+        else:
+            image_id = resource_id
+            need_delete_temp_image = False
+
         LOG.info("Creating image backup, image_id: %s.", image_id)
         try:
-            bank_section.update_object("status",
-                                       constants.RESOURCE_STATUS_PROTECTING)
             image_info = glance_client.images.get(image_id)
             if image_info.status != "active":
                 is_success = utils.status_poll(
@@ -81,14 +108,12 @@ class ProtectOperation(protection_plugin.Operation):
                         reason="The status of image is invalid.",
                         resource_id=image_id,
                         resource_type=constants.IMAGE_RESOURCE_TYPE)
-
             image_metadata = {
                 "disk_format": image_info.disk_format,
                 "container_format": image_info.container_format,
-                "checksum": image_info.checksum
+                "checksum": image_info.checksum,
             }
             resource_definition["image_metadata"] = image_metadata
-
             bank_section.update_object("metadata", resource_definition)
         except Exception as err:
             LOG.error("Create image backup failed, image_id: %s.", image_id)
@@ -100,6 +125,71 @@ class ProtectOperation(protection_plugin.Operation):
                 resource_id=image_id,
                 resource_type=constants.IMAGE_RESOURCE_TYPE)
         self._create_backup(glance_client, bank_section, image_id)
+        if need_delete_temp_image:
+            try:
+                glance_client.images.delete(image_id)
+            except Exception as error:
+                LOG.warning('Failed to delete temporary image: %s', error)
+            else:
+                LOG.debug('Delete temporary image(%s) success', image_id)
+
+    def _create_server_snapshot(self, context, glance_client, parameters,
+                                resource, resource_definition, resource_id):
+        server_id = resource.extra_info.get('server_id')
+        resource_definition['resource_id'] = resource_id
+        resource_definition['server_id'] = server_id
+        nova_client = ClientFactory.create_client('nova', context)
+        is_success = utils.status_poll(
+            partial(get_server_status, nova_client, server_id),
+            interval=self._interval,
+            success_statuses={'ACTIVE', 'STOPPED', 'SUSPENDED',
+                              'PAUSED'},
+            failure_statuses={'DELETED', 'ERROR', 'RESIZED', 'SHELVED',
+                              'SHELVED_OFFLOADED', 'SOFT_DELETED',
+                              'RESCUED', 'not-found'},
+            ignore_statuses={'BUILDING'},
+        )
+        if not is_success:
+            raise exception.CreateResourceFailed(
+                name="Image Backup",
+                reason='The parent server of the image is not in valid'
+                       ' status',
+                resource_id=resource_id,
+                resource_type=constants.IMAGE_RESOURCE_TYPE)
+        temp_image_name = 'Temp_image_name_for_karbor' + server_id
+        try:
+            image_uuid = nova_client.servers.create_image(
+                server_id, temp_image_name, parameters)
+        except Exception as e:
+            msg = "Failed to create the server snapshot: %s" % e
+            LOG.exception(msg)
+            raise exception.CreateResourceFailed(
+                name="Image Backup",
+                reason=msg,
+                resource_id=resource_id,
+                resource_type=constants.IMAGE_RESOURCE_TYPE
+            )
+        else:
+            is_success = utils.status_poll(
+                partial(get_image_status, glance_client, image_uuid),
+                interval=self._interval,
+                success_statuses={'active'},
+                failure_statuses={'killed', 'deleted', 'pending_delete',
+                                  'deactivated'},
+                ignore_statuses={'queued', 'saving', 'uploading'})
+            if not is_success:
+                msg = "Image has been created, but fail to become " \
+                      "active, so delete it and raise exception."
+                LOG.error(msg)
+                glance_client.images.delete(image_uuid)
+                image_uuid = None
+        if not image_uuid:
+            raise exception.CreateResourceFailed(
+                name="Image Backup",
+                reason="Create parent server snapshot failed.",
+                resource_id=resource_id,
+                resource_type=constants.IMAGE_RESOURCE_TYPE)
+        return image_uuid
 
     def _create_backup(self, glance_client, bank_section, image_id):
         try:
@@ -161,9 +251,10 @@ class DeleteOperation(protection_plugin.Operation):
 
 
 class RestoreOperation(protection_plugin.Operation):
-    def __init__(self, poll_interval):
+    def __init__(self, poll_interval, enable_server_snapshot):
         super(RestoreOperation, self).__init__()
         self._interval = poll_interval
+        self._enable_server_snapshot = enable_server_snapshot
 
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         original_image_id = resource.id
@@ -250,6 +341,8 @@ class GlanceProtectionPlugin(protection_plugin.ProtectionPlugin):
         self._data_block_size_bytes = (
             self._plugin_config.backup_image_object_size)
         self._poll_interval = self._plugin_config.poll_interval
+        self._enable_server_snapshot = (
+            self._plugin_config.enable_server_snapshot)
 
         if self._data_block_size_bytes % 65536 != 0 or (
                 self._data_block_size_bytes <= 0):
@@ -283,10 +376,12 @@ class GlanceProtectionPlugin(protection_plugin.ProtectionPlugin):
 
     def get_protect_operation(self, resource):
         return ProtectOperation(self._data_block_size_bytes,
-                                self._poll_interval)
+                                self._poll_interval,
+                                self._enable_server_snapshot)
 
     def get_restore_operation(self, resource):
-        return RestoreOperation(self._poll_interval)
+        return RestoreOperation(self._poll_interval,
+                                self._enable_server_snapshot)
 
     def get_verify_operation(self, resource):
         return VerifyOperation()
