@@ -23,6 +23,7 @@ from karbor.services.protection.protection_plugins. \
 from karbor.services.protection.protection_plugins.image \
     import image_plugin_schemas
 from karbor.tests import base
+from keystoneauth1 import session as keystone_session
 import mock
 from oslo_config import cfg
 from oslo_config import fixture
@@ -63,6 +64,11 @@ Image = collections.namedtuple(
      "status"]
 )
 
+Server = collections.namedtuple(
+    "Server",
+    ["status"]
+)
+
 
 def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
     def noop(*args, **kwargs):
@@ -101,6 +107,10 @@ class GlanceProtectionPluginTest(base.TestCase):
         plugin_config_fixture.load_raw_values(
             group='image_backup_plugin',
             backup_image_object_size=65536,
+        )
+        plugin_config_fixture.load_raw_values(
+            group='image_backup_plugin',
+            enable_server_snapshot=True,
         )
         self.plugin = GlanceProtectionPlugin(plugin_config)
         cfg.CONF.set_default('glance_endpoint',
@@ -153,6 +163,50 @@ class GlanceProtectionPluginTest(base.TestCase):
         fake_bank_section.update_object = mock.MagicMock()
         self.glance_client.images.data = mock.MagicMock()
         self.glance_client.images.data.return_value = []
+        mock_status_poll.return_value = True
+        call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
+                   {})
+
+    @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
+                '_generate_session')
+    @mock.patch('karbor.services.protection.protection_plugins.image.'
+                'image_protection_plugin.utils.status_poll')
+    @mock.patch('karbor.services.protection.clients.nova.create')
+    @mock.patch('karbor.services.protection.clients.glance.create')
+    def test_create_backup_with_server_id_in_extra_info(
+            self, mock_glance_create, mock_nova_create, mock_status_poll,
+            mock_generate_session):
+        cfg.CONF.set_default('nova_endpoint',
+                             'http://127.0.0.1:8774/v2.1',
+                             'nova_client')
+        self.nova_client = client_factory.ClientFactory.create_client(
+            "nova", self.cntxt)
+        mock_generate_session.return_value = keystone_session.Session(
+            auth=None)
+        resource = Resource(id="123",
+                            type=constants.IMAGE_RESOURCE_TYPE,
+                            name='fake',
+                            extra_info={'server_id': 'fake_server_id'})
+
+        protect_operation = self.plugin.get_protect_operation(resource)
+        mock_glance_create.return_value = self.glance_client
+        self.glance_client.images.get = mock.MagicMock()
+        self.glance_client.images.return_value = Image(
+            disk_format="",
+            container_format="",
+            status="active"
+        )
+
+        mock_nova_create.return_value = self.nova_client
+        self.nova_client.servers.get = mock.MagicMock()
+        self.nova_client.servers.get.return_value = Server(
+            status='ACTIVE')
+        self.nova_client.servers.image_create = mock.MagicMock()
+        self.nova_client.servers.image_create.return_value = '345'
+        fake_bank_section.update_object = mock.MagicMock()
+        self.glance_client.images.data = mock.MagicMock()
+        self.glance_client.images.data.return_value = []
+
         mock_status_poll.return_value = True
         call_hooks(protect_operation, self.checkpoint, resource, self.cntxt,
                    {})

@@ -82,7 +82,8 @@ class ImageProtectablePlugin(protectable_plugin.ProtectablePlugin):
                 reason=six.text_type(e))
         return [resource.Resource(type=self._SUPPORT_RESOURCE_TYPE,
                                   id=server.image['id'],
-                                  name=image.name)]
+                                  name=image.name,
+                                  extra_info={'server_id': server.id})]
 
     def _get_dependent_resources_by_project(self,
                                             context,
