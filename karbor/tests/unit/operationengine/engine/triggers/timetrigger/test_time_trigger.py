@@ -138,6 +138,18 @@ class TimeTriggerTestCase(base.TestCase):
                                TimeTrigger.check_trigger_definition,
                                trigger_property)
 
+    def test_check_trigger_property_start_bigger_than_end_time(self):
+        trigger_property = {
+            "window": 15,
+            "start_time": '2016-08-18 01:03:04',
+            "end_time": "2016-08-17 01:03:04"
+        }
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "The trigger's start time.* is bigger "
+                               "than end time.*",
+                               TimeTrigger.check_trigger_definition,
+                               trigger_property)
+
     def test_register_operation(self):
         trigger = self._generate_trigger()
 
@@ -190,12 +202,12 @@ class TimeTriggerTestCase(base.TestCase):
         trigger_property = {
             "pattern": "",
             "window": 15,
-            "start_time": datetime.utcnow(),
+            "start_time": '2016-8-18 01:03:04',
             "end_time": datetime.utcnow()
         }
 
         self.assertRaisesRegex(exception.InvalidInput,
-                               ".*Can not find the first run tim",
+                               ".*Can not find the first run time",
                                trigger.update_trigger_property,
                                trigger_property)
 

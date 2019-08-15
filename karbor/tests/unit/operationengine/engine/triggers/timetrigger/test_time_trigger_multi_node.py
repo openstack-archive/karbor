@@ -231,12 +231,12 @@ class TimeTriggerTestCase(base.TestCase):
         trigger_property = {
             "pattern": "",
             "window": 15,
-            "start_time": datetime.utcnow(),
-            "end_time": datetime.utcnow()
+            "start_time": '2016-8-18 01:03:04',
+            "end_time": datetime.utcnow(),
         }
 
         self.assertRaisesRegex(exception.InvalidInput,
-                               ".*Can not find the first run tim",
+                               ".*Can not find the first run time",
                                trigger.update_trigger_property,
                                trigger_property)
 
