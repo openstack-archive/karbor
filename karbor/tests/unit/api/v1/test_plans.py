@@ -162,17 +162,17 @@ class PlanApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._get_all')
-    def test_plan_list_detail(self, moak_get_all):
+    def test_plan_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._get_all')
-    def test_plan_index_limit_offset(self, moak_get_all):
+    def test_plan_index_limit_offset(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/plans?limit=2&offset=1')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
         req = fakes.HTTPRequest.blank('/v1/plans?limit=-1&offset=1')
         self.assertRaises(exc.HTTPBadRequest,
@@ -201,10 +201,10 @@ class PlanApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
-    def test_plan_show(self, moak_plan_get):
+    def test_plan_show(self, mock_plan_get):
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.controller.show(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
-        self.assertTrue(moak_plan_get.called)
+        self.assertTrue(mock_plan_get.called)
 
     def test_plan_show_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/plans/1')
@@ -220,10 +220,10 @@ class PlanApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.plans.PlansController._plan_get')
-    def test_plan_delete(self, moak_plan_get):
+    def test_plan_delete(self, mock_plan_get):
         req = fakes.HTTPRequest.blank('/v1/plans')
         self.controller.delete(req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
-        self.assertTrue(moak_plan_get.called)
+        self.assertTrue(mock_plan_get.called)
 
     def test_plan_delete_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/plans/1')

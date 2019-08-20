@@ -87,10 +87,10 @@ class RestoreApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.restores.RestoresController._get_all')
-    def test_restore_list_detail(self, moak_get_all):
+    def test_restore_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/restores')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.api.v1.restores.RestoresController._get_all')
@@ -119,11 +119,11 @@ class RestoreApiTest(base.TestCase):
     @mock.patch(
         'karbor.api.v1.restores.RestoresController.'
         '_restore_get')
-    def test_restore_show(self, moak_restore_get):
+    def test_restore_show(self, mock_restore_get):
         req = fakes.HTTPRequest.blank('/v1/restores')
         self.controller.show(
             req, '2a9ce1f3-cc1a-4516-9435-0ebb13caa398')
-        self.assertTrue(moak_restore_get.called)
+        self.assertTrue(mock_restore_get.called)
 
     def test_restore_show_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/restores/1')
