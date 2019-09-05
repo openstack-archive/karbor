@@ -11,7 +11,7 @@
 #    under the License.
 
 from collections import defaultdict
-from concurrent import futures
+import futurist
 from oslo_config import cfg
 from oslo_log import log as logging
 from threading import RLock
@@ -39,7 +39,7 @@ class ThreadPoolExecutor(base_executor.ScheduledOperationExecutor):
         if thread_count is None:
             thread_count = CONF.thread_count
 
-        self._pool = futures.ThreadPoolExecutor(thread_count)
+        self._pool = futurist.GreenThreadPoolExecutor(thread_count)
         self._operation_to_run = defaultdict(int)
         self._operation_to_cancel = set()
         self._lock = RLock()
