@@ -82,7 +82,7 @@ class NetworkProtectablePluginTest(base.TestCase):
         self.assertEqual('http://127.0.0.1:9696',
                          neutronclient.httpclient.endpoint_url)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         novaclient.client.management_url)
+                         novaclient.client.endpoint_override)
 
     @mock.patch('karbor.services.protection.client_factory.ClientFactory.'
                 '_generate_session')
@@ -101,7 +101,7 @@ class NetworkProtectablePluginTest(base.TestCase):
         self.assertEqual('http://127.0.0.1:9696',
                          neutronclient.httpclient.endpoint_url)
         self.assertEqual('http://127.0.0.1:8774/v2.1/abcd',
-                         novaclient.client.management_url)
+                         novaclient.client.endpoint_override)
 
     def test_get_resource_type(self):
         plugin = NetworkProtectablePlugin(self._context)
