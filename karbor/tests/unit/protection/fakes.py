@@ -323,6 +323,7 @@ class FakeFlowEngine(object):
     def add_tasks(self, flow, *nodes, **kwargs):
         if flow is None:
             LOG.error("The flow is None, get it first")
+            return
         flow.add(*nodes, **kwargs)
 
     def link_task(self, flow, u, v):
