@@ -78,8 +78,6 @@ class ProtectOperation(protection_plugin.Operation):
             raise exception.GetProtectionNetworkSubResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPES,
                 reason=six.text_type(e))
-        else:
-            return []
 
     def _get_resources_by_subnet(self, cntxt, neutron_client):
         try:
@@ -116,8 +114,6 @@ class ProtectOperation(protection_plugin.Operation):
             raise exception.GetProtectionNetworkSubResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPES,
                 reason=six.text_type(e))
-        else:
-            return []
 
     def _get_resources_by_port(self, cntxt, neutron_client):
         try:
@@ -153,8 +149,6 @@ class ProtectOperation(protection_plugin.Operation):
             raise exception.GetProtectionNetworkSubResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPES,
                 reason=six.text_type(e))
-        else:
-            return []
 
     def _get_resources_by_router(self, cntxt, neutron_client):
         try:
@@ -184,8 +178,6 @@ class ProtectOperation(protection_plugin.Operation):
             raise exception.GetProtectionNetworkSubResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPES,
                 reason=six.text_type(e))
-        else:
-            return []
 
     def _get_resources_by_security_group(self, cntxt, neutron_client):
         try:
@@ -211,8 +203,6 @@ class ProtectOperation(protection_plugin.Operation):
             raise exception.GetProtectionNetworkSubResourceFailed(
                 type=self._SUPPORT_RESOURCE_TYPES,
                 reason=six.text_type(e))
-        else:
-            return []
 
     def on_main(self, checkpoint, resource, context, parameters, **kwargs):
         network_id = get_network_id(context)
