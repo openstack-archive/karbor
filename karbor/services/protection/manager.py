@@ -336,7 +336,8 @@ class ProtectionManager(manager.Manager):
         checkpoint_dict = checkpoint.to_dict()
         if not context.is_admin and (
                 context.project_id != checkpoint_dict['project_id']):
-            LOG.warn("Delete checkpoint(%s) is not allowed." % checkpoint_id)
+            LOG.warning("Delete checkpoint(%s) is not allowed.",
+                        checkpoint_id)
             raise exception.DeleteCheckpointNotAllowed(
                 checkpoint_id=checkpoint_id)
 
