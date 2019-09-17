@@ -67,6 +67,45 @@ class QuotaApiTest(base.TestCase):
         self.assertRaises(exc.HTTPBadRequest, self.controller.update,
                           req, "73f74f90a1754bd7ad658afb3272323f", body=body)
 
+    @mock.patch(
+        'karbor.db.sqlalchemy.api.quota_update')
+    def test_quota_update_with_zero_value(self, mock_quota_update):
+        body = {"quota": {"plans": 0}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        self.controller.update(
+            req, '73f74f90a1754bd7ad658afb3272323f', body=body)
+        self.assertTrue(mock_quota_update.called)
+
+    @mock.patch(
+        'karbor.db.sqlalchemy.api.quota_update')
+    def test_quota_update_with_invalid_key(self, mock_quota_update):
+        body = {"quota": {"fakekey": 20}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        self.controller.update(
+            req, '73f74f90a1754bd7ad658afb3272323f', body=body)
+        self.assertEqual(0,
+                         len(mock_quota_update.mock_calls))
+
+    @mock.patch(
+        'karbor.db.sqlalchemy.api.quota_create')
+    @mock.patch(
+        'karbor.db.sqlalchemy.api.quota_update')
+    def test_quota_update_with_project_quota_not_found(self,
+                                                       mock_quota_update,
+                                                       mock_quota_create):
+        body = {"quota": {"plans": 20}}
+        req = fakes.HTTPRequest.blank(
+            '/v1/quotas/73f74f90a1754bd7ad658afb3272323f',
+            use_admin_context=True)
+        mock_quota_update.side_effect = exception.ProjectQuotaNotFound
+        self.controller.update(
+            req, '73f74f90a1754bd7ad658afb3272323f', body=body)
+        self.assertTrue(mock_quota_create.called)
+
     def test_quota_update_with_not_admin_context(self):
         body = {"quota": {"plans": 20}}
         req = fakes.HTTPRequest.blank(
