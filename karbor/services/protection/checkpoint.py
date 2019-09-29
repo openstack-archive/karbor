@@ -136,7 +136,7 @@ class Checkpoint(object):
         self._md_cache = new_md
 
     @classmethod
-    def _generate_id(self):
+    def _generate_id(cls):
         return uuidutils.generate_uuid()
 
     @classmethod

@@ -703,15 +703,15 @@ class NeutronProtectionPlugin(protection_plugin.ProtectionPlugin):
         self._poll_interval = plugin_config.poll_interval
 
     @classmethod
-    def get_supported_resources_types(self):
-        return self._SUPPORT_RESOURCE_TYPES
+    def get_supported_resources_types(cls):
+        return cls._SUPPORT_RESOURCE_TYPES
 
     @classmethod
-    def get_options_schema(self, resources_type):
+    def get_options_schema(cls, resources_type):
         return network_plugin_schemas.OPTIONS_SCHEMA
 
     @classmethod
-    def get_restore_schema(self, resources_type):
+    def get_restore_schema(cls, resources_type):
         return network_plugin_schemas.RESTORE_SCHEMA
 
     @classmethod
@@ -719,11 +719,11 @@ class NeutronProtectionPlugin(protection_plugin.ProtectionPlugin):
         return network_plugin_schemas.VERIFY_SCHEMA
 
     @classmethod
-    def get_saved_info_schema(self, resources_type):
+    def get_saved_info_schema(cls, resources_type):
         return network_plugin_schemas.SAVED_INFO_SCHEMA
 
     @classmethod
-    def get_saved_info(self, metadata_store, resource):
+    def get_saved_info(cls, metadata_store, resource):
         # TODO(chenhuayi)
         pass
 
