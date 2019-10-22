@@ -243,7 +243,7 @@ class ProvidersApiTest(base.TestCase):
         req = fakes.HTTPRequest.blank('/v1/providers/{provider_id}/'
                                       'checkpoints/{checkpoint_id}')
         self.assertRaises(
-            exc.HTTPBadRequest,
+            exception.ValidationError,
             self.controller.checkpoints_update,
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c',

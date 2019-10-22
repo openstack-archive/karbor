@@ -543,14 +543,10 @@ class ProvidersController(wsgi.Controller):
 
         context.can(provider_policy.CHECKPOINT_UPDATE_POLICY)
 
-        if body.get("os-resetState"):
-            with StartNotification(context, checkpoint_id=checkpoint_id):
-                state = body["os-resetState"]["state"]
-                return self._checkpoint_reset_state(
-                    context, provider_id, checkpoint_id, state)
-        else:
-            msg = _("Invalid input.")
-            raise exc.HTTPBadRequest(explanation=msg)
+        with StartNotification(context, checkpoint_id=checkpoint_id):
+            state = body["os-resetState"]["state"]
+            return self._checkpoint_reset_state(
+                context, provider_id, checkpoint_id, state)
 
 
 def create_resource():
