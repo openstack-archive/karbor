@@ -334,11 +334,9 @@ class RestoreOperation(protection_plugin.Operation):
             ignore_statuses=VOLUME_IGNORE_STATUSES
         )
         if not is_success:
-            LOG.error("Restore volume glance backup failed, volume_id: %s.",
-                      original_vol_id)
-            if volume is not None and hasattr(volume, 'id'):
-                LOG.info("Delete the failed volume, volume_id: %s.", volume.id)
-                cinder_client.volumes.delete(volume.id)
+            LOG.error("Restore volume glance backup failed, so delete "
+                      "the temporary volume: volume_id: %s.", original_vol_id)
+            cinder_client.volumes.delete(volume.id)
             raise exception.CreateResourceFailed(
                 name="Volume Glance Backup",
                 reason='Restored Volume is in erroneous state',
