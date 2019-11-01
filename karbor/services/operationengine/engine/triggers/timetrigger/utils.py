@@ -12,6 +12,7 @@
 
 from datetime import datetime
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 from stevedore import driver as import_driver
@@ -20,6 +21,8 @@ from karbor import exception
 from karbor.i18n import _
 
 CONF = cfg.CONF
+
+LOG = logging.getLogger(__name__)
 
 
 def get_time_format_class():
@@ -99,6 +102,12 @@ def check_trigger_definition(trigger_definition):
     end_time = trigger_definition.get("end_time", None)
     end_time = check_and_get_datetime(end_time, "end_time")
 
+    if end_time and end_time <= start_time:
+        msg = (_("The trigger's start time(%(start_time)s) is "
+                 "bigger than end time(%(end_time)s)") %
+               {'start_time': start_time, 'end_time': end_time})
+        LOG.error(msg)
+        raise exception.InvalidInput(msg)
     valid_trigger_property = trigger_definition.copy()
     valid_trigger_property['window'] = window
     valid_trigger_property['start_time'] = start_time
