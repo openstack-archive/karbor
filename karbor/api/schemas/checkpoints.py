@@ -39,6 +39,7 @@ create = {
 update = {
     'type': 'object',
     'properties': {
+        'type': 'object',
         'os-resetState': {
             'type': 'object',
             'properties': {
@@ -51,6 +52,6 @@ update = {
             'additionalProperties': False,
         },
     },
-    'required': [],
+    'required': ['os-resetState'],
     'additionalProperties': False,
 }
