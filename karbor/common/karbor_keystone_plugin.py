@@ -54,9 +54,6 @@ class KarborKeystonePlugin(object):
         self._auth_uri = None
         self._karbor_user_id = None
         auth_plugin = self._get_karbor_auth_plugin()
-        # set the project which karbor belongs to
-        auth_plugin._project_name = "service"
-        auth_plugin._project_domain_id = "default"
         self._service_auth_plugin = auth_plugin
 
     @property
