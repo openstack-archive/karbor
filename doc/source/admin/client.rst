@@ -497,6 +497,59 @@ Execute a delete operation manually with a checkpoint id
     +----+-----------+--------+------+------+--------------+-----------+
     +----+-----------+--------+------+------+--------------+-----------+
 
+Checkpoint Reset State
+----------------------
+
+Execute a reset state operation manually with a checkpoint id
+
+.. code-block:: console
+
+    karbor checkpoint-reset-state cf56bd3e-97a7-4078-b6d5-f36246333fd9 80f6154f-cc43-441f-8841-35ae23e17f4f --available
+
+    # check the checkpoint status
+    karbor checkpoint-show cf56bd3e-97a7-4078-b6d5-f36246333fd9 80f6154f-cc43-441f-8841-35ae23e17f4f
+    +-----------------+-----------------------------------------------------------+
+    | Property        | Value                                                     |
+    +-----------------+-----------------------------------------------------------+
+    | created_at      | 2017-02-13                                                |
+    | extra_info      | {"created_by": "manual"}                                  |
+    | id              | 80f6154f-cc43-441f-8841-35ae23e17f4f                      |
+    | project_id      | 31478a6f980d4e73a3bdac3ad04a3605                          |
+    | protection_plan | {                                                         |
+    |                 |   "id": "ef8b83f3-d0c4-48ec-8949-5c72bbf14103",           |
+    |                 |   "name": "OS volumes protection plan.",                  |
+    |                 |   "provider_id": "cf56bd3e-97a7-4078-b6d5-f36246333fd9",  |
+    |                 |   "resources": [                                          |
+    |                 |     {                                                     |
+    |                 |       "id": "12e2abc6-f20b-430d-9b36-1a6befd23b6c",       |
+    |                 |       "name": "volume2",                                  |
+    |                 |       "type": "OS::Cinder::Volume"                        |
+    |                 |     },                                                    |
+    |                 |     {                                                     |
+    |                 |       "id": "700495ee-38e6-41a0-963f-f3f9a24c0f75",       |
+    |                 |       "name": "volume1",                                  |
+    |                 |       "type": "OS::Cinder::Volume"                        |
+    |                 |     }                                                     |
+    |                 |   ]                                                       |
+    |                 | }                                                         |
+    | resource_graph  | [                                                         |
+    |                 |   {                                                       |
+    |                 |     "0x0": [                                              |
+    |                 |       "OS::Cinder::Volume",                               |
+    |                 |       "700495ee-38e6-41a0-963f-f3f9a24c0f75",             |
+    |                 |       "volume1"                                           |
+    |                 |     ],                                                    |
+    |                 |     "0x1": [                                              |
+    |                 |       "OS::Cinder::Volume",                               |
+    |                 |       "12e2abc6-f20b-430d-9b36-1a6befd23b6c",             |
+    |                 |       "volume2"                                           |
+    |                 |     ]                                                     |
+    |                 |   },                                                      |
+    |                 |   []                                                      |
+    |                 | ]                                                         |
+    | status          | available                                                 |
+    +-----------------+-----------------------------------------------------------+
+
 Scheduled Opeartions
 --------------------
 
