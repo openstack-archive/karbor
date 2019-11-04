@@ -205,7 +205,8 @@ Response Codes
 
 .. rest_status_code:: error status.yaml
 
-   - 202
+   - 401
+   - 403
 
 Request
 -------
@@ -225,4 +226,46 @@ Response Example
 ----------------
 
 .. literalinclude:: ./samples/checkpoint-delete-response.json
+   :language: javascript
+
+
+Update checkpoint
+=================
+
+.. rest_method::  PUT /v1/{tenant_id}/providers/{provider_id}/checkpoints/{checkpoint_id}
+
+Updates a specific checkpoint.
+
+Response Codes
+--------------
+
+.. rest_status_code:: success status.yaml
+
+   - 200
+
+.. rest_status_code:: error status.yaml
+
+   - 401
+   - 403
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - tenant_id: tenant_id
+   - provider_id: provider_id_1
+   - checkpoint_id: checkpoint_id_1
+   - os-resetState: os-resetState
+   - os-resetState.state: state
+
+Response
+--------
+
+Empty dict
+
+Response Example
+----------------
+
+.. literalinclude:: ./samples/checkpoint-reset-state-response.json
    :language: javascript

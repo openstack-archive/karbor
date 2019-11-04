@@ -255,6 +255,12 @@ operation_type_1:
   in: body
   required: true
   type: UUID
+os-resetState:
+  description: |
+    A ``os-resetState`` object.
+  in: body
+  required: true
+  type: object
 plan:
   description: |
     A ``plan`` object.
@@ -491,6 +497,12 @@ started_at:
     The started time of the operation.
   in: body
   required: false
+  type: string
+state:
+  description: |
+    The status of checkpoint. A valid value is ``error`` or ``available``.
+  in: body
+  required: true
   type: string
 tenant_id_1:
   description: |
