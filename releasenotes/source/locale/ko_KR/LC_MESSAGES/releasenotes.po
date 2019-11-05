@@ -1,14 +1,15 @@
 # SEOKJAE BARK <sj.bark@samsung.com>, 2017. #zanata
+# Hongjae Kim <neo415ha@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: karbor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-15 03:41+0000\n"
+"POT-Creation-Date: 2019-11-04 11:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2017-08-09 01:00+0000\n"
-"Last-Translator: SEOKJAE BARK <sj.bark@samsung.com>\n"
+"PO-Revision-Date: 2019-11-02 08:11+0000\n"
+"Last-Translator: Hongjae Kim <neo415ha@gmail.com>\n"
 "Language-Team: Korean (South Korea)\n"
 "Language: ko_KR\n"
 "X-Generator: Zanata 4.3.3\n"
@@ -17,8 +18,14 @@ msgstr ""
 msgid "0.1.0"
 msgstr "0.1.0"
 
+msgid "0.2.0"
+msgstr "0.2.0"
+
 msgid "0.4.0"
 msgstr "0.4.0"
+
+msgid "1.2.0"
+msgstr "1.2.0"
 
 msgid ":ref:`genindex`"
 msgstr ":ref:`genindex`"
@@ -26,11 +33,39 @@ msgstr ":ref:`genindex`"
 msgid ":ref:`search`"
 msgstr ":ref:`search`"
 
+msgid "Add support for listing checkpoints by admin with all_tenants."
+msgstr "all_tenants로 관리자가 체크포인트를 나열하기 위한 지원 추가."
+
+msgid "Add support for using S3 comptatible storage as bank plugin."
+msgstr "S3 호환 스토리지를 은행 플러그인으로 사용하기 위한 지원 추가."
+
+msgid "Added RFC2445 (iCal) format for time triggers."
+msgstr "시간 트리거에 대한 RFC2445(iCal) 형식 추가."
+
+msgid "Added new tool ``karbor-status upgrade check``."
+msgstr "새로운 도구 \"카보르 상태 업그레이드 점검\" 추가."
+
+msgid "Added support for checkpoint state reset by admin and owner."
+msgstr "관리자 및 소유자의 체크포인트 상태 재설정에 대한 지원 추가."
+
+msgid "Bug Fixes"
+msgstr "버그 고침"
+
 msgid "Contents"
 msgstr "내용"
 
 msgid "Current Series Release Notes"
 msgstr "최신 시리즈에 대한 릴리즈 노트"
+
+msgid "Deprecation Notes"
+msgstr "감가 상각"
+
+msgid ""
+"Fix checkpoint listing bug, which caused results to be not filtered "
+"correctly according to set filters."
+msgstr ""
+"설정된 필터에 따라 결과가 올바르게 필터링되지 않는 체크포인트 목록 버그를 수"
+"정하십시오."
 
 msgid "Indices and tables"
 msgstr "인덱스 및 테이블"
@@ -38,14 +73,69 @@ msgstr "인덱스 및 테이블"
 msgid "New Features"
 msgstr "새로운 기능"
 
+msgid ""
+"New framework for ``karbor-status upgrade check`` command is added. This "
+"framework allows adding various checks which can be run before a Karbor "
+"upgrade to ensure if the upgrade can be performed safely."
+msgstr ""
+"``karbor-status upgrade check\" 명령의 새로운 프레임워크가 추가되었다. 이 프"
+"레임워크는 업그레이드가 안전하게 수행될 수 있는지 확인하기 위해 카르보 업그레"
+"이드 전에 실행할 수 있는 다양한 검사를 추가할 수 있다."
+
 msgid "Newton Series Release Notes"
 msgstr "Newton 시리즈에 대한 릴리즈 노트"
+
+msgid ""
+"Old Protection Plugin interface and BaseProtectionPlugin are deprecated."
+msgstr ""
+"이전 보호 플러그인 인터페이스와 BaseProtectionPlugin은 더 이상 사용되지 않는"
+"다."
+
+msgid ""
+"Operator can now use new CLI tool ``karbor-status upgrade check`` to check "
+"if Karbor deployment can be safely upgraded from N-1 to N release."
+msgstr ""
+"운영자는 이제 새로운 CLI 도구 \"karbor-status upgrade check\"를 사용하여 카보"
+"르 배치를 N-1에서 N 릴리스로 안전하게 업그레이드할 수 있는지 확인할 수 있다."
 
 msgid "Other Notes"
 msgstr "기타 노트"
 
+msgid "Prelude"
+msgstr "서곡"
+
+msgid ""
+"Restore auth parameters now reside in restore_auth instead of restore "
+"parameters."
+msgstr ""
+"이제 복원 인증 매개 변수가 복원 매개 변수 대신 restore_auth에 있는 경우."
+
+msgid ""
+"Revised Cinder protection plugin, which takes a snapshot, backs up from the "
+"snapshot, and deletes the snapshot afterwards."
+msgstr ""
+"스냅샷을 생성한 후 스냅샷에서 백업하고 이후에 스냅샷을 삭제하는 수정 Cinder "
+"보호 플러그인"
+
+msgid ""
+"Revised Glance protection plugin, which uploads the glance image in chunks "
+"to the bank."
+msgstr "눈금 이미지를 청크로 은행에 업로드하는 수정 글랜스 보호 플러그인."
+
+msgid ""
+"Revised Protection Plugin interface which now supports multiple hooks for "
+"each operation. Hooks dictate when specific parts of the protection plugin "
+"code runs in relation to the operation phase and other resource's state."
+msgstr ""
+"이제 각 작업에 대해 여러 후크를 지원하는 수정된 보호 플러그인 인터페이스 후크"
+"는 보호 플러그인 코드의 특정 부분이 작동 단계 및 다른 리소스의 상태와 관련하"
+"여 실행될 때 지시한다."
+
 msgid "Started using Reno for release notes"
 msgstr "릴리즈 노트 관리를 위한 Reno사용을 시작합니다"
+
+msgid "Upgrade Notes"
+msgstr "노트 업그레이드"
 
 msgid "Welcome to Karbor Release Notes documentation!"
 msgstr "Karbor릴리즈 노트 문서에 오신 것을 환영합니다!"
