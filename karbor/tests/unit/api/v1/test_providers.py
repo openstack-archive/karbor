@@ -33,17 +33,17 @@ class ProvidersApiTest(base.TestCase):
 
     @mock.patch(
         'karbor.api.v1.providers.ProvidersController._get_all')
-    def test_providers_list_detail(self, moak_get_all):
+    def test_providers_list_detail(self, mock_get_all):
         req = fakes.HTTPRequest.blank('/v1/providers')
         self.controller.index(req)
-        self.assertTrue(moak_get_all.called)
+        self.assertTrue(mock_get_all.called)
 
     @mock.patch(
         'karbor.services.protection.api.API.show_provider')
-    def test_providers_show(self, moak_show_provider):
+    def test_providers_show(self, mock_show_provider):
         req = fakes.HTTPRequest.blank('/v1/providers')
         self.controller.show(req, '2220f8b1-975d-4621-a872-fa9afb43cb6c')
-        self.assertTrue(moak_show_provider.called)
+        self.assertTrue(mock_show_provider.called)
 
     def test_providers_show_Invalid(self):
         req = fakes.HTTPRequest.blank('/v1/providers')
@@ -71,10 +71,10 @@ class ProvidersApiTest(base.TestCase):
     @mock.patch(
         'karbor.services.protection.api.API.'
         'show_checkpoint')
-    def test_checkpoint_show_Invalid(self, moak_show_checkpoint):
+    def test_checkpoint_show_Invalid(self, mock_show_checkpoint):
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
-        moak_show_checkpoint.return_value = {
+        mock_show_checkpoint.return_value = {
             "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
             "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
             "id": "2220f8b1-975d-4621-a872-fa9afb43cb6c"
@@ -86,10 +86,10 @@ class ProvidersApiTest(base.TestCase):
     @mock.patch(
         'karbor.services.protection.api.API.'
         'list_checkpoints')
-    def test_checkpoint_index(self, moak_list_checkpoints):
+    def test_checkpoint_index(self, mock_list_checkpoints):
         req = fakes.HTTPRequest.blank('/v1/providers/'
                                       '{provider_id}/checkpoints/')
-        moak_list_checkpoints.return_value = [
+        mock_list_checkpoints.return_value = [
             {
                 "provider_id": "efc6a88b-9096-4bb6-8634-cda182a6e12a",
                 "project_id": "446a04d8-6ff5-4e0e-99a4-827a6389e9ff",
@@ -99,7 +99,7 @@ class ProvidersApiTest(base.TestCase):
         self.controller.checkpoints_index(
             req,
             '2220f8b1-975d-4621-a872-fa9afb43cb6c')
-        self.assertTrue(moak_list_checkpoints.called)
+        self.assertTrue(mock_list_checkpoints.called)
 
     @mock.patch('karbor.quota.QuotaEngine.commit')
     @mock.patch('karbor.quota.QuotaEngine.reserve')
