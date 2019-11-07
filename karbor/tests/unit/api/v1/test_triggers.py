@@ -144,6 +144,22 @@ class TriggerApiTest(base.TestCase):
                           self.controller.update,
                           self.req, trigger['trigger_info']['id'], body=body)
 
+    def test_update_trigger_without_start_time(self):
+        trigger = self._create_one_trigger()
+
+        name = 'every minutes'
+        param = self.default_create_trigger_param.copy()
+        param['name'] = name
+        param['properties'].pop('start_time')
+        body = self._get_create_trigger_request_body(param)
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.update,
+            self.req,
+            trigger['trigger_info']['id'],
+            body=body
+        )
+
     def test_show_trigger_not_exist(self):
         self.assertRaises(exc.HTTPNotFound,
                           self.controller.show,
