@@ -100,5 +100,6 @@ Add the configuration of the bank plugin
     id = 6659007d-6f66-4a0f-9cb4-17d6aded0bb9
     plugin=karbor-volume-protection-plugin
     bank=karbor-fs-bank-plugin
+    enabled=True
 
 

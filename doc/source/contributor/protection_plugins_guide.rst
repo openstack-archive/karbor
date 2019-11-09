@@ -59,6 +59,12 @@ Each plugin must implement the following interface:
         def get_restore_operation(self, resource):
             pass
 
+        def get_verify_operation(self, resource):
+            pass
+
+        def get_copy_operation(self, resource):
+            pass
+
         def get_delete_operation(self, resource):
             pass
 
@@ -82,6 +88,10 @@ Each plugin must implement the following interface:
         def get_saved_info(cls, metadata_store, resource):
             pass
 
+        @classmethod
+        def get_verify_schema(cls, resource_type):
+            pass
+
 #. **get_supported_resources_types**: this method should return a list of
    resource types this plugin handles. The plugin's methods will be called for
    each resource of these types. For example: `OS::Nova::Instance`,
@@ -93,6 +103,8 @@ Each plugin must implement the following interface:
 #. **get_saved_info**: returns the actual data relevant to a protected resource
    in a checkpoint
 #. **get_restore_schema**: returns a schema of parameters available for restore
+   operation.
+#. **get_verify_schema**: returns a schema of parameters available for verify
    operation.
 #. **get_protect_operation**, **get_restore_operation**,
    **get_delete_operation**: each returns an Operation instance to be used for
