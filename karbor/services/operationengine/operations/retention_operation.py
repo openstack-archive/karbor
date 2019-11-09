@@ -11,6 +11,7 @@
 #    under the License.
 
 from datetime import datetime
+from oslo_log import log as logging
 from oslo_utils import uuidutils
 
 from karbor.common import constants
@@ -19,6 +20,8 @@ from karbor import exception
 from karbor.i18n import _
 from karbor import objects
 from karbor.services.operationengine.operations import base
+
+LOG = logging.getLogger(__name__)
 
 
 class RetentionProtectOperation(base.Operation):
@@ -43,10 +46,12 @@ class RetentionProtectOperation(base.Operation):
             raise exception.InvalidOperationDefinition(reason=reason)
 
     def _execute(self, operation_definition, param):
+        LOG.debug("_execute operation starting")
         log_ref = self._create_operation_log(param)
         self._run(operation_definition, param, log_ref)
 
     def _resume(self, operation_definition, param, log_ref):
+        LOG.debug("_resume operation starting")
         self._run(operation_definition, param, log_ref)
 
     def _run(self, operation_definition, param, log_ref):
@@ -62,6 +67,13 @@ class RetentionProtectOperation(base.Operation):
             'trigger_id': trigger_id,
             'scheduled_operation_id': scheduled_operation_id
         }
+        LOG.debug("Create checkpoint: provider_id=%(provider_id)s, "
+                  "plan_id=%(plan_id)s, trigger_id=%(trigger_id)s, "
+                  "scheduled_operation_id=%(scheduled_operation_id)s" %
+                  {"provider_id": provider_id,
+                   "plan_id": plan_id,
+                   "trigger_id": trigger_id,
+                   "scheduled_operation_id": scheduled_operation_id})
         try:
             client.checkpoints.create(provider_id, plan_id, extra_info)
         except Exception:
@@ -70,6 +82,7 @@ class RetentionProtectOperation(base.Operation):
             state = constants.OPERATION_EXE_STATE_SUCCESS
 
         finally:
+            LOG.debug("Create checkpoint finished, state=%s" % state)
             self._update_log_when_operation_finished(log_ref, state)
 
         try:
@@ -105,6 +118,9 @@ class RetentionProtectOperation(base.Operation):
                        "max_backups": max_backups})
             raise exception.InvalidOperationDefinition(reason=reason)
         finally:
+            LOG.debug("Delete old backup by max_backups finished, "
+                      "state=%(state)s, max_backups:%(max_backups)s" %
+                      {"state": state, "max_backups": max_backups})
             self._update_log_when_operation_finished(log_ref, state)
 
         try:
@@ -120,6 +136,11 @@ class RetentionProtectOperation(base.Operation):
                        "retention_duration": retention_duration})
             raise exception.InvalidOperationDefinition(reason=reason)
         finally:
+            LOG.debug("Delete old backup by duration finished, "
+                      "state=%(state)s, "
+                      "retention_duration:%(retention_duration)s" %
+                      {"state": state,
+                       "retention_duration": retention_duration})
             self._update_log_when_operation_finished(log_ref, state)
 
     @staticmethod
@@ -156,6 +177,13 @@ class RetentionProtectOperation(base.Operation):
         backup_items = self._list_available_checkpoint(
             client, project_id, provider_id, plan_id)
 
+        LOG.debug("Delete checkpoint: max_backups=%(max_backups)s, "
+                  "project_id=%(project_id)s, provider_id=%(provider_id)s, "
+                  "plan_id=%(plan_id)s" %
+                  {"max_backups": max_backups,
+                   "project_id": project_id,
+                   "provider_id": provider_id,
+                   "plan_id": plan_id})
         count = len(backup_items)
         if count > max_backups:
             for item in backup_items[max_backups:]:
@@ -177,6 +205,14 @@ class RetentionProtectOperation(base.Operation):
         backup_items = self._list_available_checkpoint(
             client, project_id, provider_id, plan_id)
 
+        LOG.debug("Delete checkpoint: "
+                  "retention_duration=%(retention_duration)s, "
+                  "project_id=%(project_id)s, provider_id=%(provider_id)s, "
+                  "plan_id=%(plan_id)s" %
+                  {"retention_duration": retention_duration,
+                   "project_id": project_id,
+                   "provider_id": provider_id,
+                   "plan_id": plan_id})
         now = datetime.utcnow()
         for item in backup_items:
             created_at = datetime.strptime(item.created_at, "%Y-%m-%d")
