@@ -1,0 +1,11 @@
+{
+  "service": {
+    "status": "disabled",
+    "binary": "karbor-operationengine",
+    "state": "down",
+    "updated_at": "2019-11-03T11:50:25.000000",
+    "host": "devstack",
+    "disabled_reason": null,
+    "id": 1
+  }
+}

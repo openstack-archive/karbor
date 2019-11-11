@@ -14,3 +14,4 @@ Data Protection API V1
 .. include:: karbor-v1-checkpoints.inc
 .. include:: karbor-v1-restores.inc
 .. include:: karbor-v1-operation-logs.inc
+.. include:: karbor-v1-services.inc
