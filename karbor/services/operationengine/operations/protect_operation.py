@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 from oslo_utils import uuidutils
 
 from karbor.common import constants
@@ -18,6 +19,8 @@ from karbor import exception
 from karbor.i18n import _
 from karbor import objects
 from karbor.services.operationengine.operations import base
+
+LOG = logging.getLogger(__name__)
 
 
 class ProtectOperation(base.Operation):
@@ -42,10 +45,12 @@ class ProtectOperation(base.Operation):
             raise exception.InvalidOperationDefinition(reason=reason)
 
     def _execute(self, operation_definition, param):
+        LOG.debug("_execute operation starting")
         log_ref = self._create_operation_log(param)
         self._run(operation_definition, param, log_ref)
 
     def _resume(self, operation_definition, param, log_ref):
+        LOG.debug("_resume operation starting")
         self._run(operation_definition, param, log_ref)
 
     def _run(self, operation_definition, param, log_ref):
@@ -60,6 +65,13 @@ class ProtectOperation(base.Operation):
             'trigger_id': trigger_id,
             'scheduled_operation_id': scheduled_operation_id
         }
+        LOG.debug("Create checkpoint: provider_id=%(provider_id)s, "
+                  "plan_id=%(plan_id)s, trigger_id=%(trigger_id)s, "
+                  "scheduled_operation_id=%(scheduled_operation_id)s" %
+                  {"provider_id": provider_id,
+                   "plan_id": plan_id,
+                   "trigger_id": trigger_id,
+                   "scheduled_operation_id": scheduled_operation_id})
         try:
             client.checkpoints.create(provider_id, plan_id, extra_info)
         except Exception:
@@ -67,4 +79,5 @@ class ProtectOperation(base.Operation):
         else:
             state = constants.OPERATION_EXE_STATE_SUCCESS
 
+        LOG.debug("Create checkpoint finished, state=%s" % state)
         self._update_log_when_operation_finished(log_ref, state)
