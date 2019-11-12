@@ -50,6 +50,12 @@ restore_id_1:
   in: path
   required: true
   type: UUID
+service_id_path:
+  description: |
+    The ID of the service.
+  in: path
+  required: true
+  type: integer
 tenant_id:
   description: |
     The UUID of the tenant in a multi-tenancy cloud.
@@ -65,6 +71,18 @@ trigger_id_1:
 
 
 # variables in query
+binary_query:
+  description: |
+    Filter the service list result by binary name of the service.
+  in: query
+  required: false
+  type: string
+host_query:
+  description: |
+    Filter the service list result by host name of the service.
+  in: query
+  required: false
+  type: string
 limit:
   description: |
     Requests a page size of items. Returns a number
@@ -95,6 +113,12 @@ sort:
 
 
 # variables in body
+binary_required:
+  description: |
+    The binary name of the service.
+  in: body
+  required: true
+  type: string
 checkpoint:
   description: |
     A ``checkpoint`` object.
@@ -146,6 +170,12 @@ description:
   in: body
   required: true
   type: string
+disabled_reason_body_req:
+  description: |
+    The reason for disabling a service.
+  in: body
+  required: true
+  type: string
 enabled:
   description: |
     "``1``" means ``Enable``, "``0``" means ``Disable``.
@@ -176,6 +206,12 @@ extra_info_1:
   in: body
   required: false
   type: dict
+host_name_body_req:
+  description: |
+    The name of the host.
+  in: body
+  required: true
+  type: string
 links:
   description: |
     Links for transfer.
@@ -492,6 +528,36 @@ schema_saved_info:
   in: body
   required: true
   type: dict
+service_body:
+  description: |
+    A ``service`` object.
+  in: body
+  required: true
+  type: object
+service_id:
+  description: |
+    UUID for the cleanup service.
+  in: body
+  required: true
+  type: integer
+service_state_up_down:
+  description: |
+    The state of the service. One of ``up`` or ``down``.
+  in: body
+  required: true
+  type: string
+service_status:
+  description: |
+    The status of the service. One of ``enabled`` or ``disabled``.
+  in: body
+  required: true
+  type: string
+services:
+  description: |
+    A list of service objects.
+  in: body
+  required: true
+  type: array
 started_at:
   description: |
     The started time of the operation.
@@ -557,6 +623,13 @@ trigger_properties_1:
 trigger_type:
   description: |
     The type of the trigger.
+  in: body
+  required: true
+  type: string
+updated:
+  description: |
+    The date and time stamp when the extension was
+    last updated.
   in: body
   required: true
   type: string

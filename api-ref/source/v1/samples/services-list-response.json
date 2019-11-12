@@ -1,0 +1,27 @@
+{
+  "services": [{
+    "status": "enabled",
+    "binary": "karbor-operationengine",
+    "state": "down",
+    "updated_at": "2019-11-03T11:50:25.000000",
+    "host": "devstack",
+    "disabled_reason": null,
+    "id": 1
+  }, {
+    "status": "enabled",
+    "binary": "karbor-operationengine",
+    "state": "up",
+    "updated_at": "2019-11-11T02:56:05.000000",
+    "host": "devstack",
+    "disabled_reason": null,
+    "id": 2
+  }, {
+    "status": "enabled",
+    "binary": "karbor-protection",
+    "state": "up",
+    "updated_at": "2019-11-11T02:56:03.000000",
+    "host": "devstack",
+    "disabled_reason": null,
+    "id": 3
+  }]
+}
