@@ -142,14 +142,11 @@ class VerificationsController(wsgi.Controller):
             CONF.query_verification_filters)
 
         utils.check_filters(filters)
-        try:
-            verifications = self._get_all(context, marker, limit,
-                                          sort_keys=sort_keys,
-                                          sort_dirs=sort_dirs,
-                                          filters=filters,
-                                          offset=offset)
-        except exception.VerificationNotFound as error:
-            raise exc.HTTPNotFound(explanation=error.msg)
+        verifications = self._get_all(context, marker, limit,
+                                      sort_keys=sort_keys,
+                                      sort_dirs=sort_dirs,
+                                      filters=filters,
+                                      offset=offset)
         retval_verifications = self._view_builder.detail_list(req,
                                                               verifications)
 
