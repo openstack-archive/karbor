@@ -93,3 +93,57 @@ class ServiceApiTest(base.TestCase):
             "fake_id",
             body
         )
+
+    @mock.patch('karbor.objects.service.Service.get_by_id')
+    def test_service_update_with_service_not_found(self,
+                                                   mock_get_by_id):
+        body = {
+            "status": 'disabled',
+            'disabled_reason': 'reason'
+        }
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
+                                      use_admin_context=True)
+        mock_get_by_id.side_effect = exception.ServiceNotFound
+        self.assertRaises(
+            exc.HTTPNotFound,
+            self.controller.update,
+            req,
+            "fake_id",
+            body
+        )
+
+    @mock.patch('karbor.objects.service.Service.get_by_id')
+    def test_service_update_with_invalid_disabled_reason(self, mock_get_by_id):
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
+                                      use_admin_context=True)
+        body = {
+            "status": 'enabled',
+            'disabled_reason': 'reason'
+        }
+        mock_service = mock.MagicMock(
+            binary='karbor-operationengine', save=mock.MagicMock())
+        mock_get_by_id.return_value = mock_service
+        self.assertRaises(
+            exc.HTTPBadRequest,
+            self.controller.update,
+            req,
+            "fake_id",
+            body
+        )
+
+    @mock.patch('karbor.utils.service_is_up')
+    @mock.patch('karbor.objects.service.Service.get_by_id')
+    def test_service_update_with_enabled_status(
+            self, mock_get_by_id, mock_service_is_up):
+        req = fakes.HTTPRequest.blank('/v1/os-services/1',
+                                      use_admin_context=True)
+        body = {
+            "status": 'enabled'
+        }
+        mock_service = mock.MagicMock(
+            binary='karbor-operationengine', save=mock.MagicMock())
+        mock_get_by_id.return_value = mock_service
+        mock_service_is_up.return_value = True
+        self.controller.update(req, "fake_id", body)
+        self.assertTrue(mock_get_by_id.called)
+        self.assertTrue(mock_service.save.called)
