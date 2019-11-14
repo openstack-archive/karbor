@@ -131,6 +131,9 @@ function configure_karbor {
 
         iniset $KARBOR_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
         iniset $KARBOR_CONF DEFAULT use_syslog $SYSLOG
+        iniset $KARBOR_CONF DEFAULT min_interval $KARBOR_SCHEDULED_MIN_INTERVAL
+        iniset $KARBOR_CONF DEFAULT min_window_time $KARBOR_SCHEDULED_MIN_WINDOW_TIME
+        iniset $KARBOR_CONF DEFAULT max_window_time $KARBOR_SCHEDULED_MAX_WINDOW_TIME
         echo "Configuring Karbor API Database"
         iniset $KARBOR_CONF database connection `database_connection_url karbor`
         iniset_rpc_backend karbor $KARBOR_CONF
