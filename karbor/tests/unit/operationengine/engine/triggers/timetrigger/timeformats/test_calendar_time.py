@@ -173,3 +173,13 @@ class CalendarTimeTestCase(base.TestCase):
         dtstart = datetime(2016, 2, 20, 17, 0, 0)
         time_obj = calendar_time.ICal(dtstart, pattern)
         self.assertIsNone(time_obj.get_min_interval())
+
+    def test_get_min_interval_when_interval_is_bigger_than_default_rate(self):
+        pattern = (
+            "BEGIN:VEVENT\n"
+            "RRULE:FREQ=MINUTELY;INTERVAL=5;\n"
+            "END:VEVENT"
+        )
+        dtstart = datetime(2016, 2, 20, 17, 0, 0)
+        time_obj = calendar_time.ICal(dtstart, pattern)
+        self.assertEqual(300, time_obj.get_min_interval())
