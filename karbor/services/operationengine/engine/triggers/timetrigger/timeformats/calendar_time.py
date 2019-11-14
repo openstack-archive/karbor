@@ -11,7 +11,7 @@
 #    under the License.
 import os
 
-from datetime import timedelta
+from datetime import datetime
 from dateutil import rrule
 from icalendar import Calendar
 from oslo_serialization import jsonutils
@@ -121,23 +121,9 @@ class ICal(timeformats.TimeFormat):
         :return: int(seconds) or None
 
         """
-        gen = self.rrule_obj
-        kwargs = FREQ_TO_KWARGS[self.min_freq]
-        endtime = self.dtstart + timedelta(**kwargs)
-
-        deltas = []
-        t0 = None
-        for dt in gen:
-            if dt > endtime:
-                break
-            t1 = t0
-            t0 = dt
-            if t1 is None or t0 is None or dt <= self.dtstart:
-                continue
-            delta = timeutils.delta_seconds(t1, t0)
-            if delta:
-                deltas.append(delta)
-        if len(deltas):
-            return min(deltas)
-        else:
+        try:
+            t1 = self.compute_next_time(datetime.now())
+            t2 = self.compute_next_time(t1)
+            return timeutils.delta_seconds(t1, t2)
+        except Exception:
             return None
