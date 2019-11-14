@@ -221,8 +221,8 @@ class ProtectionServiceTest(base.TestCase):
 
     @mock.patch.object(provider.ProviderRegistry, 'show_provider')
     @mock.patch.object(fakes.FakeCheckpointCollection, 'get')
-    def test_show_checkpoint_not_found(self, mock_provider,
-                                       mock_cp_collection_get):
+    def test_show_checkpoint_not_found(self, mock_cp_collection_get,
+                                       mock_provider):
         mock_provider.return_value = fakes.FakeProvider()
         context = mock.MagicMock()
         mock_cp_collection_get.side_effect = exception.CheckpointNotFound(
