@@ -1,0 +1,25 @@
+{"verifications": [
+  {
+    "status": "fail",
+    "resources_status": {},
+    "provider_id": "6659007d-6f66-4a0f-9cb4-17d6aded0bb9",
+    "parameters": {},
+    "checkpoint_id": "35486bac-1b14-4158-a403-916cf09a5596",
+    "project_id": "5d3242420cb641ac840cd4ae37af0f18",
+    "id": "7f7bd4a4-0a96-4f03-9553-d6c6cf7b36b8",
+    "resources_reason": {}
+  },
+  {
+    "status": "success",
+    "resources_status": {
+      "OS::Glance::Image#1a220464-6449-4fb6-8169-14f3016c4bb9": "available"
+    },
+    "provider_id": "6659007d-6f66-4a0f-9cb4-17d6aded0bb9",
+    "parameters": {},
+    "checkpoint_id": "dd8bbf5a-6759-4ce2-a64b-854db2fa7541",
+    "project_id": "5d3242420cb641ac840cd4ae37af0f18",
+    "id": "2c126c95-3e69-46fb-83f0-b63e9770906f",
+    "resources_reason": {
+      "OS::Glance::Image#1a220464-6449-4fb6-8169-14f3016c4bb9": ""}
+  }]
+}

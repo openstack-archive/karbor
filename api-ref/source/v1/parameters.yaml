@@ -68,6 +68,12 @@ trigger_id_1:
   in: path
   required: true
   type: UUID
+verification_id_path:
+  description: |
+    The UUID of the verify.
+  in: path
+  required: true
+  type: UUID
 
 
 # variables in query
@@ -447,6 +453,18 @@ resources_1:
   in: body
   required: false
   type: array
+resources_reason:
+  description: |
+    Map of the verify reason for each resource.
+  in: body
+  required: true
+  type: dict
+resources_status:
+  description: |
+    Map of the verify status for each resource.
+  in: body
+  required: true
+  type: dict
 restore:
   description: |
     A ``restore`` object.
@@ -633,3 +651,40 @@ updated:
   in: body
   required: true
   type: string
+verification:
+  description: |
+    A ``verification`` object.
+  in: body
+  required: true
+  type: object
+verification_id:
+  description: |
+    The UUID of the verify.
+  in: body
+  required: true
+  type: UUID
+verification_parameters:
+  description: |
+    The specified parameters for verification.
+  in: body
+  required: true
+  type: dict
+verification_status:
+  description: |
+    The status of verify. A valid value is "``in_progress``" "``success``" or
+    "``fail``".
+  in: body
+  required: true
+  type: string
+verifications:
+  description: |
+    A list of verification objects.
+  in: body
+  required: true
+  type: array
+verifications_links:
+  description: |
+    Links for transfer.
+  in: body
+  required: true
+  type: array
