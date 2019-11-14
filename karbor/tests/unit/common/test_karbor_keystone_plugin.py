@@ -16,11 +16,23 @@ import mock
 from karbor.common import karbor_keystone_plugin
 from karbor.tests import base
 
+from oslo_config import cfg
+from oslo_config import fixture
+
 
 class KarborKeystonePluginTest(base.TestCase):
 
     def setUp(self):
         super(KarborKeystonePluginTest, self).setUp()
+        plugin_config = cfg.ConfigOpts()
+        plugin_config_fixture = self.useFixture(fixture.Config(plugin_config))
+        plugin_config_fixture.load_raw_values(
+            group='trustee',
+            poll_interval=0,
+        )
+        cfg.CONF.set_default('project_name',
+                             'services',
+                             "trustee")
         self.kc_plugin = karbor_keystone_plugin.KarborKeystonePlugin()
         self.kc_plugin.client.services.list = mock.MagicMock()
         self.kc_plugin.client.endpoints.list = mock.MagicMock()
@@ -46,3 +58,7 @@ class KarborKeystonePluginTest(base.TestCase):
             service_type='data-protect',
             base_url='http://192.168.1.1/identity/v3'
         )
+
+    def test_service_auth_plugin_with_project_name(self):
+        self.assertEqual(self.kc_plugin.service_auth_plugin._project_name,
+                         'services')
