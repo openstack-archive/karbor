@@ -27,6 +27,8 @@ from karbor.tests import base
 from karbor.tests.unit.protection import fakes
 
 CONF = cfg.CONF
+CONF.import_opt('trigger_poll_interval', 'karbor.services.operationengine'
+                '.engine.triggers.timetrigger')
 
 
 class ProtectionServiceTest(base.TestCase):
