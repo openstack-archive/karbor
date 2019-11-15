@@ -50,7 +50,7 @@ class ABClientTest(base.TestCase):
     @mock.patch('oslo_config.cfg.ConfigOpts', FakeConfig)
     @mock.patch('karbor.utils.find_config')
     @mock.patch('os.path.abspath')
-    def test_create_client_by_config_file(self, mock_findconfig, mock_abspath):
+    def test_create_client_by_config_file(self, mock_abspath, mock_findconfig):
         mock_findconfig.return_value = '/etc/provider.d'
         mock_abspath.return_value = ''
 

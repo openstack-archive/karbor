@@ -68,7 +68,7 @@ class ProviderRegistryTest(base.TestCase):
     @mock.patch.object(provider.PluggableProtectionProvider, '_load_bank')
     @mock.patch.object(provider.PluggableProtectionProvider,
                        '_register_plugin')
-    def test_load_providers(self, mock_load_bank, mock_register_plugin):
+    def test_load_providers(self, mock_register_plugin, mock_load_bank):
         pr = provider.ProviderRegistry()
         self.assertEqual(1, mock_register_plugin.call_count)
         self.assertEqual(1, mock_load_bank.call_count)
