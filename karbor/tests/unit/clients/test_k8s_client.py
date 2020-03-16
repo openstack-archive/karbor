@@ -16,8 +16,6 @@ from karbor.context import RequestContext
 from karbor.services.protection.clients import k8s
 from karbor.tests import base
 
-import mock
-
 
 class KubernetesClientTest(base.TestCase):
     def setUp(self):
@@ -43,8 +41,7 @@ class KubernetesClientTest(base.TestCase):
                                '/etc/provider.d/client-admin.key',
                                'k8s_client')
 
-    @mock.patch('kubernetes.client.api_client.ApiClient.__del__')
-    def test_create_client(self, mock_k8s_delete):
+    def test_create_client(self):
 
         client = k8s.create(self._context, self.conf)
         self.assertEqual(client.api_client.configuration.host, self.host_url)

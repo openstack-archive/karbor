@@ -131,9 +131,8 @@ class PodProtectionPluginTest(base.TestCase):
         self.assertEqual(options_schema,
                          pod_plugin_schemas.SAVED_INFO_SCHEMA)
 
-    @mock.patch('kubernetes.client.api_client.ApiClient.__del__')
     @mock.patch('karbor.services.protection.clients.k8s.create')
-    def test_create_backup(self, mock_k8s_create, mock_k8s_delete):
+    def test_create_backup(self, mock_k8s_create):
         self.k8s_client = client_factory.ClientFactory.create_client(
             "k8s", self.cntxt)
         resource = Resource(id="c88b92a8-e8b4-504c-bad4-343d92061871",
