@@ -59,6 +59,14 @@ class TriggerApiTest(base.TestCase):
                 'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
             },
         }
+        self.default_update_trigger_param = {
+            "name": "123",
+            "properties": {
+                "format": "crontab",
+                "pattern": "* * * * *",
+                'start_time': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+            },
+        }
 
     def test_create_trigger_InvalidBody(self):
         self.assertRaises(exception.ValidationError,
@@ -112,6 +120,44 @@ class TriggerApiTest(base.TestCase):
                           self.controller.show,
                           self.req,
                           trigger['trigger_info']['id'])
+
+    def test_update_trigger_InvalidID(self):
+        param = self.default_update_trigger_param.copy()
+        body = self._get_create_trigger_request_body(param)
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.update,
+                          self.req, 'fake-id',
+                          body=body)
+
+    def test_update_trigger_nonexist_trigger(self):
+        param = self.default_update_trigger_param.copy()
+        body = self._get_create_trigger_request_body(param)
+        self.assertRaises(exc.HTTPNotFound,
+                          self.controller.update,
+                          self.req, '42c8e647-cc13-4fc1-8d5b-b1e962290722',
+                          body=body)
+
+    def test_update_trigger_InvalidName(self):
+        trigger = self._create_one_trigger()
+
+        param = self.default_update_trigger_param.copy()
+        param['name'] = 'a' * 256
+        body = self._get_create_trigger_request_body(param)
+        self.assertRaises(ValueError,
+                          self.controller.update,
+                          self.req, trigger['trigger_info']['id'],
+                          body=body)
+
+    def test_update_trigger_miss_start_time(self):
+        trigger = self._create_one_trigger()
+
+        param = self.default_update_trigger_param.copy()
+        param['properties'].pop('start_time')
+        body = self._get_create_trigger_request_body(param)
+        self.assertRaises(exc.HTTPBadRequest,
+                          self.controller.update,
+                          self.req, trigger['trigger_info']['id'],
+                          body=body)
 
     def test_update_trigger(self):
         trigger = self._create_one_trigger()
