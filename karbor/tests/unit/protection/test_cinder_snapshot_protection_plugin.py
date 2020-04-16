@@ -227,6 +227,6 @@ class CinderSnapshotProtectionPluginTest(base.TestCase):
             fake_bank_section.get_object.return_value = {
                 "snapshot_id": "456"}
             call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
-                       **{'verify':  None, 'new_resources': {}})
+                       **{'verify': None, 'new_resources': {}})
             mock_update_verify.assert_called_with(
                 None, resource.type, volume_id, 'available')

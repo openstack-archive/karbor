@@ -37,7 +37,7 @@ volume_glance_opts = [
         'it. Minimizes the time the volume is unavailable.'
     ),
     cfg.IntOpt('backup_image_object_size',
-               default=65536*512,
+               default=65536 * 512,
                help='The size in bytes of temporary image objects. '
                     'The value must be a multiple of 65536('
                     'the size of image\'s chunk).'),

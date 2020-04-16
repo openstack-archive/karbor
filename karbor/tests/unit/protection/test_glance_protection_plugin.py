@@ -225,7 +225,7 @@ class GlanceProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
                 'update_resource_verify_result')
-    def test_verify_backup(self,  mock_update_verify):
+    def test_verify_backup(self, mock_update_verify):
         resource = Resource(id="123",
                             type=constants.IMAGE_RESOURCE_TYPE,
                             name='fake')

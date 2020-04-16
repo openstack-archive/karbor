@@ -392,7 +392,6 @@ class NovaProtectionPluginTest(base.TestCase):
         )
         resource_definition = {
             "resource_id": "vm_id_2",
-            "attach_metadata": {"vol_id_1": "/dev/vdb"},
             'boot_metadata': {'boot_device_type': 'volume'},
             "server_metadata": {
                 "availability_zone": "nova",
@@ -512,7 +511,7 @@ class NovaProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
                 'update_resource_verify_result')
-    def test_verify_backup(self,  mock_update_verify):
+    def test_verify_backup(self, mock_update_verify):
         resource = Resource(id="123",
                             type=constants.SERVER_RESOURCE_TYPE,
                             name='fake')

@@ -28,17 +28,17 @@ class GraphBuilderTest(base.TestCase):
                 "A": ["B"],
                 "B": ["C"],
                 "C": [],
-                }, {"A"}),
+            }, {"A"}),
             ({
                 "A": [],
                 "B": ["C"],
                 "C": [],
-                }, {"A", "B"}),
+            }, {"A", "B"}),
             ({
                 "A": ["C"],
                 "B": ["C"],
                 "C": [],
-                }, {"A", "B"}),
+            }, {"A", "B"}),
         )
 
         for g, expected_result in test_matrix:
@@ -53,22 +53,22 @@ class GraphBuilderTest(base.TestCase):
                 "A": ["B"],
                 "B": ["C"],
                 "C": [],
-                }, False),
+            }, False),
             ({
                 "A": [],
                 "B": ["C"],
                 "C": [],
-                }, False),
+            }, False),
             ({
                 "A": ["C"],
                 "B": ["C"],
                 "C": ["A"],
-                }, True),
+            }, True),
             ({
                 "A": ["B"],
                 "B": ["C"],
                 "C": ["A"],
-                }, True),
+            }, True),
         )
 
         for g, expected_result in test_matrix:

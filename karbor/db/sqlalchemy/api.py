@@ -78,6 +78,7 @@ def get_session(**kwargs):
 def dispose_engine():
     get_engine().dispose()
 
+
 _DEFAULT_QUOTA_NAME = 'default'
 
 

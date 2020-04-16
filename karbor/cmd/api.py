@@ -16,19 +16,19 @@
 import eventlet
 eventlet.monkey_patch()
 
-import sys
+import sys  # noqa: E402
 
-from oslo_config import cfg
-from oslo_log import log as logging
+from oslo_config import cfg  # noqa: E402
+from oslo_log import log as logging  # noqa: E402
 
 # Need to register global_opts
 from karbor.common import config  # noqa
-from karbor import i18n
+from karbor import i18n  # noqa: E402
 i18n.enable_lazy()
-from karbor import objects
-from karbor import rpc
-from karbor import service
-from karbor import version
+from karbor import objects  # noqa: E402
+from karbor import rpc  # noqa: E402
+from karbor import service  # noqa: E402
+from karbor import version  # noqa: E402
 
 
 CONF = cfg.CONF

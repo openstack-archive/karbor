@@ -160,7 +160,7 @@ class PodProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
                 'update_resource_verify_result')
-    def test_verify_backup(self,  mock_update_verify):
+    def test_verify_backup(self, mock_update_verify):
         resource = Resource(id="c88b92a8-e8b4-504c-bad4-343d92061871",
                             type=constants.POD_RESOURCE_TYPE,
                             name='default:busybox-test')

@@ -126,7 +126,7 @@ class NetworkProtectablePluginTest(base.TestCase):
              u'description': u'',
              u'name': u'ext_net',
              u'tenant_id': u'abcd'}
-            ]}
+        ]}
 
         mock_client_list_networks.return_value = fake_network_info
         self.assertEqual(plugin.list_resources(self._context),
@@ -149,7 +149,7 @@ class NetworkProtectablePluginTest(base.TestCase):
              u'description': u'',
              u'name': u'ext_net',
              u'tenant_id': u'abcd'}
-            ]}
+        ]}
         mock_client_list_networks.return_value = fake_network_info
         self.assertEqual(plugin.get_dependent_resources(self._context,
                                                         project),

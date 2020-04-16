@@ -72,7 +72,7 @@ FakeNetworks = {'networks': [
      u'tenant_id': u'f6f6d0b2591f41acb8257656d70029fc',
      u'created_at': u'2016-04-25T07:14:53',
      u'mtu': 1500}
-    ]}
+]}
 
 FakeSubnets = {'subnets': [
     {u'description': u'',
@@ -93,7 +93,7 @@ FakeSubnets = {'subnets': [
      u'id': u'808c3b3f-3d79-4c5b-a5b6-95dd07abeb2d',
      u'subnetpool_id': None,
      u'name': u'ext_subnet'},
-    ]}
+]}
 
 FakePorts = {'ports': [
     {u'allowed_address_pairs': [],
@@ -121,7 +121,7 @@ FakePorts = {'ports': [
      u'created_at': u'2016-04-25T07:15:59',
      u'binding:vnic_type': u'normal',
      u'tenant_id': u''},
-    ]}
+]}
 
 FakeRoutes = {'routers': [
     {u'status': u'ACTIVE',
@@ -142,7 +142,7 @@ FakeRoutes = {'routers': [
      u'ha': False,
      u'id': u'7fc86d4b-4c0e-4ed8-8d39-e27b7c1b7ae8',
      u'name': u'provider_route'}
-    ]}
+]}
 
 FakeSecGroup = {'security_groups': [
     {u'tenant_id': u'23b119d06168447c8dbb4483d9567bd8',
@@ -185,7 +185,7 @@ FakeSecGroup = {'security_groups': [
              u'port_range_min': None,
              u'tenant_id': u'23b119d06168447c8dbb4483d9567bd8',
              u'id': u'c24e7148-820c-4147-9032-6fcdb96db6f7'}]},
-    ]}
+]}
 
 
 def call_hooks(operation, checkpoint, resource, context, parameters, **kwargs):
@@ -252,6 +252,7 @@ class FakeBankPlugin(BankPlugin):
 
     def get_owner_id(self, context=None):
         return
+
 
 fake_checkpointid = "checkpoint_id"
 fake_project_id = "abcd"
@@ -373,9 +374,8 @@ class NeutronProtectionPluginTest(base.TestCase):
                 "id": "4c0e-4ed8-8d39-e27b7c1b7ae8",
                 "admin_state_up": True,
                 "availability_zone_hints": [],
-                "fixed_ips":  {"network_id": "9bb2-4b8f-9eea-e45563efc420",
-                               "enable_snat": True
-                               }
+                "fixed_ips": {"network_id": "9bb2-4b8f-9eea-e45563efc420",
+                              "enable_snat": True}
             },
             "security-group_metadata": {
                 "id": "4ccc-44c0-bc50-b7bbfc3508eb",
@@ -392,7 +392,7 @@ class NeutronProtectionPluginTest(base.TestCase):
 
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
                 'update_resource_verify_result')
-    def test_verify_backup(self,  mock_update_verify):
+    def test_verify_backup(self, mock_update_verify):
         resource = Resource(id="abcd",
                             type=constants.NETWORK_RESOURCE_TYPE,
                             name="test")

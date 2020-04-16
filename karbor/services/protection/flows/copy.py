@@ -75,7 +75,7 @@ def get_flow(context, protectable_registry, workflow_engine, plan, provider,
     checkpoint_copy.commit()
     operation_log = utils.create_operation_log(context, checkpoint_copy,
                                                constants.OPERATION_COPY)
-    flow_name = "Copy_" + plan.get('id')+checkpoint.id
+    flow_name = "Copy_" + plan.get('id') + checkpoint.id
     copy_flow = workflow_engine.build_flow(flow_name, 'linear')
     plugins = provider.load_plugins()
     parameters = {}
@@ -98,10 +98,10 @@ def get_flow(context, protectable_registry, workflow_engine, plan, provider,
                   }
     workflow_engine.add_tasks(
         copy_flow,
-        InitiateCopyTask(name='InitiateCopyTask_'+checkpoint_copy.id,
+        InitiateCopyTask(name='InitiateCopyTask_' + checkpoint_copy.id,
                          inject=store_dict),
         resources_task_flow,
-        CompleteCopyTask(name='CompleteCopyTask_'+checkpoint_copy.id,
+        CompleteCopyTask(name='CompleteCopyTask_' + checkpoint_copy.id,
                          inject=store_dict),
     )
     return copy_flow

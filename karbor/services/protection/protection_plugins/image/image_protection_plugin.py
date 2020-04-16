@@ -24,7 +24,7 @@ from oslo_log import log as logging
 
 image_backup_opts = [
     cfg.IntOpt('backup_image_object_size',
-               default=65536*10,
+               default=65536 * 10,
                help='The size in bytes of instance image objects. '
                     'The value must be a multiple of 65536('
                     'the size of image\'s chunk).'),

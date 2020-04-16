@@ -66,7 +66,7 @@ class ProtectOperation(protection_plugin.Operation):
                 'subnets',
                 'tags',
                 'tenant_id'
-                ]
+            ]
 
             for network in networks:
                 network_metadata = {
@@ -101,7 +101,7 @@ class ProtectOperation(protection_plugin.Operation):
                 'network_id',
                 'subnetpool_id',
                 'tenant_id'
-                ]
+            ]
 
             for subnet in subnets:
                 subnet_metadata = {
@@ -137,7 +137,7 @@ class ProtectOperation(protection_plugin.Operation):
                 'security_groups',
                 'status',
                 'tenant_id'
-                ]
+            ]
 
             for port in ports:
                 port_metadata = {
@@ -165,7 +165,7 @@ class ProtectOperation(protection_plugin.Operation):
                 'name',
                 'routes',
                 'status'
-                ]
+            ]
 
             for router in routers:
                 router_metadata = {
@@ -191,7 +191,7 @@ class ProtectOperation(protection_plugin.Operation):
                 'name',
                 'security_group_rules',
                 'tenant_id'
-                ]
+            ]
 
             for sg in sgs:
                 sg_metadata = {k: sg[k] for k in sg if k in allowed_keys}

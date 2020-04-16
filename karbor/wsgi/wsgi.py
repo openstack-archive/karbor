@@ -20,17 +20,17 @@ from karbor import objects
 
 warnings.simplefilter('once', DeprecationWarning)
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_service import wsgi
+from oslo_config import cfg  # noqa: E402
+from oslo_log import log as logging  # noqa: E402
+from oslo_service import wsgi  # noqa: E402
 
-from karbor import i18n
+from karbor import i18n  # noqa: E402
 i18n.enable_lazy()
 
 # Need to register global_opts
 from karbor.common import config  # noqa
-from karbor import rpc
-from karbor import version
+from karbor import rpc  # noqa: E402
+from karbor import version  # noqa: E402
 
 CONF = cfg.CONF
 

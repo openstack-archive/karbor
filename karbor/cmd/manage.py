@@ -15,9 +15,6 @@
   CLI interface for karbor management.
 """
 
-from __future__ import print_function
-
-
 import os
 import sys
 
@@ -31,14 +28,14 @@ i18n.enable_lazy()
 
 # Need to register global_opts
 from karbor.common import config  # noqa
-from karbor import context
-from karbor import db
-from karbor.db import migration as db_migration
-from karbor.db.sqlalchemy import api as db_api
-from karbor.i18n import _
-from karbor import objects
-from karbor import utils
-from karbor import version
+from karbor import context  # noqa: E402
+from karbor import db  # noqa: E402
+from karbor.db import migration as db_migration  # noqa: E402
+from karbor.db.sqlalchemy import api as db_api  # noqa: E402
+from karbor.i18n import _  # noqa: E402
+from karbor import objects  # noqa: E402
+from karbor import utils  # noqa: E402
+from karbor import version  # noqa: E402
 
 
 CONF = cfg.CONF

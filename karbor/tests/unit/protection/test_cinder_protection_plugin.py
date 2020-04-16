@@ -363,7 +363,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['volumes'].get.return_value.status = 'available'
             mocks['restores'].restore = RestoreResponse(volume_id)
             call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
-                       **{'restore':  None, 'new_resources': {}})
+                       **{'restore': None, 'new_resources': {}})
             mocks['volumes'].update.assert_called_with(
                 volume_id,
                 **{'name': parameters['restore_name'],
@@ -398,7 +398,7 @@ class CinderProtectionPluginTest(base.TestCase):
             mocks['backups'].get.return_value = mock.Mock()
             mocks['backups'].get.return_value.status = 'available'
             call_hooks(operation, checkpoint, resource, self.cntxt, parameters,
-                       **{'verify':  None, 'new_resources': {}})
+                       **{'verify': None, 'new_resources': {}})
             mock_update_verify.assert_called_with(
                 None, resource.type, volume_id, 'available')
 
@@ -425,7 +425,7 @@ class CinderProtectionPluginTest(base.TestCase):
             self.assertRaises(
                 exception.KarborException, call_hooks,
                 operation, checkpoint, resource, self.cntxt,
-                {}, **{'restore':  None})
+                {}, **{'restore': None})
 
     @mock.patch('karbor.services.protection.clients.cinder.create')
     @mock.patch('karbor.services.protection.protection_plugins.utils.'
@@ -457,7 +457,7 @@ class CinderProtectionPluginTest(base.TestCase):
             self.assertRaises(
                 exception.RestoreResourceFailed, call_hooks,
                 operation, checkpoint, resource, self.cntxt,
-                {}, **{'restore':  None})
+                {}, **{'restore': None})
 
             mock_update_restore.assert_called_with(
                 None, resource.type, volume_id,

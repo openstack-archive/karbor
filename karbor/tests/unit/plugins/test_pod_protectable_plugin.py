@@ -85,4 +85,4 @@ class PodProtectablePluginTest(base.TestCase):
                                  uuid.uuid5(uuid.NAMESPACE_OID,
                                             "default:busybox-test"),
                                  {'name': 'default:busybox-test'})
-            )
+        )

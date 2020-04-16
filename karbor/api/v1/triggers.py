@@ -146,7 +146,7 @@ class TriggersController(wsgi.Controller):
         try:
             with StartNotification(context, id=id):
                 self.operationengine_api.delete_trigger(context, id)
-        except exception.TriggerNotFound as ex:
+        except exception.TriggerNotFound:
             pass
         except (exception.DeleteTriggerNotAllowed,
                 Exception) as ex:

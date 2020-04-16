@@ -187,9 +187,9 @@ class DbQuotaDriver(object):
 
         # Filter resources
         if has_sync:
-            sync_filt = lambda x: hasattr(x, 'sync')
+            sync_filt = lambda x: hasattr(x, 'sync')  # noqa: E731
         else:
-            sync_filt = lambda x: not hasattr(x, 'sync')
+            sync_filt = lambda x: not hasattr(x, 'sync')  # noqa: E731
         desired = set(keys)
         sub_resources = dict((k, v) for k, v in resources.items()
                              if k in desired and sync_filt(v))

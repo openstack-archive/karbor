@@ -264,7 +264,7 @@ class RestoreOperation(protection_plugin.Operation):
         # create volume
         volume_property = {
             'name': parameters.get(
-                'restore_name',  '%s@%s' % (checkpoint.id, resource_id))
+                'restore_name', '%s@%s' % (checkpoint.id, resource_id))
         }
         if 'restore_description' in parameters:
             volume_property['description'] = parameters['restore_description']

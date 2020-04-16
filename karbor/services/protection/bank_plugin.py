@@ -71,8 +71,8 @@ def validate_dir(key):
 
 
 class Bank(object):
-    _KEY_VALIDATION = re.compile('^[A-Za-z0-9/_.\-@]+(?<!/)$')
-    _KEY_DOT_VALIDATION = re.compile('/\.{1,2}(/|$)')
+    _KEY_VALIDATION = re.compile(r'^[A-Za-z0-9/_.\-@]+(?<!/)$')
+    _KEY_DOT_VALIDATION = re.compile(r'/\.{1,2}(/|$)')
 
     def __init__(self, plugin):
         super(Bank, self).__init__()
@@ -162,8 +162,8 @@ class BankSection(object):
     a bank to another entity and make sure it is only capable of
     accessing part of it.
     """
-    _SECTION_VALIDATION = re.compile('^/?[A-Za-z0-9/_.\-@]*/?$')
-    _SECTION_DOT_VALIDATION = re.compile('/\.{1,2}(/|$)')
+    _SECTION_VALIDATION = re.compile(r'^/?[A-Za-z0-9/_.\-@]*/?$')
+    _SECTION_DOT_VALIDATION = re.compile(r'/\.{1,2}(/|$)')
 
     def __init__(self, bank, section, is_writable=True):
         super(BankSection, self).__init__()
