@@ -11,7 +11,7 @@
 #    under the License.
 
 from datetime import datetime
-import mock
+from unittest import mock
 
 from oslo_utils import timeutils
 

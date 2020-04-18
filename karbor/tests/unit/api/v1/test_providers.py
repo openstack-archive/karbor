@@ -11,9 +11,9 @@
 #    under the License.
 
 
-import mock
-from oslo_config import cfg
+from unittest import mock
 
+from oslo_config import cfg
 from webob import exc
 
 from karbor.api.v1 import providers

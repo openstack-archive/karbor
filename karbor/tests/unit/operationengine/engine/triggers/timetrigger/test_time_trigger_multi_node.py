@@ -16,7 +16,8 @@ from datetime import timedelta
 import eventlet
 import functools
 import heapq
-import mock
+from unittest import mock
+
 from oslo_config import cfg
 from oslo_utils import uuidutils
 

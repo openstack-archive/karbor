@@ -13,11 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import futurist
-import mock
+from unittest import mock
 
+import futurist
 from oslo_config import cfg
 from oslo_log import log as logging
+from taskflow import engines
+from taskflow.patterns import graph_flow
+from taskflow.patterns import linear_flow
+from taskflow import task
 
 from karbor.resource import Resource
 from karbor.services.protection.bank_plugin import Bank
@@ -27,11 +31,6 @@ from karbor.services.protection.graph import build_graph
 from karbor.services.protection import protection_plugin
 from karbor.services.protection import provider
 from karbor.services.protection import resource_flow
-
-from taskflow import engines
-from taskflow.patterns import graph_flow
-from taskflow.patterns import linear_flow
-from taskflow import task
 
 LOG = logging.getLogger(__name__)
 

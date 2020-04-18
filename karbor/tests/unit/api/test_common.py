@@ -14,12 +14,12 @@
 Test suites for 'common' code used throughout the OpenStack HTTP API.
 """
 
-import mock
+from unittest import mock
+
+from oslo_config import cfg
 from testtools import matchers
 import webob
 import webob.exc
-
-from oslo_config import cfg
 
 from karbor.api import common
 from karbor.tests import base

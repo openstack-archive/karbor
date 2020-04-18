@@ -11,16 +11,16 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from manilaclient.v2 import shares
+from oslo_config import cfg
+
 from karbor.context import RequestContext
 from karbor.resource import Resource
 from karbor.services.protection.protectable_plugins.share \
     import ShareProtectablePlugin
-
 from karbor.tests import base
-import mock
-
-from manilaclient.v2 import shares
-from oslo_config import cfg
 
 
 class ShareProtectablePluginTest(base.TestCase):

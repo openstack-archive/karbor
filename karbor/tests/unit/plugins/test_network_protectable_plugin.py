@@ -11,7 +11,11 @@
 #    under the License.
 
 from collections import namedtuple
-import mock
+from unittest import mock
+
+from keystoneauth1 import session as keystone_session
+from neutronclient.v2_0 import client
+from oslo_config import cfg
 
 from karbor.common import constants
 from karbor.context import RequestContext
@@ -19,9 +23,6 @@ from karbor import resource
 from karbor.services.protection.protectable_plugins.network import \
     NetworkProtectablePlugin
 from karbor.tests import base
-from keystoneauth1 import session as keystone_session
-from neutronclient.v2_0 import client
-from oslo_config import cfg
 
 CONF = cfg.CONF
 

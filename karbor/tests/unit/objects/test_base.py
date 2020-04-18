@@ -11,7 +11,7 @@
 #    under the License.
 
 import datetime
-import mock
+from unittest import mock
 
 from iso8601 import iso8601
 from oslo_utils import uuidutils

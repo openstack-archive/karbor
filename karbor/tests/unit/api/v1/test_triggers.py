@@ -10,7 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from datetime import datetime
-import mock
+from unittest import mock
+
 from webob import exc
 
 from karbor.api.v1 import triggers as trigger_api

@@ -9,14 +9,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from mock import mock
+from unittest import mock
+
+from webob import exc
 
 from karbor.api.v1 import copies
 from karbor import context
 from karbor import exception
 from karbor.tests import base
 from karbor.tests.unit.api import fakes
-from webob import exc
 
 PROVIDER_ID_1 = 'efc6a88b-9096-4bb6-8634-cda182a6e12a'
 PROVIDER_ID_2 = '3241a88b-9096-4bb6-8634-cda182a6e12a'

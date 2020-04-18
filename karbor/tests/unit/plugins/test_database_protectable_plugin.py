@@ -11,18 +11,18 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from oslo_config import cfg
+from troveclient.v1 import instances
+
 from karbor.context import RequestContext
 from karbor.resource import Resource
 # Need to register trove_client
 from karbor.services.protection.clients import trove  # noqa
 from karbor.services.protection.protectable_plugins.database \
     import DatabaseInstanceProtectablePlugin
-
 from karbor.tests import base
-import mock
-
-from oslo_config import cfg
-from troveclient.v1 import instances
 
 
 class DatabaseInstanceProtectablePluginTest(base.TestCase):

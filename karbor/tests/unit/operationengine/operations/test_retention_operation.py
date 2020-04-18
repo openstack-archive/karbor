@@ -12,7 +12,7 @@
 
 from datetime import datetime
 from datetime import timedelta
-import mock
+from unittest import mock
 
 from karbor.common import constants
 from karbor import context

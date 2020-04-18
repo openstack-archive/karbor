@@ -11,7 +11,9 @@
 #    under the License.
 
 from functools import partial
-import mock
+from unittest import mock
+
+from oslo_config import cfg
 
 from karbor.common import constants
 from karbor.resource import Resource
@@ -20,7 +22,6 @@ from karbor.services.protection import graph
 from karbor.services.protection import resource_flow
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
-from oslo_config import cfg
 
 CONF = cfg.CONF
 

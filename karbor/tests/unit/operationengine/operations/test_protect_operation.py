@@ -11,7 +11,7 @@
 #    under the License.
 
 from datetime import datetime
-import mock
+from unittest import mock
 
 from karbor.common import constants
 from karbor import context

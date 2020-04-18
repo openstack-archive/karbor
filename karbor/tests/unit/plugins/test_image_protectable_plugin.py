@@ -11,17 +11,19 @@
 # under the License.
 
 from collections import namedtuple
+from unittest import mock
+
 from glanceclient.v2 import images
+from keystoneauth1 import session as keystone_session
+from novaclient.v2 import servers
+from oslo_config import cfg
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor import resource
 from karbor.services.protection.protectable_plugins.image import \
     ImageProtectablePlugin
 from karbor.tests import base
-from keystoneauth1 import session as keystone_session
-import mock
-from novaclient.v2 import servers
-from oslo_config import cfg
 
 CONF = cfg.CONF
 

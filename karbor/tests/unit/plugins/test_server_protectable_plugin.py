@@ -11,16 +11,17 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from keystoneauth1 import session as keystone_session
+from novaclient.v2 import servers
+from oslo_config import cfg
+
 from karbor.context import RequestContext
 from karbor.resource import Resource
 from karbor.services.protection.protectable_plugins.server \
     import ServerProtectablePlugin
-
 from karbor.tests import base
-from keystoneauth1 import session as keystone_session
-import mock
-from novaclient.v2 import servers
-from oslo_config import cfg
 
 
 class ServerProtectablePluginTest(base.TestCase):

@@ -11,8 +11,8 @@
 #    under the License.
 
 """The notification module."""
-from mock import Mock
-from mock import patch
+from unittest import mock
+from unittest.mock import patch
 
 from karbor.common import notification
 from karbor.common.notification import EndNotification
@@ -86,7 +86,7 @@ class TestKarborNotification(base.TestCase):
 
     def setUp(self):
         super(TestKarborNotification, self).setUp()
-        self.test_n = KarborTestNotification(Mock(), request=Mock())
+        self.test_n = KarborTestNotification(mock.Mock(), request=mock.Mock())
 
     def test_missing_required_start_traits(self):
         self.assertRaisesRegex(exception.InvalidInput,
@@ -164,10 +164,10 @@ class TestKarborNotification(base.TestCase):
 
     def _test_notify_callback(self, fn, *args, **kwargs):
         with patch.object(rpc, 'get_notifier') as notifier:
-            mock_callback = Mock()
+            mock_callback = mock.Mock()
             self.test_n.register_notify_callback(mock_callback)
-            mock_context = Mock()
-            mock_context.notification = Mock()
+            mock_context = mock.Mock()
+            mock_context.notification = mock.Mock()
             self.test_n.context = mock_context
             fn(*args, **kwargs)
             self.assertTrue(notifier().info.called)

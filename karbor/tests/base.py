@@ -11,9 +11,9 @@
 # under the License.
 
 import logging
+from unittest import mock
 
 import fixtures
-import mock
 from oslo_config import cfg
 from oslo_messaging import conffixture as messaging_conffixture
 from oslo_utils import timeutils

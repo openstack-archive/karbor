@@ -10,8 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cinderclient import exceptions as cinder_exc
 import collections
+from unittest import mock
+
+from cinderclient import exceptions as cinder_exc
+from oslo_config import cfg
+from oslo_config import fixture
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor import exception
@@ -24,9 +29,6 @@ from karbor.services.protection.protection_plugins.volume \
     import volume_plugin_cinder_schemas as cinder_schemas
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
-import mock
-from oslo_config import cfg
-from oslo_config import fixture
 
 
 ResourceNode = collections.namedtuple(

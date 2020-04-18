@@ -11,6 +11,10 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from oslo_config import cfg
+from oslo_config import fixture
 
 from karbor.common import constants
 from karbor.context import RequestContext
@@ -23,11 +27,7 @@ from karbor.services.protection.protection_plugins.volume import \
     volume_freezer_plugin_schemas
 from karbor.services.protection.protection_plugins.volume.\
     volume_freezer_plugin import FreezerProtectionPlugin
-
 from karbor.tests import base
-import mock
-from oslo_config import cfg
-from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):

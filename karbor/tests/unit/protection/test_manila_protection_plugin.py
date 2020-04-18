@@ -11,6 +11,11 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from oslo_config import cfg
+from oslo_config import fixture
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
@@ -23,9 +28,6 @@ from karbor.services.protection.protection_plugins. \
 from karbor.services.protection.protection_plugins.share \
     import share_snapshot_plugin_schemas
 from karbor.tests import base
-import mock
-from oslo_config import cfg
-from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):

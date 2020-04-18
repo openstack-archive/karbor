@@ -10,14 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-
-
-from karbor.common import karbor_keystone_plugin
-from karbor.tests import base
+from unittest import mock
 
 from oslo_config import cfg
 from oslo_config import fixture
+
+from karbor.common import karbor_keystone_plugin
+from karbor.tests import base
 
 
 class KarborKeystonePluginTest(base.TestCase):

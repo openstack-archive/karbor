@@ -10,6 +10,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
+
+from kubernetes.client.models.v1_object_meta import V1ObjectMeta
+from kubernetes.client.models.v1_pod import V1Pod
+from kubernetes.client.models.v1_pod_spec import V1PodSpec
+from kubernetes.client.models.v1_pod_status import V1PodStatus
+from oslo_config import cfg
+from oslo_config import fixture
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
@@ -18,21 +27,11 @@ from karbor.services.protection.bank_plugin import BankPlugin
 from karbor.services.protection.bank_plugin import BankSection
 from karbor.services.protection import client_factory
 from karbor.services.protection.clients import k8s
-
 from karbor.services.protection.protection_plugins. \
     pod.pod_protection_plugin import PodProtectionPlugin
 from karbor.services.protection.protection_plugins.pod \
     import pod_plugin_schemas
-
-from kubernetes.client.models.v1_object_meta import V1ObjectMeta
-from kubernetes.client.models.v1_pod import V1Pod
-from kubernetes.client.models.v1_pod_spec import V1PodSpec
-from kubernetes.client.models.v1_pod_status import V1PodStatus
-
 from karbor.tests import base
-import mock
-from oslo_config import cfg
-from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):

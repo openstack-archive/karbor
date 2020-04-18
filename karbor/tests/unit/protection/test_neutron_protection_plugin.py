@@ -11,6 +11,10 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from oslo_config import cfg
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
@@ -23,8 +27,6 @@ from karbor.services.protection.protection_plugins.network \
 from karbor.services.protection.protection_plugins.network. \
     neutron_protection_plugin import NeutronProtectionPlugin
 from karbor.tests import base
-import mock
-from oslo_config import cfg
 
 FakeNetworks = {'networks': [
     {u'status': u'ACTIVE',

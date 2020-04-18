@@ -10,22 +10,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from karbor.context import RequestContext
-from karbor.resource import Resource
-from karbor.services.protection.clients import k8s  # noqa
-from karbor.services.protection.protectable_plugins.pod \
-    import K8sPodProtectablePlugin
+from unittest import mock
+import uuid
 
 from kubernetes.client.models.v1_object_meta import V1ObjectMeta
 from kubernetes.client.models.v1_pod import V1Pod
 from kubernetes.client.models.v1_pod_list import V1PodList
 from kubernetes.client.models.v1_pod_status import V1PodStatus
-
 from oslo_config import cfg
 
+from karbor.context import RequestContext
+from karbor.resource import Resource
+from karbor.services.protection.clients import k8s  # noqa
+from karbor.services.protection.protectable_plugins.pod \
+    import K8sPodProtectablePlugin
 from karbor.tests import base
-import mock
-import uuid
 
 
 class PodProtectablePluginTest(base.TestCase):

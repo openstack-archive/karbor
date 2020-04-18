@@ -11,7 +11,8 @@
 #    under the License.
 
 from collections import namedtuple
-import mock
+from unittest import mock
+
 from oslo_config import cfg
 
 from karbor.common import constants

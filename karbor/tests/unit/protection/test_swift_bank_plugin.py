@@ -10,15 +10,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import math
+import os
+import time
+from unittest import mock
+
+from oslo_config import cfg
+from oslo_utils import importutils
+
 from karbor.services.protection.clients import swift
 from karbor.tests import base
 from karbor.tests.unit.protection.fake_swift_client import FakeSwiftClient
-import math
-import mock
-import os
-from oslo_config import cfg
-from oslo_utils import importutils
-import time
 
 CONF = cfg.CONF
 

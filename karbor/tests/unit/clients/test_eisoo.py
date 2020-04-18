@@ -11,7 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 from karbor.context import RequestContext
 from karbor.services.protection.clients import eisoo

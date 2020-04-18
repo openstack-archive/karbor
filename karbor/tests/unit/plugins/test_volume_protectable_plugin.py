@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
+
 from cinderclient.v3 import volumes
 from collections import namedtuple
-import mock
 
 from karbor.common import constants
 from karbor.context import RequestContext

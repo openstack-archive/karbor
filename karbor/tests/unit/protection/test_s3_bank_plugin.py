@@ -10,14 +10,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import math
+import time
+from unittest import mock
+
+from oslo_config import cfg
+from oslo_utils import importutils
+
 from karbor.services.protection.clients import s3
 from karbor.tests import base
 from karbor.tests.unit.protection.fake_s3_client import FakeS3Client
-import math
-import mock
-from oslo_config import cfg
-from oslo_utils import importutils
-import time
 
 CONF = cfg.CONF
 

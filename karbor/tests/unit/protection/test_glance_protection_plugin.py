@@ -11,6 +11,12 @@
 #    under the License.
 
 import collections
+from unittest import mock
+
+from keystoneauth1 import session as keystone_session
+from oslo_config import cfg
+from oslo_config import fixture
+
 from karbor.common import constants
 from karbor.context import RequestContext
 from karbor.resource import Resource
@@ -23,10 +29,6 @@ from karbor.services.protection.protection_plugins. \
 from karbor.services.protection.protection_plugins.image \
     import image_plugin_schemas
 from karbor.tests import base
-from keystoneauth1 import session as keystone_session
-import mock
-from oslo_config import cfg
-from oslo_config import fixture
 
 
 class FakeBankPlugin(BankPlugin):

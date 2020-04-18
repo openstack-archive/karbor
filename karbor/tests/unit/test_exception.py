@@ -10,14 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
+
+import six
 from six.moves import http_client
+import webob.util
 
 from karbor import exception
 from karbor.tests import base
-
-import mock
-import six
-import webob.util
 
 
 class KarborExceptionTestCase(base.TestCase):

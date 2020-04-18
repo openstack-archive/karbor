@@ -10,13 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
+
+from oslo_config import cfg
 
 from karbor.resource import Resource
 from karbor.services.protection import provider
 from karbor.tests import base
 from karbor.tests.unit.protection import fakes
-from oslo_config import cfg
 
 CONF = cfg.CONF
 
