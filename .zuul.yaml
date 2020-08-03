@@ -3,23 +3,60 @@
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
       - check-requirements
-      - openstack-python3-ussuri-jobs
+      - openstack-python3-victoria-jobs
       - publish-openstack-docs-pti
     check:
       jobs:
-        - karbor-dsvm-fullstack:
+        - karbor-fullstack:
             voting: false
 
 - job:
-    name: karbor-dsvm-fullstack
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/karbor-dsvm-fullstack/run.yaml
-    post-run: playbooks/legacy/karbor-dsvm-fullstack/post.yaml
+    name: karbor-fullstack
+    parent: devstack-tox-functional
     timeout: 7800
     required-projects:
-      - openstack/devstack-gate
-      - openstack/karbor
-      - openstack/python-karborclient
-      - openstack/trove
-      - openstack/trove-dashboard
-      - openstack/manila-tempest-plugin
+      - opendev.org/openstack/karbor
+      - opendev.org/openstack/python-karborclient
+      - opendev.org/openstack/trove
+      - opendev.org/openstack/trove-dashboard
+      - opendev.org/openstack/manila
+      - opendev.org/openstack/manila-tempest-plugin
+    vars:
+      devstack_plugins:
+        karbor: https://opendev.org/openstack/karbor
+        manila: https://opendev.org/openstack/manila
+      tox_envlist: fullstack
+      devstack_localrc:
+        API_WORKERS: 4
+        VOLUME_BACKING_FILE_SIZE: 20490M
+        MANILA_OPTGROUP_generic1_driver_handles_share_servers: False
+        MANILA_USE_SERVICE_INSTANCE_PASSWORD: True
+        MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS: 'snapshot_support=True create_share_from_snapshot_support=True mount_snapshot_support=True driver_handles_share_servers=False'
+        SHARE_DRIVER: manila.share.drivers.lvm.LVMShareDriver
+        SWIFT_HASH: 66a3d6b56c1f479c8b4e70ab5c2000f5
+        SWIFT_REPLICAS: 1
+        SWIFT_LOOPBACK_DISK_SIZE: 10G
+        DATABASE_PASSWORD: password
+        RABBIT_PASSWORD: password
+        SERVICE_PASSWORD: password
+        SERVICE_TOKEN: password
+        ADMIN_PASSWORD: password
+      devstack_local_conf:
+        test-config:
+          $SWIFT_CONFIG_PROXY_SERVER:
+            DEFAULT:
+              workers: 4
+          $CINDER_CONF:
+            DEFAULT:
+              osapi_volume_workers: 8
+              rpc_response_timeout: 120
+          $KARBOR_API_CONF:
+            DEFAULT:
+              max_window_time: 150
+              min_window_time: 75
+              min_interval: 300
+      devstack_services:
+        tls-proxy: false
+        karbor-api: True
+        karbor-protection: True
+        karbor-operationengine: True
