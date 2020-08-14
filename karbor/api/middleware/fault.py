@@ -39,7 +39,9 @@ class FaultWrapper(base_wsgi.Middleware):
             status, webob.exc.HTTPInternalServerError)()
 
     def _error(self, inner, req):
-        LOG.error('Middleware error occurred: %s', inner.message)
+        LOG.error('Middleware error occurred: %(type)s %(error)s',
+                  {'type': type(inner),
+                   'error': inner})
         safe = getattr(inner, 'safe', False)
         headers = getattr(inner, 'headers', None)
         status = getattr(inner, 'code', http_client.INTERNAL_SERVER_ERROR)
