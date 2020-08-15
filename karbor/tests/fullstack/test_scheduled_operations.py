@@ -127,7 +127,7 @@ class ScheduledOperationsTest(karbor_base.KarborBaseTest):
         operation_item = self.karbor_client.scheduled_operations.get(
             operation.id)
         plan_id = operation_item.operation_definition["plan_id"]
-        cps = filter(lambda x: x.protection_plan["id"] == plan_id, items)
+        cps = list(filter(lambda x: x.protection_plan["id"] == plan_id, items))
         self.assertEqual(freq, len(cps))
 
         for cp in cps:
