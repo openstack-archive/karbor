@@ -82,10 +82,12 @@ class ProtectablesTest(karbor_base.KarborBaseTest):
         ins_res = self.karbor_client.protectables.get_instance(
             'OS::Nova::Server', volume_item.attachments[0]["server_id"])
         self.assertTrue(ins_res.dependent_resources)
-        self.assertEqual('OS::Cinder::Volume',
+        self.assertEqual('OS::Glance::Image',
                          ins_res.dependent_resources[0]["type"])
+        self.assertEqual('OS::Cinder::Volume',
+                         ins_res.dependent_resources[1]["type"])
         self.assertEqual(volume.id,
-                         ins_res.dependent_resources[0]["id"])
+                         ins_res.dependent_resources[1]["id"])
 
     def test_share_protectables_list_instances(self):
         self.skipTest('Waiting new manilaclient being merged.')

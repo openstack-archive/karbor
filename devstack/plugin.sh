@@ -91,7 +91,7 @@ function start_karbor_api_mod_wsgi {
 }
 
 function start_karbor_api_uwsgi {
-    run_process karbor-api "$KARBOR_BIN_DIR/uwsgi --ini $KARBOR_API_UWSGI_CONF" ""
+    run_process karbor-api "$(which uwsgi) --ini $KARBOR_API_UWSGI_CONF" ""
 
     echo "Waiting for Karbor API to start..."
     if ! wait_for_service $SERVICE_TIMEOUT $KARBOR_API_ENDPOINT; then
@@ -116,7 +116,7 @@ function configure_karbor {
 
         # generate configuration file
         cd $KARBOR_DIR
-        tox -e genconfig
+        oslo-config-generator --config-file etc/oslo-config-generator/karbor.conf --output-file etc/karbor.conf.sample
         cp etc/karbor.conf.sample etc/karbor.conf
 
         cp $KARBOR_DIR/etc/karbor.conf $KARBOR_CONF
