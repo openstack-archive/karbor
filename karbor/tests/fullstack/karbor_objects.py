@@ -273,8 +273,8 @@ class Server(object):
 
     def _volume_attached(self, volume_id):
         volume_item = self.cinder_client.volumes.get(volume_id)
-        server_attachments = filter(lambda x: x['server_id'] == self.id,
-                                    volume_item.attachments)
+        server_attachments = list(filter(lambda x: x['server_id'] == self.id,
+                                         volume_item.attachments))
         if len(server_attachments) > 0:
             return True
         else:
@@ -287,8 +287,8 @@ class Server(object):
 
     def _volume_detached(self, volume_id):
         volume_item = self.cinder_client.volumes.get(volume_id)
-        server_attachments = filter(lambda x: x['server_id'] == self.id,
-                                    volume_item.attachments)
+        server_attachments = list(filter(lambda x: x['server_id'] == self.id,
+                                         volume_item.attachments))
         if len(server_attachments) > 0:
             return False
         else:
