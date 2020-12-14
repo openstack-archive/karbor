@@ -1,8 +1,0 @@
-{
-  "protectable_type": [
-    "OS::Keystone::Project",
-    "OS::Cinder::Volume",
-    "OS::Glance::Image",
-    "OS::Nova::Server"
-  ]
-}

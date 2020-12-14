@@ -1,4 +1,0 @@
----
-other:
-  - oslo-config-generator is now used to generate a
-    karbor.conf.sample file
